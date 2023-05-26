@@ -63,23 +63,19 @@ def process_reviews(data, context, session):
         review = Review()
         review.type = "user" # pro / user
         review.url = context.get('revs_url', product.url)
-        review.title = rev.xpath('.//div[@class="product-comment__item-title"]//text()').string()
+        review.title = ""
         
         
-        """"""
-        review.date = rev.xpath(".//span[@itemprop='datePublished']/@content").string()
-
-        author = rev.xpath(".//span[@itemprop='author']/span[@itemprop='name']//text()").string()
-        if not author:
-            author = rev.xpath(".//div[@class='author']/span[@itemprop='author']//text()").string()
-        if author:
-            review.authors.append(Person(name=author, ssid=author)) # profile_url
+        review.date = rev.xpath('.//div[@class="product-comment__item-date"]').string()
+        author = rev.xpath('.//div[@class="product-comment__item-title"]//text()').string()
+        review.authors.append(Person(name=author, ssid=author)) # profile_url
 
         # grade_overall
-        grade_overall = rev.xpath(".//i[@class='fas fa-star']")
+        grade_overall = rev.xpath('.//div[@class="product-comment__item-rating"]/i[@class="icon icon-star-filled icon_orange"]')
         if len(grade_overall) > 0:
             review.grades.append(Grade(type='overall', value=len(grade_overall), best=5.0))
 
+        """"""
         excerpt = rev.xpath(".//span[@itemprop='description']//text()").string(multiple=True)
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
@@ -90,7 +86,7 @@ def process_reviews(data, context, session):
             else:
                 review.ssid = review.digest()
 
-            product.reviews.append(review)
+        product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
