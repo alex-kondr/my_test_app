@@ -10,32 +10,80 @@ def run(context, session):
 
 
 def process_frontpage(data, context, session):    
-    cats1 = data.xpath("//div/ul/li[@id]")
-    for cat1 in cats1:
-        name = cat1.xpath("a//text()").string().encode("utf-8")
-        url = cat1.xpath("a/@href").string().encode("utf-8")
-        session.queue(Request(url, use="curl", options=OPTIONS, max_age=0), process_category1, dict(name=name))
+    cats = data.xpath("//div/ul/li[@id]")
+    for cat in cats:
+        name = cat.xpath("a//text()").string().encode("utf-8")
+        url = cat.xpath("a/@href").string().encode("utf-8")
+        session.queue(Request(url, use="curl", options=OPTIONS, max_age=0), process_category1, dict(cat=name))
 
 
 def process_category1(data, context, session):
     cats = data.xpath("//div/ul/li[@class='']")
     for cat in cats:
-        url = cat.xpath("a/@href").string().encode("utf-8")
         name = cat.xpath("a//text()").string().encode("utf-8")
-        session.queue(Request(url, use="curl", options=OPTIONS, max_age=0), process_category2, dict(name=context["name"]+name))
+        url = cat.xpath("a/@href").string().encode("utf-8")
+        session.queue(Request(url, use="curl", options=OPTIONS, max_age=0), 
+                      process_category2, dict(cat=context["cat"]+ "|" + name))
 
 
 def process_category2(data, context, session):
     prods = data.xpath('//div[@class="article-content"]/div/strong/a')
-    print("prods=", prods.pretty())
     for prod in prods:
-        url = prod.xpath("@href").string().encode("utf-8")
-        name = prod.xpath("span//text()").string().encode("utf-8")
-        session.queue(Request(url), process_product, dict(context, url=url, name=context["name"]+name))
+        url = prod.xpath('@href').string().encode("utf-8")
+        name = prod.xpath('span//text()').string().encode("utf-8")
+        session.queue(Request(url), process_product, dict(context, url=url, name=name))
+    
+    next_page = data.xpath('//a[@data-reference="next"]/@href')
+    if next_page:
+        next_url = next_page[0].string().encode('utf-8')
+        session.queue(Request(next_url, use="curl", options=OPTIONS, max_age=0), 
+                      process_category2, dict(context))
         
 
 def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
+    product.ssid = product.url.split('/')[-1]
+    product.category = context['cat']
+    product.manufacturer = data.xpath('//div[@class="datasheet collapsed"]/table/tbody/tr[@class="odd"]/td[@data-name="value"]//text()').string().encode('utf-8')
     
+    sku = data.xpath('//table[@class="keyfacts"]/tr/td[@class="jsArticleNumber"]/@content')
+    if sku:
+        sku = sku.string().encode('utf-8')
+        product.sku = sku
+    
+    ean = data.xpath('//meta[@itemprop="gtin13"]/@content')
+    if ean:
+        ean = ean.string().encode('utf-8')
+        product.add_property(type='id.ean', value=ean)
+    
+    context['product'] = product
+    process_reviews(data, context, session)
+    
+    
+def process_reviews(data, context, session):
+    product = context['product']
+
+    revs = data.xpath('//div[@class="rating-item"]')
+    for rev in revs:
+        review = Review()
+        review.type = "user"
+        review.url = product.url
+        review.date = rev.xpath('//div[@class="details"]/span')[1].xpath('//text()').string().encode('utf-8')
+        
+        author = rev.xpath(".//span[@class='author']//text()").string().encode('utf-8')
+        review.authors.append(Person(name=author, ssid=author))
+        
+        grade_overall = rev.xpath('.//div[@class="star"]/@data-value').string().encode('utf-8')
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+        
+        excerpt = rev.xpath(".//p[@class='text']//text()").string(multiple=True).encode('utf-8')
+        if excerpt:
+            review.add_property(type='excerpt', value=excerpt)           
+            review.ssid = excerpt
+            product.reviews.append(review)
+
+    if product.reviews:
+        session.emit(product)
