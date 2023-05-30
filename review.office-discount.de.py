@@ -75,12 +75,14 @@ def process_reviews(data, context, session):
         author = rev.xpath(".//span[@class='author']//text()").string().encode('utf-8')
         review.authors.append(Person(name=author, ssid=author))
         
-        grade_overall = rev.xpath('.//div[@class="star"]/@data-value').string().encode('utf-8')
+        grade_overall = rev.xpath('.//div[@class="star"]/@data-value')
         if grade_overall:
+            grade_overall = grade_overall.string().encode('utf-8')
             review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
         
-        excerpt = rev.xpath(".//p[@class='text']//text()").string(multiple=True).encode('utf-8')
+        excerpt = rev.xpath(".//p[@class='text']//text()")
         if excerpt:
+            excerpt = excerpt.string(multiple=True).encode('utf-8')
             review.add_property(type='excerpt', value=excerpt)           
             review.ssid = excerpt
             product.reviews.append(review)
