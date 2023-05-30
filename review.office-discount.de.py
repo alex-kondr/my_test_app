@@ -6,38 +6,33 @@ OPTIONS = "-H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) G
 
 
 def run(context, session):
-    session.queue(Request('https://www.office-discount.de/', use='curl', options=OPTIONS, max_age=0), process_frontpage, dict())
+    session.queue(Request('https://www.office-discount.de/', force_charset='utf-8', use='curl', options=OPTIONS), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):    
-    cats = data.xpath("//div/ul/li[@id]")
-    for cat in cats:
-        name = cat.xpath("a//text()").string().encode("utf-8")
-        url = cat.xpath("a/@href").string().encode("utf-8")
-        session.queue(Request(url, use="curl", options=OPTIONS, max_age=0), process_category1, dict(cat=name))
+    cats1 = data.xpath('//div[@class="wrapper"]/nav[@class="header-nav fullscreen"]/ul/li[@id]')
+    for cat1 in cats1:
+        name1 = cat1.xpath("a//text()").string()
+        cat1_id = cat1.xpath('@id').string()
+        cats2 = data.xpath('//div[@class="wrapper"]/div[contains(@class, '+cat1_id+')]/div[@id="ajax"]/div/ul/li')
+        for cat2 in cats2:
+            name2 = cat2.xpath('a//text()').string()
+            url = cat2.xpath("a/@href").string()
+            session.queue(Request(url, force_charset='utf-8', use="curl", options=OPTIONS), process_category, dict(cat=name1+'|'+name2))
 
 
-def process_category1(data, context, session):
-    cats = data.xpath("//div/ul/li[@class='']")
-    for cat in cats:
-        name = cat.xpath("a//text()").string().encode("utf-8")
-        url = cat.xpath("a/@href").string().encode("utf-8")
-        session.queue(Request(url, use="curl", options=OPTIONS, max_age=0), 
-                      process_category2, dict(cat=context["cat"]+ "|" + name))
-
-
-def process_category2(data, context, session):
-    prods = data.xpath('//div[@class="article-content"]/div/strong/a')
+def process_category(data, context, session):
+    prods = data.xpath('//div[@class="plist"]/div[contains(@class, "product plist_element jsArticleElement"]')
     for prod in prods:
-        url = prod.xpath('@href').string().encode("utf-8")
-        name = prod.xpath('span//text()').string().encode("utf-8")
-        session.queue(Request(url), process_product, dict(context, url=url, name=name))
+        prod = prod.xpath('/div[@class="plist_content"]/div[@class="article-content"]/div[@class="plist_details"]/strong[@class="hdl"]')
+        url = prod.xpath('a/@href').string()
+        name = prod.xpath('a/span//text()').string()
+        session.queue(Request(url, force_charset='utf-8', use="curl", options=OPTIONS), process_product, dict(context, url=url, name=name))
     
     next_page = data.xpath('//a[@data-reference="next"]/@href')
     if next_page:
-        next_url = next_page[0].string().encode('utf-8')
-        session.queue(Request(next_url, use="curl", options=OPTIONS, max_age=0), 
-                      process_category2, dict(context))
+        next_url = next_page[0].string()
+        session.queue(Request(next_url, force_charset='utf-8', use="curl", options=OPTIONS), process_category, dict(context))
         
 
 def process_product(data, context, session):
@@ -46,16 +41,15 @@ def process_product(data, context, session):
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
     product.category = context['cat']
-    product.manufacturer = data.xpath('//div[@class="datasheet collapsed"]/table/tbody/tr[@class="odd"]/td[@data-name="value"]//text()').string().encode('utf-8')
     
     sku = data.xpath('//table[@class="keyfacts"]/tr/td[@class="jsArticleNumber"]/@content')
     if sku:
-        sku = sku.string().encode('utf-8')
+        sku = sku.string()
         product.sku = sku
     
     ean = data.xpath('//meta[@itemprop="gtin13"]/@content')
     if ean:
-        ean = ean.string().encode('utf-8')
+        ean = ean.string()
         product.add_property(type='id.ean', value=ean)
     
     context['product'] = product
@@ -70,19 +64,19 @@ def process_reviews(data, context, session):
         review = Review()
         review.type = "user"
         review.url = product.url
-        review.date = rev.xpath('//div[@class="details"]/span')[1].xpath('//text()').string().encode('utf-8')
+        review.date = rev.xpath('//div[@class="details"]/span[not(contains(@class, "author"))]//text()').string()
         
-        author = rev.xpath(".//span[@class='author']//text()").string().encode('utf-8')
+        author = rev.xpath(".//span[@class='author']//text()").string()
         review.authors.append(Person(name=author, ssid=author))
         
         grade_overall = rev.xpath('.//div[@class="star"]/@data-value')
         if grade_overall:
-            grade_overall = grade_overall.string().encode('utf-8')
+            grade_overall = grade_overall.string()
             review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
         
         excerpt = rev.xpath(".//p[@class='text']//text()")
         if excerpt:
-            excerpt = excerpt.string(multiple=True).encode('utf-8')
+            excerpt = excerpt.string(multiple=True)
             review.add_property(type='excerpt', value=excerpt)           
             review.ssid = excerpt
             product.reviews.append(review)
