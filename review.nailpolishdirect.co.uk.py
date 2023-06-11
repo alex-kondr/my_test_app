@@ -3,12 +3,12 @@ from models.products import *
 import simplejson
 
 
-url = 'https://www.nailpolishdirect.co.uk/silicone-nipple-covers-black-reusable-self-adhesive-pack-of-2-p41542'
+# url = 'https://www.nailpolishdirect.co.uk/manicure-pedicure-c1066/nail-hand-treatments-c52/strengthen-breathe-dual-action-base-coat-nail-strengthener-15ml-nox03-p16411'
 
 
 def run(context, session):
-    # session.queue(Request('https://www.nailpolishdirect.co.uk/'), process_frontpage, dict())
-    session.queue(Request(url), process_product, dict(name='test_name', url=url, cat='test_cat'))
+    session.queue(Request('https://www.nailpolishdirect.co.uk/'), process_frontpage, dict())
+    # session.queue(Request(url), process_product, dict(name='test_name', url=url, cat='test_cat'))
     
     
 def process_frontpage(data, context, session):
@@ -53,13 +53,21 @@ def process_product(data, context, session):
     detail_product = data.xpath('//script[@type="application/ld+json"]//text()').string()
     detail_product = simplejson.loads(detail_product)[0]    
     # print('detail_product=', detail_product)
-    print('detail_product_sku=', detail_product['SKU'])
-    print('detail_product_gtin13=', detail_product['gtin13'])
-    print('detail_product_Brand=', detail_product['Brand']['name'])
     
-    product.manufacturer = detail_product['Brand']['name']
-    product.add_property(type='id.ean', value=detail_product['gtin13'])
-    product.sku = detail_product['SKU']
+    manufacturer = detail_product.get('Brand')
+    print('detail_product_Brand=', manufacturer)
+    if manufacturer:
+        manufacturer = manufacturer.get('name')
+        if manufacturer:
+            product.manufacturer = manufacturer
+    gtin13 = detail_product.get('gtin13')
+    print('detail_product_gtin13=', gtin13)
+    if gtin13:
+        product.add_property(type='id.ean', value=gtin13)
+    sku = detail_product.get('SKU')
+    print('detail_product_sku=', sku)
+    if sku:
+        product.sku = sku
     
     context['product'] = product
     
@@ -78,8 +86,9 @@ def process_product(data, context, session):
             review = Review()
             review.type = "user"
             review.url = product.url
-            review.date = rev.xpath('.//li[strong[contains(text(), "Review Date")]]/text()')\
-                .string().replace('-', '').strip()
+            date = rev.xpath('.//li[strong[contains(text(), "Review Date")]]/text()').string()
+            if date:
+                review.date = date.replace('-', '').strip()
             print('review.date=', review.date)
       
             author = rev.xpath('.//div[@class="col l-col-32"]//div[@class="flex"]/div//text()').string()
@@ -152,36 +161,54 @@ def process_reviews(data, context, session):
         if len(grade_overall) > 0:
             review.grades.append(Grade(type='overall', name="Overall Rating", value=len(grade_overall), best=5.0))
             
-        grade_quality = rev.xpath('.//li[@class="cf" and div[contains(text(), "Quality")]]\
-            //i[contains(@class, "ico icon-star") and not(contains(@class, "inactive"))]')
-        print('len(grade_quality)=', len(grade_quality))
-        if len(grade_quality) > 0:
-            review.grades.append(Grade(name="Quality", value=len(grade_quality), best=5.0))
+        grade_quality = rev.xpath('span[text()="Quality"]/following-sibling::text()[1]').string()
+        print('grade_quality=', grade_quality)
+        if grade_quality:
+            grade_quality = int(grade_quality.replace('-', '').strip())
+            if grade_quality >0:
+                review.grades.append(Grade(name="Quality", value=grade_quality, best=5.0))
             
-        grade_ease_of_assembly = rev.xpath('.//li[@class="cf" and div[contains(text(), "Ease of Assembly")]]\
-            //i[contains(@class, "ico icon-star") and not(contains(@class, "inactive"))]')
-        print('len(grade_ease_of_assembly)=', len(grade_ease_of_assembly))
-        if len(grade_ease_of_assembly) > 0:
-            review.grades.append(Grade(name="Ease of Assembly", value=len(grade_ease_of_assembly), best=5.0))
+        grade_ease_of_assembly = rev.xpath('span[text()="Ease of Assembly"]/following-sibling::text()[1]').string()
+        print('grade_ease_of_assembly=', grade_ease_of_assembly)
+        if grade_ease_of_assembly:
+            grade_ease_of_assembly = int(grade_ease_of_assembly.replace('-', '').strip())
+            if grade_ease_of_assembly > 0:
+                review.grades.append(Grade(name="Ease of Assembly", value=grade_ease_of_assembly, best=5.0))
         
-        grade_delivery = rev.xpath('.//li[@class="cf" and div[contains(text(), "Delivery")]]\
-                //i[contains(@class, "ico icon-star") and not(contains(@class, "inactive"))]')
-        print('len(grade_delivery)=', len(grade_delivery))
-        if len(grade_delivery) > 0:
-            review.grades.append(Grade(name="Delivery", value=len(grade_delivery), best=5.0))
+        grade_delivery = rev.xpath('span[text()="Delivery"]/following-sibling::text()[1]').string()
+        print('grade_delivery=', grade_delivery)
+        if grade_delivery:
+            grade_delivery = int(grade_delivery.replace('-', '').strip())
+            if grade_delivery > 0:
+                review.grades.append(Grade(name="Delivery", value=grade_delivery, best=5.0))
             
-        grade_value_for_money = rev.xpath('.//li[@class="cf" and div[contains(text(), "Value for Money")]]\
-                //i[contains(@class, "ico icon-star") and not(contains(@class, "inactive"))]')
-        print('len(grade_value_for_money)=', len(grade_value_for_money))
-        if len(grade_value_for_money) > 0:
-            review.grades.append(Grade(name="Value for Money", value=len(grade_value_for_money), best=5.0))
+        grade_value_for_money = rev.xpath('span[text()="Value for Money"]/following-sibling::text()[1]').string()
+        print('grade_value_for_money=', grade_value_for_money)
+        if grade_value_for_money:
+            grade_value_for_money = int(grade_value_for_money.replace('-', '').strip())
+            if grade_value_for_money > 0:
+                review.grades.append(Grade(name="Value for Money", value=grade_value_for_money, best=5.0))
+            
+        summary = rev.xpath('div[@class="product-reviews__star"]/span[@class="product-reviews__subtitle"]//text()').string()
+        print('summary=', summary)
+        if summary:
+            review.add_property(type='summary', value=summary)
+            review.ssid = summary
+            product.reviews.append(review)
         
-        excerpt = rev.xpath('.//div[@class="row"]/div[@class="col l-col-32"]/p//text()').string()
+        excerpt = rev.xpath('p[@itemprop="reviewBody"]//text()').string()
         print('excerpt=', excerpt)
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
             review.ssid = excerpt
             product.reviews.append(review)
+            
+    next_revs_url = data.xpath('//div[@class="cms-page--reviews__pagination"]\
+        //a[@class="next-page page-arrow page_num ico icon-right"]/@href').string()
+    
+    if next_revs_url:
+        context['product'] = product
+        session.do(Request(next_revs_url), process_reviews, dict(context, revs_url=next_revs_url))
             
     if product.reviews:
         session.emit(product)
