@@ -75,9 +75,11 @@ def process_product(data, context, session):
             review = Review()
             review.type = "user"
             review.url = product.url
+            review.ssid = product.ssid
             
-            is_recommended = revs.xpath('.//li[strong[contains(text(), "Would you recommend this product?")]]/text()').string().lower()
-            if 'yes' in is_recommended:
+            is_recommended = revs.xpath('.//li[strong[contains(text(), "Would you recommend this product?")]]\
+                /text()').string()
+            if is_recommended and ('no' not in is_recommended.lower()):
                 review.properties.append(ReviewProperty(value=True, type='is_recommended'))
             
             date = rev.xpath('.//li[strong[contains(text(), "Review Date")]]/text()').string()            
@@ -85,12 +87,13 @@ def process_product(data, context, session):
                 review.date = date.replace('-', '').strip()
       
             author = rev.xpath('.//div[@class="col l-col-32"]//div[@class="flex"]/div//text()')
-            if author:
-                if len(author) == 1:
-                    review.authors.append(Person(name=author.string().strip(), ssid=author))
-                elif len(author) == 2:
-                    review.authors.append(Person(name=author[0].string().strip(), ssid=author))
-                    review.add_property(type='is_verified_buyer', value=True)
+            if len(author) == 1:
+                author = author.string().strip()
+                review.authors.append(Person(name=author, ssid=author))
+            elif len(author) == 2:
+                author = author[0].string().strip()
+                review.authors.append(Person(name=author, ssid=author))
+                review.add_property(type='is_verified_buyer', value=True)
                     
                 
             grade_overall = rev.xpath('.//li[@class="cf" and div[contains(text(), "Overall Rating")]]\
@@ -121,7 +124,6 @@ def process_product(data, context, session):
             excerpt = rev.xpath('.//div[@class="row"]/div[@class="col l-col-32"]/p//text()').string()
             if excerpt:
                 review.add_property(type='excerpt', value=excerpt)
-                review.ssid = excerpt
                 product.reviews.append(review)
                 
         if product.reviews:
@@ -138,18 +140,21 @@ def process_reviews(data, context, session):
         review = Review()
         review.type = "user"
         review.url = product.url
+        review.ssid = product.ssid
         review.date = dates[i].xpath('@content').string()
         
-        is_recommended = revs.xpath('.//span[contains(text(), "Would you recommend this product?")]\
-            /following-sibling::text()[1]').string().lower()
-        if 'yes' in is_recommended:
+        is_recommended = rev.xpath('.//span[contains(text(), "Would you recommend this product?")]\
+            /following-sibling::text()[1]').string()
+        if is_recommended and ('no' not in is_recommended.lower()):
             review.properties.append(ReviewProperty(value=True, type='is_recommended'))
     
         author = authors[i].xpath('div//text()')
         if len(author) == 1:
-            review.authors.append(Person(name=author.string(), ssid=author))
+            author = author.string().strip()
+            review.authors.append(Person(name=author, ssid=author))
         elif len(author) == 2:
-            review.authors.append(Person(name=author[0].string(), ssid=author))
+            author = author[0].string().strip()
+            review.authors.append(Person(name=author, ssid=author))
             review.add_property(type='is_verified_buyer', value=True)
             
         grade_overall = rev.xpath('div[@class="product-reviews__star"]\
@@ -181,15 +186,19 @@ def process_reviews(data, context, session):
             if grade_value_for_money > 0:
                 review.grades.append(Grade(name="Value for Money", value=grade_value_for_money, best=5.0))
             
-        summary = rev.xpath('div[@class="product-reviews__star"]/span[@class="product-reviews__subtitle"]//text()').string()
-        if summary:
-            review.title = summary
         
         excerpt = rev.xpath('p[@itemprop="reviewBody"]//text()').string()
+        summary = rev.xpath('div[@class="product-reviews__star"]/span[@class="product-reviews__subtitle"]//text()').string()
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
-            
-        product.reviews.append(review)
+            if summary:
+                review.title = summary
+            product.reviews.append(review)          
+        else:
+            excerpt = summary
+            if excerpt:
+                review.add_property(type='excerpt', value=excerpt)
+                product.reviews.append(review)          
             
     next_revs_url = data.xpath('//div[@class="cms-page--reviews__pagination"]\
         //a[@class="next-page page-arrow page_num ico icon-right"]/@href').string()
