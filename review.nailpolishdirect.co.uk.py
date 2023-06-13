@@ -77,7 +77,7 @@ def process_product(data, context, session):
             review.url = product.url
             review.ssid = product.ssid
             
-            is_recommended = revs.xpath('.//li[strong[contains(text(), "Would you recommend this product?")]]\
+            is_recommended = rev.xpath('.//li[strong[contains(text(), "Would you recommend this product?")]]\
                 /text()').string()
             if is_recommended and ('no' not in is_recommended.lower()):
                 review.properties.append(ReviewProperty(value=True, type='is_recommended'))
