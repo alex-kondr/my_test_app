@@ -95,7 +95,7 @@ def process_product(data, context, session):
     
         for grade in grades:
             grade_name = grade.xpath('div//text()').string()                
-            grade = grade.xpath('count(.//i[@class="ico icon-star"])')
+            grade = grade.xpath('count(.//i[not(contains(@class, "inactive icon-star"))])')
             
             if grade > 0:
                 review.grades.append(Grade(name=grade_name, value=grade, best=5.0))
@@ -144,11 +144,11 @@ def process_reviews(data, context, session):
         for grade in grades:
             grade_name = grade.xpath('text()').string()
             
-            if grade_name in ["Product Reviewing?", "Review Title"]:
-                break
-            
             grade = grade.xpath('following-sibling::text()[1]').string().replace('-', '').strip()
-            review.grades.append(Grade(name=grade_name, value=float(grade), best=5.0))          
+            try:
+                review.grades.append(Grade(name=grade_name, value=float(grade), best=5.0))
+            except ValueError:
+                break
         
         excerpt = rev.xpath('p[@itemprop="reviewBody"]//text()').string()
         title = rev.xpath('div[@class="product-reviews__star"]/span[@class="product-reviews__subtitle"]//text()').string()
