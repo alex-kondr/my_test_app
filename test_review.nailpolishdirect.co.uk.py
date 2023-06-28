@@ -6,6 +6,7 @@ from models.products import *
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.browser.use_new_parser = True
     session.queue(Request('https://www.nailpolishdirect.co.uk/'), process_frontpage, dict())
     
     
@@ -21,25 +22,25 @@ def process_frontpage(data, context, session):
             
             
 def process_category(data, context, session):
-    prods = data.xpath("//li[@class='col l-col-8 m-col-third s-col-16']\
-        //div[@class='product__details__title product__details__title--branded']")
+    prods = data.xpath("//div[@class='product__details__title product__details__title--branded']/a")
     for prod in prods:
-        name = prod.xpath("a/@title").string()
-        url = prod.xpath("a/@href").string()
+        name = prod.xpath("@title").string()
+        url = prod.xpath("@href").string()
         session.queue(Request(url), process_product, dict(context, url=url, name=name))    
     
-    nex_page = data.xpath('//div[@class="col l-col-18 m-col-22 text-align-right s-text-align-center"]\
-        //a[@class="next-page page-arrow page_num ico icon-right"]/@href').string()
+    nex_page = data.xpath('//div[@class="col l-col-18 m-col-22 text-align-right s-text-align-center"]//a[@class="next-page page-arrow page_num ico icon-right"]/@href').string()
     
     if nex_page:
-        session.do(Request(nex_page), process_category, dict(context))
+        session.queue(Request(nex_page), process_category, dict(context))
 
 
 def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = product.url.split('-')[-1]
+    ssid = product.url.split('-')[-1]
+    product.ssid = ssid
+    revs_ssid = ssid.replace('p', 'pr')
     product.category = context['cat']
     
     detail_product = data.xpath('//script[@type="application/ld+json"]//text()').string()
@@ -59,160 +60,116 @@ def process_product(data, context, session):
     if sku:
         product.sku = sku
     
-    context['product'] = product
+    revs_url = product.url.replace(ssid, revs_ssid)
     
-    revs_url = data.xpath('//div[@class="product-reviews__review-summary_bottom"]\
-        /span[@class="product-reviews__write-review"]\
-        /a[contains(text(), "Read all")]/@href').string()
+    # revs_url = data.xpath('//div[@class="product-reviews__review-summary_bottom"]/span[@class="product-reviews__write-review"]/a[contains(text(), "Read all")]/@href').string()
     
-    revs = data.xpath('//div[@class="flex flex--fw-wrap"]//div[contains(@class, "product-reviews__ratings")]')
+    # revs = data.xpath('//div[@class="flex flex--fw-wrap"]//div[contains(@class, "product-reviews__ratings")]')
     
-    if revs_url:
-        session.do(Request(revs_url), process_reviews, dict(context, revs_url=revs_url))
+    # if revs_url:
+    session.do(Request(revs_url), process_reviews, dict(product=product, revs_ssid=revs_ssid))
+        # return
         
-    elif revs:
-        for rev in revs:
-            review = Review()
-            review.type = "user"
-            review.url = product.url
-            review.ssid = product.ssid
+    # if not revs:
+    #     return
+    
+    # for rev in revs:
+    #     review = Review()
+    #     review.type = "user"
+    #     review.url = product.url
+    #     review.ssid = product.ssid
+        
+    #     is_recommended = rev.xpath('.//li[strong[contains(text(), "Would you recommend this product?")]]/text()').string()
+    #     if is_recommended and ('no' not in is_recommended.lower()):
+    #         review.properties.append(ReviewProperty(value=True, type='is_recommended'))
+        
+    #     date = rev.xpath('.//li[strong[contains(text(), "Review Date")]]/text()').string()            
+    #     if date:
+    #         review.date = date.replace('-', '').strip()
+    
+    #     author = rev.xpath('.//div[@class="col l-col-32"]//div[@class="flex"]/div//text()').string()            
+    #     if author:
+    #         review.authors.append(Person(name=author, ssid=author))
+        
+    #     verified = rev.xpath('.//div[@class="col l-col-32"]//div[@class="flex"]/div[@class="product-reviews__verified flex"]//text()').string()
+    #     if verified:
+    #         review.add_property(type='is_verified_buyer', value=True)                    
             
-            is_recommended = rev.xpath('.//li[strong[contains(text(), "Would you recommend this product?")]]\
-                /text()').string()
-            if is_recommended and ('no' not in is_recommended.lower()):
-                review.properties.append(ReviewProperty(value=True, type='is_recommended'))
+    #     grades = rev.xpath('.//li[@class="cf"]')
+    
+    #     for grade in grades:
+    #         grade_name = grade.xpath('div//text()').string()                
+    #         grade = grade.xpath('count(.//i[not(contains(@class, "inactive icon-star"))])')
             
-            date = rev.xpath('.//li[strong[contains(text(), "Review Date")]]/text()').string()            
-            if date:
-                review.date = date.replace('-', '').strip()
-      
-            author = rev.xpath('.//div[@class="col l-col-32"]//div[@class="flex"]/div//text()')
-            if len(author) == 1:
-                author = author.string().strip()
-                review.authors.append(Person(name=author, ssid=author))
-            elif len(author) == 2:
-                author = author[0].string().strip()
-                review.authors.append(Person(name=author, ssid=author))
-                review.add_property(type='is_verified_buyer', value=True)
-                    
-                
-            grade_overall = rev.xpath('.//li[@class="cf" and div[contains(text(), "Overall Rating")]]\
-                //i[contains(@class, "ico icon-star") and not(contains(@class, "inactive"))]')
-            if len(grade_overall) > 0:
-                review.grades.append(Grade(type='overall', name="Overall Rating", value=float(len(grade_overall)), best=5.0))
-                
-            grade_quality = rev.xpath('.//li[@class="cf" and div[contains(text(), "Quality")]]\
-                //i[contains(@class, "ico icon-star") and not(contains(@class, "inactive"))]')
-            if len(grade_quality) > 0:
-                review.grades.append(Grade(name="Quality", value=float(len(grade_quality)), best=5.0))
-                
-            grade_ease_of_assembly = rev.xpath('.//li[@class="cf" and div[contains(text(), "Ease of Assembly")]]\
-                //i[contains(@class, "ico icon-star") and not(contains(@class, "inactive"))]')
-            if len(grade_ease_of_assembly) > 0:
-                review.grades.append(Grade(name="Ease of Assembly", value=float(len(grade_ease_of_assembly)), best=5.0))
+    #         if grade > 0:
+    #             review.grades.append(Grade(name=grade_name, value=grade, best=5.0))
+        
+    #     excerpt = rev.xpath('.//div[@class="row"]/div[@class="col l-col-32"]/p//text()').string()
+    #     if excerpt:
+    #         review.add_property(type='excerpt', value=excerpt)
+    #         product.reviews.append(review)
             
-            grade_delivery = rev.xpath('.//li[@class="cf" and div[contains(text(), "Delivery")]]\
-                    //i[contains(@class, "ico icon-star") and not(contains(@class, "inactive"))]')
-            if len(grade_delivery) > 0:
-                review.grades.append(Grade(name="Delivery", value=float(len(grade_delivery)), best=5.0))
-                
-            grade_value_for_money = rev.xpath('.//li[@class="cf" and div[contains(text(), "Value for Money")]]\
-                    //i[contains(@class, "ico icon-star") and not(contains(@class, "inactive"))]')
-            if len(grade_value_for_money) > 0:
-                review.grades.append(Grade(name="Value for Money", value=float(len(grade_value_for_money)), best=5.0))
-            
-            excerpt = rev.xpath('.//div[@class="row"]/div[@class="col l-col-32"]/p//text()').string()
-            if excerpt:
-                review.add_property(type='excerpt', value=excerpt)
-                product.reviews.append(review)
-                
-        if product.reviews:
-            session.emit(product)
+    # if product.reviews:
+    #     session.emit(product)
             
         
 def process_reviews(data, context, session):
     product = context['product']
-    revs = data.xpath('//*[div[@class="product-reviews__ratings"]]')
-    # dates = data.xpath('//meta[@itemprop="datePublished"]')
-    # authors = data.xpath('//div[div[@itemprop="author"]]')
+    revs = data.xpath('//div[@class="product-reviews__ratings"]')
     
-    for i in range(len(revs)):
+    for rev in revs:
         review = Review()
         review.type = "user"
         review.url = product.url
-        review.ssid = product.ssid
+        review.ssid = context['revs_ssid']
         
-        if i == (len(revs) - 1):
-            review.date = data.xpath('//meta[@itemprop="datePublished"][-1]/@content').string()
-        else:
-            review.date = revs[i+1].xpath('text()').string()
-            author = revs[i+1].xpath('.//div[@itemprop="author"]//text()').string()
-            review.authors.append(Person(name=author, ssid=author))
+        title = rev.xpath('div[@class="product-reviews__star"]/span[@class="product-reviews__subtitle"]//text()').string()
+        if title:
+            review.title = title
         
-        is_recommended = rev.xpath('.//span[contains(text(), "Would you recommend this product?")]\
-            /following-sibling::text()[1]').string()
+        date = rev.xpath('.//meta/@content').string()
+        if date:
+            review.date = date
+        
+        is_recommended = rev.xpath('.//span[contains(text(), "Would you recommend this product?")]/following-sibling::text()[1]').string()
         if is_recommended and ('no' not in is_recommended.lower()):
             review.properties.append(ReviewProperty(value=True, type='is_recommended'))
+        else:
+            review.properties.append(ReviewProperty(value=False, type='is_recommended'))
     
-        author = authors[i].xpath('div//text()')
-        if len(author) == 1:
-            author = author.string().strip()
-        elif len(author) == 2:
-            author = author[0].string().strip()
+        author = rev.xpath('.//div[@itemprop="author"]//text()').string()
+        if author:
             review.authors.append(Person(name=author, ssid=author))
+            
+        verified = rev.xpath('.//div[@class="product-review__verified"]//text()').string()
+        if verified:
             review.add_property(type='is_verified_buyer', value=True)
             
-        grade_overall = rev.xpath('div[@class="product-reviews__star"]\
-            /i[contains(@class, "ico icon-star") and not(contains(@class, "inactive"))]')
-        if len(grade_overall) > 0:
-            review.grades.append(Grade(type='overall', name="Overall Rating", value=float(len(grade_overall)), best=5.0))
-            
-        grade_quality = rev.xpath('span[text()="Quality"]/following-sibling::text()[1]').string()
-        if grade_quality:
-            grade_quality = float(grade_quality.replace('-', '').strip())
-            if grade_quality >0:
-                review.grades.append(Grade(name="Quality", value=grade_quality, best=5.0))
-            
-        grade_ease_of_assembly = rev.xpath('span[text()="Ease of Assembly"]/following-sibling::text()[1]').string()
-        if grade_ease_of_assembly:
-            grade_ease_of_assembly = float(grade_ease_of_assembly.replace('-', '').strip())
-            if grade_ease_of_assembly > 0:
-                review.grades.append(Grade(name="Ease of Assembly", value=grade_ease_of_assembly, best=5.0))
+        grade_overall = rev.xpath('count(div[@class="product-reviews__star"]/i[@class="ico icon-star"])')
+        if grade_overall > 0:
+            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+                
+        grades = rev.xpath('span[@class="product-reviews__subtitle"]')
         
-        grade_delivery = rev.xpath('span[text()="Delivery"]/following-sibling::text()[1]').string()
-        if grade_delivery:
-            grade_delivery = float(grade_delivery.replace('-', '').strip())
-            if grade_delivery > 0:
-                review.grades.append(Grade(name="Delivery", value=grade_delivery, best=5.0))
+        for grade in grades:
+            grade_name = grade.xpath('text()').string()
             
-        grade_value_for_money = rev.xpath('span[text()="Value for Money"]/following-sibling::text()[1]').string()
-        if grade_value_for_money:
-            grade_value_for_money = float(grade_value_for_money.replace('-', '').strip())
-            if grade_value_for_money > 0:
-                review.grades.append(Grade(name="Value for Money", value=grade_value_for_money, best=5.0))
-            
+            grade = grade.xpath('following-sibling::text()[1]').string().replace('-', '').strip()
+            try:
+                review.grades.append(Grade(name=grade_name, value=float(grade), best=5.0))
+            except ValueError:
+                break
         
-        excerpt = rev.xpath('p[@itemprop="reviewBody"]//text()').string()
-        summary = rev.xpath('div[@class="product-reviews__star"]/span[@class="product-reviews__subtitle"]//text()').string()
+        excerpt = rev.xpath('p[@itemprop="reviewBody"]//text()').string()        
+        
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
-            if summary:
-                review.title = summary
-            product.reviews.append(review)          
-        else:
-            excerpt = summary
-            if excerpt:
-                review.add_property(type='excerpt', value=excerpt)
-                product.reviews.append(review)          
+            product.reviews.append(review)        
             
-    next_revs_url = data.xpath('//div[@class="cms-page--reviews__pagination"]\
-        //a[@class="next-page page-arrow page_num ico icon-right"]/@href').string()
-    
+    next_revs_url = data.xpath('//div[@class="cms-page--reviews__pagination"]//a[@title="next"]/@href').string()
     if next_revs_url:
-        context['product'] = product
-        session.do(Request(next_revs_url), process_reviews, dict(context, revs_url=next_revs_url))
-            
-    if product.reviews:
+        session.do(Request(next_revs_url), process_reviews, dict(product=product, revs_url=next_revs_url))
+         
+    elif product.reviews:
         session.emit(product)
-    
     

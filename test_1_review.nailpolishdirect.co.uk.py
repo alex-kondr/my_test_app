@@ -4,6 +4,10 @@ from agent import *
 from models.products import *
 
 
+XCAT = ['Collections', 'Brands', 'Be Kind']
+XSUBCAT = ['Shop by Colour', 'Shop by Brand', None]
+
+
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.browser.use_new_parser = True
@@ -14,11 +18,22 @@ def process_frontpage(data, context, session):
     cats1 = data.xpath("//ul[@class='site-header__nav__285 site-header__nav__menu no-bullet']/li[contains(@class, 'drop-down')]")
     for cat1 in cats1:
         name1 = cat1.xpath("a//text()").string()
-        cats2 = cat1.xpath(".//a[contains(@class, 'top_level_link')]")
+        
+        if name1 in XCAT:
+            continue
+        
+        cats2 = cat1.xpath('.//ul[contains(@class, "drop-down__menu__")]')
         for cat2 in cats2:
-            name2 = cat2.xpath("span//text()").string()
-            url = cat2.xpath("@href").string()
-            session.queue(Request(url), process_category, dict(cat=name1+"|"+name2))
+            name2 = cat2.xpath('li[@class="drop-down__title"]/span//text()').string()
+            
+            if name2 in XSUBCAT:
+                continue        
+        
+            cats3 = cat2.xpath(".//a[@class='top_level_link']")
+            for cat3 in cats3:
+                name3 = cat3.xpath("span//text()").string()
+                url = cat3.xpath("@href").string()
+                session.queue(Request(url), process_category, dict(cat=name1+"|"+name3))
             
             
 def process_category(data, context, session):
@@ -38,8 +53,12 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = product.url.split('-')[-1]
     product.category = context['cat']
+    
+    ssid = product.url.split('-')[-1]
+    product.ssid = ssid
+    
+    revs_ssid = ssid.replace('p', 'pr')
     
     detail_product = data.xpath('//script[@type="application/ld+json"]//text()').string()
     detail_product = simplejson.loads(detail_product)[0]
@@ -58,56 +77,9 @@ def process_product(data, context, session):
     if sku:
         product.sku = sku
     
-    revs_url = data.xpath('//div[@class="product-reviews__review-summary_bottom"]/span[@class="product-reviews__write-review"]/a[contains(text(), "Read all")]/@href').string()
-    
-    revs = data.xpath('//div[@class="flex flex--fw-wrap"]//div[contains(@class, "product-reviews__ratings")]')
-    
-    if revs_url:
-        session.do(Request(revs_url), process_reviews, dict(product=product, revs_url=revs_url))
-        return
-        
-    if not revs:
-        return
-    
-    for rev in revs:
-        review = Review()
-        review.type = "user"
-        review.url = product.url
-        review.ssid = product.ssid
-        
-        is_recommended = rev.xpath('.//li[strong[contains(text(), "Would you recommend this product?")]]/text()').string()
-        if is_recommended and ('no' not in is_recommended.lower()):
-            review.properties.append(ReviewProperty(value=True, type='is_recommended'))
-        
-        date = rev.xpath('.//li[strong[contains(text(), "Review Date")]]/text()').string()            
-        if date:
-            review.date = date.replace('-', '').strip()
-    
-        author = rev.xpath('.//div[@class="col l-col-32"]//div[@class="flex"]/div//text()').string()            
-        if author:
-            review.authors.append(Person(name=author, ssid=author))
-        
-        verified = rev.xpath('.//div[@class="col l-col-32"]//div[@class="flex"]/div[@class="product-reviews__verified flex"]//text()').string()
-        if verified:
-            review.add_property(type='is_verified_buyer', value=True)                    
-            
-        grades = rev.xpath('.//li[@class="cf"]')
-    
-        for grade in grades:
-            grade_name = grade.xpath('div//text()').string()                
-            grade = grade.xpath('count(.//i[not(contains(@class, "inactive icon-star"))])')
-            
-            if grade > 0:
-                review.grades.append(Grade(name=grade_name, value=grade, best=5.0))
-        
-        excerpt = rev.xpath('.//div[@class="row"]/div[@class="col l-col-32"]/p//text()').string()
-        if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
-            product.reviews.append(review)
-            
-    if product.reviews:
-        session.emit(product)
-            
+    revs_url = product.url.replace(ssid, revs_ssid)
+    session.do(Request(revs_url), process_reviews, dict(product=product, revs_ssid=revs_ssid, revs_url=revs_url))
+             
         
 def process_reviews(data, context, session):
     product = context['product']
@@ -116,8 +88,12 @@ def process_reviews(data, context, session):
     for rev in revs:
         review = Review()
         review.type = "user"
-        review.url = product.url
-        review.ssid = product.ssid
+        review.url = context['revs_url']
+        review.ssid = context['revs_ssid']
+        
+        title = rev.xpath('div[@class="product-reviews__star"]/span[@class="product-reviews__subtitle"]//text()').string()
+        if title:
+            review.title = title
         
         date = rev.xpath('.//meta/@content').string()
         if date:
@@ -126,6 +102,8 @@ def process_reviews(data, context, session):
         is_recommended = rev.xpath('.//span[contains(text(), "Would you recommend this product?")]/following-sibling::text()[1]').string()
         if is_recommended and ('no' not in is_recommended.lower()):
             review.properties.append(ReviewProperty(value=True, type='is_recommended'))
+        elif is_recommended and ('no' in is_recommended.lower()):
+            review.properties.append(ReviewProperty(value=False, type='is_recommended'))
     
         author = rev.xpath('.//div[@itemprop="author"]//text()').string()
         if author:
@@ -146,17 +124,15 @@ def process_reviews(data, context, session):
             
             grade = grade.xpath('following-sibling::text()[1]').string().replace('-', '').strip()
             try:
-                review.grades.append(Grade(name=grade_name, value=float(grade), best=5.0))
+                if 0 < float(grade) <= 5:
+                    review.grades.append(Grade(name=grade_name, value=float(grade), best=5.0))
             except ValueError:
                 break
         
-        excerpt = rev.xpath('p[@itemprop="reviewBody"]//text()').string()
-        title = rev.xpath('div[@class="product-reviews__star"]/span[@class="product-reviews__subtitle"]//text()').string()
+        excerpt = rev.xpath('p[@itemprop="reviewBody"]//text()').string()        
         
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
-            if title:
-                review.title = title
             product.reviews.append(review)        
             
     next_revs_url = data.xpath('//div[@class="cms-page--reviews__pagination"]//a[@title="next"]/@href').string()
