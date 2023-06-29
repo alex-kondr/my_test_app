@@ -63,6 +63,10 @@ def process_product(data, context, session):
     detail_product = data.xpath('//script[@type="application/ld+json"]//text()').string()
     detail_product = simplejson.loads(detail_product)[0]
     
+    rev_count = detail_product.get('aggregateRating')
+    if not rev_count:
+        return
+    
     manufacturer = detail_product.get('Brand')    
     if manufacturer:
         manufacturer = manufacturer.get('name')
@@ -78,7 +82,7 @@ def process_product(data, context, session):
         product.sku = sku
     
     revs_url = product.url.replace(ssid, revs_ssid)
-    session.do(Request(revs_url), process_reviews, dict(product=product, revs_ssid=revs_ssid, revs_url=revs_url))
+    session.queue(Request(revs_url), process_reviews, dict(product=product, revs_ssid=revs_ssid, revs_url=revs_url))
              
         
 def process_reviews(data, context, session):
@@ -133,11 +137,11 @@ def process_reviews(data, context, session):
         
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
-            product.reviews.append(review)        
+            product.reviews.append(review)
             
     next_revs_url = data.xpath('//div[@class="cms-page--reviews__pagination"]//a[@title="next"]/@href').string()
     if next_revs_url:
-        session.do(Request(next_revs_url), process_reviews, dict(product=product, revs_url=next_revs_url))
+        session.queue(Request(next_revs_url), process_reviews, dict(context, product=product, revs_url=next_revs_url))
          
     elif product.reviews:
         session.emit(product)
