@@ -5,7 +5,7 @@ from models.products import *
 
 
 XCAT = ['Collections', 'Brands', 'Be Kind']
-XSUBCAT = ['Shop by Colour', 'Shop by Brand', None]
+XSUBCAT = ['Shop by Colour', 'Shop by Brand', 'Gifts']
 
 
 def run(context, session):
@@ -15,25 +15,24 @@ def run(context, session):
     
     
 def process_frontpage(data, context, session):
-    cats1 = data.xpath("//ul[@class='site-header__nav__285 site-header__nav__menu no-bullet']/li[contains(@class, 'drop-down')]")
-    for cat1 in cats1:
-        name1 = cat1.xpath("a//text()").string()
+    cats = data.xpath("//ul[@class='site-header__nav__285 site-header__nav__menu no-bullet']/li[contains(@class, 'drop-down')]")
+    for cat in cats:
+        name = cat.xpath("a//text()").string()
         
-        if name1 in XCAT:
-            continue
+        if name not in XCAT:
         
-        cats2 = cat1.xpath('.//ul[contains(@class, "drop-down__menu__")]')
-        for cat2 in cats2:
-            name2 = cat2.xpath('li[@class="drop-down__title"]/span//text()').string()
+            cats1 = cat.xpath('.//ul[contains(@class, "drop-down__menu__")]')
+            for cat1 in cats1:
+                name1 = cat1.xpath('li[@class="drop-down__title"]/span//text()').string()
+                name1 = name1 if name1 else ''
+                
+                if name1 not in XSUBCAT:
             
-            if name2 in XSUBCAT:
-                continue        
-        
-            cats3 = cat2.xpath(".//a[@class='top_level_link']")
-            for cat3 in cats3:
-                name3 = cat3.xpath("span//text()").string()
-                url = cat3.xpath("@href").string()
-                session.queue(Request(url), process_category, dict(cat=name1+"|"+name3))
+                    subcats = cat1.xpath(".//a[@class='top_level_link']")
+                    for subcat in subcats:
+                        subcat_name = subcat.xpath("span//text()").string()                        
+                        url = subcat.xpath("@href").string()
+                        session.queue(Request(url), process_category, dict(cat=name+"|"+name1+"|"+subcat_name))
             
             
 def process_category(data, context, session):
@@ -43,7 +42,7 @@ def process_category(data, context, session):
         url = prod.xpath("@href").string()
         session.queue(Request(url), process_product, dict(context, url=url, name=name))    
     
-    nex_page = data.xpath('//div[@class="col l-col-18 m-col-22 text-align-right s-text-align-center"]//a[@class="next-page page-arrow page_num ico icon-right"]/@href').string()
+    nex_page = data.xpath('//link[@rel="next"]/@href').string()
     
     if nex_page:
         session.queue(Request(nex_page), process_category, dict(context))
@@ -60,29 +59,25 @@ def process_product(data, context, session):
     
     revs_ssid = ssid.replace('p', 'pr')
     
-    detail_product = data.xpath('//script[@type="application/ld+json"]//text()').string()
-    detail_product = simplejson.loads(detail_product)[0]
+    prod_json = simplejson.loads(data.xpath('//script[@type="application/ld+json"]//text()').string())
     
-    rev_count = detail_product.get('aggregateRating')
-    if not rev_count:
-        return
+    rev_count = prod_json[0].get('aggregateRating', {}).get('reviewCount', 0)
+    if rev_count > 0:
     
-    manufacturer = detail_product.get('Brand')    
-    if manufacturer:
-        manufacturer = manufacturer.get('name')
+        manufacturer = prod_json[0].get('Brand', {}).get('name') 
         if manufacturer:
             product.manufacturer = manufacturer
+                
+        gtin13 = prod_json[0].get('gtin13')    
+        if gtin13:
+            product.add_property(type='id.ean', value=gtin13)
             
-    gtin13 = detail_product.get('gtin13')    
-    if gtin13:
-        product.add_property(type='id.ean', value=gtin13)
+        sku = prod_json[0].get('SKU')    
+        if sku:
+            product.sku = sku
         
-    sku = detail_product.get('SKU')    
-    if sku:
-        product.sku = sku
-    
-    revs_url = product.url.replace(ssid, revs_ssid)
-    session.queue(Request(revs_url), process_reviews, dict(product=product, revs_ssid=revs_ssid, revs_url=revs_url))
+        revs_url = product.url.replace(ssid, revs_ssid)
+        session.queue(Request(revs_url), process_reviews, dict(product=product, revs_ssid=revs_ssid, revs_url=revs_url))
              
         
 def process_reviews(data, context, session):
@@ -95,13 +90,9 @@ def process_reviews(data, context, session):
         review.url = context['revs_url']
         review.ssid = context['revs_ssid']
         
-        title = rev.xpath('div[@class="product-reviews__star"]/span[@class="product-reviews__subtitle"]//text()').string()
-        if title:
-            review.title = title
+        review.title = rev.xpath('div[@class="product-reviews__star"]/span[@class="product-reviews__subtitle"]//text()').string()
         
-        date = rev.xpath('.//meta/@content').string()
-        if date:
-            review.date = date
+        review.date = rev.xpath('.//meta/@content').string()
         
         is_recommended = rev.xpath('.//span[contains(text(), "Would you recommend this product?")]/following-sibling::text()[1]').string()
         if is_recommended and ('no' not in is_recommended.lower()):
@@ -117,7 +108,7 @@ def process_reviews(data, context, session):
         if verified:
             review.add_property(type='is_verified_buyer', value=True)
             
-        grade_overall = rev.xpath('count(div[@class="product-reviews__star"]/i[@class="ico icon-star"])')
+        grade_overall = rev.xpath('count(.//i[@class="ico icon-star"])')
         if grade_overall > 0:
             review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
                 
