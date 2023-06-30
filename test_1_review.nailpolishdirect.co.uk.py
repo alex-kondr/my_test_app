@@ -24,9 +24,8 @@ def process_frontpage(data, context, session):
             cats1 = cat.xpath('.//ul[contains(@class, "drop-down__menu__")]')
             for cat1 in cats1:
                 name1 = cat1.xpath('li[@class="drop-down__title"]/span//text()').string()
-                name1 = name1 if name1 else ''
                 
-                if name1 not in XSUBCAT:
+                if name1 and name1 not in XCAT:
             
                     subcats = cat1.xpath(".//a[@class='top_level_link']")
                     for subcat in subcats:
@@ -59,23 +58,20 @@ def process_product(data, context, session):
     
     revs_ssid = ssid.replace('p', 'pr')
     
-    prod_json = simplejson.loads(data.xpath('//script[@type="application/ld+json"]//text()').string())
+    prod_json = simplejson.loads(data.xpath('//script[@type="application/ld+json"]//text()').string())    
     
-    rev_count = prod_json[0].get('aggregateRating', {}).get('reviewCount', 0)
-    if rev_count > 0:
+    product.manufacturer = prod_json[0].get('Brand', {}).get('name') 
     
-        manufacturer = prod_json[0].get('Brand', {}).get('name') 
-        if manufacturer:
-            product.manufacturer = manufacturer
-                
-        gtin13 = prod_json[0].get('gtin13')    
-        if gtin13:
-            product.add_property(type='id.ean', value=gtin13)
-            
-        sku = prod_json[0].get('SKU')    
-        if sku:
-            product.sku = sku
+    gtin13 = prod_json[0].get('gtin13')    
+    if gtin13:
+        product.add_property(type='id.ean', value=gtin13)
         
+    sku = prod_json[0].get('SKU')    
+    if sku:
+        product.sku = sku
+        
+    rev_count = prod_json[0].get('aggregateRating', {}).get('reviewCount')
+    if rev_count and int(rev_count) > 0:
         revs_url = product.url.replace(ssid, revs_ssid)
         session.queue(Request(revs_url), process_reviews, dict(product=product, revs_ssid=revs_ssid, revs_url=revs_url))
              
