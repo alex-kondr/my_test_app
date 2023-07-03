@@ -65,7 +65,7 @@ def process_product(data, context, session):
     revs_ssid = product.ssid.replace('p', 'pr')
     revs_count = prod_json[0].get('aggregateRating', {}).get('reviewCount')
     if revs_count and int(revs_count) > 0:
-        revs_url = product.url.replace(ssid, revs_ssid)
+        revs_url = product.url.replace(product.ssid, revs_ssid)
         session.queue(Request(revs_url), process_reviews, dict(product=product, revs_url=revs_url))
 
 
