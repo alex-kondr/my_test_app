@@ -102,13 +102,12 @@ def process_reviews(data, context, session):
         for grade in grades:
             grade_name = grade.xpath('text()').string()
             
-            if 'overall' not in grade_name.lower():
-                grade = grade.xpath('following-sibling::text()[1]').string().replace('-', '').strip()
-                try:
-                    if 0 < float(grade) <= 5:
-                        review.grades.append(Grade(name=grade_name, value=float(grade), best=5.0))
-                except ValueError:
-                    break
+            grade = grade.xpath('following-sibling::text()[1]').string().replace('-', '').strip()
+            try:
+                if 0 < float(grade) <= 5 and 'overall' not in grade_name.lower():
+                    review.grades.append(Grade(name=grade_name, value=float(grade), best=5.0))
+            except ValueError:
+                break
 
         excerpt = rev.xpath('p[@itemprop="reviewBody"]//text()').string()
         if excerpt:
