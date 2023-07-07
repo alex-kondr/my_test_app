@@ -50,7 +50,7 @@ def process_product(data, context, session):
 
     # SKU - product.sku
     # EAN / GTIN - product.add_property(type='id.ean', value=ean)
-    # MPN - product.add_property(type='id.manufacturer', value=ean)
+    # MPN - product.add_property(type='id.manufacturer', value=mpn)
 
     ean = data.xpath("//strong[@itemprop='gtin13']//text()").string() # None
     if ean:
