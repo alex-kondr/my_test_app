@@ -17,6 +17,8 @@ def process_frontpage(data, context, session):
         cats2 = cat1.xpath('.//div[@class="col flex flex-column"]')
         for cat2 in cats2:
             name2 = cat2.xpath('.//a[@class="title"]//text()').string()
+            url = cat2.xpath('.//a[@class="title"]/@href').string()
+            session.queue(Request(url), process_category, dict(cat=name1+"|"+name2))
         
             cats3 = cat2.xpath('.//a[@class="subtitle"]')
             for cat3 in cats3:

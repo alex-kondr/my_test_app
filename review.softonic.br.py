@@ -32,7 +32,7 @@ def process_category(data, context, session):
     current_page_number = int(context['url'].split('/')[-1])
     next_page_number = current_page_number + 1
     if str(next_page_number) in page_numbers:
-        next_url = context['url'].replace(str(current_page_number), str(next_page_number))
+        next_url = context['url'].replace('/' + str(current_page_number), '/' + str(next_page_number))
         session.queue(Request(next_url), process_category, dict(context, url=next_url))
         
         
@@ -77,7 +77,7 @@ def process_product(data, context, session):
         review.ssid = review.digest() if author else review.digest(excerpt)
         product.reviews.append(review)
         session.emit(product)
-    
+
     # revs = data.xpath('//ul[@class="row list-users-comments"]')
     # if revs:
     #     revs_url = context['url'] + '/comentarios-participantes'
