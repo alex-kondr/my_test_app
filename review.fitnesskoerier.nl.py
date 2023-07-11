@@ -5,7 +5,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.fitnesskoerier.nl'), process_frontpage, dict())
 
 
@@ -61,39 +61,43 @@ def process_product(data, context, session):
     if sku:
         product.sku = sku
 
-    revs_count = prod_json[2].get('aggregateRating', {}).get('reviewCount')
-    if revs_count and int(revs_count) > 0:
-        revs = prod_json[2].get('review', {})
+    revs_count = prod_json[2].get('aggregateRating', {}).get('reviewCount')    
+    if not revs_count and int(revs_count) <= 0: 
+        return
         
-        for rev in revs:
-            review = Review()
-            review.type = "user"
-            review.url = product.url
-            review.date = rev.get('datePublished')
+    revs = prod_json[2].get('review', {})
+    
+    for rev in revs:
+        review = Review()
+        review.type = "user"
+        review.url = product.url
+        review.date = rev.get('datePublished')
 
-            author = rev.get('author', {}).get('name').split('[')[0]
-            if author:
-                review.authors.append(Person(name=author, ssid=author))
+        author = rev.get('author', {}).get('name')
+        if author:
+            author = author.split('[')[0]
+            review.authors.append(Person(name=author, ssid=author))
 
-            pros_cons = rev.get('author', {}).get('name', '').split('[')
-            if len(pros_cons) > 1:
-                pros_cons = pros_cons[1].replace('&quot;', '').replace('[', '').replace(']', '').replace('{', '').replace('}', '').split(',')
-                for pro_con in pros_cons:
-                    if 'plus' in pro_con:
-                        review.add_property(type='pros', value=pro_con.split(':')[1])
-                    elif 'minus' in pro_con:
-                        review.add_property(type='cons', value=pro_con.split(':')[1])
-                        
-            grade_overall = rev.get('reviewRating', {}).get('ratingValue')
-            if grade_overall and grade_overall > 0:
-                review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+        pros_cons = rev.get('author', {}).get('name', '').split('[')
+        if len(pros_cons) > 1:
+            pros_cons = pros_cons[1].replace('&quot;', '').replace('[', '').replace(']', '').replace('{', '').replace('}', '').split(',')
+            for pro_con in pros_cons:
+                if 'plus' in pro_con:
+                    review.add_property(type='pros', value=pro_con.split(':')[1])
+                elif 'minus' in pro_con:
+                    review.add_property(type='cons', value=pro_con.split(':')[1])
+                    
+        grade_overall = rev.get('reviewRating', {}).get('ratingValue')
+        if grade_overall and grade_overall > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-            excerpt = rev.get('description')
-            if excerpt:
-                review.add_property(type='excerpt', value=excerpt.replace(' <br />', ''))
-                review.ssid = review.digest() if author else review.digest(excerpt)
-                product.reviews.append(review)
+        excerpt = rev.get('description')
+        if excerpt:
+            excerpt = excerpt.replace(' <br />', '').replace('&#039;&#039;', '"')
+            review.add_property(type='excerpt', value=excerpt)
+            review.ssid = review.digest() if author else review.digest(excerpt)
+            product.reviews.append(review)
 
-        if product.reviews:
-            session.emit(product)
+    if product.reviews:
+        session.emit(product)
             
