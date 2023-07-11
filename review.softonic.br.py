@@ -10,11 +10,12 @@ def run(context, session):
 
 
 def process_frontpage(data, context, session):
-    cats = data.xpath('//ul[@class="menu-categories__list"]/li')
+    '//li[.//span[contains(text(), "Apps")]]//li'
+    cats = data.xpath('//ul[@class="kksNd_"]/li')
     for cat in cats:
-        name = cat.xpath('button[@class="menu-categories__link js-toggle"]/span//text()').string()
+        name = cat.xpath('span//text()').string()
 
-        subcats = cat.xpath('.//li[not(.//div)]/a')
+        subcats = cat.xpath('.//a[@class="TaojYW PAHq9E js-menu-categories-item"]')
         for subcat in subcats:
             subcat_name = subcat.xpath("text()").string()
             url = subcat.xpath('@href').string() + ':data/1'
@@ -67,9 +68,9 @@ def process_product(data, context, session):
         if con:
             review.add_property(type='cons', value=con)
             
-    grade_overall = prod_json.get('aggregateRating', {}).get('ratingValue')
+    grade_overall = data.xpath('//li[@class="app-header__item app-header__item--double"]//p/text()').string()
     if grade_overall and grade_overall > 0:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
             
     excerpt = prod_json.get('review', {}).get('reviewBody')
     if excerpt:
@@ -77,35 +78,3 @@ def process_product(data, context, session):
         review.ssid = review.digest() if author else review.digest(excerpt)
         product.reviews.append(review)
         session.emit(product)
-
-    # revs = data.xpath('//ul[@class="row list-users-comments"]')
-    # if revs:
-    #     revs_url = context['url'] + '/comentarios-participantes'
-    #     session.queue(Request(revs_url), process_reviews, dict(product=product))
-        
-        
-# def process_reviews(data, context, session):
-#     product = context['product']
-
-#     revs = data.xpath('//ul[@class="post-list top-bar"]/li[@class="post"]')
-#     for rev in revs:
-#         review = Review()
-#         review.type = "user"
-#         review.url = product.url
-
-#         author = rev.xpath('.//span[@class="author publisher-anchor-color"]//text()').string()
-#         if author:
-#             review.authors.append(Person(name=author, ssid=author))        
-
-#         excerpt = rev.xpath('.//div[@class="post-message"]//text()').string()
-#         if excerpt:
-#             review.add_property(type='excerpt', value=excerpt)
-#             review.ssid = review.digest() if author else review.digest(excerpt)
-#             product.reviews.append(review)
-
-#     # next_url = data.xpath('//div[@class="cms-page--reviews__pagination"]//a[@title="next"]/@href').string()
-#     # if next_url:
-#     #     session.queue(Request(next_url), process_reviews, dict(context, product=product))
-
-#     if product.reviews:
-#         session.emit(product)

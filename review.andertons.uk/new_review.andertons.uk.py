@@ -32,72 +32,72 @@ def process_frontpage(data, context, session):
                 session.queue(Request(url), process_category, dict(cat=cat1_name+'|'+cat2_name+'|'+cat3_name))
 
 
-# def process_category(data, context, session):
-#     prods = data.xpath('//div[@class="c-product-grid"]//div[@class="o-tile"]')
-#     for prod in prods:
-#         name = prod.xpath('.//div[@class="o-tile__row o-tile__title no-border"]/h4/text()').string()
-#         url = prod.xpath('.//a[@class="o-tile__link"]/@href').string()
+def process_category(data, context, session):
+    prods = data.xpath('//div[@class="c-product-grid"]//div[@class="o-tile"]')
+    for prod in prods:
+        name = prod.xpath('.//div[contains(@class, "o-tile__row o-tile__title")]/h4/text()').string()
+        url = prod.xpath('.//a[@class="o-tile__link"]/@href').string()
 
-#         revs = prod.xpath('.//div[@class="o-tile__row o-tile__reviews"]')
-#         if revs:
-#             session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        revs = prod.xpath('.//div[@class="o-tile__row o-tile__reviews"]')
+        if revs:
+            session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
-#     next= data.xpath("(//li[@class='o-pagination__item is-active'])[1]/following-sibling::li[1]/a/text()")
-#     if next and next.string()!="Next":
-#         if not "?pageNumber=" in data.response_url:
-#             next_page = data.response_url+"?pageNumber="+next.string()
-#         else:
-#             next_page = data.response_url.split("?pageNumber=")[0]+"?pageNumber="+next.string()
+    next= data.xpath("(//li[@class='o-pagination__item is-active'])[1]/following-sibling::li[1]/a/text()")
+    if next and next.string()!="Next":
+        if not "?pageNumber=" in data.response_url:
+            next_page = data.response_url+"?pageNumber="+next.string()
+        else:
+            next_page = data.response_url.split("?pageNumber=")[0]+"?pageNumber="+next.string()
 
-#         if next_page:
-#             session.queue(Request(next_page), process_prodlist, dict(context))
+        if next_page:
+            session.queue(Request(next_page), process_category, dict(context))
 
 
-# def process_product(data, context, session):
-#     product = Product()
-#     product.name = context['name']
-#     product.url = context['url']
-#     product.category = context['cat']
+def process_product(data, context, session):
+    product = Product()
+    product.name = context['name']
+    product.url = context['url']
+    product.category = context['cat']
 
-#     sku = data.xpath('//p[@class="o-part-number" and contains(text(), "SKU:")]/text()').string()
-#     if sku:
-#         product.sku = sku.replace('SKU:', '').strip()
-#         product.ssid = product.sku
-#     else:
-#         product.ssid = product.url.split('/')[-1]
+    sku = data.xpath('//p[@class="o-part-number" and contains(text(), "SKU:")]/text()').string()
+    if sku:
+        product.sku = sku.replace('SKU:', '').strip()
+        product.ssid = product.sku
+    else:
+        product.ssid = product.url.split('/')[-1]
 
-#     revs = data.xpath('//div[@class="o-customer-review"]')
-#     for rev in revs:
-#         review = Review()
-#         review.url = product.url
-#         review.type = 'user'
-#         review.date = rev.xpath('.//div[@class="o-customer-review__info"]//span[contains(@class, "review__date")]/text()').string()
+    revs = data.xpath('//div[@class="o-customer-review"]')
+    for rev in revs:
+        review = Review()
+        review.url = product.url
+        review.type = 'user'
+        review.date = rev.xpath('.//span[@class="o-customer-review__date"]/text()').string()
 
-#         author_name = rev.xpath('.//div[@class="o-customer-review__info"]/p[@class="o-customer-review__name"]/span[not(@class)]/text()').string()
-#         if author_name:
-#             review.authors.append(Person(name=author_name, ssid=author_name))
+        author_name = rev.xpath('.//p[@class="o-customer-review__name"]/span/text()').string()
+        if author_name:
+            review.authors.append(Person(name=author_name, ssid=author_name))
 
-#         grade_overall = rev.xpath('.//div[@class="o-review-stars"]/@title').string()
-#         if grade_overall:
-#             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+        grade_overall = rev.xpath('.//div[@class="o-review-stars"]/@title').string()
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-#         grades = rev.xpath('.//p[@class="o-customer-review__rating"]/span')
-#         if grades:
-#             for grade in grades:
-#                 name_value = grade.xpath("text()").string()
-#                 if name_value:
-#                    name = name_value.split(" ")[0]
-#                    value = float(name_value.split(" ")[1])
-#                    review.grades.append(Grade(name=name, value=value, best=5.0))
-#                 else:
-#                     continue
+        grades = rev.xpath('.//p[@class="o-customer-review__rating"]/span')
+        if grades:
+            for grade in grades:
+                name_value = grade.xpath("text()").string()
+                if name_value:
+                   name = name_value.split(" ")[0]
+                   value = float(name_value.split(" ")[1])
+                   review.grades.append(Grade(name=name, value=value, best=5.0))
+                else:
+                    continue
 
-#         excerpt = rev.xpath('text()').string()
-#         if excerpt:
-#             review.add_property(type='excerpt', value=excerpt)
+        excerpt = rev.xpath('text()').string()
+        if excerpt:
+            review.add_property(type='excerpt', value=excerpt)
 
-#             review.ssid = review.digest()
-#             product.reviews.append(review)
+            review.ssid = review.digest()
+            product.reviews.append(review)
 
-#     if product.reviews:
-#         session.emit(product)
+    if product.reviews:
+        session.emit(product)
