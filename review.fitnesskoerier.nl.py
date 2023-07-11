@@ -61,12 +61,11 @@ def process_product(data, context, session):
     if sku:
         product.sku = sku
 
-    revs_count = prod_json[2].get('aggregateRating', {}).get('reviewCount')    
-    if not revs_count or int(revs_count) <= 0: 
+    revs_count = prod_json[2].get('aggregateRating', {}).get('reviewCount', 0)
+    if int(revs_count) == 0: 
         return
         
-    revs = prod_json[2].get('review', {})
-    
+    revs = prod_json[2].get('review', {})    
     for rev in revs:
         review = Review()
         review.type = "user"
