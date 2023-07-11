@@ -62,7 +62,7 @@ def process_product(data, context, session):
         product.sku = sku
 
     revs_count = prod_json[2].get('aggregateRating', {}).get('reviewCount')    
-    if not revs_count and int(revs_count) <= 0: 
+    if not revs_count or int(revs_count) <= 0: 
         return
         
     revs = prod_json[2].get('review', {})
