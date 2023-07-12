@@ -3,6 +3,7 @@ from models.products import *
 
 
 XCAT = ["Offers", "Brands", "Customer Service", "Corporate Info"]
+PAGE = '?pageNumber='
 
 
 def run(context, session):
@@ -11,26 +12,35 @@ def run(context, session):
 
 
 def process_frontpage(data, context, session):
+    page_num = '1'
     cats1 = data.xpath("//div[@class='dtb-sitemap__segment-content']")
     for cat1 in cats1:
         cat1_name = cat1.xpath('.//a[@aria-level="2"]/text()').string()
         if cat1_name in XCAT:
             continue
-        url = cat1.xpath('.//a[@aria-level="2"]/@href').string()
+        
         cats2 = cat1.xpath('.//li[@class="h2 dtb-sitemap__segment-subtitle"]')
-        if not cats2:
-            session.queue(Request(url), process_category, dict(cat=cat1_name))
-        for cat2 in cats2:
-            cat2_name = cat2.xpath('a[@aria-level="3"]/text()').string()
-            url = cat2.xpath('a[@aria-level="3"]/@href').string()
-            cats3 = cat2.xpath('.//li[@class="h3"]/a')
-            if not cats3:
-                session.queue(Request(url), process_category, dict(cat=cat1_name+'|'+cat2_name))
-            for cat3 in cats3:
-                cat3_name = cat3.xpath("text()").string()
-                url = cat3.xpath("@href").string()
-                session.queue(Request(url), process_category, dict(cat=cat1_name+'|'+cat2_name+'|'+cat3_name))
-
+        if cats2:
+            for cat2 in cats2:
+                cat2_name = cat2.xpath('a[@aria-level="3"]/text()').string()
+                
+                cats3 = cat2.xpath('.//li[@class="h3"]/a')
+                if cats3:
+                    for cat3 in cats3:
+                        cat3_name = cat3.xpath("text()").string()
+                        url = cat3.xpath("@href").string()
+                        if url:
+                            session.queue(Request(url + PAGE + page_num), process_category, dict(cat=cat1_name+'|'+cat2_name+'|'+cat3_name, page_num=page_num))
+                else:
+                    url = cat2.xpath('a[@aria-level="3"]/@href').string()
+                    if url:
+                        session.queue(Request(url + PAGE + page_num), process_category, dict(cat=cat1_name+'|'+cat2_name, page_num=page_num))
+                
+        else:
+            url = cat1.xpath('.//a[@aria-level="2"]/@href').string()
+            if url:
+                session.queue(Request(url + PAGE + page_num), process_category, dict(cat=cat1_name, page_num=page_num))
+        
 
 def process_category(data, context, session):
     prods = data.xpath('//div[@class="c-product-grid"]//div[@class="o-tile"]')
@@ -41,30 +51,24 @@ def process_category(data, context, session):
         revs = prod.xpath('.//div[@class="o-tile__row o-tile__reviews"]')
         if revs:
             session.queue(Request(url), process_product, dict(context, name=name, url=url))
-
-    next= data.xpath("(//li[@class='o-pagination__item is-active'])[1]/following-sibling::li[1]/a/text()")
-    if next and next.string()!="Next":
-        if not "?pageNumber=" in data.response_url:
-            next_page = data.response_url+"?pageNumber="+next.string()
-        else:
-            next_page = data.response_url.split("?pageNumber=")[0]+"?pageNumber="+next.string()
-
-        if next_page:
-            session.queue(Request(next_page), process_category, dict(context))
-
-
+            
+    prod_count = data.xpath('//div[@class="flex-groww"]/p/text()').string()
+    if not prod_count:
+        return
+    prod_count = prod_count.split(' - ')[1].split(' of ')
+    if prod_count[0] != prod_count[1]:
+        next_page_num = str(int(context['page_num']) + 1)
+        session.queue(Request(data.response_url.replace(PAGE+context['page_num'], PAGE+next_page_num)), process_category, dict(context, page_num=next_page_num))
+        
+        
 def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
     product.category = context['cat']
-
-    sku = data.xpath('//p[@class="o-part-number" and contains(text(), "SKU:")]/text()').string()
-    if sku:
-        product.sku = sku.replace('SKU:', '').strip()
-        product.ssid = product.sku
-    else:
-        product.ssid = product.url.split('/')[-1]
+    product.ssid = product.url.split('/')[-1]
+    product.sku = product.ssid
+    product.add_property(type='id.manufacturer', value=product.ssid)
 
     revs = data.xpath('//div[@class="o-customer-review"]')
     for rev in revs:

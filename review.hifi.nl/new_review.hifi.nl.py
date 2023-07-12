@@ -9,8 +9,7 @@ def run(context, session):
     session.queue(Request('https://hifi.nl/api/solr/content.php?q=&category=Hardware&subCategories=&brands=&years=&from=0&till=10000&order=publishDateDesc&contentType=Recensie&page=1', force_charset="utf-8"), process_frontpage, dict(context, page=1))
 
 
-def process_frontpage(data, context, session):
-    '//p/span[@style="letter-spacing: 0px;" and br or contains(text(), "Prijs-prestatie")]'
+def process_frontpage(data, context, session):    
     resp = json.loads(data.content)
     items = resp['items']
     for item in items:
@@ -52,10 +51,16 @@ def process_review(data, context, session):
     review.title = context['name']
     review.authors.append(Person(name=context['user'], ssid=context['id'], url='https://hifi.nl/content?auteur=' + context['user']))
 
-    p_grade = data.xpath('//span[contains(text(),"Beoordeling")]/text()').strings()
+    p_grade = data.xpath('//span[contains(text(),"Beoordeling")]/text()').string()
+    '//p[span[contains(text(), "Beoordeling")]]/span[not(br)]/text()'
+    '//p/span[@style="letter-spacing: 0px;" and br]/text()'
+    '//p/span[@style="letter-spacing: 0px;" and br or contains(text(), "Prijs-prestatie")]'
     if p_grade:
-        p_grade = p_grade[0].strip().replace(u'\xc2', u' ').replace(':', '').replace('Beoordeling', '').replace(', onvermijdelijk', '').replace(',', '.').replace('/', ' ').replace('uit', ' ').replace('op', ' ')
+        p_grade = p_grade.strip().replace(u'\xc2', u' ').replace(':', '').replace('Beoordeling', '').replace(', onvermijdelijk', '').replace(',', '.').replace('/', ' ').replace('uit', ' ').replace('op', ' ')
         grade = p_grade.split()
+        print()
+        print('grade=', grade)
+        print()
         review.grades.append(Grade(value=float(grade[0]), best=grade[1], worst=0, name='overall', type='overall'))
 
     conclusion = data.xpath('//div[@class="conclusieContainer"]/text()').string() or data.xpath('//h2[contains(., "Conclusie")]/following-sibling::p[string-length(normalize-space(.)) > 100][1]//text()').string(multiple=True)
