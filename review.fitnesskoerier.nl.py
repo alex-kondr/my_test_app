@@ -1,33 +1,32 @@
-import simplejson
-
 from agent import *
 from models.products import *
+import simplejson
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('https://www.fitnesskoerier.nl'), process_frontpage, dict())
+    session.queue(Request('https://www.fitnesskoerier.nl'), process_catlist, dict())
 
 
-def process_frontpage(data, context, session):
-    cats1 = data.xpath('//li[@class="item sub use_mega"]')
-    for cat1 in cats1:
-        name1 = cat1.xpath('a//text()').string()
-        
-        cats2 = cat1.xpath('.//div[@class="col flex flex-column"]')
-        for cat2 in cats2:
-            name2 = cat2.xpath('.//a[@class="title"]//text()').string()
-            url = cat2.xpath('.//a[@class="title"]/@href').string()
-            session.queue(Request(url), process_category, dict(cat=name1+"|"+name2))
-        
-            cats3 = cat2.xpath('.//a[@class="subtitle"]')
-            for cat3 in cats3:
-                name3 = cat3.xpath('text()').string()
-                url = cat3.xpath('@href').string()
-                session.queue(Request(url), process_category, dict(cat=name1+"|"+name2+"|"+name3))
+def process_catlist(data, context, session):
+    cats = data.xpath('//li[@class="item sub use_mega"]')
+    for cat in cats:
+        name = cat.xpath('a//text()').string()
+
+        cats1 = cat.xpath('.//div[@class="col flex flex-column"]')
+        for cat1 in cats1:
+            name1 = cat1.xpath('.//a[@class="title"]//text()').string()
+            url = cat1.xpath('.//a[@class="title"]/@href').string()
+            session.queue(Request(url), process_prodlist, dict(cat=name+"|"+name1))
+
+            subcats = cat1.xpath('.//a[@class="subtitle"]')
+            for subcat in subcats:
+                name2 = subcat.xpath('text()').string()
+                url = subcat.xpath('@href').string()
+                session.queue(Request(url), process_prodlist, dict(cat=name+"|"+name1+"|"+name2))
 
 
-def process_category(data, context, session):
+def process_prodlist(data, context, session):
     prods = data.xpath('//div[@class="item is_grid with-sec-image"]')
     for prod in prods:
         name = prod.xpath('.//a[@class="m-img greyed"]/@title').string()
@@ -36,11 +35,15 @@ def process_category(data, context, session):
 
     next_url = data.xpath('//a[@title="Volgende pagina"]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_category, dict(context))
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
-    prod_json = simplejson.loads(data.xpath('//script[@type="application/ld+json"]//text()').string().replace('\\', '').replace('&#039;', "'").replace('<br />', '').replace('&amp;#128170;&amp;#127997;', '').replace('&amp; ', '& ').replace('&amp;#128077;', '').replace('&amp;#128522;', ''))
+    prod_json = data.xpath('//script[@type="application/ld+json"]//text()').string().replace('\\', '').replace('&#039;', "'").replace('<br />', '').replace('&amp;#128170;&amp;#127997;', '').replace('&amp; ', '& ').replace('&amp;#128077;', '').replace('&amp;#128522;', '')
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
+    else:
+        return
 
     product = Product()
     product.name = context['name']
@@ -52,7 +55,7 @@ def process_product(data, context, session):
     ean = prod_json[2].get('gtin13')
     if ean:
         product.add_property(type='id.ean', value=ean)
-        
+
     mpn = prod_json[2].get('mpn')
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
@@ -62,9 +65,9 @@ def process_product(data, context, session):
         product.sku = sku
 
     revs_count = prod_json[2].get('aggregateRating', {}).get('reviewCount', 0)
-    if int(revs_count) == 0: 
+    if int(revs_count) == 0:
         return
-        
+
     revs = prod_json[2].get('review', {})
     for rev in revs:
         review = Review()
@@ -85,7 +88,7 @@ def process_product(data, context, session):
                     review.add_property(type='pros', value=pro_con.split(':')[1].strip())
                 elif 'minus' in pro_con:
                     review.add_property(type='cons', value=pro_con.split(':')[1].strip())
-                    
+
         grade_overall = rev.get('reviewRating', {}).get('ratingValue')
         if grade_overall and grade_overall > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
@@ -93,10 +96,12 @@ def process_product(data, context, session):
         excerpt = rev.get('description')
         if excerpt:
             excerpt = excerpt.replace('&quot;', "'")
+
             review.add_property(type='excerpt', value=excerpt)
+
             review.ssid = review.digest() if author else review.digest(excerpt)
+
             product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
-            
