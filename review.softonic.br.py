@@ -10,16 +10,15 @@ def run(context, session):
 
 
 def process_frontpage(data, context, session):
-    '//li[.//span[contains(text(), "Apps")]]//li'
-    cats = data.xpath('//ul[@class="kksNd_"]/li')
+    cats = data.xpath('//li[.//span[contains(text(), "Apps")]]/ul/li[ul/li]')
     for cat in cats:
-        name = cat.xpath('span//text()').string()
+        name = cat.xpath('span/text()').string()
 
-        subcats = cat.xpath('.//a[@class="TaojYW PAHq9E js-menu-categories-item"]')
+        subcats = cat.xpath('.//li[not(div)]/a[contains(@class, "js-menu-categories-item")]')
         for subcat in subcats:
             subcat_name = subcat.xpath("text()").string()
-            url = subcat.xpath('@href').string() + ':data/1'
-            session.queue(Request(url), process_category, dict(cat=name+"|"+subcat_name, url=url))
+            url = subcat.xpath('@href').string() + ':data'
+            session.queue(Request(url), process_category, dict(cat=name+"|"+subcat_name))
 
 
 def process_category(data, context, session):
@@ -29,16 +28,17 @@ def process_category(data, context, session):
         url = prod.xpath('.//a[contains(@class, "app-info")]/@href').string()
         session.queue(Request(url), process_product, dict(context, url=url, name=name))
 
-    page_numbers = data.xpath('//a[@class="s-pagination__link"]//text()').strings()
-    current_page_number = int(context['url'].split('/')[-1])
-    next_page_number = current_page_number + 1
-    if str(next_page_number) in page_numbers:
-        next_url = context['url'].replace('/' + str(current_page_number), '/' + str(next_page_number))
-        session.queue(Request(next_url), process_category, dict(context, url=next_url))
-        
-        
+    next_url = data.xpath('//li[@class="s-pagination__number s-pagination__number--current"]/following-sibling::li/a/@href').string()
+    if next_url:
+        session.queue(Request(next_url), process_category, dict(context))
+
+
 def process_product(data, context, session):
-    prod_json = simplejson.loads(data.xpath('//script[contains(text(), "applicationCategory")]//text()').string())
+    prod_json = data.xpath('//script[contains(text(), "applicationCategory")]//text()').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
+    else:
+        return
 
     product = Product()
     product.name = context['name']
@@ -69,12 +69,12 @@ def process_product(data, context, session):
             review.add_property(type='cons', value=con)
             
     grade_overall = data.xpath('//li[@class="app-header__item app-header__item--double"]//p/text()').string()
-    if grade_overall and grade_overall > 0:
+    if grade_overall and float(grade_overall) > 0:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
             
     excerpt = prod_json.get('review', {}).get('reviewBody')
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
-        review.ssid = review.digest() if author else review.digest(excerpt)
+        review.ssid = product.ssid
         product.reviews.append(review)
         session.emit(product)

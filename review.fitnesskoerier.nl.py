@@ -40,7 +40,7 @@ def process_category(data, context, session):
 
 
 def process_product(data, context, session):
-    prod_json = simplejson.loads(data.xpath('//script[@type="application/ld+json"]//text()').string().replace('\\', '').replace('&#039;', "'").replace('<br />', '').replace('&quot;', "'").replace('&amp;#128170;&amp;#127997;', '').replace('&amp; ', '& ').replace('&amp;#128077;', '').replace('&amp;#128522;', ''))
+    prod_json = simplejson.loads(data.xpath('//script[@type="application/ld+json"]//text()').string().replace('\\', '').replace('&#039;', "'").replace('<br />', '').replace('&amp;#128170;&amp;#127997;', '').replace('&amp; ', '& ').replace('&amp;#128077;', '').replace('&amp;#128522;', ''))
 
     product = Product()
     product.name = context['name']
@@ -65,7 +65,7 @@ def process_product(data, context, session):
     if int(revs_count) == 0: 
         return
         
-    revs = prod_json[2].get('review', {})    
+    revs = prod_json[2].get('review', {})
     for rev in revs:
         review = Review()
         review.type = "user"
@@ -79,12 +79,12 @@ def process_product(data, context, session):
 
         pros_cons = rev.get('author', {}).get('name', '').split('[')
         if len(pros_cons) > 1:
-            pros_cons = pros_cons[1].replace('[', '').replace(']', '').replace('{', '').replace('}', '').split(',')
+            pros_cons = pros_cons[1].replace('&quot;', '').replace('[', '').replace(']', '').replace('{', '').replace('}', '').split(',')
             for pro_con in pros_cons:
                 if 'plus' in pro_con:
-                    review.add_property(type='pros', value=pro_con.split(':')[1])
+                    review.add_property(type='pros', value=pro_con.split(':')[1].strip())
                 elif 'minus' in pro_con:
-                    review.add_property(type='cons', value=pro_con.split(':')[1])
+                    review.add_property(type='cons', value=pro_con.split(':')[1].strip())
                     
         grade_overall = rev.get('reviewRating', {}).get('ratingValue')
         if grade_overall and grade_overall > 0:
@@ -92,6 +92,7 @@ def process_product(data, context, session):
 
         excerpt = rev.get('description')
         if excerpt:
+            excerpt = excerpt.replace('&quot;', "'")
             review.add_property(type='excerpt', value=excerpt)
             review.ssid = review.digest() if author else review.digest(excerpt)
             product.reviews.append(review)
