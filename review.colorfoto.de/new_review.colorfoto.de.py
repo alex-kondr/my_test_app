@@ -39,8 +39,10 @@ def process_prodlist(data, context, session):
         
 def process_product(data, context, session):
    prod_json = data.xpath('//script[@type="application/ld+json"]//text()').string()
-   if prod_json and isinstance(prod_json, list):
-      prod_json = simplejson.loads(prod_json)[1]
+   if prod_json:
+      prod_json = simplejson.loads(prod_json)
+      if isinstance(prod_json, list):
+         prod_json = prod_json[1]
    else:
       return
    
