@@ -8,7 +8,7 @@ XCAT = ['News']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=2000)]
     session.queue(Request('http://www.colorfoto.de/'), process_catlist, dict())
 
 
