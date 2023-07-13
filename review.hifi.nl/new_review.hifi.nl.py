@@ -22,7 +22,6 @@ def process_frontpage(data, context, session):
         context['id'] = item['id']
         if context['name'] and context['url']:
             session.queue(Request(context['url'], use="curl"), process_product, context)
-            #session.queue(Request(context['url'], force_charset="utf8"), process_product, context)
 
     if len(items) >= 10:
         page = context['page'] + 1
@@ -51,17 +50,38 @@ def process_review(data, context, session):
     review.title = context['name']
     review.authors.append(Person(name=context['user'], ssid=context['id'], url='https://hifi.nl/content?auteur=' + context['user']))
 
-    p_grade = data.xpath('//span[contains(text(),"Beoordeling")]/text()').string()
+    p_grade = data.xpath('//*[text()[contains(., "/ 5") or contains(., "Beoordeling")]]/text()').strings()
+        
     '//p[span[contains(text(), "Beoordeling")]]/span[not(br)]/text()'
     '//p/span[@style="letter-spacing: 0px;" and br]/text()'
     '//p/span[@style="letter-spacing: 0px;" and br or contains(text(), "Prijs-prestatie")]'
+    '//p/span[br or contains(text(), "Beoordeling")]/following-sibling::*/text()'
+    if isinstance(p_grade, list):
+        p_grade_temp = p_grade[:]
+        print()
+        print('p_grade=', p_grade)
+        print()
+        for item in p_grade_temp:
+            if 'eoordeling' not in item:
+                p_grade.remove(item)
+            else:
+                break
+        print()
+        print('p_grade=', p_grade)
+        print()
+        # p_grade.pop(0)
     if p_grade:
-        p_grade = p_grade.strip().replace(u'\xc2', u' ').replace(':', '').replace('Beoordeling', '').replace(', onvermijdelijk', '').replace(',', '.').replace('/', ' ').replace('uit', ' ').replace('op', ' ')
+            
+        p_grade = ''.join(p_grade)
+        p_grade = p_grade.replace(u'\xc2', u' ').replace(':', '').replace('Setbeoordeling set', '').replace('Setbeoordeling', '').replace('Beoordelign', '').replace('Beoordeling', '').replace('beoordeling', '').replace('eoordeling', '').replace(', onvermijdelijk', '').replace(',', '.').replace('/', ' ').replace('uit', ' ').replace('op', ' ').replace('|', '').strip()
         grade = p_grade.split()
         print()
         print('grade=', grade)
         print()
-        review.grades.append(Grade(value=float(grade[0]), best=grade[1], worst=0, name='overall', type='overall'))
+        try:
+            review.grades.append(Grade(value=float(grade[0]), best=5.0, worst=0, name='overall', type='overall'))
+        except ValueError as error:
+            print('ValueError=', error)
 
     conclusion = data.xpath('//div[@class="conclusieContainer"]/text()').string() or data.xpath('//h2[contains(., "Conclusie")]/following-sibling::p[string-length(normalize-space(.)) > 100][1]//text()').string(multiple=True)
     if conclusion:
