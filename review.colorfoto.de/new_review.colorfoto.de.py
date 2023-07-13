@@ -43,6 +43,8 @@ def process_product(data, context, session):
       prod_json = simplejson.loads(prod_json)
       if isinstance(prod_json, list):
          prod_json = prod_json[1]
+      else:
+         return
    else:
       return
    
