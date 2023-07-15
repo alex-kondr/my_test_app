@@ -62,7 +62,7 @@ def process_review(data, context, session):
     grade_overall = prod_json.get('reviewRating', {}).get('ratingValue', 0)
     grade_best = prod_json.get('reviewRating', {}).get('bestRating')
     if float(grade_overall) > 0:
-        review.grades.append(Grade(type="overall", value=float(grade_overall), best=grade_best))
+        review.grades.append(Grade(type="overall", value=float(grade_overall), best=float(grade_best)))
 
     summary = data.xpath('//p[@class="strapline"]/text()').string()
     if summary:
