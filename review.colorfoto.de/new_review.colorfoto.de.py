@@ -6,7 +6,7 @@ from models.products import *
 
 XCAT = ['News']
 
-url = 'https://www.connect-living.de/testbericht/shokz-openfit-test-3205394.html'
+url = 'https://www.connect-living.de/testbericht/ecovacs-deebot-t20-omni-wischroboter-test-3205332.html'
 
 def run(context, session):
     session.queue(Request(url), process_product, dict(url=url, name='text_name', cat='test_cat'))
@@ -49,7 +49,7 @@ def process_product(data, context, session):
    
     product = Product()
     product.name = context['name']
-    product.url = context['url']
+    product.url = data.xpath('//h3[contains(text(), "Tipp")]/following-sibling::p/a/@href').string() or context['url']
     product.category = context['cat']
     product.ssid = context['url'].split('-')[-1].replace('.html', '')
     
@@ -68,6 +68,13 @@ def process_product(data, context, session):
         author = authors.get('name')
         if author:
             review.authors.append(Person(name=author, ssid=author))
+            
+    grade_overall = prod_json.get('mentions', {}).get('review', {}).get('reviewRating', {}).get('ratingValue')
+    bestRating = prod_json.get('mentions', {}).get('review', {}).get('reviewRating', {}).get('bestRating')
+    if grade_overall:
+        grade_overall = float(grade_overall.replace('%', '').replace(',', '.'))
+        if grade_overall > 0:
+            review.grades.append(Grade(type='overall', value=grade_overall, best=float(bestRating)))
         
     summary = prod_json.get('description')
     if summary:
@@ -86,9 +93,12 @@ def process_product(data, context, session):
             con = con.xpath('text()').string()
             review.properties.append(ReviewProperty(type='cons', value=con))
             
-    conclusion = data.xpath('')
+    conclusion = data.xpath('//h2[contains(text(), "Fazit")]/following-sibling::p/text()').string()
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
     
-    excerpt = data.xpath('//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::p/text()|//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::h2/text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::p/text()|//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::h2/text()').string(multiple=True) or prod_json.get('articleBody')
+    print('excerpt=', excerpt)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
