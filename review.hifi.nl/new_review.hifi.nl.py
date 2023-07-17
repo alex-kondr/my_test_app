@@ -13,7 +13,6 @@ def process_frontpage(data, context, session):
     resp = json.loads(data.content)
     items = resp['items']
     for item in items:
-        context['name'] = item['title'].replace('Review: ', '')
         context['url'] = 'https://hifi.nl/artikel/' + str(item['id']) + '/'
         context['date'] = item['publishDate'].split('T')[0]
         context['user'] = item.get('author') or ''
@@ -21,7 +20,7 @@ def process_frontpage(data, context, session):
         context['category'] = item['subCategory']
         context['id'] = item['id']
         if context['name'] and context['url']:
-            session.queue(Request(context['url'], use="curl"), process_product, context)
+            session.queue(Request(context['url'], use="curl", force_charset="utf-8"), process_product, context)
 
     if len(items) >= 10:
         page = context['page'] + 1
@@ -31,7 +30,15 @@ def process_frontpage(data, context, session):
 
 def process_product(data, context, session):
     product = Product()
-    product.name = context['name']
+    
+    name = data.xpath('//p[@class="Info"]/strong/text()').string()
+    if name:
+        product.name = name
+    else:
+        name = data.xpath('//meta[@property="og:title"]/@content').string()
+        if name:
+            product.name = name.replace('Review', '').split(':')[0].strip()
+        
     product.url = context['url']
     product.category = context['category']
     product.ssid = context['id']
@@ -47,7 +54,11 @@ def process_review(data, context, session):
     review.url = context['product'].url
     review.type = 'pro'
     review.date = context['date']
-    review.title = context['name']
+    
+    title = data.xpath('//meta[@property="og:title"]/@content').string()
+    if title:
+        review.title = title.replace('Review', '').strip()
+    
     review.authors.append(Person(name=context['user'], ssid=context['id'], url='https://hifi.nl/content?auteur=' + context['user']))
 
     p_grade = data.xpath('//*[text()[contains(., "/ 5") or contains(., "Beoordeling")]]/text()').strings()
@@ -68,22 +79,8 @@ def process_review(data, context, session):
             print('ValueError=', error)
 
     conclusion = data.xpath('//div[@class="conclusieContainer"]/text()').string() or data.xpath('//h2[contains(., "Conclusie")]/following-sibling::p[string-length(normalize-space(.)) > 100][1]//text()').string(multiple=True)
-    if conclusion:
-        conclusion = conclusion.replace('\t', '').replace('\n', '')
-        review.properties.append(ReviewProperty(type='conclusion', value=conclusion))
-
-    summary = data.xpath('//section[@id="articleBody"]/p[1 or 2]/strong//text()').string(multiple=True)
-    if summary:
-        review.properties.append(ReviewProperty(type='summary', value=summary))
-
-    excerpt = data.xpath('//section[@id="articleBody"]/p//text()').string(multiple=True)
-    if excerpt:
-        if summary:
-            excerpt = excerpt.replace(summary, '')
-        if conclusion:
-            excerpt = excerpt.replace(conclusion, '')
-        review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
-
+    excerpt = data.xpath('//section[@id="articleBody"]//h2[contains(., "Conclusie")]/preceding-sibling::*//text()').string(multiple=True)
+    
     if data.xpath('//section[@id="summary"]'):
         p_pros = data.xpath('//ul[@class="ulPlus"]/li/text()').strings()
         p_pros = [f.replace('\n', '').strip() for f in p_pros]
@@ -93,6 +90,40 @@ def process_review(data, context, session):
             review.properties.append(ReviewProperty(name="PLUSPUNTEN", type="pros", value=p_pros))
         if p_cons:
             review.properties.append(ReviewProperty(name="MINPUNTEN", type="cons", value=p_cons))
+            
+    next_page = data.xpath('//span[@class="pagerItem"]/a[@class="" and contains(@href, "pagina")]')
+    if next_page and int(next_page.xpath('text()').string()) <= int(data.xpath('count(//span[@class="pagerItem"])').string()):
+        next_page = next_page.xpath('@href').string()
+        conclusion, excerpt = session.do(Request(next_page, force_charset="utf-8"), process_review_next, dict(excerpt=excerpt))
+        
+    if conclusion:
+        conclusion = conclusion.replace('\t', '').replace('\n', '')
+        review.properties.append(ReviewProperty(type='conclusion', value=conclusion))
+        
+    if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '')
+        review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
 
     if excerpt or conclusion:
         context['product'].reviews.append(review)
+
+
+def process_review_next(data, context, session):
+    excerpt = context['excerpt']
+    
+    conclusion = data.xpath('//div[@class="conclusieContainer"]/text()|//p[@class="Hoofdtekst" and contains(., "Conclusie")]/text()').string() or data.xpath('//h2[contains(., "Conclusie")]/following-sibling::p[string-length(normalize-space(.)) > 100][1]//text()').string(multiple=True)
+    if conclusion:
+        conclusion = conclusion.replace('\t', '').replace('\n', '')
+        
+    excerpt += ' ' + data.xpath('//div[@class="conclusieContainer"]/text()|//p[@class="Hoofdtekst" and contains(., "Conclusie")]/preceding-sibling::*//text()').string(multiple=True)
+    if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '')
+        
+    next_page = data.xpath('//span[@class="pagerItem"]/a[@class="" and contains(@href, "pagina")]')
+    if next_page and int(next_page.xpath('text()').string()) <= int(data.xpath('count(//span[@class="pagerItem"])').string()):
+        next_page = next_page.xpath('@href').string()
+        conclusion, excerpt = session.do(Request(next_page, force_charset="utf-8"), process_review_next, dict(excerpt=excerpt))
+    
+    return conclusion, excerpt

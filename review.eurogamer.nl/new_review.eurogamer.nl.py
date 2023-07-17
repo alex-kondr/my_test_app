@@ -5,6 +5,7 @@ from models.products import *
 
 
 def run(context, session): 
+    session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.eurogamer.nl/archive/reviews'), process_frontpage, dict())
 
@@ -72,32 +73,28 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath('//div[@class="article_body"]//p//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="article_body_content"]/section[@class="synopsis"]/text()|//div[@class="article_body_content"]//p//text()').string(multiple=True)
 
     next_url = data.xpath('//div[@class="next"]/a/@href').string()
     if next_url:
-        session.do(Request(next_url), process_review_next, dict(context, excerpt=excerpt, review=review))
-    else:
-        if excerpt:
-            if conclusion:
-                excerpt = excerpt.replace(conclusion, '')
-            review.add_property(type='excerpt', value=excerpt)
+        excerpt = session.do(Request(next_url), process_review_next, dict(context, excerpt=excerpt, review=review))
+    
+    if excerpt:            
+        review.add_property(type='excerpt', value=excerpt)
 
     product.reviews.append(review)
     session.emit(product)
 
 
 def process_review_next(data, context, session):
-    review = context['review']
-
     excerpt = context['excerpt']
-    excerpt += ' ' + data.xpath('//div[@class="article_body"]//p//text()').string(multiple=True)
+    excerpt += ' ' + data.xpath('//div[@class="article_body_content"]//p//text()|//div[@class="article_body_content"]/h2//text()').string(multiple=True)
 
     url = data.xpath('//link[@rel="canonical"]/@href').string()
-    review.add_property(type='pages', value=dict(title=review.title, url=url))
+    context['review'].add_property(type='pages', value=dict(title=context['review'].title, url=url))
 
     next_url = data.xpath('//div[@class="next"]/a/@href').string()
     if next_url:   
-        session.do(Request(next_url), process_review_next, dict(context, review=review))
-    else:
-        review.add_property(type="excerpt", value=excerpt)
+        excerpt = session.do(Request(next_url), process_review_next, dict(context, excerpt=excerpt))
+        
+    return excerpt
