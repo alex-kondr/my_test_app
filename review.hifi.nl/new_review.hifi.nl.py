@@ -4,9 +4,16 @@ import json
 
 
 def run(context, session):
+    context['url'] = 'https://hifi.nl/artikel/' + '22219' + '/'
+    context['date'] = 'date'
+    context['user'] = 'author'
+    context['excerpt'] = 'teaser'
+    context['category'] = 'subCategory'
+    context['id'] = '22219'
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=5000)]
-    session.queue(Request('https://hifi.nl/api/solr/content.php?q=&category=Hardware&subCategories=&brands=&years=&from=0&till=10000&order=publishDateDesc&contentType=Recensie&page=1', force_charset="utf-8"), process_frontpage, dict(context, page=1))
+    # session.queue(Request('https://hifi.nl/api/solr/content.php?q=&category=Hardware&subCategories=&brands=&years=&from=0&till=10000&order=publishDateDesc&contentType=Recensie&page=1', force_charset="utf-8"), process_frontpage, dict(context, page=1))
+    session.queue(Request('https://hifi.nl/artikel/22219/Naim-UnitiLite-en-Neat-Motive-SX2-mag-het-ietsje-meer-zijn.html', force_charset="utf-8"), process_product, dict())
 
 
 def process_frontpage(data, context, session):    
@@ -19,7 +26,7 @@ def process_frontpage(data, context, session):
         context['excerpt'] = item['teaser']
         context['category'] = item['subCategory']
         context['id'] = item['id']
-        if context['name'] and context['url']:
+        if context['url']:
             session.queue(Request(context['url'], use="curl", force_charset="utf-8"), process_product, context)
 
     if len(items) >= 10:
@@ -94,15 +101,15 @@ def process_review(data, context, session):
     next_page = data.xpath('//span[@class="pagerItem"]/a[@class="" and contains(@href, "pagina")]')
     if next_page and int(next_page.xpath('text()').string()) <= int(data.xpath('count(//span[@class="pagerItem"])').string()):
         next_page = next_page.xpath('@href').string()
-        conclusion, excerpt = session.do(Request(next_page, force_charset="utf-8"), process_review_next, dict(excerpt=excerpt))
+        review, excerpt = session.do(Request(next_page, force_charset="utf-8"), process_review_next, dict(review=review, excerpt=excerpt))
         
-    if conclusion:
-        conclusion = conclusion.replace('\t', '').replace('\n', '')
-        review.properties.append(ReviewProperty(type='conclusion', value=conclusion))
+    # if conclusion:
+    #     conclusion = conclusion.replace('\t', '').replace('\n', '')
+    #     review.properties.append(ReviewProperty(type='conclusion', value=conclusion))
         
     if excerpt:
-        if conclusion:
-            excerpt = excerpt.replace(conclusion, '')
+        # if conclusion:
+        #     excerpt = excerpt.replace(conclusion, '')
         review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
 
     if excerpt or conclusion:
@@ -111,19 +118,30 @@ def process_review(data, context, session):
 
 def process_review_next(data, context, session):
     excerpt = context['excerpt']
+    review = context['review']
     
     conclusion = data.xpath('//div[@class="conclusieContainer"]/text()|//p[@class="Hoofdtekst" and contains(., "Conclusie")]/text()').string() or data.xpath('//h2[contains(., "Conclusie")]/following-sibling::p[string-length(normalize-space(.)) > 100][1]//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace('\t', '').replace('\n', '')
+        review.properties.append(ReviewProperty(type='conclusion', value=conclusion))
         
     excerpt += ' ' + data.xpath('//div[@class="conclusieContainer"]/text()|//p[@class="Hoofdtekst" and contains(., "Conclusie")]/preceding-sibling::*//text()').string(multiple=True)
-    if excerpt:
-        if conclusion:
+    if excerpt and conclusion:
             excerpt = excerpt.replace(conclusion, '')
-        
+
     next_page = data.xpath('//span[@class="pagerItem"]/a[@class="" and contains(@href, "pagina")]')
     if next_page and int(next_page.xpath('text()').string()) <= int(data.xpath('count(//span[@class="pagerItem"])').string()):
         next_page = next_page.xpath('@href').string()
-        conclusion, excerpt = session.do(Request(next_page, force_charset="utf-8"), process_review_next, dict(excerpt=excerpt))
-    
-    return conclusion, excerpt
+        review, excerpt = session.do(Request(next_page, force_charset="utf-8"), process_review_next, dict(review=review, excerpt=excerpt))
+        
+    pros_cons = data.xpath('//div[@class="conclusieContainer"]/text()|//p[@class="Hoofdtekst" and contains(., "Conclusie")]/following-sibling::*//text()').strings()
+    if pros_cons:
+        for pro_con in pros_cons:
+            if '+' in pro_con:
+                pro = pro_con.replace('+', '').strip()
+                review.properties.append(ReviewProperty(type='pros', value=pro))
+            elif '-' in pro_con:
+                con = pro_con.replace('-', '').strip()
+                review.properties.append(ReviewProperty(type='cons', value=con))
+                    
+    return review, excerpt
