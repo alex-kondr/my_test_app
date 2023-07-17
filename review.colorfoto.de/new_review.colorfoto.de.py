@@ -8,7 +8,6 @@ XCAT = ['News']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=2000)]
     session.queue(Request('http://www.colorfoto.de/'), process_catlist, dict())
 
 
@@ -50,8 +49,7 @@ def process_product(data, context, session):
     product.name = context['name']
     product.url = context['url']
     product.category = context['cat']
-    product.ssid = context['url'].split('/')[-1].replace('.html', '')
-    product.sku = context['url'].split('-')[-1].replace('.html', '')
+    product.ssid = context['url'].split('-')[-1].replace('.html', '')
     
     review = Review()
     review.type = "pro"
