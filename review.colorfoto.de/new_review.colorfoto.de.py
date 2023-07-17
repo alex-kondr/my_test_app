@@ -6,9 +6,11 @@ from models.products import *
 
 XCAT = ['News']
 
+url = 'https://www.connect-living.de/testbericht/shokz-openfit-test-3205394.html'
 
 def run(context, session):
-    session.queue(Request('http://www.colorfoto.de/'), process_catlist, dict())
+    session.queue(Request(url), process_product, dict(url=url, name='text_name', cat='test_cat'))
+    # session.queue(Request('http://www.colorfoto.de/'), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -29,7 +31,7 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod.xpath('text()').string()
       
-        if 'Archiv' not in name:        
+        if 'Archiv' not in name:
             url = prod.xpath('@href').string()
             session.queue(Request(url), process_product, dict(context, url=url, name=name))
         
@@ -70,8 +72,23 @@ def process_product(data, context, session):
     summary = prod_json.get('description')
     if summary:
         review.add_property(type='summary', value=summary)
+        
+        
+    pros = data.xpath('//li[span[@class="fas fa-plus-circle"]]')
+    if pros:
+        for pro in pros:
+            pro = pro.xpath('text()').string()
+            review.properties.append(ReviewProperty(type='pros', value=pro))
     
-    excerpt = prod_json.get('articleBody')
+    cons = data.xpath('//li[span[@class="fas fa-minus-circle"]]')
+    if cons:
+        for con in cons:
+            con = con.xpath('text()').string()
+            review.properties.append(ReviewProperty(type='cons', value=con))
+            
+    conclusion = data.xpath('')
+    
+    excerpt = data.xpath('//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::p/text()|//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::h2/text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

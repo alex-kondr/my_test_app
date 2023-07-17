@@ -13,6 +13,7 @@ def process_frontpage(data, context, session):
     resp = json.loads(data.content)
     items = resp['items']
     for item in items:
+        context['name'] = item['title'].replace('Review: ', '')
         context['url'] = 'https://hifi.nl/artikel/' + str(item['id']) + '/'
         context['date'] = item['publishDate'].split('T')[0]
         context['user'] = item.get('author') or ''
@@ -35,9 +36,7 @@ def process_product(data, context, session):
     if name:
         product.name = name
     else:
-        name = data.xpath('//meta[@property="og:title"]/@content').string()
-        if name:
-            product.name = name.replace('Review', '').split(':')[0].strip()
+        product.name = context['name']
         
     product.url = context['url']
     product.category = context['category']
