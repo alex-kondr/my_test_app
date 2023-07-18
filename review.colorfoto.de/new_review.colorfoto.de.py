@@ -57,22 +57,30 @@ def process_prodlist_arhiv(data, context, session):
             session.queue(Request(url), process_product, dict(context, url=url, name=name))
         
         
-def process_product(data, context, session):
-    prod_json = data.xpath('//script[@type="application/ld+json"]//text()').string()
-    if prod_json:
-        prod_json = simplejson.loads(prod_json)
-        if isinstance(prod_json, list):
-            prod_json = prod_json[1]
-   
+def process_product(data, context, session):   
     product = Product()
     product.name = context['name']
     product.url = data.xpath('//h3[contains(text(), "Tipp")]/following-sibling::p/a/@href').string() or context['url']
     product.category = context['cat']
     product.ssid = context['url'].split('-')[-1].replace('.html', '')
     
+    context['product'] = product
+    
+    process_review(data, context, session)
+
+
+def process_review(data, context, session):
+    prod_json = data.xpath('//script[@type="application/ld+json"]//text()').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
+        if isinstance(prod_json, list):
+            prod_json = prod_json[1]
+            
+    product = context['product']
+    
     review = Review()
     review.type = "pro"
-    review.url = product.url
+    review.url = context['url']
     
     date = prod_json.get('datePublished')
     if date:
@@ -135,65 +143,7 @@ def process_product(data, context, session):
 
     next_url = data.xpath('//a[@class="next pagination__button pagination__button--next"]/@href').string()
     if next_url:
-        product = session.do(Request(next_url), process_review, dict(product=product))
+        session.queue(Request(next_url), process_review, dict(product=product, url=next_url))
 
-    if product.reviews:
+    elif product.reviews:
         session.emit(product)
-
-
-def process_review(data, context, session):
-    prod_json = data.xpath('//script[@type="application/ld+json"]//text()').string()
-    if prod_json:
-        prod_json = simplejson.loads(prod_json)
-        if isinstance(prod_json, list):
-            prod_json = prod_json[1]
-            
-    product = context['product']
-    
-    review = Review()
-    review.type = "pro"
-    review.url = product.url
-    review.add_property(type='pages', value=dict(url=data.response_url))
-    
-    grade_overall = prod_json.get('mentions', {}).get('review', {}).get('reviewRating', {}).get('ratingValue')
-    bestRating = prod_json.get('mentions', {}).get('review', {}).get('reviewRating', {}).get('bestRating')
-    if grade_overall:
-        grade_overall = float(grade_overall.replace('%', '').replace(',', '.'))
-        if grade_overall > 0:
-            review.grades.append(Grade(type='overall', value=grade_overall, best=float(bestRating)))
-        
-    summary = prod_json.get('description')
-    if summary:
-        review.add_property(type='summary', value=summary)        
-        
-    pros = data.xpath('//li[span[@class="fas fa-plus-circle"]]')
-    if pros:
-        for pro in pros:
-            pro = pro.xpath('text()').string()
-            review.properties.append(ReviewProperty(type='pros', value=pro))
-    
-    cons = data.xpath('//li[span[@class="fas fa-minus-circle"]]')
-    if cons:
-        for con in cons:
-            con = con.xpath('text()').string()
-            review.properties.append(ReviewProperty(type='cons', value=con))
-            
-    conclusion = data.xpath('//h2[contains(text(), "Fazit")]/following-sibling::p[1]/text()').string(multiple=True)
-    if conclusion:
-        review.add_property(type='conclusion', value=conclusion)
-    
-    excerpt = data.xpath('//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::p//text()|//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::h2//text()').string(multiple=True) or data.xpath('//div[@class="maincol__contentwrapper"]/p//text()|//div[@class="maincol__contentwrapper"]/h2//text()').string(multiple=True)
-    if excerpt:
-        if conclusion:
-            excerpt = excerpt.replace(conclusion, '')
-        review.add_property(type='excerpt', value=excerpt)
-
-        review.ssid = product.ssid
-
-        product.reviews.append(review)
-        
-    next_url = data.xpath('//a[@class="next pagination__button pagination__button--next"]/@href').string()
-    if next_url:
-        product = session.do(Request(next_url), process_review, dict(product=product))
-
-    return product
