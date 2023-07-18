@@ -28,7 +28,7 @@ def process_catlist(data, context, session):
                
                if subname not in XSUBCAT:
                 url = subcat.xpath('@href').string()
-                cat = (name+"|"+subname).replace('Tests|Alle tests', 'Technik')
+                cat = (name+"|"+subname).replace('Tests|Alle Tests', 'Technik')
                 session.queue(Request(url), process_prodlist, dict(cat=cat))
 
 

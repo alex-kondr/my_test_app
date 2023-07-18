@@ -143,5 +143,5 @@ def process_reviews(data, context, session):
         session.emit(product)
         
     
-curl "https://prunesearch.com/manage?action=looksession&agent_id=20095" -k -u "georgesavr6@gmail.com:YUbhduJuids33" > log.txt
-curl "https://prunesearch.com/manage?action=yaml&agent_id=20095" -k -u "georgesavr6@gmail.com:YUbhduJuids33" > emit.yaml
+# curl "https://prunesearch.com/manage?action=looksession&agent_id=20095" -k -u "georgesavr6@gmail.com:YUbhduJuids33" > log.txt
+# curl "https://prunesearch.com/manage?action=yaml&agent_id=18011" -k -u "georgesavr6@gmail.com:YUbhduJuids33" > emit.yaml
