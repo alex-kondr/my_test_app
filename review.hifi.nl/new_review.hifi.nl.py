@@ -5,7 +5,7 @@ import json
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('https://hifi.nl/api/solr/content.php?q=&category=Hardware&subCategories=&brands=&years=&from=0&till=10000&order=publishDateDesc&contentType=Recensie&page=1', force_charset="utf-8"), process_frontpage, dict(context, page=1))
 
 
@@ -128,7 +128,9 @@ def process_review_next(data, context, session):
     next_pages = data.xpath('//span[@class="pagerItem"]/a[@class="" and contains(@href, "pagina")]/@href').strings()
     for n_page in next_pages:
         if ('pagina' + str(page)) in n_page:
-            review, excerpt = session.do(Request(next_page, force_charset="utf-8"), process_review_next, dict(review=review, excerpt=excerpt, page=page))
+            response = session.do(Request(next_page, force_charset="utf-8"), process_review_next, dict(review=review, excerpt=excerpt, page=page))
+            if response:
+                review, excerpt = response
         
     pros_cons = data.xpath('//div[@class="conclusieContainer"]/text()|//p[@class="Hoofdtekst" and contains(., "Conclusie")]/following-sibling::*//text()').strings()
     if pros_cons:
