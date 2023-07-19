@@ -30,7 +30,7 @@ def process_product(data, context, session):
     if manufacturer:
         product.manufacturer = manufacturer.replace("Vydavatel", '')
 
-    category = data.xpath("//span[@class='un-chip__text']//text()").string()#########################
+    category = data.xpath("//span[@class='un-chip__text']//text()").string()
     if category:
         product.category = "Games|" + category
     else:
@@ -62,7 +62,7 @@ def process_review(data, context, session):
         authors = data.xpath("//p[@class='post-header-info__name']")
     for author in authors:
         author_name = author.xpath(".//a/text()").string()
-        if author_name:###############################
+        if author_name:
             author_url = author.xpath(".//a/@href").string()
             review.authors.append(Person(name=author_name, profile_url=author_url, ssid=author_url.split('/')[-1]))
 
@@ -76,7 +76,7 @@ def process_review(data, context, session):
             title = page.xpath("text()").string()
             url = page.xpath("@href").string()
             review.add_property(type="pages", value=dict(url=url, title=title))
-        session.do(Request(url), process_lastpage, dict(context, review=review))
+        session.do(Request(url), process_review_next, dict(context, review=review))
 
         summary = data.xpath("//div[@class='post-body']/p//text()").string(multiple=True)
         if summary:
@@ -97,7 +97,7 @@ def process_review(data, context, session):
             product.reviews.append(review)
 
 
-def process_lastpage(data, context, session):
+def process_review_next(data, context, session):
     review = context["review"]
 
     grade_overall = data.xpath("//div[contains(@class,'review-rating')]/@data-rating").string()

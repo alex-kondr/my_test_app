@@ -62,28 +62,35 @@ def process_review(data, context, session):
                     Grade(name=name.replace(':', ''), value=float(value), best=4.0))
             except ValueError:
                 pass
+            
+    grades_overall = data.xpath('//span[contains(., "OVERALL RATING") and contains(., "Stars")]//text()').strings()
+    for grade_overall in grades_overall:
+        if 'Stars' in grade_overall:
+            grade_overall = grade_overall.split('Stars')[0].strip()
+            print('grade_overall', grade_overall)
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=4.0))
 
-    grade_overall = data.xpath("//tbody/tr[last()]/td[2]/text()").string()
-    if not grade_overall:
-        grade_overall = data.xpath("//tbody/tr[last()]/td[1]//b/text()").string()
-    if not grade_overall:
-        grade_overall = data.xpath("//tbody/tr[last()]/td[2]/em/text()[2]").string()
-    if not grade_overall:
-        grade_overall = data.xpath("//tbody[1]/tr[last()]//span/text()").string()
-    if not grade_overall:
-        grade_overall = data.xpath("//tbody/tr[last()]/td[2]/em/text()").string()
-    if not grade_overall:
-        grade_overall = data.xpath("//tbody[1]/tr[last()]//b[1]/text()[2]").string(multiple=True)
-        if grade_overall:
-            grade_overall = grade_overall.split(" =")[1].split(" Stars")[0]
+    # grade_overall = data.xpath("//tbody/tr[last()]/td[2]/text()").string()
+    # if not grade_overall:
+    #     grade_overall = data.xpath("//tbody/tr[last()]/td[1]//b/text()").string()
+    # if not grade_overall:
+    #     grade_overall = data.xpath("//tbody/tr[last()]/td[2]/em/text()[2]").string()
+    # if not grade_overall:
+    #     grade_overall = data.xpath("//tbody[1]/tr[last()]//span/text()").string()
+    # if not grade_overall:
+    #     grade_overall = data.xpath("//tbody/tr[last()]/td[2]/em/text()").string()
+    # if not grade_overall:
+    #     grade_overall = data.xpath("//tbody[1]/tr[last()]//b[1]/text()[2]").string(multiple=True)
+    #     if grade_overall:
+    #         grade_overall = grade_overall.split(" =")[1].split(" Stars")[0]
 
-    if grade_overall:
-        grade_overall = grade_overall.replace("OVERALL RATING = ", "").replace(" Stars, which earns it a", "").replace("OVERALL RATING = ", "").replace(" Stars", "").replace(" (out of 4)", "").replace(",", "").replace(" WIHO Award!", "")
-        try:
-            review.grades.append(
-                Grade(type='overall', value=float(grade_overall), best=4.0))
-        except ValueError:
-            pass
+    # if grade_overall:
+    #     grade_overall = grade_overall.replace("OVERALL RATING = ", "").replace(" Stars, which earns it a", "").replace("OVERALL RATING = ", "").replace(" Stars", "").replace(" (out of 4)", "").replace(",", "").replace(" WIHO Award!", "")
+    #     try:
+    #         review.grades.append(
+    #             Grade(type='overall', value=float(grade_overall), best=4.0))
+    #     except ValueError:
+    #         pass
 
     excerpt = data.xpath("//div[@class='entrytext']/p/text()").string(multiple=True)
     if not excerpt:
