@@ -24,7 +24,13 @@ def process_product(data, context, session):
     product.name = data.xpath('//strong[contains(text(), "PRODUCT")]/following-sibling::text()[1]').string() or context['name']
     product.category = context['cat']
     product.url = data.xpath('//section[@class="entry-content"]/following-sibling::p/a/@href').string() or data.xpath('//td[strong[contains(text(), "COMPANY")]]/a/@href').string() or context['url']
-    product.ssid = context['url'].split('-')[-1]
+    
+    ssid = context['url'].split('-')[-1]
+    try:
+        int(ssid)
+        product.ssid = ssid
+    except ValueError:
+        product.ssid = context['url'].split('/')[-1]
 
     manufacturer = data.xpath('//strong[contains(text(), "COMPANY")]/following-sibling::text()[1]').string()
     if manufacturer:
