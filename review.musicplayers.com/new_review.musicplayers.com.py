@@ -39,11 +39,11 @@ def process_review(data, context, session):
         ssid = url.split("/")[-2]
         review.authors.append(Person(name=name, ssid=ssid, profile_url=url))
 
-    grades = data.xpath("//tbody/tr[1]/following-sibling::tr")
+    grades = data.xpath("//tbody/tr/following-sibling::tr")
     for grade in grades:
         name = grade.xpath(".//strong/text()").string()
         if not name:
-            name = grade.xpath(".//span[1]/text()").string()
+            name = grade.xpath(".//span/text()").string()
 
         value = grade.xpath(".//img/@src").string()
 
@@ -52,52 +52,30 @@ def process_review(data, context, session):
                 value = value[0] + '.' + value[1:len(value) - 1]
 
             if len(grade.xpath(".//td")) == 3:
-                value2 = grade.xpath(".//span[1]/text()").string()
+                value = grade.xpath(".//span/text()").string()
 
             value = value.split('/')[-1].split('.')[0].replace("finalstar-", "").replace("_stars", "").replace("_", "")
             try:
                 if float(value) > 10.0:
                     value = float(value) / 10
-                review.grades.append(
-                    Grade(name=name.replace(':', ''), value=float(value), best=4.0))
+                review.grades.append(Grade(name=name.replace(':', ''), value=float(value), best=4.0))
             except ValueError:
                 pass
             
-    grades_overall = data.xpath('//span[contains(., "OVERALL RATING") and contains(., "Stars")]//text()').strings()
-    '//tr[contains(., "Overall Rating")]//text()'
+    grades_overall = data.xpath('//tr[contains(., "Overall Rating")]//text()|//span[contains(., "OVERALL RATING")]//text()|//tr[contains(., "Overall")]//text()').strings()
     for grade_overall in grades_overall:
-        if 'Stars' in grade_overall:
-            grade_overall = grade_overall.lower().replace('overall', '').replace('rating', '').split('stars')[0].strip()
-            if '=' in grade_overall:
-                grade_overall = grade_overall.split('=')[1].strip()
-        print('grade_overall=', grade_overall)
+        grade_overall = grade_overall.lower().replace('overall', '').replace('rating', '')
+        if 'stars' in grade_overall:
+            grade_overall = grade_overall.split('stars')[0].strip()
+        if '=' in grade_overall:
+            grade_overall = grade_overall.split('=')[1].strip()
+        if ',' in grade_overall:
+            grade_overall = grade_overall.split(',')[0].strip()
         try:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=4.0))
             break
         except ValueError:
             pass
-
-    # grade_overall = data.xpath("//tbody/tr[last()]/td[2]/text()").string()
-    # if not grade_overall:
-    #     grade_overall = data.xpath("//tbody/tr[last()]/td[1]//b/text()").string()
-    # if not grade_overall:
-    #     grade_overall = data.xpath("//tbody/tr[last()]/td[2]/em/text()[2]").string()
-    # if not grade_overall:
-    #     grade_overall = data.xpath("//tbody[1]/tr[last()]//span/text()").string()
-    # if not grade_overall:
-    #     grade_overall = data.xpath("//tbody/tr[last()]/td[2]/em/text()").string()
-    # if not grade_overall:
-    #     grade_overall = data.xpath("//tbody[1]/tr[last()]//b[1]/text()[2]").string(multiple=True)
-    #     if grade_overall:
-    #         grade_overall = grade_overall.split(" =")[1].split(" Stars")[0]
-
-    # if grade_overall:
-    #     grade_overall = grade_overall.replace("OVERALL RATING = ", "").replace(" Stars, which earns it a", "").replace("OVERALL RATING = ", "").replace(" Stars", "").replace(" (out of 4)", "").replace(",", "").replace(" WIHO Award!", "")
-    #     try:
-    #         review.grades.append(
-    #             Grade(type='overall', value=float(grade_overall), best=4.0))
-    #     except ValueError:
-    #         pass
 
     excerpt = data.xpath("//div[@class='entrytext']/p/text()").string(multiple=True)
     if not excerpt:
