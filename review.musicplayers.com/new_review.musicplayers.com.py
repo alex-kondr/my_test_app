@@ -64,11 +64,18 @@ def process_review(data, context, session):
                 pass
             
     grades_overall = data.xpath('//span[contains(., "OVERALL RATING") and contains(., "Stars")]//text()').strings()
+    '//tr[contains(., "Overall Rating")]//text()'
     for grade_overall in grades_overall:
         if 'Stars' in grade_overall:
-            grade_overall = grade_overall.split('Stars')[0].strip()
-            print('grade_overall', grade_overall)
+            grade_overall = grade_overall.lower().replace('overall', '').replace('rating', '').split('stars')[0].strip()
+            if '=' in grade_overall:
+                grade_overall = grade_overall.split('=')[1].strip()
+        print('grade_overall=', grade_overall)
+        try:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=4.0))
+            break
+        except ValueError:
+            pass
 
     # grade_overall = data.xpath("//tbody/tr[last()]/td[2]/text()").string()
     # if not grade_overall:

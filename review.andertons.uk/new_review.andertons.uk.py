@@ -7,10 +7,10 @@ XCAT = ["Offers", "Brands", "Customer Service", "Corporate Info"]
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.andertons.co.uk/sitemap'), process_frontpage, dict())
+    session.queue(Request('https://www.andertons.co.uk/sitemap'), process_catlist, dict())
 
 
-def process_frontpage(data, context, session):
+def process_catlist(data, context, session):
     cats = data.xpath("//div[@class='dtb-sitemap__segment-content']")
     for cat in cats:
         name = cat.xpath('.//a[@aria-level="2"]/text()').string()
@@ -33,12 +33,12 @@ def process_frontpage(data, context, session):
                             subcat_name = subcat.xpath("text()").string()
                             url = subcat.xpath("@href").string()
                             if url:
-                                session.queue(Request(url+'?pageNumber=1'), process_category, dict(cat=cat1_name+'|'+subcat_name))
+                                session.queue(Request(url+'?pageNumber=1', use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_category, dict(cat=cat1_name+'|'+subcat_name))
                     elif url:
-                        session.queue(Request(url+'?pageNumber=1'), process_category, dict(cat=cat1_name))
+                        session.queue(Request(url+'?pageNumber=1', use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_category, dict(cat=cat1_name))
                     
             elif url:
-                session.queue(Request(url+'?pageNumber=1'), process_category, dict(cat=name))
+                session.queue(Request(url+'?pageNumber=1', use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_category, dict(cat=name))
 
 
 def process_category(data, context, session):
@@ -55,13 +55,13 @@ def process_category(data, context, session):
     if not prods_cnt:
         return
     
-    prods_cnt = prods_cnt.split(' - ')[1].split(' of ')
-    offset = context.get('offset', 0) + len(prods)
+    prods_cnt = int(prods_cnt.split(' - ')[1].split(' of ')[1])
+    offset = context.get('offset', 0) + 48
     if offset < prods_cnt:
         curent_page = context.get('page', 1)
         next_page = curent_page + 1
         next_url = data.response_url.replace('?pageNumber=' + str(curent_page), '?pageNumber=' + str(next_page))
-        session.queue(Request(next_url), process_category, dict(context, offset=offset, page=next_page))
+        session.queue(Request(next_url, use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_category, dict(context, offset=offset, page=next_page))
 
 
 def process_product(data, context, session):
@@ -83,9 +83,10 @@ def process_product(data, context, session):
         review.type = 'user'
         review.date = rev.xpath('.//span[@class="o-customer-review__date"]/text()').string()
 
-        author_name = rev.xpath('.//p[@class="o-customer-review__name"]/span/text()').string()
-        if author_name:
-            review.authors.append(Person(name=author_name, ssid=author_name))
+        author = rev.xpath('.//p[@class="o-customer-review__name"]/span/text()').string()
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
+            
 
         grade_overall = rev.xpath('.//div[@class="o-review-stars"]/@title').string()
         if grade_overall:
@@ -99,14 +100,13 @@ def process_product(data, context, session):
                    name = name_value.split(" ")[0]
                    value = float(name_value.split(" ")[1])
                    review.grades.append(Grade(name=name, value=value, best=5.0))
-                else:
-                    continue
 
         excerpt = rev.xpath('text()').string()
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = review.digest()
+            review.ssid = review.digest() if author else review.digest(excerpt)
+            
             product.reviews.append(review)
 
     if product.reviews:
