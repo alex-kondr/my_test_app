@@ -14,31 +14,26 @@ def process_catlist(data, context, session):
     cats = data.xpath("//div[@class='dtb-sitemap__segment-content']")
     for cat in cats:
         name = cat.xpath('.//a[@aria-level="2"]/text()').string()
-        url = cat.xpath('.//a[@aria-level="2"]/@href').string()
         
         if name not in XCAT:        
             cats1 = cat.xpath('.//li[@class="h2 dtb-sitemap__segment-subtitle"]')
             
-            if cats1:
-                for cat1 in cats1:
-                    cat1_name = cat1.xpath('a[@aria-level="3"]/text()').string()
-                    if name != cat1_name:
-                        cat1_name = name + '|' + cat1_name
-                        
-                    url = cat1.xpath('a[@aria-level="3"]/@href').string()
+            for cat1 in cats1:
+                cat1_name = cat1.xpath('a[@aria-level="3"]/text()').string()
+                if name != cat1_name:
+                    cat1_name = name + '|' + cat1_name
                     
-                    subcats = cat1.xpath('.//li[@class="h3"]/a')
-                    if subcats:
-                        for subcat in subcats:
-                            subcat_name = subcat.xpath("text()").string()
-                            url = subcat.xpath("@href").string()
-                            if url:
-                                session.queue(Request(url+'?pageNumber=1', use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_category, dict(cat=cat1_name+'|'+subcat_name))
-                    elif url:
-                        session.queue(Request(url+'?pageNumber=1', use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_category, dict(cat=cat1_name))
-                    
-            elif url:
-                session.queue(Request(url+'?pageNumber=1', use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_category, dict(cat=name))
+                url = cat1.xpath('a[@aria-level="3"]/@href').string()
+                
+                subcats = cat1.xpath('.//li[@class="h3"]/a')
+                if subcats:
+                    for subcat in subcats:
+                        subcat_name = subcat.xpath("text()").string()
+                        url = subcat.xpath("@href").string()
+                        if url:
+                            session.queue(Request(url+'?pageNumber=1&orderBy=5', use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_category, dict(cat=cat1_name+'|'+subcat_name))
+                elif url:
+                    session.queue(Request(url+'?pageNumber=1&orderBy=5', use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_category, dict(cat=cat1_name))
 
 
 def process_category(data, context, session):
@@ -50,6 +45,8 @@ def process_category(data, context, session):
         revs = prod.xpath('.//div[@class="o-tile__row o-tile__reviews"]')
         if revs:
             session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        else:
+            return
             
     prods_cnt = data.xpath('//div[@class="flex-groww"]/p/text()').string()
     if not prods_cnt:

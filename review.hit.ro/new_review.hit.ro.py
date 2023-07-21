@@ -55,7 +55,7 @@ def process_product(data, context, session):
     if title:
         review.title = title
         
-    excerpt = data.xpath('//div[br]/text()|//p[br]//text()|//div[br]/b/text()|//div[br]/strong/text()').string(multiple=True)
+    excerpt = data.xpath('//div[br]/text()|//p[br]//text()|//div[br]/b/text()|//div[br]/strong/text()|//div[br]/em/text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
         

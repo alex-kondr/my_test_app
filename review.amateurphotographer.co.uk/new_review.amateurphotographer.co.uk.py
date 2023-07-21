@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request("https://www.amateurphotographer.co.uk/"), process_frontpage, dict())
     
     
@@ -40,19 +40,22 @@ def process_review(data, context, session):
     review.type = "pro"
     review.ssid = product.ssid
     review.url = context["url"]
+    review.title = context["name"]
     review.date = data.xpath('//body/p[@class="date"]/text()').string()
 
     grades = data.xpath('//div[@class="desktop-only"]//ul[@class="ratings"]/li')
-    print(grades)
     for grade in grades:
         name = grade.xpath("h3/text()").string()
         value = grade.xpath("p/text()").string()
         if value:
-            value = float(value.split('out')[0].replace(':', '').replace('-', '.').strip())
-            if 'overall' in name.lower():
-                review.grades.append(Grade(type='overall', value=value, best=5.0))
-            else:
-                review.grades.append(Grade(name=name, value=value, best=5.0))
+            try:
+                value = float(value.split('out')[0].replace(':', '').replace('-', '.').strip())
+                if 'overall' in name.lower():
+                    review.grades.append(Grade(type='overall', value=value, best=5.0))
+                else:
+                    review.grades.append(Grade(name=name, value=value, best=5.0))
+            except ValueError:
+                pass
 
     pros = data.xpath('//div[@class="desktop-only"]//p[@class="pros"]/text()').strings()
     for pro in pros:
@@ -66,13 +69,10 @@ def process_review(data, context, session):
         if con:
             review.add_property(type="cons", value=con)
 
-    excerpt = data.xpath('//div[@class="editable-content"]//text()').string(multiple=True)
-    # next_page = data.xpath("//p[@class='post-nav-links']/span/following-sibling::a/@href").string()
-    # if next_page:
-    #     if excerpt:
-    #         review.add_property(type="summary", value=excerpt)
-    #     session.do(Request(next_page), process_lastpage, dict(product=product, review=review, url=next_page))
-    #     return
+    excerpt = data.xpath('//div[@class="editable-content"]/*[not(@class)]//text()|//div[@class="post-overview"][contains(., "Specifications")]//text()').string(multiple=True)
+    next_page = data.xpath("//p[@class='post-nav-links']/span/following-sibling::a/@href").string()
+    if next_page:
+        review, excerpt = session.do(Request(next_page), process_review_next, dict(review=review, excerpt=excerpt, url=next_page))
 
     summary = data.xpath('//div[@class="post-excerpt-content"]/text()').string()
     if summary:
@@ -82,9 +82,27 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    # if excerpt:
-    #     if conclusion:
-    #         excerpt = excerpt.replace(conclusion.strip(), '').strip()
-    #     review.add_property(type="excerpt", value=excerpt)
-    #     product.reviews.append(review)
-    #     session.emit(product)
+    if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion.strip(), '').strip()
+        review.add_property(type="excerpt", value=excerpt)
+        
+        product.reviews.append(review)
+        
+        session.emit(product)
+        
+        
+def process_review_next(data, context, session):
+    review = context["review"]
+    
+    excerpt = data.xpath('//div[@class="editable-content"]/*[not(@class)]//text()|//div[@class="post-overview"][contains(., "Specifications")]//text()').string(multiple=True)
+    excerpt = context['excerpt'] + ' ' + excerpt
+
+    page = context.get("page", 1) + 1
+    review.add_property(type="pages", value=dict(title=review.title+'-'+str(page), url=context["url"]))
+
+    next_page = data.xpath("//p[@class='post-nav-links']/span/following-sibling::a/@href").string()
+    if next_page:
+        review, excerpt = session.do(Request(next_page), process_review_next, dict(review=review, excerpt=excerpt, url=next_page))
+
+    return review, excerpt
