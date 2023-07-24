@@ -4,7 +4,7 @@ from models.products import *
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request("https://hrej.cz/games"), process_prodlist, dict())
+    session.queue(Request("https://hrej.cz/reviews"), process_prodlist, dict())
 
 
 def process_prodlist(data, context, session):
@@ -26,9 +26,9 @@ def process_product(data, context, session):
     product.ssid = context["url"].split('/')[-1]
     product.url = context["url"]
 
-    manufacturer = data.xpath("//span[contains(.,'Vydavatel')]//text()").string()
+    manufacturer = data.xpath("//span[contains(.,'Vydavatel')]//text()").string(multiple=True)
     if manufacturer:
-        product.manufacturer = manufacturer.replace("Vydavatel", '')
+        product.manufacturer = manufacturer.replace("Vydavatel", '').strip()
 
     category = data.xpath("//span[@class='un-chip__text']//text()").string()
     if category:
