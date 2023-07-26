@@ -5,7 +5,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request("https://hrej.cz/reviews"), process_prodlist, dict())
 
 
@@ -27,11 +27,9 @@ def process_product(data, context, session):
 
     product = Product()
 
-    name = prod_json.get('itemReviewed', {}) or data.xpath('//span[@class="un-list-item__before" and a[@href="https://hrej.cz/"]]/a[not(contains(@href, "article"))][not(i)]/text()').string()
-    if isinstance(name, list):
-        name = '|'.join([item.get('name') for item in name])
-    else:
-        name = name.get('name')
+    name = data.xpath('//span[@class="un-list-item__before" and a[@href="https://hrej.cz/"]]/a[not(contains(@href, "article"))][not(i)]/text()').string()
+    if 'Recenze' in name:
+        name = data.xpath('//meta[@property="og:title"]/@content').string()
     product.name = name
 
     product.ssid = context["url"].split('/')[-1]
@@ -82,20 +80,22 @@ def process_product(data, context, session):
 
     next_page = data.xpath('//a[span[text()="Další" or text()="Poslední"] and not(@disabled="disabled")]/@href').string()
     if next_page:
-        excerpt = session.do(Request(next_page), process_review, dict(context, review=review, excerpt=excerpt))
-
-    if excerpt:
+        review.add_property(type='pages', value=dict(title=review.title + ' - page 1', url=data.response_url))
+        session.do(Request(next_page), process_review, dict(page=1, product=product, review=review, excerpt=excerpt))
+    elif excerpt:
         review.add_property(type="excerpt", value=excerpt)
 
         product.reviews.append(review)
 
-    if product.reviews:
         session.emit(product)
 
 
 def process_review(data, context, session):
-    review = context["review"]
-    review.add_property(type='pages', value=dict(title=review.title, url=data.response_url))
+    product = context['product']
+    review = context['review']
+
+    page = context['page'] + 1
+    review.add_property(type='pages', value=dict(title=review.title + ' - page ' + str(page), url=data.response_url))
 
     excerpt = context["excerpt"]
 
@@ -121,6 +121,10 @@ def process_review(data, context, session):
 
     next_page = data.xpath('//a[span[text()="Další" or text()="Posledni"] and not(@disabled="disabled")]/@href').string()
     if next_page:
-        excerpt = session.do(Request(next_page), process_review, dict(context, review=review, excerpt=excerpt))
+        session.do(Request(next_page), process_review, dict(page=page, product=product, review=review, excerpt=excerpt))
+    elif excerpt:
+        review.add_property(type="excerpt", value=excerpt)
 
-    return excerpt
+        product.reviews.append(review)
+
+        session.emit(product)

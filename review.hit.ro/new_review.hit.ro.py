@@ -2,25 +2,17 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['Stiri', 'IT', 'Internet', 'Multimedia', 'Diverse']
-
-
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('http://www.hit.ro/'), process_frontpage, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
+    session.queue(Request('https://www.hit.ro/'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
-    cats = data.xpath('//div[@class="mdl-layout__header-row"]/a[@class="mdl-navigation__link"][text()]')
+    cats = data.xpath('//a[@title="Gadgeturi"]/following-sibling::div[1]//li/a')
     for cat in cats:
         name = cat.xpath('text()').string()
-
-        if name not in XCAT:
-            subcats = cat.xpath('following-sibling::div[1]//li/a')
-            for subcat in subcats:
-                subcat_name = subcat.xpath('text()').string()
-                url = subcat.xpath('@href').string()
-                session.queue(Request(url), process_category, dict(cat=name+'|'+subcat_name))
+        url = cat.xpath('@href').string()
+        session.queue(Request(url), process_category, dict(cat=name))
 
 
 def process_category(data, context, session):

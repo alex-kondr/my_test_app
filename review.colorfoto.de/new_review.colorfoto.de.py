@@ -15,14 +15,14 @@ def process_catlist(data, context, session):
         url = cat.xpath('@href').string()
         session.queue(Request(url), process_prodlist, dict())
 
-    session.queue(Request('https://www.connect-living.de/testbericht/alle'), process_prodlist_arhiv, dict())
+    session.queue(Request('https://www.connect-living.de/testbericht/alle'), process_arhiv, dict())
 
 
-def process_prodlist_arhiv(data, context, session):
+def process_arhiv(data, context, session):
     arhivs = data.xpath('//a[@class="teaser__link"][not(@tabindex)]')
     for arhiv in arhivs:
         url = arhiv.xpath('@href').string()
-        session.queue(Request(url), process_prodlist_arhiv, dict())
+        session.queue(Request(url), process_prodlist, dict())
 
 
 def process_prodlist(data, context, session):
@@ -60,13 +60,9 @@ def process_review(data, context, session):
     review.type = "pro"
     review.url = context['url']
 
-    date = prod_json.get('datePublished')
+    date = prod_json.get('datePublished') or data.xpath('//p[@class="articlehead__dateauthors"]/text()').string()
     if date:
         review.date = date.split()[0]
-    else:
-        date = data.xpath('//p[@class="articlehead__dateauthors"]/text()').string()
-        if date:
-            review.date = date.split()[0]
 
     authors = prod_json.get('author', {})
     if isinstance(authors, list):
@@ -84,14 +80,13 @@ def process_review(data, context, session):
             author = author.xpath('text()').string()
             review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = prod_json.get('mentions', {}).get('review', {}).get('reviewRating', {}).get('ratingValue')
-    bestRating = prod_json.get('mentions', {}).get('review', {}).get('reviewRating', {}).get('bestRating')
+    grade_overall = prod_json.get('mentions', {}).get('review', {}).get('reviewRating', {}).get('ratingValue') or data.xpath('(//div[@class="inline_rating__result inline_rating__result--starpercent"]/text())[last()]').string()
     if grade_overall:
         grade_overall = float(grade_overall.replace('%', '').replace(',', '.'))
         if grade_overall > 0:
-            review.grades.append(Grade(type='overall', value=grade_overall, best=float(bestRating)))
+            review.grades.append(Grade(type='overall', value=grade_overall, best=100.0))
 
-    summary = prod_json.get('description')
+    summary = data.xpath('//p[@class="articlehead__lead"]/text()').string()
     if summary:
         review.add_property(type='summary', value=summary)
 
