@@ -78,6 +78,8 @@ def process_product(data, context, session):
     context['excerpt'] = data.xpath('//section[@id="articleBody"]/*[contains(., "Conclusie")]/preceding-sibling::*[not(strong/span)]//text()').string(multiple=True)
     if not context['excerpt']:
         context['excerpt'] = data.xpath('//section[@id="articleBody"]/p//text()').string(multiple=True)
+    if not context['excerpt']:
+            context['excerpt'] = data.xpath('//section[@id="articleBody"]//*[contains(., "Conclusie")]/preceding-sibling::*//text()').string(multiple=True)
 
     pros = data.xpath('//ul[@class="ulPlus"]/li/text()').strings()
     if pros:
@@ -113,10 +115,15 @@ def process_review_next(data, context, session):
 
         new_excerpt = data.xpath('//div[@class="conclusieContainer"]/text()|//p[@class="Hoofdtekst" and contains(., "Conclusie")]/preceding-sibling::*//text()').string(multiple=True)
         if not new_excerpt:
+            new_excerpt = data.xpath('//section[@id="articleBody"]//*[contains(., "Conclusie")]/preceding-sibling::*//text()').string(multiple=True)
+        if not new_excerpt:
             new_excerpt = data.xpath('//section[@id="articleBody"]/p//text()').string(multiple=True)
-        excerpt += ' ' + new_excerpt
+        if not new_excerpt:
+            new_excerpt = data.xpath('//section[@id="articleBody"]//p//text()').string(multiple=True)
+        if new_excerpt:
+            excerpt += ' ' + new_excerpt
 
-    conclusion = data.xpath('//div[@class="conclusieContainer"]/text()|//p[@class="Hoofdtekst" and contains(., "Conclusie")]/text()').string()
+    conclusion = data.xpath('//div[@class="conclusieContainer"]/text()|//p[@class="Hoofdtekst" and contains(., "Conclusie")]/text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2[contains(., "Conclusie")]/following-sibling::p[string-length(normalize-space(.)) > 100][1]//text()').string(multiple=True)
     if conclusion:
@@ -135,6 +142,14 @@ def process_review_next(data, context, session):
             review.properties.append(ReviewProperty(type='pros', value=pros))
 
         cons = [con.replace('-', '').strip() for con in pros_cons if con.startswith('-')]
+        if cons:
+            review.properties.append(ReviewProperty(type='cons', value=cons))
+    else:
+        pros = data.xpath('//p[@class="p1"]/span[normalize-space(text()) and not(contains(text(), "+"))]/text()').strings()
+        if pros:
+            review.properties.append(ReviewProperty(type='pros', value=pros))
+
+        cons = data.xpath('//p[@class="p2"]/span[normalize-space(text()) and not(contains(text(), "-"))]/text()').strings()
         if cons:
             review.properties.append(ReviewProperty(type='cons', value=cons))
 
