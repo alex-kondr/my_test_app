@@ -77,9 +77,11 @@ def process_product(data, context, session):
 
     context['excerpt'] = data.xpath('//section[@id="articleBody"]/*[contains(., "Conclusie")]/preceding-sibling::*[not(strong/span)]//text()').string(multiple=True)
     if not context['excerpt']:
+        context['excerpt'] = data.xpath('//section[@id="articleBody"]//*[contains(., "Conclusie")]/preceding-sibling::*//text()').string(multiple=True)
+    if not context['excerpt']:
         context['excerpt'] = data.xpath('//section[@id="articleBody"]/p//text()').string(multiple=True)
     if not context['excerpt']:
-            context['excerpt'] = data.xpath('//section[@id="articleBody"]//*[contains(., "Conclusie")]/preceding-sibling::*//text()').string(multiple=True)
+        context['excerpt'] = data.xpath('//section[@id="articleBody"]//p//text()').string(multiple=True)
 
     pros = data.xpath('//ul[@class="ulPlus"]/li/text()').strings()
     if pros:

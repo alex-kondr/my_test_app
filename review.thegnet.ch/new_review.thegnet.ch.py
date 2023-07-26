@@ -9,7 +9,7 @@ OPTIONS = "-H 'instance: Y3LAmqqWxw9TTeqEw913q2ppHaajgDEA2S_QGLrMYWU.eyJpbnN0YW5
 
 
 def run(context, session):
-    session.queue(Request(URL, use='curl', options=OPTIONS, max_age=0), process_prodlist, dict())
+    session.queue(Request(URL, use='curl', options=OPTIONS, max_age=0, force_charset='utf-8'), process_prodlist, dict())
 
 
 def process_prodlist(data, context, session):
@@ -18,8 +18,7 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod.get('title', '').replace('im Test', '').replace('The(G)net Review - ', '').replace(u'\u2019', "'").split(':', 1)
         name = name[1].strip() if len(name) > 1 else name[0].strip()
-        url = prod.get('link').encode('utf8', 'replace').decode()
-        print(url)
+        url = prod.get('link')
         session.queue(Request(url), process_product, dict(name=name, url=url))
 
 
