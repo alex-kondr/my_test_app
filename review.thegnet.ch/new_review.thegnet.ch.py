@@ -19,7 +19,7 @@ def process_prodlist(data, context, session):
         name = prod.get('title', '').replace('im Test', '').replace('The(G)net Review - ', '').replace(u'\u2019', "'").split(':', 1)
         name = name[1].strip() if len(name) > 1 else name[0].strip()
         url = prod.get('link')
-        session.queue(Request(url), process_product, dict(name=name, url=url))
+        session.queue(Request(url, use='curl', max_age=0, force_charset='utf-8'), process_product, dict(name=name, url=url))
 
 
 def process_product(data, context, session):
@@ -60,7 +60,7 @@ def process_product(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    excerpt_conclusion = data.xpath('//div[@data-id="rich-content-viewer"]//p[@id="viewer-8lsdm"]/preceding-sibling::*//text()').string(multiple=True)
+    excerpt_conclusion = data.xpath('//div[@data-id="rich-content-viewer"]//text()').string(multiple=True)
     if excerpt_conclusion:
         excerpt_conclusion = excerpt_conclusion.split('Fazit:')
 

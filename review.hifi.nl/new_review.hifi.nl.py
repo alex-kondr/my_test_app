@@ -82,6 +82,8 @@ def process_product(data, context, session):
         context['excerpt'] = data.xpath('//section[@id="articleBody"]/p//text()').string(multiple=True)
     if not context['excerpt']:
         context['excerpt'] = data.xpath('//section[@id="articleBody"]//p//text()').string(multiple=True)
+    if not context['excerpt']:
+            context['excerpt'] = data.xpath('//section[@id="articleBody"]//div//text()').string(multiple=True)
 
     pros = data.xpath('//ul[@class="ulPlus"]/li/text()').strings()
     if pros:
@@ -93,14 +95,15 @@ def process_product(data, context, session):
         cons = [con.replace('\n', '').strip() for con in cons]
         review.properties.append(ReviewProperty(name="MINPUNTEN", type="cons", value=cons))
 
+    context['product'] = product
+
     next_page = data.xpath('//span[@class="pagerItem" and a[@class="orange"]]/following-sibling::*[1]/a/@href').string()
     if next_page:
         page = 1
         review.add_property(type='pages', value=dict(title=review.title + ' - page ' + str(page), url=data.response_url))
-        session.do(Request(next_page, force_charset="utf-8"), process_review_next, dict(context, product=product, review=review, page=page + 1))
+        session.do(Request(next_page, force_charset="utf-8"), process_review_next, dict(context, review=review, page=page + 1))
 
     else:
-        context['product'] = product
         context['review'] = review
         context['page'] = 1
         process_review_next(data, context, session)
@@ -122,6 +125,8 @@ def process_review_next(data, context, session):
             new_excerpt = data.xpath('//section[@id="articleBody"]/p//text()').string(multiple=True)
         if not new_excerpt:
             new_excerpt = data.xpath('//section[@id="articleBody"]//p//text()').string(multiple=True)
+        if not context['excerpt']:
+            new_excerpt = data.xpath('//section[@id="articleBody"]//div//text()').string(multiple=True)
         if new_excerpt:
             excerpt += ' ' + new_excerpt
 
