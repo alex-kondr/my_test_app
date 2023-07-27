@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-import re
 
 
 XCAT = ["Aktuality", "Software"]
@@ -90,18 +89,17 @@ def process_review(data, context, session):
 
     context['product'] = product
 
-    next_url = data.xpath('//a[contains(text(), "Následující")]/@href').string
+    next_url = data.xpath('//a[contains(text(), "Následující")]/@href').string()
     if next_url:
-        review.add_property(type='pages', value=dict(title=review.title + ' - page 1'), url=data.response_url))
+        review.add_property(type='pages', value=dict(title=review.title + ' - page 1', url=data.response_url))
         session.do(Request(next_url, use="curl"), process_review_next, dict(context, review=review, page=2))
     else:
-        context['review']
+        context['review'] = review
         context['page'] = 1
         process_review_next(data, context, session)
 
 
 def process_review_next(data, context, session):
-    product = context['product']
     review = context["review"]
 
     page = context['page']
@@ -125,28 +123,13 @@ def process_review_next(data, context, session):
         if excerpt:
             context['excerpt'] += ' ' + excerpt
 
-    # conclusion = data.xpath("//div[@id='content-area']//font/text()").string(multiple=True)
-    # if not conclusion:
-    #     conclusion = data.xpath("//div[@id='content-area']//p[normalize-space(text()|font/text())]//text()").string(multiple=True)
-    # if not conclusion:
-    #     conclusion = data.xpath("//table[@class='contentpaneopen']//tr//div//font/text()").string(multiple=True)
-    # if not conclusion:
-    #     conclusion = data.xpath("//table[@class='contentpaneopen']//tr//p//font/text()").string(multiple=True)
-    # if not conclusion:
-    #     conclusion = data.xpath("//table[@class='contentpaneopen']//tr//p//span/text()").string(multiple=True)
-    # if not conclusion:
-    #     conclusion = data.xpath("//p//font//text()").string(multiple=True)
-    # if not conclusion:
-    #     conclusion = data.xpath("//p//span//text()").string(multiple=True)
-    # if not conclusion:
-    #     conclusion = data.xpath("//div//font//text()").string(multiple=True)
-    # if conclusion:
-    #     review.properties.append(ReviewProperty(type="conclusion", value=conclusion))
+    next_url = data.xpath('//a[contains(text(), "Následující")]/@href').string()
+    if next_url:
+        session.do(Request(next_url, use="curl"), process_review_next, dict(context, review=review, page=page+1))
+    elif context['excerpt']:
+        review.properties.append(ReviewProperty(type="excerpt", value=context['excerpt']))
 
-    if excerpt:
-        review.properties.append(ReviewProperty(type="excerpt", value=excerpt))
-
-    if excerpt or conclusion:
+        product = context['product']
         product.reviews.append(review)
 
         session.emit(product)
