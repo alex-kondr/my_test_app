@@ -5,7 +5,7 @@ from models.products import *
 
 
 URL = 'https://www.thegnet.org/blog-frontend-adapter-public/v1/post-list-widget/render-model?timezone=Europe/Zurich&postLimit=500&categoryId=87c39d34-b1fa-4ed1-abfe-580cd4b663bb'
-OPTIONS = "-H 'instance: Y3LAmqqWxw9TTeqEw913q2ppHaajgDEA2S_QGLrMYWU.eyJpbnN0YW5jZUlkIjoiNmRmZjQ2OTgtZmJiZS00MjE5LWJlYWUtMGU5ZGQ1ZjQ5MTc4IiwiYXBwRGVmSWQiOiIxNGJjZGVkNy0wMDY2LTdjMzUtMTRkNy00NjZjYjNmMDkxMDMiLCJtZXRhU2l0ZUlkIjoiZDM5ZTJhMTMtYzE3ZC00NzdmLThjNDAtYjc5YTQ4ZjYyMWY1Iiwic2lnbkRhdGUiOiIyMDIzLTA3LTI2VDIxOjEwOjU4LjM4MVoiLCJkZW1vTW9kZSI6ZmFsc2UsIm9yaWdpbkluc3RhbmNlSWQiOiJiNDUyYTIyMC0wOTgxLTRlMmUtYTY4Ny05ZGEzY2JjZmExOWYiLCJhaWQiOiIzNzUwYzRhZC04YTEyLTQ2MzItYThmZi0zZDFjMDMzYjZkNzMiLCJiaVRva2VuIjoiYmU2MTZjOGItM2FjMy0wNTY2LTMyZWUtYjkwNzlkMDJiMDhkIiwic2l0ZU93bmVySWQiOiIwNTJkMTgxZC0wNTIxLTQwODYtYTg2NC0xMWNkMTU5OGU2ZDIifQ'"
+OPTIONS = "-H 'instance: k2jeapWFnMu4uhCAePqM5dtjUD9kQt0Nfy5M-C7mkVE.eyJpbnN0YW5jZUlkIjoiNmRmZjQ2OTgtZmJiZS00MjE5LWJlYWUtMGU5ZGQ1ZjQ5MTc4IiwiYXBwRGVmSWQiOiIxNGJjZGVkNy0wMDY2LTdjMzUtMTRkNy00NjZjYjNmMDkxMDMiLCJtZXRhU2l0ZUlkIjoiZDM5ZTJhMTMtYzE3ZC00NzdmLThjNDAtYjc5YTQ4ZjYyMWY1Iiwic2lnbkRhdGUiOiIyMDIzLTA3LTI4VDA3OjQ0OjExLjE2MVoiLCJkZW1vTW9kZSI6ZmFsc2UsIm9yaWdpbkluc3RhbmNlSWQiOiJiNDUyYTIyMC0wOTgxLTRlMmUtYTY4Ny05ZGEzY2JjZmExOWYiLCJhaWQiOiI2MjJkNjU4My0wZGE4LTRlMTYtOGExZi04OWYyMGJmYTM0M2MiLCJiaVRva2VuIjoiYmU2MTZjOGItM2FjMy0wNTY2LTMyZWUtYjkwNzlkMDJiMDhkIiwic2l0ZU93bmVySWQiOiIwNTJkMTgxZC0wNTIxLTQwODYtYTg2NC0xMWNkMTU5OGU2ZDIifQ'"
 
 
 def run(context, session):
@@ -50,7 +50,7 @@ def process_product(data, context, session):
         if date:
             review.date = date.split('T')[0]
 
-    summary = data.xpath('//div[@data-id="rich-content-viewer"]//p[@id="viewer-foo"]//text()').string()
+    summary = data.xpath('//div[@data-id="rich-content-viewer"]//p[@id="viewer-foo"]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
@@ -60,19 +60,32 @@ def process_product(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    excerpt_conclusion = data.xpath('//div[@data-id="rich-content-viewer"]//text()').string(multiple=True)
-    if excerpt_conclusion:
-        excerpt_conclusion = excerpt_conclusion.split('Fazit:')
+    excerpt = ''
+    conclusion = ''
+    is_conclusion = False
+    excerpt_conclusion = data.xpath('//div[@data-id="rich-content-viewer"]/div/*[not(@id="viewer-foo")]')
+    for exc_con in excerpt_conclusion:
+        grade_img = exc_con.xpath('.//div[@data-hook="imageViewer"][not(.//path|.//span)]/@class').string()
+        if grade_img:
+            break
 
-        if len(excerpt_conclusion) > 1:
-            conclusion = excerpt_conclusion[1].strip()
-            review.add_property(type='conclusion', value=conclusion)
+        text = exc_con.xpath('.//text()').string(multiple=True)
+        if text:
+            if 'Fazit:' in text:
+                is_conclusion = True
+                continue
+            if is_conclusion:
+                conclusion += ' ' + text
+            else:
+                excerpt += ' ' + text
 
-        excerpt = excerpt_conclusion[0]
-        if summary:
-            excerpt = excerpt.replace(summary, '').strip()
-        review.add_property(type='excerpt', value=excerpt)
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt.strip())
 
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion.strip())
+
+    if excerpt or conclusion:
         product.reviews.append(review)
 
         session.emit(product)

@@ -6,7 +6,7 @@ XCAT = ["Aktuality", "Software"]
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request("http://www.ddworld.cz/"), process_catlist, dict())
 
 
@@ -52,7 +52,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context["title"].split("– TEST a RECENZE")[0].split("Recenze:")[-1].split("TEST: ")[-1]
+    product.name = context["title"].split("– TEST a RECENZE")[0].split("Recenze:")[-1].split("TEST: ")[-1].split("-")[0]
     product.url = context["url"]
     product.ssid = context["ssid"]
     product.category = context["cat"]
