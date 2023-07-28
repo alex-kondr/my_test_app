@@ -3,19 +3,19 @@ from models.products import *
 
 
 def run(context, session):
-    session.queue(Request("https://www.exophase.com/tag/review/", use="curl"), process_prodlist, dict())
+    session.queue(Request("https://www.exophase.com/tag/review/", use="curl", force_charset='utf-8'), process_revlist, dict())
 
 
-def process_prodlist(data, context, session):
+def process_revlist(data, context, session):
     for prod in data.xpath("//div[contains(@id, 'post-')]//h3[contains(@class, 'mediumHeading')]//a"):
         url = prod.xpath("@href").string()
         title = prod.xpath("text()").string(multiple=True)
         if url and title:
-            session.queue(Request(url, use="curl"), process_review, dict(url=url, title=title))
+            session.queue(Request(url, use="curl", force_charset='utf-8'), process_review, dict(url=url, title=title))
 
     nexturl = data.xpath("//a[@class='page-link next page-numbers']//@href").string()
     if nexturl:
-        session.queue(Request(nexturl, use="curl"), process_prodlist, dict(context))
+        session.queue(Request(nexturl, use="curl", force_charset='utf-8'), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
@@ -50,12 +50,11 @@ def process_review(data, context, session):
         review.date = date.split(" @")[0]
 
     author = data.xpath("//span[@class='author']//text()").string()
-    if author:
-        author_url = data.xpath("//a[@class='follow-me']//@href").string()
-        if author_url:
-            review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
-        else:
-            review.authors.append(Person(name=author, ssid=author))
+    author_url = data.xpath("//a[@class='follow-me']//@href").string()
+    if author and author_url:
+        review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
 
     pros = data.xpath("//strong[contains(text(), 'What Impressed') or contains(text(), 'Playtime') or contains(text(), 'Sweet') or contains(text(), 'The Good') or contains(text(), 'The good')]//parent::p/following-sibling::ul[1]//li//text()")
     if not pros:
@@ -116,7 +115,7 @@ def process_review(data, context, session):
         conclusion = conclusion.replace('\n', ' ')
         review.properties.append(ReviewProperty(type="conclusion", value=conclusion))
 
-    excerpt = data.xpath("//div[@class='post-body']//p//text()").string(multiple=True)
+    excerpt = data.xpath('//div[@class="post-body"]/*[contains(., "Score") or contains(., "Verdict") or contains(., "out of")]/preceding-sibling::p//text()').string(multiple=True)
     if excerpt:
         if 'Score:' in excerpt:
             excerpt = excerpt.split('Score:')[0]

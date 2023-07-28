@@ -1,3 +1,5 @@
+import simplejson
+
 from agent import *
 from models.products import *
 
@@ -18,6 +20,13 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
+    rev_json = data.xpath('//script [@type="application/ld+json"]//text()').string()
+    summary = ''
+    if rev_json:
+        rev_json = simplejson.loads(rev_json).get('@graph')
+        if len(rev_json) >= 4:
+            summary = rev_json[3].get('description')
+
     title = data.xpath("//h1[contains(@class, 'entry-title')]//text()").string()
 
     product = Product()
@@ -29,9 +38,12 @@ def process_review(data, context, session):
     review = Review()
     review.url = context["url"]
     review.title = title
-    review.date = data.xpath("//meta[@property='article:published_time']/@content").string().split('T')[0]
     review.ssid = product.ssid
     review.type = "pro"
+
+    date = data.xpath("//meta[@property='article:published_time']/@content").string()
+    if date:
+        review.date = date.split('T')[0]
 
     author = data.xpath("//a[@rel='author']").first()
     if author:
@@ -43,23 +55,24 @@ def process_review(data, context, session):
     if grade_overall > 0:
         grade_overall += len(data.xpath("//span[@class='bgr-rating bgr-clip-50 bgr-rating-solid']")) / 2
         review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
-        
+
     pros = data.xpath('//ul[@class="pros"]//text()[last()]').strings()
     for pro in pros:
         review.add_property(type='pros', value=pro)
-            
+
     cons = data.xpath('//ul[@class="cons"]//text()[last()]').strings()
     for con in cons:
         review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath("//h2[regexp:test(normalize-space(.), 'conclusions|verdict', 'i')]/following-sibling::p[1]//text()").string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    conclusion = data.xpath('//div[contains(@class,"entry-content")]//*[contains(., "Conclusion") or contains(., "Verdict")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath("//div[contains(@class,'entry-content')]//p//text()").string(multiple=True)
+    excerpt = data.xpath('//div[contains(@class,"entry-content")]//*[contains(., "Conclusion") or contains(., "Verdict")]/preceding-sibling::p//text()').string(multiple=True)
     if excerpt:
-        if conclusion:
-            excerpt = excerpt.replace(conclusion, '')
         review.add_property(type="excerpt", value=excerpt)
 
         product.reviews.append(review)

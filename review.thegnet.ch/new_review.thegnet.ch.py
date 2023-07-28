@@ -16,26 +16,21 @@ def process_prodlist(data, context, session):
     prods = simplejson.loads(data.content).get('posts', {}).get('body', [])
 
     for prod in prods:
-        name = prod.get('title', '').replace('im Test', '').replace('The(G)net Review - ', '').replace(u'\u2019', "'").split(':', 1)
+        name = prod.get('title', '').replace('im Test', '').replace('The(G)net Review - ', '').split(':', 1)
         name = name[1].strip() if len(name) > 1 else name[0].strip()
         url = prod.get('link')
         session.queue(Request(url, use='curl', max_age=0, force_charset='utf-8'), process_product, dict(name=name, url=url))
 
 
 def process_product(data, context, session):
-    prod_json = data.xpath('//script[@type="application/ld+json"]/text()').string()
-    author_url = ''
-    date = ''
-    if prod_json:
-        prod_json = simplejson.loads(prod_json)
-        author_url = prod_json.get('author', {}).get('url')
-        date = prod_json.get('datePublished', '').split('T')[0]
-
     product = Product()
     product.name = context['name']
-    product.url = context['url']
     product.ssid = context['url'].split('/')[-1]
     product.category = 'review'
+
+    product.url = data.xpath('//span[contains(@class, "public-DraftStyleDefault-ltr")]//a/@href').string()
+    if 'thegnet.org' not in product.url:
+        product.url = context['url']
 
     review = Review()
     review.type = 'pro'
@@ -43,21 +38,16 @@ def process_product(data, context, session):
     review.url = context['url']
     review.title = data.xpath('//title/text()').string()
 
+    date = data.xpath('//meta[@property="article:published_time"]/@content').string()
     if date:
-        review.date = date
-    else:
-        date = data.xpath('//meta[@property="article:published_time"]/@content').string()
-        if date:
-            review.date = date.split('T')[0]
+        review.date = date.split('T')[0]
 
     summary = data.xpath('//div[@data-id="rich-content-viewer"]//p[@id="viewer-foo"]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
     author = data.xpath('//meta[@property="article:author"]/@content').string()
-    if author and author_url:
-        review.authors.append(Person(name=author, ssid=author, url=author_url))
-    elif author:
+    if author:
         review.authors.append(Person(name=author, ssid=author))
 
     excerpt = ''
@@ -77,12 +67,12 @@ def process_product(data, context, session):
             else:
                 excerpt += ' ' + text
 
-    if excerpt:
-        review.add_property(type='excerpt', value=excerpt.strip())
-
     if conclusion:
         conclusion = conclusion.replace('Fazit:', '').strip()
         review.add_property(type='conclusion', value=conclusion)
+
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt.strip())
 
     if excerpt or conclusion:
         product.reviews.append(review)
