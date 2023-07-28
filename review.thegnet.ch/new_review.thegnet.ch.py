@@ -65,16 +65,14 @@ def process_product(data, context, session):
     is_conclusion = False
     excerpt_conclusion = data.xpath('//div[@data-id="rich-content-viewer"]/div/*[not(@id="viewer-foo")]')
     for exc_con in excerpt_conclusion:
-        grade_img = exc_con.xpath('.//div[@data-hook="imageViewer"][not(.//path|.//span)]/@class').string()
+        grade_img = exc_con.xpath('.//div[@style="--dim-height:658;--dim-width:1920"]/@class').string()
         if grade_img:
             break
 
-        text = exc_con.xpath('.//text()').string(multiple=True)
+        text = exc_con.xpath('.//span[not(@class)]//text()').string(multiple=True)
         if text:
-            if 'Fazit:' in text:
+            if 'Fazit:' in text or is_conclusion:
                 is_conclusion = True
-                continue
-            if is_conclusion:
                 conclusion += ' ' + text
             else:
                 excerpt += ' ' + text
@@ -83,7 +81,8 @@ def process_product(data, context, session):
         review.add_property(type='excerpt', value=excerpt.strip())
 
     if conclusion:
-        review.add_property(type='conclusion', value=conclusion.strip())
+        conclusion = conclusion.replace('Fazit:', '').strip()
+        review.add_property(type='conclusion', value=conclusion)
 
     if excerpt or conclusion:
         product.reviews.append(review)

@@ -127,5 +127,6 @@ def process_review(data, context, session):
         excerpt = excerpt.replace('\n', ' ')
         review.properties.append(ReviewProperty(type="excerpt", value=excerpt))
 
-    product.reviews.append(review)
-    session.emit(product)
+    if excerpt or conclusion:
+        product.reviews.append(review)
+        session.emit(product)
