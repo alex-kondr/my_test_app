@@ -9,10 +9,11 @@ def run(context, session):
 
 
 def process_revlist(data, context, session):
-    revs = data.xpath("//article/following::a[img][1]")
+    revs = data.xpath('//h2//a')
     for rev in revs:
+        title = rev.xpath('text()').string()
         url = rev.xpath("@href").string()
-        session.queue(Request(url), process_review, dict(url=url))
+        session.queue(Request(url), process_review, dict(url=url, title=title))
 
     next_url = data.xpath("//link[@rel='next']/@href").string()
     if next_url:
@@ -20,24 +21,15 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
-    rev_json = data.xpath('//script [@type="application/ld+json"]//text()').string()
-    summary = ''
-    if rev_json:
-        rev_json = simplejson.loads(rev_json).get('@graph')
-        if len(rev_json) >= 4:
-            summary = rev_json[3].get('description')
-
-    title = data.xpath("//h1[contains(@class, 'entry-title')]//text()").string()
-
     product = Product()
-    product.name = title.split(" Review")[0].split(" review")[0]
+    product.name = context['title'].split(" Review")[0].split(" review")[0]
     product.url = context["url"]
     product.ssid = context["url"].split('/')[-2]
     product.category = data.xpath("(//div[contains(@class,'bgr-breadcrumbs')]//a)[last()]//text()").string()
 
     review = Review()
     review.url = context["url"]
-    review.title = title
+    review.title = context['title']
     review.ssid = product.ssid
     review.type = "pro"
 
@@ -64,6 +56,12 @@ def process_review(data, context, session):
     for con in cons:
         review.add_property(type='cons', value=con)
 
+    rev_json = data.xpath('//script [@type="application/ld+json"]//text()').string()
+    summary = ''
+    if rev_json:
+        rev_json = simplejson.loads(rev_json).get('@graph', [])
+        if len(rev_json) >= 4:
+            summary = rev_json[3].get('description')
     if summary:
         review.add_property(type='summary', value=summary)
 
@@ -76,4 +74,5 @@ def process_review(data, context, session):
         review.add_property(type="excerpt", value=excerpt)
 
         product.reviews.append(review)
+
         session.emit(product)

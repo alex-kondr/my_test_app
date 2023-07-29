@@ -29,7 +29,7 @@ def process_product(data, context, session):
     product.category = 'review'
 
     product.url = data.xpath('//span[contains(@class, "public-DraftStyleDefault-ltr")]//a/@href').string()
-    if 'thegnet.org' not in product.url:
+    if not product.url or 'thegnet.org' in product.url:
         product.url = context['url']
 
     review = Review()
