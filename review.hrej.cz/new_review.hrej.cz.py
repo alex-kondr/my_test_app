@@ -68,7 +68,7 @@ def process_review(data, context, session):
     if next_page:
         title = data.xpath('//a[@class="post-chapters__item--active post-chapters__item"]//text()').string()
         if title:
-            title = title.split('.')[-1].strip()
+            title = title.split('1.')[-1].strip()
             review.add_property(type='pages', value=dict(title=title + ' - page 1', url=data.response_url))
         else:
             review.add_property(type='pages', value=dict(title=review.title + ' - page 1', url=data.response_url))
@@ -89,7 +89,7 @@ def process_review_next(data, context, session):
     if page > 1:
         title = data.xpath('//a[@class="post-chapters__item--active post-chapters__item"]//text()').string()
         if title:
-            title = title.split('.')[-1].strip()
+            title = title.split(str(page) + '.')[-1].strip()
             review.add_property(type='pages', value=dict(title=title + ' - page ' + str(page), url=data.response_url))
         else:
             review.add_property(type='pages', value=dict(title=review.title + ' - page ' + str(page), url=data.response_url))
