@@ -35,10 +35,12 @@ def process_review(data, context, session):
     product.ssid = context["url"].split('/')[-1]
     product.url = context["url"]
 
+    product.category = "Games"
     if isinstance(prod_json, dict):
         categories = prod_json.get('gamePlatform')
         if categories:
             product.category = "Games|" + categories[0]
+
         product.manufacturer = prod_json.get('publisher')
 
     review = Review()
