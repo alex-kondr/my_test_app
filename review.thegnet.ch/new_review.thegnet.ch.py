@@ -5,7 +5,7 @@ from models.products import *
 
 
 URL = 'https://www.thegnet.org/blog-frontend-adapter-public/v1/post-list-widget/render-model?timezone=Europe/Zurich&postLimit=500&categoryId=87c39d34-b1fa-4ed1-abfe-580cd4b663bb'
-OPTIONS = "-H 'instance: k2jeapWFnMu4uhCAePqM5dtjUD9kQt0Nfy5M-C7mkVE.eyJpbnN0YW5jZUlkIjoiNmRmZjQ2OTgtZmJiZS00MjE5LWJlYWUtMGU5ZGQ1ZjQ5MTc4IiwiYXBwRGVmSWQiOiIxNGJjZGVkNy0wMDY2LTdjMzUtMTRkNy00NjZjYjNmMDkxMDMiLCJtZXRhU2l0ZUlkIjoiZDM5ZTJhMTMtYzE3ZC00NzdmLThjNDAtYjc5YTQ4ZjYyMWY1Iiwic2lnbkRhdGUiOiIyMDIzLTA3LTI4VDA3OjQ0OjExLjE2MVoiLCJkZW1vTW9kZSI6ZmFsc2UsIm9yaWdpbkluc3RhbmNlSWQiOiJiNDUyYTIyMC0wOTgxLTRlMmUtYTY4Ny05ZGEzY2JjZmExOWYiLCJhaWQiOiI2MjJkNjU4My0wZGE4LTRlMTYtOGExZi04OWYyMGJmYTM0M2MiLCJiaVRva2VuIjoiYmU2MTZjOGItM2FjMy0wNTY2LTMyZWUtYjkwNzlkMDJiMDhkIiwic2l0ZU93bmVySWQiOiIwNTJkMTgxZC0wNTIxLTQwODYtYTg2NC0xMWNkMTU5OGU2ZDIifQ'"
+OPTIONS = "-H 'instance: u9PwPO9zmtAD-O9CjKKkgFWRcUJXeFC9TJK0oH3_XNY.eyJpbnN0YW5jZUlkIjoiNmRmZjQ2OTgtZmJiZS00MjE5LWJlYWUtMGU5ZGQ1ZjQ5MTc4IiwiYXBwRGVmSWQiOiIxNGJjZGVkNy0wMDY2LTdjMzUtMTRkNy00NjZjYjNmMDkxMDMiLCJtZXRhU2l0ZUlkIjoiZDM5ZTJhMTMtYzE3ZC00NzdmLThjNDAtYjc5YTQ4ZjYyMWY1Iiwic2lnbkRhdGUiOiIyMDIzLTA3LTI5VDIxOjMyOjIxLjg1MloiLCJkZW1vTW9kZSI6ZmFsc2UsIm9yaWdpbkluc3RhbmNlSWQiOiJiNDUyYTIyMC0wOTgxLTRlMmUtYTY4Ny05ZGEzY2JjZmExOWYiLCJhaWQiOiIzNzUwYzRhZC04YTEyLTQ2MzItYThmZi0zZDFjMDMzYjZkNzMiLCJiaVRva2VuIjoiYmU2MTZjOGItM2FjMy0wNTY2LTMyZWUtYjkwNzlkMDJiMDhkIiwic2l0ZU93bmVySWQiOiIwNTJkMTgxZC0wNTIxLTQwODYtYTg2NC0xMWNkMTU5OGU2ZDIifQ'"
 
 
 def run(context, session):
@@ -26,7 +26,15 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.ssid = context['url'].split('/')[-1]
-    product.category = 'review'
+
+    category = ''
+    categories = data.xpath('//a[@data-hook="category-label-list__item"]')
+    for cat in categories:
+        cat = cat.xpath('text()').string()
+        if 'Reviews' not in cat:
+            category += '/' + cat
+    if category:
+        product.category = 'Games|' + category[1:]
 
     product.url = data.xpath('//span[contains(@class, "public-DraftStyleDefault-ltr")]//a/@href').string()
     if not product.url or 'thegnet.org' in product.url:
