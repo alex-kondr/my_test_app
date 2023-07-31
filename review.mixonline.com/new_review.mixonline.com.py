@@ -24,7 +24,7 @@ def process_product(data, context, session):
     product.name = data.xpath('//strong[contains(text(), "PRODUCT")]/following-sibling::text()[1]').string() or context['name']
     product.category = context['cat']
     product.url = data.xpath('//section[@class="entry-content"]/following-sibling::p/a/@href').string() or data.xpath('//td[strong[contains(text(), "COMPANY")]]/a/@href').string() or context['url']
-    
+
     ssid = context['url'].split('-')[-1]
     try:
         int(ssid)
@@ -71,7 +71,7 @@ def process_product(data, context, session):
 
     excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class)]//text()').string(multiple=True)
     if excerpt:
-        review.add_property(type='excerpt', value=excerpt)       
+        review.add_property(type='excerpt', value=excerpt)
 
     if excerpt or conclusion:
         product.reviews.append(review)

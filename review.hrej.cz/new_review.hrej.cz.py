@@ -74,7 +74,7 @@ def process_review(data, context, session):
             review.add_property(type='pages', value=dict(title=title + ' - page 1', url=data.response_url))
         else:
             review.add_property(type='pages', value=dict(title=review.title + ' - page 1', url=data.response_url))
-        session.do(Request(next_page, force_charset='utf-8'), process_review_next, dict(context, review=review, page=2,))
+        session.do(Request(next_page, force_charset='utf-8'), process_review_next, dict(context, review=review, page=2))
     else:
         context['page'] = 1
         context['review'] = review
