@@ -61,9 +61,8 @@ def process_review(data, context, session):
         pros = data.xpath("//strong[contains(text(), 'What Impressed') or contains(text(), 'Playtime') or contains(text(), 'Sweet') or contains(text(), 'The Good') or contains(text(), 'The good')]//following-sibling::text()")
     for pro in pros:
         pro = pro.string()
-        if pro:
-            if '–' in pro:
-                pro = pro.split('–')[-1].strip()
+        if '–' in pro:
+            pro = pro.replace('–', '').strip()
             review.add_property(type='pros', value=pro)
 
     cons = data.xpath("//strong[contains(text(), 'What Didn’t') or contains(text(), 'Sticky') or contains(text(), 'Detention') or contains(text(), 'The Bad') or contains(text(), 'The bad')]//parent::p//following-sibling::ul//li//text()")
@@ -71,9 +70,8 @@ def process_review(data, context, session):
         cons = data.xpath("//strong[contains(text(), 'What Didn’t') or contains(text(), 'Sticky') or contains(text(), 'Detention') or contains(text(), 'The Bad') or contains(text(), 'The bad')]//following-sibling::text()")
     for con in cons:
         con = con.string()
-        if con:
-            if '–' in con:
-                con = con.split('–')[-1].strip()
+        if '–' in con:
+            con = con.replace('–', '').strip()
             review.add_property(type='cons', value=con)
 
     grade = data.xpath("//strong[contains(text(), 'Score: ')]//parent::p//text()").string(multiple=True)
@@ -100,33 +98,27 @@ def process_review(data, context, session):
         summary = summary.replace('\n', ' ')
         review.properties.append(ReviewProperty(type="summary", value=summary))
 
-    conclusion = data.xpath("//strong[contains(text(), 'The Verdict') or contains(text(), 'Conclusion') or contains(text(), 'Final word')]//parent::p//following-sibling::p//text()").string(multiple=True)
+    conclusion = data.xpath('//div[@class="post-body"]/*[not(.//a)]//text()').string(multiple=True)
+    if conclusion and ('Conclusion' in conclusion):
+        conclusion = conclusion.split('Conclusion')[1]
+    elif conclusion and ('The Verdict' in conclusion):
+        conclusion = conclusion.split('The Verdict')[1]
+    elif conclusion and ('Final word' in conclusion):
+        conclusion = conclusion.split('Final word')[1]
+    else:
+        conclusion = None
     if conclusion:
-        if 'What Impressed' in conclusion:
-            conclusion = conclusion.split('What Impressed')[0]
-        if 'Playtime' in conclusion:
-            conclusion = conclusion.split('Playtime')[0]
-        if 'Sweet' in conclusion:
-            conclusion = conclusion.split('Sweet')[0]
-        if 'The Good' in conclusion:
-            conclusion = conclusion.split('The Good')[0]
-        if 'Follow this author' in conclusion:
-            conclusion = conclusion.split('Follow this author')[0]
-        conclusion = conclusion.replace('\n', ' ')
+        conclusion = conclusion.split('What Impressed')[0].split('Playtime')[0].split('Sweet')[0].split('The Good')[0].split('Follow this author')[0].split('Score')[0].replace('\n', ' ').strip()
         review.properties.append(ReviewProperty(type="conclusion", value=conclusion))
 
-    excerpt = data.xpath('//div[@class="post-body"]/*[contains(., "Score") or contains(., "Verdict") or contains(., "out of")]/preceding-sibling::p//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//div[@class="post-body"]/*[not(.//a)]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="post-body"]//text()').string(multiple=True)
     if excerpt:
-        if 'Score:' in excerpt:
-            excerpt = excerpt.split('Score:')[0]
+        excerpt = excerpt.split('Conclusion')[0].split('The Verdict')[0].split('Final word')[0].split('What Impressed')[0].split('Playtime')[0].split('Sweet')[0].split('The Good')[0].split('Follow this author')[0].split('Score')[0].split('Follow this author')[0]
         if summary:
             excerpt = excerpt.replace(summary, '')
         if conclusion:
             excerpt = excerpt.replace(conclusion, '')
-        excerpt = excerpt
-        review.properties.append(ReviewProperty(type="excerpt", value=excerpt))
+        review.properties.append(ReviewProperty(type="excerpt", value=excerpt.strip()))
 
         product.reviews.append(review)
 
