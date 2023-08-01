@@ -15,10 +15,10 @@ def process_catlist(data, context, session):
         url = cat.xpath('@href').string()
         session.queue(Request(url), process_revlist, dict())
 
-    session.queue(Request('https://www.connect-living.de/testbericht/alle'), process_arhiv, dict())
+    session.queue(Request('https://www.connect-living.de/testbericht/alle'), process_catlist_arhiv, dict())
 
 
-def process_arhiv(data, context, session):
+def process_catlist_arhiv(data, context, session):
     arhivs = data.xpath('//a[@class="teaser__link"][not(@tabindex)]')
     for arhiv in arhivs:
         url = arhiv.xpath('@href').string()
@@ -43,7 +43,7 @@ def process_review(data, context, session):
             prod_json = prod_json[1]
 
     product = Product()
-    product.name = context['title'].replace(' im Test', '').replace(' Test', '').replace('im Check', '').replace('Details', '').replace('als Download', '').replace('-Download', '').replace('- Download', '').replace('Download', '').replace('im Vergleich', '').strip()
+    product.name = context['title'].replace(' im Test', '').replace(' Test', '').replace('im Check', '').replace('Details', '').replace('als Download', '').replace('-Download', '').replace('- Download', '').replace('Download', '').replace('im Vergleich', '').split(':')[0].split(' - ')[0].strip()
     product.category = data.xpath('(//li[@class="breadcrumb__element"]//span)[last()]/text()').string().replace('Tests', 'Technik')
     product.ssid = context['url'].split('-')[-1].replace('.html', '')
 
@@ -70,6 +70,28 @@ def process_review(data, context, session):
         author = author.xpath('text()').string()
         review.authors.append(Person(name=author, ssid=author))
 
+    grade_overall = data.xpath('(//div[@class="inline_rating__result inline_rating__result--starpercent"]/text())[last()]').string()
+    if grade_overall:
+        grade_overall = float(grade_overall.replace('%', '').replace(',', '.'))
+        if grade_overall > 0:
+            review.grades.append(Grade(type='overall', value=grade_overall, best=100.0))
+
+    summary = data.xpath('//p[@class="articlehead__lead"]/text()').string()
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    pros = data.xpath('//li[span[@class="fas fa-plus-circle"]]')
+    for pro in pros:
+        pro = pro.xpath('text()').string()
+        review.properties.append(ReviewProperty(type='pros', value=pro))
+
+    cons = data.xpath('//li[span[@class="fas fa-minus-circle"]]')
+    for con in cons:
+        con = con.xpath('text()').string()
+        review.properties.append(ReviewProperty(type='cons', value=con))
+
+    context['conclusion'] = data.xpath('(//h2[contains(text(), "Fazit")]/following-sibling::p[not(em)])[position()>1]//text()').string(multiple=True)
+
     context['excerpt'] = data.xpath('//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::p//text()|//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::h2[not(contains(text(), "Benchmark")) and not(contains(text(), "Technische Details"))]//text()').string(multiple=True)
     if not context['excerpt']:
         context['excerpt'] = data.xpath('//div[@class="maincol__contentwrapper"]/p//text()|//div[@class="maincol__contentwrapper"]/h2[not(contains(text(), "Benchmark")) and not(contains(text(), "Technische Details"))]//text()').string(multiple=True)
@@ -91,34 +113,14 @@ def process_review(data, context, session):
 def process_review_next(data, context, session):
     review = context['review']
 
-    grade_overall = data.xpath('(//div[@class="inline_rating__result inline_rating__result--starpercent"]/text())[last()]').string()
-    if grade_overall:
-        grade_overall = float(grade_overall.replace('%', '').replace(',', '.'))
-        if grade_overall > 0:
-            review.grades.append(Grade(type='overall', value=grade_overall, best=100.0))
-
-    summary = data.xpath('//p[@class="articlehead__lead"]/text()').string()
-    if summary:
-        review.add_property(type='summary', value=summary)
-
-    pros = data.xpath('//li[span[@class="fas fa-plus-circle"]]')
-    for pro in pros:
-        pro = pro.xpath('text()').string()
-        review.properties.append(ReviewProperty(type='pros', value=pro))
-
-    cons = data.xpath('//li[span[@class="fas fa-minus-circle"]]')
-    for con in cons:
-        con = con.xpath('text()').string()
-        review.properties.append(ReviewProperty(type='cons', value=con))
-
-    conclusion = data.xpath('(//h2[contains(text(), "Fazit")]/following-sibling::p)[last()]/text()').string(multiple=True)
-    if conclusion:
-        review.add_property(type='conclusion', value=conclusion)
-
     page = context['page']
     if page > 1:
         title = data.xpath('//span[@class="tableofcontents__link tableofcontents__link--highlight"]/text()').string()
         review.add_property(type='pages', value=dict(title=title + ' - page ' + str(page), url=data.response_url))
+
+        conclusion = data.xpath('(//h2[contains(text(), "Fazit")]/following-sibling::p[not(em)])[position()>1]//text()').string(multiple=True)
+        if conclusion:
+            context['conclusion'] = conclusion
 
         excerpt = data.xpath('//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::p//text()|//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::h2[not(contains(text(), "Benchmark")) and not(contains(text(), "Technische Details"))]//text()').string(multiple=True)
         if not excerpt:
@@ -131,7 +133,12 @@ def process_review_next(data, context, session):
         session.do(Request(next_url), process_review_next, dict(context, review=review, page=page + 1))
 
     elif context['excerpt']:
+        if context['conclusion']:
+            review.add_property(type='conclusion', value=context['conclusion'])
+
         review.add_property(type='excerpt', value=context['excerpt'])
 
         product = context['product']
         product.reviews.append(review)
+
+        session.emit(product)

@@ -17,25 +17,25 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    
+
     category = data.xpath('//h3[@id="games_genre"]/span/text()').string()
+    platform = data.xpath('//div[@id="review_system"]/span/text()').string()
+    if category and platform:
+        category = platform + '|' + category
     if category:
         product.category = 'Games|' + category
     else:
         product.category = 'Games'
-        
+
     product.name = context['name']
     product.url = context['url']
     product.ssid = context['url'].split("/")[-3]
 
-    review = Review()  
+    review = Review()
     review.type = 'pro'
     review.url = product.url
-    review.ssid = product.ssid  
-      
-    title = data.xpath('//h1[@class="games_gametitle"]/span/text()|//h2[@id="review_headline"]/span[@itemprop="author"]/text()').string(multiple=True)
-    if title:
-        review.title = title.replace('REVIEW', '').replace('Review', '')
+    review.ssid = product.ssid
+    review.title = data.xpath('//h1[@class="games_gametitle"]/span/text()').string(multiple=True)
 
     date = data.xpath("//time[@itemprop='datePublished']/@datetime").string()
     if date:
@@ -52,6 +52,10 @@ def process_review(data, context, session):
         grade = grade_overall.split('/')[0]
         review.grades.append(Grade(type='overall', value=float(grade), best=float(best)))
 
+    grade = data.xpath('//span[@id="user_endpointsavg"]/text()').string()
+    if grade:
+        review.grades.append(Grade(name='Userwertung', value=float(grade), best=10.0))
+
     grades_values_script = data.xpath("//script[contains(., '.setRate')]/text()").string()
     grades_values_arr = re.findall(r'cw_review\.setRate\("rate[0-9]", [0-9]\);', grades_values_script)
     grades_values = []
@@ -62,21 +66,19 @@ def process_review(data, context, session):
 
     grades_names = data.xpath('//div[@class="row facenter"]')
     for grade in range(0, len(grades_names) - 1):
-        name = data.xpath('//div[@data-context="rate' + str(number_rates[grade]) + '"]//div[@class="desc"]/text()').string()
+        name = data.xpath('//div[@class="row facenter"][.//div[@class="inner bar_rate' + str(number_rates[grade]) + '"]]//div[@class="desc"]//text()').string()
         if name:
             review.grades.append(Grade(name=name.split(' (')[0], value=float(grades_values[grade]), best=5.0))
 
-    pros = data.xpath('//div[@id="review_pro"]/div[@class="contenteditdiv"]//text()').strings()
+    pros = data.xpath('//div[@id="review_pro"]/div[@class="contenteditdiv"]//text()[normalize-space(.)]').strings()
     for pro in pros:
-        value = pro.replace('+', '').strip()
-        if value:
-            review.add_property(type='pros', value=value)
-    
-    cons = data.xpath("//div[@class='thebox contra']//div[@class='contenteditdiv']//text()").strings()
+        pro = pro.replace('+', '').replace(' -', '').replace('- ', '').replace('...', '').replace('…', '').strip()
+        review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//div[@id="review_pro"]/div[@class="contenteditdiv"]//text()[normalize-space(.)]').strings()
     for con in cons:
-        value = con.replace('-', '').strip()
-        if value:
-            review.add_property(type='cons', value=value)
+        con = con.replace('+', '').replace(' -', '').replace('- ', '').replace('...', '').replace('…', '').strip()
+        review.add_property(type='cons', value=con)
 
     summary = data.xpath('//h2[@id="review_headline"]/span[@itemprop="author"]/text()').string()
     if summary:
@@ -86,9 +88,10 @@ def process_review(data, context, session):
     if conclusion:
         review.properties.append(ReviewProperty(type='conclusion', value=conclusion))
 
-    excerpt = data.xpath('//div[@id="review_content"]/div[@class="contenteditdiv"]/h3/span/text() | //div[@id="review_content"]/div[@class="contenteditdiv"]/span/text()').string(multiple=True)
+    excerpt = data.xpath('//div[@id="review_content"]/div[@class="contenteditdiv"]/h3/span/text()|//div[@id="review_content"]/div[@class="contenteditdiv"]/span/text()').string(multiple=True)
     if excerpt:
         review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
 
-    product.reviews.append(review) 
-    session.emit(product)
+        product.reviews.append(review)
+
+        session.emit(product)

@@ -116,6 +116,8 @@ def process_review(data, context, session):
         review.properties.append(ReviewProperty(type="conclusion", value=conclusion))
 
     excerpt = data.xpath('//div[@class="post-body"]/*[contains(., "Score") or contains(., "Verdict") or contains(., "out of")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="post-body"]/*[not(.//a)]//text()').string(multiple=True)
     if excerpt:
         if 'Score:' in excerpt:
             excerpt = excerpt.split('Score:')[0]
@@ -123,9 +125,9 @@ def process_review(data, context, session):
             excerpt = excerpt.replace(summary, '')
         if conclusion:
             excerpt = excerpt.replace(conclusion, '')
-        excerpt = excerpt.replace('\n', ' ')
+        excerpt = excerpt
         review.properties.append(ReviewProperty(type="excerpt", value=excerpt))
 
-    if excerpt or conclusion:
         product.reviews.append(review)
+
         session.emit(product)
