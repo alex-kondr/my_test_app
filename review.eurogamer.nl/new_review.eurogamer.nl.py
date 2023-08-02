@@ -1,26 +1,25 @@
-import simplejson
-
 from agent import *
 from models.products import *
+import simplejson
 
 
-def run(context, session): 
+def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('https://www.eurogamer.nl/archive/reviews'), process_frontpage, dict())
+    session.queue(Request('https://www.eurogamer.nl/archive/reviews'), process_revlist, dict())
 
 
-def process_frontpage(data, context, session):
-    reviews = data.xpath("//ul[@class='summary_list']/li/div/a")
-    for review in reviews:
-        title = review.xpath("@title").string()
-        url = review.xpath("@href").string()
+def process_revlist(data, context, session):
+    revs = data.xpath("//ul[@class='summary_list']/li/div/a")
+    for rev in revs:
+        title = rev.xpath("@title").string()
+        url = rev.xpath("@href").string()
         if title and url:
             session.queue(Request(url), process_review, dict(context, url=url, title=title))
 
     next_url = data.xpath('//a[span[@title="Volgende pagina"]]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_frontpage, dict(context))
+        session.queue(Request(next_url), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
@@ -29,7 +28,7 @@ def process_review(data, context, session):
         prod_json = simplejson.loads(prod_json)
     else:
         return
-    
+
     product = Product()
     product.name = context['title'].split(' review')[0]
     product.url = context['url']
@@ -45,11 +44,11 @@ def process_review(data, context, session):
     date = prod_json.get('datePublished')
     if date:
         review.date = date.split('T')[0]
-        
+
     authors = prod_json.get('author', [])
     if not isinstance(authors, list):
         authors = [authors]
-        
+
     for author in authors:
         author_name = author.get('name')
         author_url = author.get('url')
@@ -73,28 +72,42 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath('//div[@class="article_body_content"]/section[@class="synopsis"]/text()|//div[@class="article_body_content"]//p//text()').string(multiple=True)
+    context['excerpt'] = data.xpath('//div[@class="article_body_content"]/section[@class="synopsis"]/text()|//div[@class="article_body_content"]//p//text()').string(multiple=True)
 
     next_url = data.xpath('//div[@class="next"]/a/@href').string()
     if next_url:
-        excerpt = session.do(Request(next_url), process_review_next, dict(context, excerpt=excerpt, review=review))
-    
-    if excerpt:            
-        review.add_property(type='excerpt', value=excerpt)
+        page = 1
+        title = review.title + " - Pagina " + str(page)
+        review.add_property(type='pages', value=dict(title=title, url=review.url))
 
-    product.reviews.append(review)
-    session.emit(product)
+        session.do(Request(next_url), process_review_next, dict(context, product=product, review=review, page=page + 1))
+
+    else:
+        context['product'] = product
+        context['review'] = review
+        process_review_next(data, context, session)
 
 
 def process_review_next(data, context, session):
-    excerpt = context['excerpt']
-    excerpt += ' ' + data.xpath('//div[@class="article_body_content"]//p//text()|//div[@class="article_body_content"]/h2//text()').string(multiple=True)
+    review = context['review']
 
-    url = data.xpath('//link[@rel="canonical"]/@href').string()
-    context['review'].add_property(type='pages', value=dict(title=context['review'].title, url=url))
+    page = context.get('page', 1)
+    if page > 1:
+        title = review.title + " - Pagina " + str(page)
+        url = data.xpath('//link[@rel="canonical"]/@href').string()
+        review.add_property(type='pages', value=dict(title=title, url=url))
+
+        excerpt = data.xpath('//div[@class="article_body_content"]//p//text()|//div[@class="article_body_content"]/h2//text()').string(multiple=True)
+        if excerpt:
+            context['excerpt'] += " " + excerpt
 
     next_url = data.xpath('//div[@class="next"]/a/@href').string()
-    if next_url:   
-        excerpt = session.do(Request(next_url), process_review_next, dict(context, excerpt=excerpt))
-        
-    return excerpt
+    if next_url:
+        session.do(Request(next_url), process_review_next, dict(context, page=page + 1))
+
+    elif context['excerpt']:
+        review.add_property(type="excerpt", value=context['excerpt'])
+
+        product = context['product']
+        product.reviews.append(review)
+        session.emit(product)
