@@ -20,8 +20,13 @@ def process_revlist(data, context, session):
     for rev in revs:
         context['title'] = rev.xpath(".//h2/text()").string()
         context['ssid'] = rev.xpath("@class").string().split('-')[1].split()[0].strip()
-        context['author'] = rev.xpath('.//p[@class="author"]/text()').string().replace('by ', '').strip()
         url = rev.xpath(".//a/@href").string()
+
+        author = rev.xpath('.//p[@class="author"]/text()').string()
+        if 'by ' in author:
+            context['author'] = author.replace('by ', '').strip()
+        else:
+            context['author'] = None
 
         grade_overall = rev.xpath('.//span[contains(@class, "rating")][not(contains(@class, "not"))]/@class').string()
         if grade_overall:
@@ -48,7 +53,9 @@ def process_review(data, context, session):
     review.url = context["url"]
     review.title = context["title"]
     review.date = data.xpath('//body/p[@class="date"]/text()').string()
-    review.authors.append(Person(name=context['author'], ssid=context['author']))
+
+    if context.get('author'):
+        review.authors.append(Person(name=context['author'], ssid=context['author']))
 
     if context['grade_overall']:
         review.grades.append(Grade(type='overall', value=context['grade_overall'], best=5.0))

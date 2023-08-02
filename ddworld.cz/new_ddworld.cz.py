@@ -91,7 +91,12 @@ def process_review(data, context, session):
 
     next_url = data.xpath('//a[contains(text(), "Následující")]/@href').string()
     if next_url:
-        review.add_property(type='pages', value=dict(title=review.title + ' - page 1', url=data.response_url))
+        title = data.xpath('//strong/font[@size="3"]/text()|//font[@size="3"]/strong/text()').string()
+        if title:
+            title = title.split('(')[0].strip()
+        else:
+            title = review.title
+        review.add_property(type='pages', value=dict(title=title + ' - page 1', url=data.response_url))
         session.do(Request(next_url, use="curl"), process_review_next, dict(context, review=review, page=2))
     else:
         context['review'] = review
@@ -104,30 +109,36 @@ def process_review_next(data, context, session):
 
     page = context['page']
     if page > 1:
-        review.add_property(type='pages', value=dict(title=review.title + ' - page ' + str(page), url=data.response_url))
-
-        excerpt = data.xpath("//div[@id='content-area']//p[normalize-space(text()|font/text())]//text()").string(multiple=True)
-        if not excerpt:
-            excerpt = data.xpath("//table[@class='contentpaneopen']//tr//div//font//text()").string(multiple=True)
-        if not excerpt:
-            excerpt = data.xpath("//table[@class='contentpaneopen']//tr//p//font//text()").string(multiple=True)
-        if not excerpt:
-            excerpt = data.xpath("//table[@class='contentpaneopen']//tr//p//span//text()").string(multiple=True)
-        if not excerpt:
-            excerpt = data.xpath("//p//font//text()").string(multiple=True)
-        if not excerpt:
-            excerpt = data.xpath("//p//span//text()").string(multiple=True)
-        if not excerpt:
-            excerpt = data.xpath("//div//font//text()").string(multiple=True)
-
-        if excerpt:
-            context['excerpt'] += ' ' + excerpt
+        title = data.xpath('//strong/font[@size="3"]/text()|//font[@size="3"]/strong/text()').string()
+        if title:
+            title = title.split('(')[0].strip()
+        else:
+            title = review.title
+        review.add_property(type='pages', value=dict(title=title + ' - page ' + str(page), url=data.response_url))
 
     next_url = data.xpath('//a[contains(text(), "Následující")]/@href').string()
     if next_url:
         session.do(Request(next_url, use="curl"), process_review_next, dict(context, review=review, page=page+1))
-    elif context['excerpt']:
-        review.properties.append(ReviewProperty(type="excerpt", value=context['excerpt']))
+    else:
+        text = data.xpath("//div[@id='content-area']//p[normalize-space(text()|font/text())]//text()").string(multiple=True)
+        if not text:
+            text = data.xpath("//table[@class='contentpaneopen']//tr//div//font//text()").string(multiple=True)
+        if not text:
+            text = data.xpath("//table[@class='contentpaneopen']//tr//p//font//text()").string(multiple=True)
+        if not text:
+            text = data.xpath("//table[@class='contentpaneopen']//tr//p//span//text()").string(multiple=True)
+        if not text:
+            text = data.xpath("//p//font//text()").string(multiple=True)
+        if not text:
+            text = data.xpath("//p//span//text()").string(multiple=True)
+        if not text:
+            text = data.xpath("//div//font//text()").string(multiple=True)
+
+        if page > 1 and (('Závěr a hodnocení' in title) or ('Shrnutí a závěr' in title)) and text:
+            review.add_property(type='conclusion', value=text)
+        elif text:
+            context['excerpt'] += ' ' + text
+        review.add_property(type="excerpt", value=context['excerpt'])
 
         product = context['product']
         product.reviews.append(review)
