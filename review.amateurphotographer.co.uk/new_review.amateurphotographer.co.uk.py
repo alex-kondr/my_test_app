@@ -117,7 +117,7 @@ def process_review_next(data, context, session):
 
     next_page = data.xpath("//p[@class='post-nav-links']/span/following-sibling::a/@href").string()
     if next_page:
-        review, excerpt = session.do(Request(next_page), process_review_next, dict(context, review=review, url=next_page, page=page + 1))
+        session.do(Request(next_page), process_review_next, dict(context, review=review, url=next_page, page=page + 1))
 
     elif context['excerpt']:
         product = context['product']
