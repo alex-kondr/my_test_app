@@ -10,8 +10,8 @@ def run(context, session):
 def process_frontpage(data, context, session):
     cats = data.xpath('//li[contains(@class, "menu-item")][a[text()="Reviews"]]//li/a')
     for cat in cats:
-        name = cat.xpath('text()').string()
-        url = cat.xpath('@href').string().replace(' reviews', '').strip()
+        name = cat.xpath('text()').string().replace(' reviews', '').strip()
+        url = cat.xpath('@href').string()
         session.queue(Request(url), process_revlist, dict(cat=name))
 
 
@@ -40,7 +40,7 @@ def process_review(data, context, session):
     product.url = context["url"]
     product.category = context["cat"]
     product.manufacturer = data.xpath('//li[h3[contains(text(), "Manufacturer")]]//a/text()').string()
-    product.name = context["title"].split('|')[0].split(" review")[0].split(" Test")[0].strip()
+    product.name = context["title"].split('|')[0].split(" review")[0].split(" Review")[0].split(" Test")[0].strip()
 
     review = Review()
     review.type = "pro"
@@ -58,7 +58,11 @@ def process_review(data, context, session):
         name = grade.xpath("h3/text()").string()
         value = grade.xpath("p/text()").string()
         if value and 'overall' not in name.lower():
-            value = float(value.split('out')[0].replace(':', '').replace('-', '.').strip())
+            value = value.split('out')[0].replace(':', '').replace('-', '.').strip()
+            if not value or '/' in value:
+                value = 1.0
+            else:
+                value = float(value)
             review.grades.append(Grade(name=name, value=value, best=5.0))
 
     pros = data.xpath('(//div[@class="desktop-only"]//p[@class="pros"]/text())[normalize-space(.)]').strings()
@@ -75,13 +79,14 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type="summary", value=summary)
 
-    context['conclusion'] = data.xpath('//div[@class="editable-content"]/*[contains(., "Verdict") or contains(., "verdict")]/following-sibling::*[not(@class)][not(li)][not(em)][not(strong)][not(contains(., "Specifications"))]//text()[normalize-space(.)]').string(multiple=True)
+    context['conclusion'] = data.xpath('//div[@class="editable-content"]/*[contains(., "Verdict") or contains(., "verdict")]/following-sibling::*[not(@class)][not(li)][not(em)][not(strong)][not(contains(., "pecification"))]//text()[normalize-space(.)]').string(multiple=True)
     if not context['conclusion']:
         context['conclusion'] = data.xpath('//li[h3[contains(text(), "Verdict") or contains(., "verdict")]]/p/text()').string()
 
-    context['excerpt'] = data.xpath('//div[@class="editable-content"]/*[contains(., "Verdict") or contains(., "verdict")]/preceding-sibling::*[not(@class)][not(li)][not(em)]//text()[normalize-space(.)]').string(multiple=True)
-    if not context['excerpt']:
-        context['excerpt'] = data.xpath('//div[@class="editable-content"]/*[not(@class)][not(li)][not(em)][not(contains(., "Specifications"))]//text()').string(multiple=True)
+    if data.xpath('//div[@class="editable-content"]/*[contains(., "Verdict") or contains(., "verdict")]/text()').string():
+        context['excerpt'] = data.xpath('//div[@class="editable-content"]/*[contains(., "Verdict") or contains(., "verdict")]/preceding-sibling::*[not(@class)][not(li)][not(em)]//text()[normalize-space(.)]').string(multiple=True)
+    else:
+        context['excerpt'] = data.xpath('//div[@class="editable-content"]/*[not(@class)][not(li)][not(em)][not(contains(., "pecification"))]//text()').string(multiple=True)
 
     context['product'] = product
 
@@ -103,15 +108,16 @@ def process_review_next(data, context, session):
     if page > 1:
         review.add_property(type="pages", value=dict(title=review.title+' - page '+str(page), url=context["url"]))
 
-        conclusion = data.xpath('//div[@class="editable-content"]/*[contains(., "Verdict")]/following-sibling::*[not(@class)][not(li)][not(em)][not(strong)][not(contains(., "Specifications"))]//text()[normalize-space(.)]').string(multiple=True)
+        conclusion = data.xpath('//div[@class="editable-content"]/*[contains(., "Verdict") or contains(., "verdict")]/following-sibling::*[not(@class)][not(li)][not(em)][not(strong)][not(contains(., "pecification"))]//text()[normalize-space(.)]').string(multiple=True)
         if not conclusion:
-            conclusion = data.xpath('//li[h3[contains(text(), "Verdict")]]/p/text()').string()
+            conclusion = data.xpath('//li[h3[contains(text(), "Verdict") or contains(., "verdict")]]/p/text()').string()
         if conclusion:
             context['conclusion'] = conclusion
 
-        excerpt = data.xpath('//div[@class="editable-content"]/*[contains(., "Verdict")]/preceding-sibling::*[not(@class)][not(li)][not(em)]//text()[normalize-space(.)]').string(multiple=True)
-        if not excerpt:
-            excerpt = data.xpath('//div[@class="editable-content"]/*[not(@class)][not(li)][not(em)][not(contains(., "Specifications"))]//text()').string(multiple=True)
+        if data.xpath('//div[@class="editable-content"]/*[contains(., "Verdict") or contains(., "verdict")]/text()').string():
+            excerpt = data.xpath('//div[@class="editable-content"]/*[contains(., "Verdict") or contains(., "verdict")]/preceding-sibling::*[not(@class)][not(li)][not(em)]//text()[normalize-space(.)]').string(multiple=True)
+        else:
+            excerpt = data.xpath('//div[@class="editable-content"]/*[not(@class)][not(li)][not(em)][not(contains(., "pecification"))]//text()').string(multiple=True)
         if excerpt:
             context['excerpt'] += ' ' + excerpt
 
