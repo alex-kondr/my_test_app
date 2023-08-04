@@ -49,6 +49,7 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     pros = data.xpath("(//strong[contains(text(), 'What Impressed') or contains(text(), 'Playtime') or contains(text(), 'Sweet') or contains(text(), 'The Good') or contains(text(), 'The good')]//parent::p/following-sibling::ul[1]//li//text())[normalize-space(.)][not(contains(., 'Sweet'))]")
+    "//strong[contains(text(), 'What Impressed') or contains(text(), 'Playtime') or contains(text(), 'Sweet') or contains(text(), 'The Good') or contains(text(), 'The good')]/parent::p//following-sibling::p[1]//text()"
     if not pros:
         pros = data.xpath("(//strong[contains(text(), 'What Impressed') or contains(text(), 'Playtime') or contains(text(), 'Sweet') or contains(text(), 'The Good') or contains(text(), 'The good')]//following-sibling::text())[normalize-space(.)][not(contains(., 'Sweet'))]")
     for pro in pros:
