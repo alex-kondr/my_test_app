@@ -7,15 +7,15 @@ from models.products import *
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.connect-living.de/testbericht/'), process_catlist, dict())
+    session.queue(Request('https://www.connect-living.de/testbericht/alle'), process_catlist_arhiv, dict())
 
 
 def process_catlist(data, context, session):
     cats = data.xpath('//li[@class="crosslinks__element"]/a')
     for cat in cats:
+        name = data.xpath('text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url), process_revlist, dict())
-
-    session.queue(Request('https://www.connect-living.de/testbericht/alle'), process_catlist_arhiv, dict())
+        session.queue(Request(url), process_revlist, dict(cat=name))
 
 
 def process_catlist_arhiv(data, context, session):
@@ -44,13 +44,14 @@ def process_review(data, context, session):
 
     product = Product()
     product.name = context['title'].replace(' im Test', '').replace(' Test', '').replace('im Check', '').replace('Details', '').replace('als Download', '').replace('-Download', '').replace('- Download', '').replace('Download', '').replace('im Vergleich', '').split(':')[0].split(' - ')[0].strip()
-    product.category = data.xpath('(//li[@class="breadcrumb__element"]//span)[last()]/text()').string().replace('Tests', 'Technik')
     product.ssid = context['url'].split('-')[-1].replace('.html', '')
 
-    url = data.xpath('//h3[contains(text(), "Tipp")]/following-sibling::p/a/@href').string()
-    if url:
-        product.ulr = url
-    else:
+    product.category = context.get('cat')
+    if not product.category:
+        product.category = data.xpath('(//li[@class="breadcrumb__element"]//span)[last()]/text()').string().replace('Tests', 'Technik')
+
+    product.url = data.xpath('//h3[contains(text(), "Tipp")]/following-sibling::p/a/@href').string()
+    if not product.url:
         product.url = context['url']
 
     review = Review()

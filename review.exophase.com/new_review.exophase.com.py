@@ -21,21 +21,13 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     product = Product()
     product.url = context["url"]
-    product.ssid = product.url.split("exophase.com/")[1].split("/")[0]
+    product.ssid = product.url.split("/")[-3]
 
-    name = context["title"]
-    if "Review of " in name:
-        name = name.split("Review of ")[1]
-    name = name.split(" Review")[0]
-    if "Review: " in name:
-        name = name.split("Review: ")[1]
-    product.name = name
+    product.name  = context["title"].split("Review of ")[-1].split(" Review")[0].split("Review: ")[-1]
 
     category = data.xpath("//div[@class='post-body']//p[contains(., 'Reviewed on')]//text()").string(multiple=True)
     if category:
-        if "Reviewed on" in category:
-            category = category.split("Reviewed on ")[1].split(" ")[0]
-        product.category = "Games|" + category
+        product.category = "Games|" + category.split("Reviewed on ")[-1].split(" ")[0]
     else:
         product.category = "Games"
 
@@ -63,9 +55,9 @@ def process_review(data, context, session):
         pro = pro.string().replace('–', '').strip()
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath("//strong[contains(text(), 'What Didn’t') or contains(text(), 'Sticky') or contains(text(), 'Detention') or contains(text(), 'The Bad') or contains(text(), 'The bad')]//parent::p//following-sibling::ul//li//text()")
+    cons = data.xpath("//strong[contains(text(), 'What Didn’t') or contains(text(), 'Sticky') or contains(text(), 'Detention') or contains(text(), 'The Bad') or contains(text(), 'The bad')]//parent::p//following-sibling::ul//li//text()[normalize-space(.)]")
     if not cons:
-        cons = data.xpath("//strong[contains(text(), 'What Didn’t') or contains(text(), 'Sticky') or contains(text(), 'Detention') or contains(text(), 'The Bad') or contains(text(), 'The bad')]//following-sibling::text()")
+        cons = data.xpath("//strong[contains(text(), 'What Didn’t') or contains(text(), 'Sticky') or contains(text(), 'Detention') or contains(text(), 'The Bad') or contains(text(), 'The bad')]//following-sibling::text()[normalize-space(.)]")
     for con in cons:
         con = con.string().replace('–', '').strip()
         review.add_property(type='cons', value=con)
@@ -95,15 +87,17 @@ def process_review(data, context, session):
         review.properties.append(ReviewProperty(type="summary", value=summary))
 
     body = data.xpath('//div[@class="post-body"]//text()[normalize-space(.)]').string(multiple=True)
+    '//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word")]/following-sibling::text()|//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word")]//parent::p//following-sibling::p//text()'
 
     if 'Conclusion' in body:
-        conclusion = body.split('Conclusion')[1]
+        conclusion = body.split('Conclusion')[-1]
     elif 'The Verdict' in body:
-        conclusion = body.split('The Verdict')[1]
+        conclusion = body.split('The Verdict')[-1]
     elif body and ('Final word' in body):
-        conclusion = body.split('Final word')[1]
+        conclusion = body.split('Final word')[-1]
     else:
         conclusion = None
+
     if conclusion:
         conclusion = conclusion.split('What Impressed')[0].split('Playtime')[0].split('Sweet')[0].split('The Good')[0].split('Follow this author')[0].split('Score')[0].replace('\n', ' ').strip()
         review.properties.append(ReviewProperty(type="conclusion", value=conclusion))
