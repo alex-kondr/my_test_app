@@ -81,17 +81,19 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    pros = data.xpath('//li[span[@class="fas fa-plus-circle"]]')
+    pros = data.xpath('//li[span[@class="fas fa-plus-circle"]][normalize-space(.)]')
     for pro in pros:
         pro = pro.xpath('text()').string()
         review.properties.append(ReviewProperty(type='pros', value=pro))
 
-    cons = data.xpath('//li[span[@class="fas fa-minus-circle"]]')
+    cons = data.xpath('//li[span[@class="fas fa-minus-circle"]][normalize-space(.)]')
     for con in cons:
         con = con.xpath('text()').string()
         review.properties.append(ReviewProperty(type='cons', value=con))
 
-    context['conclusion'] = data.xpath('(//h2[contains(text(), "Fazit")]/following-sibling::p[not(em)])[position()>1]//text()').string(multiple=True)
+    context['conclusion'] = data.xpath('//h2[not(@class)][contains(text(), "Fazit") or contains(text(), "Testfazit")]/following-sibling::p[not(em)]//text()').string(multiple=True)
+    if not context['conclusion']:
+        context['conclusion'] = data.xpath('//h2[@class][contains(text(), "Fazit") or contains(text(), "Testfazit")]/following-sibling::p[not(em)]//text()').string(multiple=True)
 
     context['excerpt'] = data.xpath('//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::p//text()|//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::h2[not(contains(text(), "Benchmark")) and not(contains(text(), "Technische Details"))]//text()').string(multiple=True)
     if not context['excerpt']:
@@ -119,7 +121,7 @@ def process_review_next(data, context, session):
         title = data.xpath('//span[@class="tableofcontents__link tableofcontents__link--highlight"]/text()').string()
         review.add_property(type='pages', value=dict(title=title + ' - page ' + str(page), url=data.response_url))
 
-        conclusion = data.xpath('(//h2[contains(text(), "Fazit")]/following-sibling::p[not(em)])[position()>1]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[not(@class)][contains(text(), "Fazit") or contains(text(), "Testfazit")]/following-sibling::p[not(em)]//text()').string(multiple=True)
         if conclusion:
             context['conclusion'] = conclusion
 
