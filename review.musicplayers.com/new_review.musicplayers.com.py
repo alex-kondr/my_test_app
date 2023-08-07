@@ -3,19 +3,19 @@ from models.products import *
 
 
 def run(context, session):
-    session.queue(Request("https://musicplayers.com/category/reviews/"), process_frontpage, dict())
+    session.queue(Request("https://musicplayers.com/category/reviews/"), process_revlist, dict())
 
 
-def process_frontpage(data, context, session):
+def process_revlist(data, context, session):
     revs = data.xpath("//ul[@class='bk-blog-content clearfix']//h4/a")
     for rev in revs:
         title = rev.xpath(".//text()").string()
         url = rev.xpath("@href").string()
-        session.queue(Request(url), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
-    next_page = data.xpath('//a[@class="next page-numbers"]/@href').string()
-    if next_page:
-        session.queue(Request(next_page), process_frontpage, dict(page=next_page))
+    next_url  = data.xpath('//link[@rel="next"]/@href').string()
+    if next_url :
+        session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data, context, session):
@@ -32,7 +32,7 @@ def process_review(data, context, session):
     review.title = context['title']
     review.date = data.xpath("//div[@class='s-post-header container']//div[@class='post-date']/text()").string()
 
-    author = data.xpath("//div[@class='s-post-header container']//div[@class='post-author']/a").first()
+    author = data.xpath('//a[@rel="author"]').first()
     if author:
         name = author.xpath(".//text()").string()
         url = author.xpath("@href").string()
@@ -61,7 +61,7 @@ def process_review(data, context, session):
                 review.grades.append(Grade(name=name.replace(':', ''), value=float(value), best=4.0))
             except ValueError:
                 pass
-            
+
     grades_overall = data.xpath('//tr[contains(., "Overall Rating")]//text()|//span[contains(., "OVERALL RATING")]//text()|//tr[contains(., "Overall")]//text()').strings()
     for grade_overall in grades_overall:
         grade_overall = grade_overall.lower().replace('overall', '').replace('rating', '')

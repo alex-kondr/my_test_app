@@ -89,55 +89,49 @@ def process_review(data, context, session):
 
     context['product'] = product
 
-    next_url = data.xpath('//a[contains(text(), "Následující")]/@href').string()
-    if next_url:
-        title = data.xpath('//strong/font[@size="3"]/text()|//font[@size="3"]/strong/text()').string()
-        if title:
-            title = title.split('(')[0].strip()
-        else:
-            title = review.title
-        review.add_property(type='pages', value=dict(title=title + ' - page 1', url=data.response_url))
-        session.do(Request(next_url, use="curl"), process_review_next, dict(context, review=review, page=2))
+    pages = data.xpath('//table[@class="contenttoc"]//a')
+    if pages:
+        for i, page in enumerate(pages, start=1):
+            title = page.xpath('.//text()').string(multiple=True)
+            url = page.xpath('@href').string()
+            review.add_property(type='pages', value=dict(title=title + ' - page ' + str(i), url=url))
+
+        context['pages'] = i
+        last_url = pages[-1].xpath('@href').string()
+        session.do(Request(last_url, use='curl', max_age=0), process_review_next, dict(context, review=review))
     else:
+        context['pages'] = 1
         context['review'] = review
-        context['page'] = 1
         process_review_next(data, context, session)
 
 
 def process_review_next(data, context, session):
     review = context["review"]
 
-    page = context['page']
-    if page > 1:
-        title = data.xpath('//strong/font[@size="3"]/text()|//font[@size="3"]/strong/text()').string()
-        if title:
-            title = title.split('(')[0].strip()
+    if context['pages'] > 1:
+        conclusion = data.xpath('(//div[@id="content-area"]//ul[contains(., "Závěr a hodnocení") or contains(., "Shrnutí a závěr") or contains(., "Závěr")])[1]/following-sibling::p[normalize-space(text()|font/text())]//text()').string(multiple=True)
+        if conclusion:
+            excerpt = data.xpath('(//div[@id="content-area"]//ul[contains(., "Závěr a hodnocení") or contains(., "Shrnutí a závěr") or contains(., "Závěr")])[1]/preceding-sibling::p[normalize-space(text()|font/text())]//text()').string(multiple=True)
+            review.add_property(type='conclusion', value=conclusion)
         else:
-            title = review.title
-        review.add_property(type='pages', value=dict(title=title + ' - page ' + str(page), url=data.response_url))
+            excerpt = data.xpath("//div[@id='content-area']//p[normalize-space(text()|font/text())]//text()").string(multiple=True)
+            if not excerpt:
+                excerpt = data.xpath("//table[@class='contentpaneopen']//tr//div//font//text()").string(multiple=True)
+            if not excerpt:
+                excerpt = data.xpath("//table[@class='contentpaneopen']//tr//p//font//text()").string(multiple=True)
+            if not excerpt:
+                excerpt = data.xpath("//table[@class='contentpaneopen']//tr//p//span//text()").string(multiple=True)
+            if not excerpt:
+                excerpt = data.xpath("//p//font//text()").string(multiple=True)
+            if not excerpt:
+                excerpt = data.xpath("//p//span//text()").string(multiple=True)
+            if not excerpt:
+                excerpt = data.xpath("//div//font//text()").string(multiple=True)
 
-    next_url = data.xpath('//a[contains(text(), "Následující")]/@href').string()
-    if next_url:
-        session.do(Request(next_url, use="curl"), process_review_next, dict(context, review=review, page=page+1))
-    else:
-        text = data.xpath("//div[@id='content-area']//p[normalize-space(text()|font/text())]//text()").string(multiple=True)
-        if not text:
-            text = data.xpath("//table[@class='contentpaneopen']//tr//div//font//text()").string(multiple=True)
-        if not text:
-            text = data.xpath("//table[@class='contentpaneopen']//tr//p//font//text()").string(multiple=True)
-        if not text:
-            text = data.xpath("//table[@class='contentpaneopen']//tr//p//span//text()").string(multiple=True)
-        if not text:
-            text = data.xpath("//p//font//text()").string(multiple=True)
-        if not text:
-            text = data.xpath("//p//span//text()").string(multiple=True)
-        if not text:
-            text = data.xpath("//div//font//text()").string(multiple=True)
+        if excerpt:
+                context['excerpt'] += ' ' + excerpt
 
-        if page > 1 and (('Závěr a hodnocení' in title) or ('Shrnutí a závěr' in title)) and text:
-            review.add_property(type='conclusion', value=text)
-        elif text:
-            context['excerpt'] += ' ' + text
+    if context['excerpt']:
         review.add_property(type="excerpt", value=context['excerpt'])
 
         product = context['product']
