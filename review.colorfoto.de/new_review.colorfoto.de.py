@@ -69,7 +69,8 @@ def process_review(data, context, session):
     authors = data.xpath('//p[@class="articlehead__dateauthors"]/strong')
     for author in authors:
         author = author.xpath('text()').string()
-        review.authors.append(Person(name=author, ssid=author))
+        if 'Redaktion pcmagazin' not in author:
+            review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('(//div[@class="inline_rating__result inline_rating__result--starpercent"]/text())[last()]').string()
     if grade_overall:
@@ -103,8 +104,7 @@ def process_review(data, context, session):
 
     next_url = data.xpath('//a[@class="next pagination__button pagination__button--next"]/@href').string()
     if next_url:
-        title = data.xpath('//span[@class="tableofcontents__link tableofcontents__link--highlight"]/text()').string()
-        review.add_property(type='pages', value=dict(title=title + ' - page 1', url=data.response_url))
+        review.add_property(type='pages', value=dict(title=review.title + ' - page 1', url=data.response_url))
         session.do(Request(next_url), process_review_next, dict(context, review=review, page=2))
 
     else:
@@ -118,8 +118,7 @@ def process_review_next(data, context, session):
 
     page = context['page']
     if page > 1:
-        title = data.xpath('//span[@class="tableofcontents__link tableofcontents__link--highlight"]/text()').string()
-        review.add_property(type='pages', value=dict(title=title + ' - page ' + str(page), url=data.response_url))
+        review.add_property(type='pages', value=dict(title=review.title + ' - page ' + str(page), url=data.response_url))
 
         conclusion = data.xpath('//h2[not(@class)][contains(text(), "Fazit") or contains(text(), "Testfazit")]/following-sibling::p[not(em)]//text()').string(multiple=True)
         if conclusion:

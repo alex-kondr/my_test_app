@@ -6,7 +6,7 @@ XCAT = ["Aktuality", "Software"]
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request("http://www.ddworld.cz/"), process_catlist, dict())
 
 
@@ -92,9 +92,8 @@ def process_review(data, context, session):
     pages = data.xpath('//table[@class="contenttoc"]//a')
     if pages:
         for i, page in enumerate(pages, start=1):
-            title = page.xpath('.//text()').string(multiple=True)
             url = page.xpath('@href').string()
-            review.add_property(type='pages', value=dict(title=title + ' - page ' + str(i), url=url))
+            review.add_property(type='pages', value=dict(title=review.title + ' - page ' + str(i), url=url))
 
         context['pages'] = i
         last_url = pages[-1].xpath('@href').string()

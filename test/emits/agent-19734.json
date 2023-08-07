@@ -1,0 +1,5621 @@
+{
+  "products": [
+    {
+      "product_has_review": {
+        "properties": [
+          {
+            "type": "from_ssid",
+            "value": "17478"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/amd-radeon-rx-7600-8gb-test-a-recenze-konecne-cenove-dostupne-nove-herni-grafiky.html"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17478"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/amd-radeon-rx-7600-8gb-test-a-recenze-konecne-cenove-dostupne-nove-herni-grafiky.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17338"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/gigabyte-aorus-radeon-rx-7900-xtx-elite-test-a-recenze-supervykonne-grafiky-za-slusnou-cenu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17219"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/gigabyte-rtx-4080-16gb-gaming-oc-test-a-recenze-dobre-graficke-karty-kterou-kazi-nvidia.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17206"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/sapphire-nitro-amd-radeon-rx-7900-xtx-vapor-x-test-a-recenze-graficke-karty-dvou-tvari.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17193"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/gigabyte-rtx-4090-gaming-oc-24g-test-extremne-velke-drahe-zrave-a-vykonne-grafiky.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17579"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/asrock-b760-pro-rs-test-a-recenze-cenove-dostupnejsi-dobre-vybavene-desky-pod-intel.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17548"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/gigabyte-b650i-aorus-ultra-test-a-recenze-jedne-z-nejlepsich-mini-itx-desek-vubec.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17528"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/asus-rog-maximus-z790-apex-test-a-recenze-zakladni-desky-pro-oc-sportovani-a-rekordy.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17433"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/gigabyte-z790-aorus-xtreme-test-a-recenze-nejlepsi-desky-pro-intel-core-od-gigabyte.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17420"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/asrock-b650e-steel-legend-wifi-test-a-recenze-vybavene-cenove-dostupnejsi-gen5-desky.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17611"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/gigabyte-ud1300gm-pg5-test-a-recenze-cenove-dostupneho-1300w-gen5-atx-3.0-zdroje.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17603"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/endorfy-arx-700-argb-test-a-review.-nova-nejlepsi-cenove-dostupna-prostorna-pc-skrin.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17521"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/chieftec-polaris-3.0-pps-850fc-a3-850w-test-a-recenze-dobreho-zdroje-s-atx-3.0.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17492"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/fractal-design-terra-test-a-recenze-extra-kompaktni-mini-itx-sfx-skrine-i-pro-vykonnejsi-pc.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17487"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/corsair-2000d-airflow-test-a-recenze-kompaktni-ale-prostorne-mini-itx-skrine.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17587"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/dell-kb700-a-ms700-test-a-recenze-elegantniho-bezdratoveho-komba-klavesnice-a-mysi.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17571"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/corsair-k65-pro-mini-test-a-recenze-kompaktni-65-klavesnice-s-optickymi-spinaci.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17541"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/viewsonic-vx1755-test-a-recenze-mobilniho-17-monitoru-na-cesty.-1080p-se-144hz-vsude-sebou.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17539"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/sandberg-solar-charger-60w-qc3.0-pd-dc-test-kompaktni-solarni-elektrarny-na-cesty.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17531"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/asrock-pg32qf2b-test-a-recenze-univerzalniho-165-va-qhd-monitoru-za-dobrou-cenu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17592"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/kingston-fury-beast-2x32gb-rgb-ddr5-6000-cl40-test-rychlych-ram-s-velkou-kapacitou.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17583"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/inwin-nr36-360mm-nebula-aio-test-a-recenze-vzhledove-vyrazneho-chladice-pro-cpu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17577"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/cooler-master-ma824-stealth-test-a-recenze-obriho-chladice-anebo-konkurent-pro-d15.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17564"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/alphacool-core-1-test-a-recenze-nove-generace-elegantnich-vodnich-bloku-pro-amd-i-intel.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17535"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/corsair-icue-h150i-elite-capellix-xt-test-a-recenze-kvalitniho-vykonneho-360mm-aio-chlazeni.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17516"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/corsair-mp600-core-xt-2tb-test-a-recenze-cenove-dostupneho-nvme-gen4-ssd-disku.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17508"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/qnap-ts-453e-8g-test-a-recenze-opravdu-vybavene-a-vykonne-nas.-vse-co-je-treba.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17505"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/sabrent-thunderbolt-3-usb-3-type-c-to-cfexpress-card-reader-test-opravdu-rychle-ctecky.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17497"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/kingston-ssd-fury-renegade-test-a-recenze-vykonny-dobre-vybaveny-gen4-m.2-ssd.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17463"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/adata-xpg-gammix-s70-blade-test-a-recenze-rychleho-gen4-ssd-v-aktualizovane-verzi.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16074"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/asrock-mars-4500u-test-a-recenze-poradneho-mini-pc-s-vykonnym-amd-ryzen-5-4500u.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15387"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/asus-mini-pc-pn50-test-a-recenze-poradneho-mini-pocitace-s-vykonnym-amd-ryzen-4000u.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15377"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/doporucene-pc-sestavy-09-2020-jake-komponenty-koupit-a-neprohloupit-pro-vas-pocitac.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "14951"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/doporucene-pc-sestavy-03-2020-co-za-hardware-koupit-a-neprohloupit-pro-vas-pocitac.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "14690"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/doporucene-vanocni-pc-sestavy-12-2019-co-koupit-v-cenovych-hladinach-za-7-az-120-tisic.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17208"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/stastny-novy-pocitacovy-rok-2023-co-nas-ceka-v-oblasti-pc-technologii-a-na-ddworld.cz.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17207"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/shrnuti-roku-2022-co-se-povedlo-a-nepovedlo-nejen-ve-svete-pc-a-technologii.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16488"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/stastny-novy-rok-2022-co-nas-ceka-a-nemine-nejen-na-ddworld.cz.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16487"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/shrnuti-roku-2021-co-se-povedlo-a-nepovedlo-nejen-ve-svete-pc-her-a-technologii.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15622"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/stastny-novy-rok-2021-co-nas-ceka-a-nemine-nejen-na-ddworld.cz.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Martinez"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=989&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "3571"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/odys-move-bez-televize-ani-ranu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Bathory"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=742&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2907"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/genius-sw-hf2.1-3000-vykonny-2.1-system-v-drevenem-provedeni-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Martinez"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=989&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2838"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/asus-n51tp-lecivy-notebook.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Bathory"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=742&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2770"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/seagate-barracuda-st3500418as-500gb-v-jedne-plotne-na-7200-otackach.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Bathory"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=742&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2726"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/samsung-ecogreen-f2-hd502hi-500gb-na-jedne-plotne.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17606"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/hyperx-cloud-iii-test-a-recenze-nove-generace-popularnich-hernich-sluchatek.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17600"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/creative-sound-blasterx-katana-v2-test-a-review-univerzalniho-soundbar-2.1-systemu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17448"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/jabra-evolve2-buds-test-a-recenze-skvele-hrajicich-univerzalnich-bezdratovych-sluchatek.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17375"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/hyperx-cloud-stinger-2-wireless-test-bezdratoveho-herniho-headsetu-s-dts-x-zvukem.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17048"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/jabra-elite-7-active-test-a-recenze-spickova-sluchatka-se-zvysenou-odolnosti-i-pro-sport.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=72"
+          },
+          {
+            "type": "to_ssid",
+            "value": "24"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/casemodding/digitaldoom-s-casemodding/digitaldoom-s-hellstorm.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=72"
+          },
+          {
+            "type": "to_ssid",
+            "value": "18"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/casemodding/digitaldoom-s-casemodding/digitaldoom-s-slayer.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=73"
+          },
+          {
+            "type": "to_ssid",
+            "value": "61"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/casemodding/casemodding-navody-jak-na-to/casemodding-upravy-pocitacu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=76"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2400"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/casemodding/taktovani/gigabyte-gooc-praha-2009-setkani-spicky-evropskeho-oc-pohledem-ddworld.cz.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "A B"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=954&Itemid=76"
+          },
+          {
+            "type": "to_ssid",
+            "value": "1971"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/casemodding/taktovani/extremni-taktovani-s-hardoczech-v-polance-nad-odrou.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=76"
+          },
+          {
+            "type": "to_ssid",
+            "value": "102"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/casemodding/taktovani/taktovani-i-jednoduseji-to-nejde.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "5408"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/ddgames-news-39-10-nejnovejsi-informace-ze-sveta-her.-co-nas-ceka-a-nemine.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "5271"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/games-ddworld-news-35-2010-vse-o-aktualnich-novinkach-na-poli-pc-her.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "5201"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/games-ddworld-news-33-00-hromady-aktualnich-hernich-novinek-vse-co-potrebujete-znat.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "5163"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/games-ddworld-news-32-00-nejaktualnejsi-informace-ze-sveta-her-na-jedinem-miste.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "5123"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/games-ddworld-news-hromada-novinek-a-aktualit-z-ocekavanych-her-na-jedinem-miste-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1013"
+          },
+          {
+            "type": "to_ssid",
+            "value": "12308"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/herni-konzole/preview-nintendo-switch-v-redakci-co-se-ukryva-uvnitr-a-jake-jsou-prvni-dojmy-a-hodnoceni.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1013"
+          },
+          {
+            "type": "to_ssid",
+            "value": "8757"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/herni-konzole/tema-konzole-sony-ps4-vs-xbox-one-vs-pc-podrobne-srovnani-a-vse-co-jste-chteli-vedet.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Eso Rimmer"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=1309&Itemid=1013"
+          },
+          {
+            "type": "to_ssid",
+            "value": "563"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/herni-konzole/historie-konzoli-sega-megadrive.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17444"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/dead-island-2-test-vykonu-gpu-a-cpu-a-recenze-prekvapive-povedena-brutalni-zombie-akce.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17419"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/resident-evil-4-test-vykonu-gpu-a-cpu-a-recenze-hry.-vyborna-i-dobre-optimalizovana-hra.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17396"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/the-last-of-us-part-i-test-vykonu-gpu-a-cpu-a-recenze-hry-aneb-smrt-8gb-grafickych-karet.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17367"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/company-of-heroes-3-test-vykonu-gpu-a-cpu-a-recenze-hry-skvela-valecna-rts.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17326"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/returnal-test-vykon-gpu-a-cpu-a-recenze-velmi-originalni-akcni-hry.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17559"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/asus-rog-strix-scar-17-test-notebooku-s-novym-nejvykonnejsim-cpu-amd-ryzen-9-7945hx.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17141"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/asus-zenbook-14-oled-ux3402za-test-a-recenze-cenove-rozumny-ultramobilni-pc-s-oled.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16897"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/test-cooler-master-mastercase-eg200-jak-udelat-z-kancelarskeho-notebooku-vykonny-herni-stroj.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16801"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/test-asus-zenbook-s-13-oled-s-amd-ryzen-7-6800u-doposud-nejlepsi-skutecne-mobilni-pc.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16771"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/test-asus-rog-flow-z13-vykonny-13-4-herni-windows-tablet-v-akci.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17596"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/xiaomi-poco-f5-test-a-recenze-vykonneho-telefonu.-vse-pro-pomer-cena-vykon.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17484"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/xiaomi-poco-x4-gt-test-a-recenze-typicke-stredni-tridy-telefonu.-hodne-muziky-za-malo-penez.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17411"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/xiaomi-12t-5g-test-a-recenze-spickove-vybaveneho-telefonu-za-dostupnou-cenu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17368"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/asus-zenfone-9-test-a-recenze-maleho-ale-sikovneho-moderniho-telefonu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17216"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/xiaomi-12-pro-5g-test-a-recenze-velmi-dobreho-telefonu-ale-staci-to-dnes.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17183"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/amd-radeon-rx-7900-xt-20gb-test-a-recenze-vykonne-grafiky-za-rozumnejsi-cenu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17180"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/amd-radeon-rx-7900-xtx-24gb-test-a-recenze-nove-graficke-karty-s-revolucnim-rdna-3.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17161"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/cooler-master-vertical-graphics-card-holder-kit-ver.3-test-vertikalniho-modulu-pro-montaz-gpu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17011"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/amd-radeon-rx-6400-4gb-sapphire-test-a-recenze-moderni-nizko-profilove-50w-graficke-karty.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16980"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/gigabyte-ud1000gm-pg5-1000w-test-a-recenze-moderniho-zdroje-s-pcie-gen5-konektorem.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17415"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/asrock-b760m-pg-sonic-wifi-test-a-recenze-cenove-rozumnejsi-designove-sonic-desky.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17403"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/gigabyte-z790-aorus-elite-ax-test-a-recenze-solidni-desky-pod-narocne-intel-core.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17392"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/asrock-z790-pg-sonic-test-a-recenze-zakladni-desky-s-exkluzivnim-sega-designem.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17353"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/asrock-b650m-pg-a-b650e-pg-riptide-test-a-recenze-desek-s-vybornym-pomerem-cena-vykon.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17347"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/asus-rog-strix-x670e-e-gaming-wifi-test-a-recenze-vyborne-zakladni-desky-pro-nejlepsi-cpu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17460"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/lian-li-o11-dynamic-evo-test-a-recenze-jedne-z-nejlepsich-pc-skrini-soucasnosti.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17438"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/sharkoon-elite-shark-ca700-test-a-recenze-unikatni-show-case-aneb-zajimave-vypadajici-pc.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17427"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/deepcool-ck500-test-a-recenze-nove-generace-skrine-od-kvalitniho-vyrobce-podruhe.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17406"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/endorfy-regnum-400-argb-tg-test-a-recenze-nejlepsi-cenove-dostupna-rozumna-case-na-trhu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17381"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/be-quiet-dark-base-900-orange-test-a-recenze-modularni-skrine-s-durazem-na-tichy-provoz.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17524"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/dell-ultrasharp-webcam-wb7022-4k-uhd-test-a-recenze-webkamery-pro-narocne.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17502"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/steelseries-arctis-nova-3-test-a-recenze-herniho-headsetu-s-dobrym-zvukem-a-cenou.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17488"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/asus-rog-strix-flare-ii-animate-test-a-recenze-jedne-z-nejlepsich-mechanickych-klavesnic.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17468"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/mountain-makalu-max-test-a-recenze-nove-modularni-bezdratove-mysi-i-pro-velke-ruce.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17400"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/jabra-elite85t-test-a-recenze-pohodlnych-bezdratovych-pecek-s-vybornym-zvukem.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17520"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/asus-rog-ryuo-iii-360-white-edition-test-a-recenze-nove-generace-cpu-chlazeni-od-asus.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17495"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/endorfy-fera-5-dual-fan-test-a-recenze-popularniho-zakladniho-chladice-pro-cpu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17475"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/cooler-master-masterliquid-360l-core-test-a-recenze-zakladniho-360mm-aio-chladice-11.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17453"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/endorfy-navis-f360-test-a-recenze-elegantniho-jednoducheho-vykonneho-aio-chladice.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17441"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/be-quiet-pure-loop-2-fx-280-test-a-recenze-ticheho-univerzalniho-aio-chladice-pro-cpu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17455"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/silicon-power-armor-a65b-2tb-test-a-recenze-klasickeho-externi-hdd-s-extra-odolnosti.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17430"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/wd-black-sn850x-nvme-test-a-recenze-rychleho-kvalitniho-m.2-gen4-ssd-pro-pc-i-ps5.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17408"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/corsair-mp600-pro-nh-2tb-test-a-recenze-vykonneho-kvalitniho-gen4-nvme-ssd-disku.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17384"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/adata-legend-960-1tb-test-a-recenze-kvalitniho-nvme-gen4-disku-za-rozumnou-cenu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17359"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/sabrent-rocket-4-plus-g-test-a-recenze-spickoveho-gen4-7gbps-ssd-s-paradnim-chladicem.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "14500"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/test-chieftec-chieftronic-m1-zajimava-prostorna-gaming-cube-skrin-se-sklem-a-rgb.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "14433"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/doporucene-pc-sestavy-09-2019-co-koupit-a-neprohloupit-v-cenovych-hladinach-za-7-az-50-tisic.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "14075"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/doporucene-pc-sestavy-04-2019-co-koupit-a-neprohloupit-v-cenovych-hladinach-za-7-az-150-tisic.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "13916"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/doporucene-pc-sestavy-02-2019-co-koupit-a-neprohloupit-za-cenu-od-7-do-150-tisic.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "13812"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/recenze-asus-mini-pc-pb40-plne-vybaveny-pocitac-pro-kancelare-o-velikosti-dvd-mechaniky.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15621"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/shrnuti-roku-2020-co-se-povedlo-a-nepovedlo-nejen-ve-svete-pc-a-technologii.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "14759"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/shrnuti-a-bilance-roku-2019-co-se-povedlo-a-nepovedlo-v-it-cpu-gpu-mobility-atd.-souhlasite.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "13022"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/chcete-vedet-co-nas-ceka-a-asi-nemine-plany-produkty-hry-a-trendy-pro-rok-2018.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "13020"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/shrnuti-a-bilance-roku-2017-co-se-povedlo-a-nepovedlo-na-poli-it-pc-hw-sw-her-.-souhlasite.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "12135"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/chcete-vedet-co-nas-ceka-a-asi-nemine-plany-produkty-hry-a-trendy-pro-rok-2017.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Bathory"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=742&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2630"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/datatraveler-locker-16gb-s-256bitovym-aes-sifrovanim-dat-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Martinez"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=989&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2553"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/fujitsu-lifebook-e8420-pro-tezkej-dzob-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Bathory"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=742&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2499"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/logitech-z-10-kvalitni-stereo-k-pocitaci-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Bathory"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=742&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2433"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/microsoft-explorer-mouse-s-technologii-bluetrack-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2358"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/duel-1tb-disku-seagate-st31000333as-vs-wd1002fbys-3.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16960"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/test-philips-fidelio-t1-spickova-bezdratova-sluchatka-s-excelentnim-zvukem-a-vydrzi.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16345"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/hyperx-cloud-revolver-7.1-test-a-recenze-univerzalniho-skvele-hrajiciho-headsetu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16212"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/hyperx-cloud-ii-wireless-test-a-recenze-popularniho-herniho-headsetu-v-bezdratovem-podani.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16128"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/creative-sxfi-air-test-a-recenze-univerzalnich-elegantnich-bezdratovych-sluchatek.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16012"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/cloud-stinger-core-wireless-7.1-pc-test-a-recenze-bezdratoveho-headsetu-za-dostupnou-cenu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "4919"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/ddgames-news-herni-novinky-na-jednom-miste-pc-jako-herni-platforma-opet-v-kurzu-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Marek \u0160k\u00e1cha"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=4985&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "4719"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/games-ddnews-nejaktualnejsi-novinky-z-herniho-sveta-jake-herni-pecky-se-na-nas-chystaji-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "4600"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/games-ddnews-co-noveho-na-poli-her-smrt-nudou-nehrozi-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "4431"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/ddgames-news-velky-prehled-aktualnich-hernich-novinek-pc-platforma-pod-palbou-novinek-3.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "4241"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/games-ddnews-co-noveho-na-poli-her-bude-zivo-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17308"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/the-settlers-new-allies-test-vykonu-gpu-a-recenze-hry.-budovatelska-strategie-slavi-30-let.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17257"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/forspoken-test-vykonu-gpu-a-cpu-a-recenze-hry.-prvni-prekvapeni-herniho-roku-2023.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17147"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/spider-man-miles-morales-na-pc-test-vykonu-cpu-a-gpu-a-recenze-hry-aneb-sony-boduje.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17117"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/call-of-duty-modern-warfare-ii-test-vykonu-gpu-a-cpu-a-recenze-hry.-cod-jako-vzdy.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17072"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/uncharted-legacy-of-thieves-collection-recenze-hry-a-test-vykonu-gpu-a-cpu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16623"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/asus-rog-zephyrus-g14-s-amd-ryzen-6000h-a-radeon-rx-6000m-test-nejlepsiho-notebooku.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16237"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/asus-rog-strix-g15-test-a-recenze-skoro-perfektniho-notebooku-s-amd-ryzen-9-a-rx-6800m.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16007"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/asus-rog-flow-x13-a-rog-xg-mobile-test-a-recenze-ultimatni-kombo-notebooku-a-grafiky.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15812"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/asus-rog-zephyrus-duo-15-se-test-a-recenze-ultimatniho-notebooku-s-ryzen-9-a-rtx-3080.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15656"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/preview-asus-ma-hromadu-novych-amd-ryzen-5000-notebooku-rog-zephyrus-a-strix-jake-jsou.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17132"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/poco-f4-test-a-recenze-typicke-stredni-tridy-telefonu.-slusny-vykon-v-elegantnim-tele.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17027"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/xiaomi-redmi-note-11-pro-5g-test-a-recenze-telefonu-stredni-tridy.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16971"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/realme-watch-3-test-extremne-levnych-a-presto-schopnych-chytrych-hodinek-s-ip68-volanim-atd.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16731"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/test-realme-gt2-recenze-vykonneho-telefonu-a-slusnou-cenou.-ale.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16377"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/realme-gt-neo2-5g-recenze-nove-varianty-velmi-vykonneho-cenove-dostupneho-telefonu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16978"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/powercolor-rx-6600-xt-8gb-fighter-test-a-recenze-vyzrale-mainstreamove-gpu.-lepsi-nez-rtx-3060.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16786"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/test-asus-rog-strix-rtx-3050-8gb-nizsi-mainstream-od-nvidia-a-konkurent-amd-rx-6600.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16775"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/test-sapphire-radeon-nitro-rx-6650-xt-jeste-lepsi-graficka-stredni-trida-od-amd.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16763"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/test-sapphire-radeon-rx-6750-xt-nitro-skvely-mainstream-v-akci-a-souboji-s-rtx-3060-ti-3070.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=61"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16750"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/graficke-karty/test-gigabyte-amd-radeon-rx-6950-xt-nova-verze-nejlepsi-herni-graficke-karty-soucasnosti.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17333"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/asrock-z790-pg-itx-tb4-test-a-recenze-skvele-vybavene-a-udelane-mini-itx-desky-pro-intel.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17325"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/msi-mag-z790-tomahawk-wifi-ddr4-test-a-recenze-jedne-z-poslednich-top-desek-s-ddr4.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17316"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/asrock-b650e-taichi-test-a-recenze-luxusni-verze-mainstreamove-desky.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17290"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/asrock-z790-taichi-test-a-recenze-luxusni-zakladni-desky-pro-intel-core-13000.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=62"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17280"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zakladni-desky/asus-proart-x670e-creator-wifi-test-a-recenze-skvele-vybavene-kvalitni-zakladni-desky.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17361"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/cooler-master-v1300-sfx-platinum-test-a-recenze-nejvykonnejsiho-kompaktniho-pc-zdroje.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17351"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/cooler-master-masterbox-td500-mesh-v2-test-a-recenze-nove-verze-pekne-a-funkcni-skrine.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17329"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/phanteks-eclipse-g500a-test-a-recenze-velmi-prostorne-funkcni-pc-skrine-za-slusnou-cenu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17299"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/in-win-309-gaming-edition-test-a-recenze-unikatni-skrine-s-integrovanym-hernim-panelem.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=63"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17283"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/case-a-zdroje/corsair-rm1200x-shift-test-a-recenze-noveho-atx-3.0-gen5-napajeciho-zdroje-s-vystupy-na-boku.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17378"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/steelseries-apex-9-tkl-test-a-recenze-kompaktni-klavesnice-s-vymenitelnymi-optickymi-spinaci.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17372"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/genesis-zircon-550-test-a-recenze-cenove-dostupne-bezdratove-lehke-mysi.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17357"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/genesis-thor-660-test-a-recenze-60-mechanicke-bezdratove-mini-klavesnice.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17344"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/noblechairs-legend-java-edition-test-a-recenze-robustni-velmi-elegantni-a-kvalitni-zidle.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=64"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17336"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/periferie/synology-wrx560-wi-fi-6-test-a-recenze-vykonneho-wifi-router-v-elegantnim-designu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17388"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/amd-ryzen-7-7800x3d-test-a-recenze-nejlepsiho-procesoru-pro-herni-pc-s-extra-prekvapenim.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17341"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/endorfy-fortis-5-dual-fan-test-a-recenze-cenove-dostupneho-ticheho-chladice-cpu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17321"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/deepcool-lt720-test-a-recenze-vykonneho-a-designove-unikatniho-aio-chladice.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17312"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/amd-ryzen-9-7950x3d-test-a-recenze-univerzalne-vykonneho-cpu-s-3d-v-cache-pro-hry-i-praci.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=65"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17307"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/procesory-a-pameti/g.skill-trident-z5-rgb-ddr5-6800-cl34-test-a-recenze-rychlych-a-zrychlujicich-ddr5-pameti.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17320"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/aorus-gen5-10000-ssd-test-a-recenze-prvniho-m2-nvme-pcie-5.0-ssd-na-trhu-od-gigabyte.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17293"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/crucial-p3-2tb-test-a-recenze-slusne-rychleho-ssd-disku-aneb-2tb-za-3-tisice-v-akci.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17273"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/micron-7450-pro-960gb-test-a-recenze-vykonneho-gen4-nvme-ssd-pro-pracovni-stanice.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17247"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/solidigm-p44-pro-2tb-test-a-recenze-rychleho-a-plne-vybaveneho-gen4-nvme-ssd-se-7gb-s.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=66"
+          },
+          {
+            "type": "to_ssid",
+            "value": "17237"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/pevne-disky/asustor-lockerstor-2-gen2-as6702t-test-a-recenze-vykonne-flexibilni-domaci-nas.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "13638"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/doporucene-pc-sestavy-09-2018-10-az-20-tisic-co-koupit-a-neprohloupit-pc-nejen-pro-skolaky.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "13368"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/doporucene-pc-sestavy-05-2018-40-az-100-tisic-chci-vyborny-vykon-a-vysokou-kvalitu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "13363"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/doporucene-pc-sestavy-05-2018-20-az-30-tisic-chci-dobry-vykon-za-dobrou-cenu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "13352"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/doporucene-pc-sestavy-05-2018-do-15-tisic-co-koupit-kdyz-to-chci-co-nejlevnejsi.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=67"
+          },
+          {
+            "type": "to_ssid",
+            "value": "12874"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/sestavy/tema-rgb-led-osvetlujeme-nejen-pocitac-aneb-asus-aura-sync-v-praxi.-jak-vyuzit-rgb-v-praxi.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "12131"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/a-je-konec-co-se-povedlo-a-nepovedlo-v-roce-2016.-kvalita-na-ustupu-vitezi-kvantita.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "11095"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/vyhled-do-roku-2016-co-nas-ceka-a-asi-nemine-v-letosnim-roce-v-it-a-na-ddworld.cz.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "11086"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/bilance-a-nej-roku-2015-co-se-povedlo-nepovedlo-na-poli-it-pc-her-a-mobilit.-souhlasite.html"
+          }
+        ]
+      }
+    },
+    {
+      "product_has_review": {
+        "properties": [
+          {
+            "type": "from_ssid",
+            "value": "10631"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/zakladni-deska-pruvodce-vyberem-pro-intel-a-amd-06-2015.html"
+          },
+          {
+            "type": "to_ssid",
+            "value": "10631"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/zakladni-deska-pruvodce-vyberem-pro-intel-a-amd-06-2015.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=68"
+          },
+          {
+            "type": "to_ssid",
+            "value": "10181"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/cenove-prehledy/vyhled-do-roku-2015-co-nas-ceka-a-asi-nemine-v-letosnim-roce-v-it-a-na-ddworld.cz.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Bathory"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=742&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2252"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/cvalik-pro-vase-data-1-5tb-seagate-barracuda-st31500341as-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Bathory"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=742&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2206"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/2x-cpu-nexus-chladice-v-testu-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2156"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/acer-aspire-4935g-prirucni-kino-3.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Bathory"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=742&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2126"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/5.1-zvukovy-system-od-logitech-s-oznacenim-x-540-3.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Bathory"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=742&Itemid=79"
+          },
+          {
+            "type": "to_ssid",
+            "value": "2073"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/z-jinych-webu/cdr-hard/32-a-64gb-ssd-disky-od-ocz-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15948"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/trust-gxt-444-wayman-pro-test-a-recenze-izolovanych-sluchatek-pro-hrace.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15546"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/creative-sxfi-gamer-test-a-recenze-kvalitniho-herniho-headsetu-s-technologii-super-x-fi.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15481"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/philips-fidelio-x3-test-a-recenze-pohodlnych-hi-fi-sluchatek.-cisty-zvuk-v-celem-rozsahu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15436"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/creative-sound-blasterx-ae-7-test-a-recenze-spickove-zvukove-karty-s-externim-modulem.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=92"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15424"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/pc-a-komponenty/zvuk-a-audio/alienware-510h-7.1-test-a-recenze-prekvapiveho-a-cenove-dostupneho-headsetu.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "4160"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/games-ddnews-herni-novinky-letos-si-asi-budeme-jen-hrat-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "4117"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/games-ddnews-naslapany-herni-rok-je-zde-a-novinky-se-na-nas-vali-nevynechejte-je-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Marek \u0160k\u00e1cha"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=4985&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "3974"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/ddgames-news-1-2010-co-noveho-si-brzy-zahrajeme-2.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": ". ."
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=657&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "3914"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/digitalni-distribuce-her-pryc-od-krabic.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1014"
+          },
+          {
+            "type": "to_ssid",
+            "value": "3895"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/aktuality-a-novinky/nejlepsi-hry-roku-2009-top10-her-ktere-byste-nemeli-minout.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16961"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/marvel-s-spider-man-remastered-recenze-hry-a-test-vykonu-gpu-skvela-hra-konecne-pro-pc.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16913"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/recenze-two-point-campus-pohodova-strategie-pro-priznivce-vysokeho-skolstvi.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16880"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/outriders-worldslayer-recenze-hry-a-test-vykonu-gpu-poctivy-datadisk-vylepsuje-hru.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16808"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/preview-starfield-v-detailech-skyrim-ve-vesmiru-vypada-skvele-a-bude-nas-bavit-roky.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1015"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16662"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/herni-sekce/recenze-her/elden-ring-test-vykonu-gpu-a-cpu-a-recenze-hry-dobra-ale-nikoliv-skvela-hra.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15563"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/acer-swift-3-test-a-recenze-extremne-vykonneho-cenove-dostupneho-ultrabooku-s-amd-ryzen.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15209"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/asus-rog-zephyrus-g14-anime-matrix-test-a-recenze-nejlepsiho-notebooku-soucasnosti.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "15156"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/asus-tuf-gaming-a15-fa506-test-a-recenze-dostupneho-notebooku-s-vykonnym-amd-ryzen-7.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "14791"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/preview-asus-jde-s-notebooky-naplno-do-amd-prichazi-zephyrus-g14-a-nove-tuf-a15-a17.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=1011"
+          },
+          {
+            "type": "to_ssid",
+            "value": "14711"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/notebook/test-genesis-oxid-550-chladici-podlozka-pro-vas-herni-i-neherni-notebook.-ma-prinos.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Belka"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=7209&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16334"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/niceboy-ion-charles-i7-test-a-recenze-roboticky-vysavac-s-mopem-v-akci.html"
+          }
+        ]
+      }
+    },
+    {
+      "person_has_review": {
+        "properties": [
+          {
+            "type": "role",
+            "value": "author"
+          },
+          {
+            "type": "from_ssid",
+            "value": "Jan Stach"
+          },
+          {
+            "type": "from_url",
+            "value": "http://www.ddworld.cz/index.php?option=com_comprofiler&task=userProfile&user=62&Itemid=1012"
+          },
+          {
+            "type": "to_ssid",
+            "value": "16275"
+          },
+          {
+            "type": "to_url",
+            "value": "http://www.ddworld.cz/mobility/smartphone/realme-8i-test-a-recenze-cenove-dostupneho-telefonu.-definice-prumernosti.html"
+          }
+        ]
+      }
+    }
+  ],
+  "meta": {
+    "agent_id": 19734,
+    "agent_name": "Test 7 vchkhr",
+    "origin": "test7vchkhr",
+    "session_endtime": "None",
+    "session_id": 6575008,
+    "session_starttime": "2023-08-07 13:52:12",
+    "update_type": "full"
+  }
+}
