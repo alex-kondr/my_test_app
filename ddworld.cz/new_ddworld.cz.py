@@ -6,7 +6,7 @@ XCAT = ["Aktuality", "Software"]
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request("http://www.ddworld.cz/"), process_catlist, dict())
 
 

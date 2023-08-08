@@ -43,7 +43,7 @@ def process_review(data, context, session):
             prod_json = prod_json[1]
 
     product = Product()
-    product.name = context['title'].replace(' im Test', '').replace(' Test', '').replace('im Check', '').replace('Details', '').replace('als Download', '').replace('-Download', '').replace('- Download', '').replace('Download', '').replace('im Vergleich', '').split(':')[0].split(' - ')[0].strip()
+    product.name = context['title'].split(' im ')[0].split('Test: ')[-1].split('test: ')[-1].split('TEST: ')[-1].split(' - Test')[0].split(' Test')[0].split('-Test')[0].split(' angetestet')[0].split('testet: ')[-1].split('Details')[0].split('als Download')[0].split('-Download')[0].split('- Download')[0].split('Download')[0].split('Test Aldi-PC:')[-1].split(':')[0].split('Test - ')[-1].split(' -')[0].replace('[TEST]', '').strip()
     product.ssid = context['url'].split('-')[-1].replace('.html', '')
 
     product.category = context.get('cat')
@@ -69,7 +69,7 @@ def process_review(data, context, session):
     authors = data.xpath('//p[@class="articlehead__dateauthors"]/strong')
     for author in authors:
         author = author.xpath('text()').string()
-        if 'Redaktion pcmagazin' not in author:
+        if 'redaktion pcmagazin' not in author.lower():
             review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('(//div[@class="inline_rating__result inline_rating__result--starpercent"]/text())[last()]').string()
@@ -84,21 +84,27 @@ def process_review(data, context, session):
 
     pros = data.xpath('//li[span[@class="fas fa-plus-circle"]][normalize-space(.)]')
     for pro in pros:
-        pro = pro.xpath('text()').string()
-        review.properties.append(ReviewProperty(type='pros', value=pro))
+        pro = pro.xpath('text()').string().replace('+', '').replace('-', '').strip()
+        if pro:
+            review.properties.append(ReviewProperty(type='pros', value=pro))
 
     cons = data.xpath('//li[span[@class="fas fa-minus-circle"]][normalize-space(.)]')
     for con in cons:
-        con = con.xpath('text()').string()
-        review.properties.append(ReviewProperty(type='cons', value=con))
+        con = con.xpath('text()').string().replace('+', '').replace('-', '').strip()
+        if con:
+            review.properties.append(ReviewProperty(type='cons', value=con))
 
     context['conclusion'] = data.xpath('//h2[not(@class)][contains(text(), "Fazit") or contains(text(), "Testfazit")]/following-sibling::p[not(em)]//text()').string(multiple=True)
     if not context['conclusion']:
         context['conclusion'] = data.xpath('//h2[@class][contains(text(), "Fazit") or contains(text(), "Testfazit")]/following-sibling::p[not(em)]//text()').string(multiple=True)
 
-    context['excerpt'] = data.xpath('//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::p//text()|//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::h2[not(contains(text(), "Benchmark")) and not(contains(text(), "Technische Details"))]//text()').string(multiple=True)
-    if not context['excerpt']:
-        context['excerpt'] = data.xpath('//div[@class="maincol__contentwrapper"]/p//text()|//div[@class="maincol__contentwrapper"]/h2[not(contains(text(), "Benchmark")) and not(contains(text(), "Technische Details"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::p//text()|//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::h2[not(contains(text(), "Benchmark")) and not(contains(text(), "Technische Details"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="maincol__contentwrapper"]/p//text()|//div[@class="maincol__contentwrapper"]/h2[not(contains(text(), "Benchmark")) and not(contains(text(), "Technische Details"))]//text()').string(multiple=True)
+    if summary and excerpt:
+        context['excerpt'] = excerpt.replace(summary, '')
+    else:
+        context['excerpt'] = excerpt
 
     context['product'] = product
 
@@ -127,8 +133,10 @@ def process_review_next(data, context, session):
         excerpt = data.xpath('//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::p//text()|//div[@class="maincol__contentwrapper"]//h2[contains(text(), "Fazit")]/preceding-sibling::h2[not(contains(text(), "Benchmark")) and not(contains(text(), "Technische Details"))]//text()').string(multiple=True)
         if not excerpt:
             excerpt = data.xpath('//div[@class="maincol__contentwrapper"]/p//text()|//div[@class="maincol__contentwrapper"]/h2[not(contains(text(), "Benchmark")) and not(contains(text(), "Technische Details"))]//text()').string(multiple=True)
-        if excerpt:
+        if excerpt and context['excerpt']:
             context['excerpt'] += ' ' + excerpt
+        elif excerpt:
+            context['excerpt'] = excerpt
 
     next_url = data.xpath('//a[@class="next pagination__button pagination__button--next"]/@href').string()
     if next_url:

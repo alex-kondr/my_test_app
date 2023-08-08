@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 
 
-class TestProduct:
+class Product:
     def __init__(self, agent_id: int, reload=False):
         self.agent_id = agent_id
         self.emits_dir = Path("test/emits")
@@ -19,10 +19,13 @@ class TestProduct:
         else:
             self.file = self.open_file()
 
+        self.agent_name = self.file["meta"]["agent_name"]
+
     def generate_file(self) -> dict[list[dict]]:
 
         load_dotenv()
         url = f"https://prunesearch.com/manage?action=yaml&agent_id={self.agent_id}"
+        # os.system(f'curl "{url}" -k -u "{os.getenv("USER-NAME")}:{os.getenv("PASS")}" > emit.yaml')
         response = requests.get(
             url,
             verify=False,
@@ -31,11 +34,11 @@ class TestProduct:
                 password=os.getenv("PASS")
             )
         )
-
+        file = {"products": []}
+        # with open("emit.yaml", "r", encoding="utf-8") as fd:
         content = yaml.load_all(response.content, Loader=yaml.FullLoader)
 
-        file = {"products": []}
-        product_num = 0
+        product_count = 0
         for items in content:
             meta = items[0].get("meta")
 
@@ -48,12 +51,12 @@ class TestProduct:
                         product[key] = value
 
                 file['products'].append(product)
-                product_num += 1
+                product_count += 1
 
-            if not product_num % 100:
-                print(product_num)
+            if not product_count % 100:
+                print(product_count)
 
-        print(f"{product_num=}")
+        print(f"{product_count=}")
         self.save_file(file)
 
         return file
@@ -66,3 +69,75 @@ class TestProduct:
     def save_file(self, file):
         with open(self.file_path, "w", encoding="utf-8") as fd:
             json.dump(file, fd, indent=2)
+
+
+class Test:
+
+    def __init__(self, product: Product, xproduct_names: list[str]=[]):
+        self.products = product.file.get("products")
+        self.agent_name = product.agent_name
+        self.xproduct_names = ["review", "test", " + ", " - ", "..."] + xproduct_names
+        self.path = Path(f"test/error/{self.agent_name}")
+        self.path.mkdir(exist_ok=True)
+
+    def save(self, file: dict, type_err: str) -> None:
+        file_path = self.path / f"{self.agent_name}-{type_err}.json"
+        with open(file_path, "w", encoding="utf-8") as fd:
+            json.dump(file, fd, indent=2)
+
+    def test_product_category(self) -> None:
+        error_category = []
+        for product in self.products:
+            temp_product = None
+            properties = product.get("product", {}).get("properties", {})
+            category = [property.get("value") for property in properties if property.get("type") == "category"][0]
+
+            if category.startswith("+ ") or category.endswith(" +") or category.startswith("- ") or category.endswith(" -"):
+                temp_product = properties
+
+            for xproduct_name in self.xproduct_names:
+                if xproduct_name in category.lower():
+                    temp_product = properties
+
+            if temp_product:
+                error_category.append(temp_product)
+
+        print(f"Count error product category: {len(error_category)}")
+        self.save(error_category, type_err="prod_category")
+
+    def test_product_name(self) -> None:
+        error_name = []
+        for product in self.products:
+            temp_product = None
+            properties = product.get("product", {}).get("properties", {})
+            name = [property.get("value") for property in properties if property.get("type") == "name"][0]
+
+            if name.startswith("+ ") or name.endswith(" +") or name.startswith("- ") or name.endswith(" -"):
+                temp_product = properties
+
+            for xproduct_name in self.xproduct_names:
+                if xproduct_name in name.lower():
+                    temp_product = properties
+
+            if temp_product:
+                error_name.append(temp_product)
+
+        print(f"Count error product name: {len(error_name)}")
+        self.save(error_name, type_err="prod_name")
+
+    def test_review_pros_cons(self) -> None:
+        error_pros_cons = []
+        for product in self.products:
+            temp_product = None
+            properties = product.get("review", {}).get("properties", {})
+            pros_cons = [property.get("value") for property in properties if property.get("type") == "pros" or property.get("type") == "cons"]
+
+            for pro_con in pros_cons:
+                if not pro_con or pro_con.startswith("+") or pro_con.endswith("+") or pro_con.startswith("-") or pro_con.endswith("-"):
+                    temp_product = properties
+
+            if temp_product:
+                error_pros_cons.append(temp_product)
+
+        print(f"Count error review pros_cons: {len(error_pros_cons)}")
+        self.save(error_pros_cons, type_err="rev_pros_cons")
