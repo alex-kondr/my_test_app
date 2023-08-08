@@ -92,7 +92,7 @@ class Test:
             properties = product.get("product", {}).get("properties", {})
             category = [property.get("value") for property in properties if property.get("type") == "category"][0]
 
-            if category.startswith("+ ") or category.endswith(" +") or category.startswith("- ") or category.endswith(" -"):
+            if not category or category.startswith("+ ") or category.endswith(" +") or category.startswith("- ") or category.endswith(" -"):
                 temp_product = properties
 
             for xproduct_name in self.xproduct_names:
@@ -124,6 +124,18 @@ class Test:
 
         print(f"Count error product name: {len(error_name)}")
         self.save(error_name, type_err="prod_name")
+
+    def test_review_grade(self) -> None:
+        error_grade = []
+        for product in self.products:
+            properties = product.get("review", {}).get("properties", {})
+            grades = [property for property in properties if property.get("type") == "grade"]
+
+            if not grades:
+                error_grade.append(properties)
+
+        print(f"Count error review grades: {len(error_grade)}")
+        self.save(error_grade, type_err="rev_grades")
 
     def test_review_pros_cons(self) -> None:
         error_pros_cons = []

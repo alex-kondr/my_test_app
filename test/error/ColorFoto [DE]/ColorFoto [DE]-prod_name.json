@@ -308,42 +308,6 @@
   [
     {
       "type": "name",
-      "value": "Test"
-    },
-    {
-      "type": "ssid",
-      "value": "1037854"
-    },
-    {
-      "type": "url",
-      "value": "https://www.connect-living.de/testbericht/test-vier-slrs-bis-2000-euro-im-vergleich-1037854.html"
-    },
-    {
-      "type": "category",
-      "value": "Kameras & Zubeh\u00f6r"
-    }
-  ],
-  [
-    {
-      "type": "name",
-      "value": "Test Aldi-PC"
-    },
-    {
-      "type": "ssid",
-      "value": "184702"
-    },
-    {
-      "type": "url",
-      "value": "https://www.connect-living.de/testbericht/test-aldi-pc-medion-akoya-p7700-d-fuer-699-euro-mit-blu-ray-und-quad-core-cpu-184702.html"
-    },
-    {
-      "type": "category",
-      "value": "Technik"
-    }
-  ],
-  [
-    {
-      "type": "name",
       "value": "Cullmann Magnesit 525 + 40200"
     },
     {
@@ -357,24 +321,6 @@
     {
       "type": "category",
       "value": "Kameras & Zubeh\u00f6r"
-    }
-  ],
-  [
-    {
-      "type": "name",
-      "value": "[TEST] Samsung Galaxy i7500"
-    },
-    {
-      "type": "ssid",
-      "value": "204963"
-    },
-    {
-      "type": "url",
-      "value": "https://www.connect-living.de/testbericht/test-samsung-galaxy-i7500-android-handy-auf-dem-pruefstand-204963.html"
-    },
-    {
-      "type": "category",
-      "value": "Technik"
     }
   ],
   [

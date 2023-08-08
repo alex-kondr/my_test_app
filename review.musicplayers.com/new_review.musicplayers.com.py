@@ -24,13 +24,12 @@ def process_review(data, context, session):
     product.url = context['url']
     product.ssid = context['url'].split("/")[-2]
 
-    categories = data.xpath("//div[@class='breadcrumbs']//span[@itemprop='title']/text()").strings()
-    category = []
+    categories = data.xpath('//div[@class="breadcrumbs"]//span[@itemprop="title" and not(text()="Home" or text()="Reviews")]/text()').strings()
     if categories:
-        for cat in categories[2:]:
-            category.append(cat.replace('Reviews:', '').replace('Review:', '').replace('Reviews', '').replace('Review', '').strip())
-    if category:
-        product.category = '|'.join(category)
+        categories = [cat.replace('Reviews:', '').replace('Review:', '').replace('Reviews', '').replace('Review', '').strip() for cat in categories]
+        product.category = '|'.join(categories)
+    else:
+        product.category = data.xpath('//meta[@property="article:section"]/@content').string()
 
     review = Review()
     review.type = 'pro'
@@ -54,16 +53,9 @@ def process_review(data, context, session):
         name = grade.xpath(".//strong/text()").string()
         if not name:
             name = grade.xpath(".//span/text()").string()
-
         value = grade.xpath(".//img/@src").string()
 
         if name and value and name != 'Overall Rating:':
-            if len(value) > 1:
-                value = value[0] + '.' + value[1:len(value) - 1]
-
-            if len(grade.xpath(".//td")) == 3:
-                value = grade.xpath(".//span/text()").string()
-
             value = value.split('/')[-1].split('.')[0].replace("finalstar-", "").replace("_stars", "").replace("_", "")
             try:
                 if float(value) > 10.0:
@@ -74,17 +66,35 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//tr[contains(., "Overall Rating")]//text()|//span[contains(., "OVERALL RATING")]//text()|//tr[contains(., "Overall")]//text()').string(multiple=True)
     if grade_overall:
-        grade_overall = grade_overall.lower().replace('overall', '').replace('rating', '').split('stars')[0].split('=')[-1].split(',')[0].strip()
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=4.0))
+        grade_overall = grade_overall.lower().replace('overall', '').replace('rating', '').split('stars')[0].split('=')[-1].split(',')[0].replace(':', '').strip()
+        try:
+            grade_overall = float(grade_overall)
+        except ValueError:
+            grade_overall = None
+    if not grade_overall:
+        grade_overall = data.xpath('//tr[contains(., "Overall Rating")]//img/@src|//span[contains(., "OVERALL RATING")]//text()|//tr[contains(., "Overall")]//img/@src').string()
+        if grade_overall:
+            grade_overall = grade_overall.split('/')[-1].split('.')[0].replace("finalstar-", "").replace("_stars", "").replace("_", "")
+            try:
+                grade_overall = float(grade_overall)
+            except ValueError:
+                grade_overall = None
+    if grade_overall:
+        review.grades.append(Grade(type='overall', value=grade_overall, best=4.0))
 
     excerpt = data.xpath("//div[@class='entrytext']/p/text()").string(multiple=True)
     if not excerpt:
         excerpt = data.xpath("//div[@class='article-content clearfix']/p/text()").string(multiple=True)
     if not excerpt:
         excerpt = data.xpath("//div[@class='article-content clearfix']/p/span/text()").string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@itemprop="articleBody"]/h3[contains(text(), "Contact Information")]/preceding-sibling::text()[normalize-space(.)]').string(multiple=True)
+    if not excerpt:
+            excerpt = data.xpath('//div[@itemprop="articleBody"]/p/text()[normalize-space(.)]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
-    product.reviews.append(review)
-    session.emit(product)
+        product.reviews.append(review)
+
+        session.emit(product)
