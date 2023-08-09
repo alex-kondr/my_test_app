@@ -2,37 +2,91 @@
   [
     {
       "type": "name",
-      "value": "One World Government, Signs + Symbols"
+      "value": "Klein + Hummel O 300 Studio Monitors"
     },
     {
       "type": "ssid",
-      "value": "album-review-one-world-government-signs-symbols"
+      "value": "77808"
     },
     {
       "type": "url",
-      "value": "https://musicplayers.com/2019/02/album-review-one-world-government-signs-symbols/"
+      "value": "https://www.mixonline.com/technology/field-test-klein-hummel-o-300-studio-monitors-369603"
     },
     {
       "type": "category",
-      "value": "Band & Musician"
+      "value": "Technology"
     }
   ],
   [
     {
       "type": "name",
-      "value": "TC Electronic Classic Sustain + Parametric EQ"
+      "value": "Klein + Hummel 0 110 D Studio Monitor"
     },
     {
       "type": "ssid",
-      "value": "tc-electronic-classic-sustain-parametric-eq"
+      "value": "79483"
     },
     {
       "type": "url",
-      "value": "https://musicplayers.com/2007/06/tc-electronic-classic-sustain-parametric-eq/"
+      "value": "https://www.mixonline.com/technology/field-test-klein-hummel-0-110-d-studio-monitor-369601"
     },
     {
       "type": "category",
-      "value": "Guitar and Equipment"
+      "value": "Technology"
+    }
+  ],
+  [
+    {
+      "type": "name",
+      "value": "Neutrik Test Instruments Minilyzer ML1"
+    },
+    {
+      "type": "ssid",
+      "value": "93543"
+    },
+    {
+      "type": "url",
+      "value": "https://www.mixonline.com/technology/field-test-neutrik-test-instruments-minilyzer-ml1-370157"
+    },
+    {
+      "type": "category",
+      "value": "Technology"
+    }
+  ],
+  [
+    {
+      "type": "name",
+      "value": "PORTABLE AUDIO TEST SET"
+    },
+    {
+      "type": "ssid",
+      "value": "101087"
+    },
+    {
+      "type": "url",
+      "value": "https://www.mixonline.com/technology/terrasonde-audio-toolbox-version-2-portable-audio-test-set-369906"
+    },
+    {
+      "type": "category",
+      "value": "Technology"
+    }
+  ],
+  [
+    {
+      "type": "name",
+      "value": "ROAD-TESTED TIPS"
+    },
+    {
+      "type": "ssid",
+      "value": "101761"
+    },
+    {
+      "type": "url",
+      "value": "https://www.mixonline.com/technology/roland-vs-1680-workstation-road-tested-tips-369896"
+    },
+    {
+      "type": "category",
+      "value": "Technology"
     }
   ]
 ]

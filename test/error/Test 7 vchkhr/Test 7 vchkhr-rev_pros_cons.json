@@ -1,1 +1,40 @@
-[]
+[
+  [
+    {
+      "type": "title",
+      "value": "Review: Radial EXTC Stereo Reamp"
+    },
+    {
+      "type": "publish_date",
+      "value": "2021-06-07"
+    },
+    {
+      "type": "ssid",
+      "value": "111574"
+    },
+    {
+      "type": "url",
+      "value": "https://www.mixonline.com/technology/reviews/review-radial-extc-stereo-reamp"
+    },
+    {
+      "type": "type",
+      "value": "pro"
+    },
+    {
+      "type": "summary",
+      "value": "Double Your Sonic Pleasure With Pedals or Amps"
+    },
+    {
+      "type": "pros",
+      "value": ":"
+    },
+    {
+      "type": "cons",
+      "value": ":"
+    },
+    {
+      "type": "excerpt",
+      "value": "Radial Engineering \u2019s EXTC Stereo Reamp is the latest model in the company\u2019s EXTC (\u201cex-tee-cee\u201d) line\u00a0 of reamping devices. Previously introduced models include the EXTC SA , a mono unit with two switchable effects loops, and the EXTC 500 Series . The new unit gives users the capability to reamp their DAW tracks with stereo effects pedals, mono effects pedals or even two amplifiers. Like all of Radial\u2019s pedals, the orange-and-black EXTC Stereo Reamp is built like a tank. I know to expect that from Radial products, but it still impresses me every time I get my hands on one. At 5.84 x 4.81 x 1.98 inches, the unit is similar in size to a large stompbox and the same size as the EXTC SA.\u00a0It comes with a 15 VDC power adapter and features a power status LED on the lower left of the front panel. There\u2019s no on/off switch. The front panel\u2019s left side includes large Send and Receive knobs, which allow you to tailor the levels in and out of any connected devices to maximize gain staging. You also get a Blend knob, which controls the ratio of wet to dry coming out of the attached effects pedal(s). Radial equipped the EXTC Stereo Reamp with an Invert Phase switch, which has become necessary because some pedals, particularly older ones, may have reversed polarity. And we all know that it\u2019s possible to use an XLR cable that is incorrectly wired. If the output of the EXTC sounds thin, it could be from phase cancellation, which you can alleviate or reduce by reversing the polarity. Having the switch on the front panel makes it easy to compare both polarity settings. Also on the front is the EFX Loop switch, another control that\u2019s useful for comparisons. It lets you bypass the effects from the connected pedals. Unlike the EXTC SA, which has all of its I/O on the rear panel, the EXTC Stereo Reamp\u2019s effects loop connections are on the front. If you\u2019re tight on desktop space in your studio, having cables protruding from both sides of the unit could make it hard to find a convenient spot to place it. That said, the EXTC Stereo Reamp features twice as many jacks and comes in the identically sized chassis to its mono sibling, so putting the send/receive jacks on the front was probably impossible to avoid. The effects loop I/O includes Hi-Z left and right \u00bc-inch Send and Receive jacks for connecting to and returning from pedals and connecting to amps. All the back panel I/O is balanced and line-level. From there, you connect the inputs and outputs to your audio interface. The EXTC\u2019s inputs are both on XLR/1/4-inch combo jacks; the outputs are two stereo pairs\u2014one on \u00bc-inch TRS jacks and the other on XLR connectors. On the far left is the power input, and above that is a Cable Clamp, which makes it possible to tuck the power cable under it so it won\u2019t get accidentally pulled out. With two channels of inputs and outputs, the EXTC Stereo Reamp offers plenty of potential connection scenarios.\u00a0The most basic is if you have a stereo track in your session that you want to reamp through a pedal. Connect two of your interface\u2019s line outputs to the line inputs of the EXTC Stereo Reamp, then plug the outputs of your pedal into a pair of Hi-Z inputs on your interface. As you play back the track, you can record it into a new stereo track or two new mono tracks in your DAW. In addition to the original stereo track, your session would then contain a\u00a0 stereo or dual mono track processed through the pedal. While I don\u2019t have any true stereo effects pedals, I do have a mono-to-stereo Electro-Harmonix Lester G rotary speaker pedal that I tried with the EXTC, using one send and the stereo returns. I also connected a single mono pedal to process a mono track. For another test, I connected a mono pedal to the left side of the EXTC and a different one to on the right, and each processed a separate mono track. The only limitation with that configuration is that the Send, Receive, Phase, and Blend knobs work globally, so their settings affect both the left and right sides. Because the EXTC Stereo Reamp has two Hi-Z Send outputs, you can also use it to reamp in the original sense of the word, with an amplifier. In that scenario, you\u2019d connect the output from your DAW the same way, but then just use one send on the Radial unit to route the signal to a miked amp. You could then reamp with two amps. You would need to duplicate the DI track you\u2019re reamping and patch the original and the copy through the left and right channels of the EXTC\u2019s effects loop, then route each to a separate amp. As in any reamping situation, you have to contend with latency delay on the reamped track, particularly if you have a big session and a high buffer setting. One way to go is to slide the reamped track back in time to match the timing (and phase) of the original. Alternatively, you could freeze some of your other tracks temporarily so you could lower the buffer setting before reamping, thus reducing the latency. Being able to reamp DAW tracks with guitar effects opens a world of sonic possibilities for production and mixing. The EXTC Stereo Reamp makes that process easy, flexible and stereo-capable. It\u2019s yet another practical, well-built, easy-to-use and excellent-sounding device from a company that just keeps turning them out. \uf06e COMPANY : Radial Engineering PRODUCT : EXTC Stereo Reamp PRICE : $349.99 PROS : Reamp with pedals or amps. Send and Receive knobs for adjusting effects loop levels. Blend knob dry/wet control. Invert Phase and effects loop bypass switches on front. Solid build quality. CONS : Jacks on front and back could make it challenging to fit on a desktop."
+    }
+  ]
+]

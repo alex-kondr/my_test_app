@@ -8,6 +8,10 @@ import json
 from pathlib import Path
 
 
+class LogProduct:
+    pass
+
+
 class Product:
     def __init__(self, agent_id: int, reload=False):
         self.agent_id = agent_id
@@ -76,7 +80,9 @@ class Test:
     def __init__(self, product: Product, xproduct_names: list[str]=[]):
         self.products = product.file.get("products")
         self.agent_name = product.agent_name
-        self.xproduct_names = ["review", "test", " + ", " - ", "..."] + xproduct_names
+        self.xproduct_names = ["review", "test", " + ", " - ", "...", "•"] + xproduct_names
+        self.xreview_excerpt = ["summary", "conclusion", "fazit", "•"]
+        self.xreview_pros_cons = ["-", "+", "•"]
         self.path = Path(f"test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
 
@@ -88,19 +94,17 @@ class Test:
     def test_product_category(self) -> None:
         error_category = []
         for product in self.products:
-            temp_product = None
             properties = product.get("product", {}).get("properties", {})
             category = [property.get("value") for property in properties if property.get("type") == "category"][0]
 
             if not category or category.startswith("+ ") or category.endswith(" +") or category.startswith("- ") or category.endswith(" -"):
-                temp_product = properties
+                error_category.append(properties)
+                continue
 
             for xproduct_name in self.xproduct_names:
                 if xproduct_name in category.lower():
-                    temp_product = properties
-
-            if temp_product:
-                error_category.append(temp_product)
+                    error_category.append(properties)
+                    break
 
         print(f"Count error product category: {len(error_category)}")
         self.save(error_category, type_err="prod_category")
@@ -108,22 +112,40 @@ class Test:
     def test_product_name(self) -> None:
         error_name = []
         for product in self.products:
-            temp_product = None
             properties = product.get("product", {}).get("properties", {})
             name = [property.get("value") for property in properties if property.get("type") == "name"][0]
 
             if name.startswith("+ ") or name.endswith(" +") or name.startswith("- ") or name.endswith(" -"):
-                temp_product = properties
+                error_name.append(properties)
+                continue
 
             for xproduct_name in self.xproduct_names:
                 if xproduct_name in name.lower():
-                    temp_product = properties
-
-            if temp_product:
-                error_name.append(temp_product)
+                    error_name.append(properties)
+                    break
 
         print(f"Count error product name: {len(error_name)}")
         self.save(error_name, type_err="prod_name")
+
+    def test_review_excerpt(self) -> None:
+        error_excerpt = []
+        for product in self.products:
+            properties = product.get("review", {}).get("properties", {})
+            excerpt = [property for property in properties if property.get("type") == "excerpt"]
+
+            if excerpt:
+                excerpt = excerpt[0]
+            else:
+                error_excerpt.append(properties)
+                continue
+
+            for xreview_excerpt in self.xreview_excerpt:
+                if xreview_excerpt in excerpt:
+                    error_excerpt.append(properties)
+                    break
+
+        print(f"Count error review excerpt: {len(error_excerpt)}")
+        self.save(error_excerpt, type_err="rev_excerpt")
 
     def test_review_grade(self) -> None:
         error_grade = []
@@ -140,16 +162,23 @@ class Test:
     def test_review_pros_cons(self) -> None:
         error_pros_cons = []
         for product in self.products:
-            temp_product = None
+            temp_pros_cons = None
             properties = product.get("review", {}).get("properties", {})
             pros_cons = [property.get("value") for property in properties if property.get("type") == "pros" or property.get("type") == "cons"]
 
             for pro_con in pros_cons:
-                if not pro_con or pro_con.startswith("+") or pro_con.endswith("+") or pro_con.startswith("-") or pro_con.endswith("-"):
-                    temp_product = properties
+                if temp_pros_cons:
+                    break
+                if len(pro_con) < 3:
+                    temp_pros_cons = properties
+                    break
+                for xreview_pros_cons in self.xreview_pros_cons:
+                    if pro_con.startswith(xreview_pros_cons) or pro_con.endswith(xreview_pros_cons):
+                        temp_pros_cons = properties
+                        break
 
-            if temp_product:
-                error_pros_cons.append(temp_product)
+            if temp_pros_cons:
+                error_pros_cons.append(temp_pros_cons)
 
         print(f"Count error review pros_cons: {len(error_pros_cons)}")
         self.save(error_pros_cons, type_err="rev_pros_cons")
