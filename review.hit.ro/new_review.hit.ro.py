@@ -4,32 +4,32 @@ from models.products import *
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=8000)]
-    session.queue(Request('https://www.hit.ro/'), process_frontpage, dict())
+    session.queue(Request('https://www.hit.ro/gadgeturi.html'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
-    cats = data.xpath('//a[@title="Gadgeturi"]/following-sibling::div[1]//li/a')
+    cats = data.xpath('//a[i[text()="chevron_right"]]')
     for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url), process_category, dict(cat=name))
+        session.queue(Request(url), process_revlist, dict(cat='Gadgeturi|' + name))
 
 
-def process_category(data, context, session):
+def process_revlist(data, context, session):
     prods = data.xpath('//div[@class="mdl-card__title"]/a')
     for prod in prods:
-        name = prod.xpath('text()').string()
+        title = prod.xpath('text()').string()
         url = prod.xpath('@href').string()
-        session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        session.queue(Request(url), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//a[i[text()="skip_next"]]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_category, dict(context))
+        session.queue(Request(next_url), process_revlist, dict(context))
 
 
-def process_product(data, context, session):
+def process_review(data, context, session):
     product = Product()
-    product.name = context['name']
+    product.name = context['title'].replace('Preview:', '').replace('(Consumer Preview)', '').split('Passport:')[0].replace('Test Drive:', '').replace('(Review)', '').replace('Zvon:', '').replace('￢', '').replace('- REVIEW', '').replace('- VEZI VIDEO', '').strip()
     product.url = context['url']
     product.category = context['cat']
     product.ssid = product.url.split('--')[-1].replace('.html', '')
@@ -37,22 +37,30 @@ def process_product(data, context, session):
     review = Review()
     review.url = product.url
     review.type = 'pro'
+    review.ssid = product.ssid
+    review.title = context['title']
 
     date = data.xpath('//span[@class="mdl-chip__text"]/text()').string()
     if date:
-        date = date.split(',')[0]
-        review.date = date
+        review.date = date.split(',')[0]
 
-    title = data.xpath('//head/title/text()').string()
-    if title:
-        review.title = title
+    summary = data.xpath('//div[contains(@class, "supporting-text-body")]//p/b[1]/text()').string()
+    if not summary:
+        summary = data.xpath('(//div[contains(@class, "supporting-text-body")]//strong)[1]/text()').string()
+    if summary:
+        review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('//div[br]/text()|//p[br]//text()|//div[br]/b/text()|//div[br]/strong/text()|//div[br]/em/text()').string(multiple=True)
+    excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 30 and not(contains(., "\\"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('(//div[br]/div|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 30 and not(contains(., "\\"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('(//div[contains(@class, "supporting-text-body")]//strong)[position() > 1]/text()').string(multiple=True)
     if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '(//div[contains(@class, "supporting-text-body")]//strong)[1]/text()').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
-        review.ssid = review.digest(excerpt)
+    product.reviews.append(review)
 
-        product.reviews.append(review)
-
-        session.emit(product)
+    session.emit(product)

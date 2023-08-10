@@ -1,4 +1,4 @@
-from tests import Product, Test, LogProduct
+from tests import Product, TestProduct, LogProduct, TestLogProduct
 
 
 "19734 - test"
@@ -6,12 +6,14 @@ from tests import Product, Test, LogProduct
 "13600 - music"
 "13085 - mixonline"
 
-product = Product(13600, reload=True)
-test = Test(product)
+product = Product(19734, reload=False)
+test = TestProduct(product)
 test.test_product_name()
 test.test_product_category()
 # test.test_review_grade()
 test.test_review_pros_cons()
 test.test_review_excerpt()
 
-# log = LogProduct(13085, reload=True)
+# log = LogProduct(19734, reload=False)
+# test_log = TestLogProduct(log)
+# test_log.test_log()
