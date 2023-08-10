@@ -54,7 +54,7 @@ def process_product(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    pros = data.xpath('//strong[contains(text(), "PROS:")]/following-sibling::text()').strings()
+    pros = data.xpath('//strong[contains(text(), "PROS:")]/following-sibling::text()[1]').strings()
     if not pros:
         pros = data.xpath('//strong[contains(text(), "PRO:")]/following-sibling::text()').strings()
     if not pros:
@@ -71,7 +71,7 @@ def process_product(data, context, session):
             break
         review.properties.append(ReviewProperty(type='pros', value=pro))
 
-    cons = data.xpath('//strong[contains(text(), "CONS:")]/following-sibling::text()').strings()
+    cons = data.xpath('//strong[contains(text(), "CONS:")]/following-sibling::text()[1]').strings()
     if not cons:
         cons = data.xpath('//strong[contains(text(), "CON:")]/following-sibling::text()').strings()
     if not cons:
@@ -83,8 +83,9 @@ def process_product(data, context, session):
     if not cons:
         cons = data.xpath('//span[contains(., "CONS:")]/following-sibling::*/text()').strings()
     for con in cons:
-        con = con.replace('\n', '').replace('•', '').strip('.').strip()
-        review.properties.append(ReviewProperty(type='cons', value=con))
+        if 'None found' not in con:
+            con = con.replace('\n', '').replace('•', '').strip('.').strip()
+            review.properties.append(ReviewProperty(type='cons', value=con))
 
     conclusion = data.xpath('//strong[contains(text(), "CONCLUSION")]/parent::*/following-sibling::p[not(a)]//text()|//strong[contains(text(), "CONCLUSION")]/following-sibling::text()').string(multiple=True)
     if not conclusion:
@@ -96,18 +97,26 @@ def process_product(data, context, session):
         return
 
     if conclusion:
-        excerpt = data.xpath('//strong[contains(text(), "CONCLUSION")]/parent::*/preceding-sibling::p[not(@class) and not(@style) and not(a)]//text()').string(multiple=True)
+        excerpt = data.xpath('//strong[contains(text(), "CONCLUSION")]/parent::*/preceding-sibling::p[not(@class) and not(@style) and not(a)]//text()[normalize-space(.)]').string(multiple=True)
     else:
-        excerpt = data.xpath('//strong[contains(text(), "PRODUCT SUMMARY")]/parent::*/preceding-sibling::p[not(@class) and not(@style) and not(a) and not(em)]//text()').string(multiple=True)
+        excerpt = data.xpath('//strong[contains(text(), "PRODUCT SUMMARY")]/parent::*/preceding-sibling::p[not(@class) and not(@style) and not(a) and not(em)]//text()[normalize-space(.)]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span)]//text()').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span) and not(contains(text(), "•"))]//text()[normalize-space(.)]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span) and not(contains(text(), "•"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span)]//text()[normalize-space(.)]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[contains(@class, "Body")]//text()').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(span/strong)]//text()[normalize-space(.)]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class)]//text()[normalize-space(.)]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[contains(@class, "Body")]//text()[normalize-space(.)]').string(multiple=True)
+
+    if excerpt and summary:
+        excerpt = excerpt.replace(summary, '')
+
     if excerpt:
-        review.add_property(type='excerpt', value=excerpt)
+        review.add_property(type='excerpt', value=excerpt.replace('', '').strip())
 
-    product.reviews.append(review)
+        product.reviews.append(review)
 
-    session.emit(product)
+        session.emit(product)

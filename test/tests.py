@@ -9,8 +9,70 @@ from pathlib import Path
 
 
 class LogProduct:
-    pass
+    def __init__(self, agent_id: int, reload=False):
+        self.agent_id = agent_id
+        self.emits_dir = Path("test/logs")
+        self.file_path = self.emits_dir / f"agent-{self.agent_id}.json"
+        self.generate_file()
 
+        # if not self.file_path.exists() or reload:
+        #     self.file = self.generate_file()
+        # else:
+        #     self.file = self.open_file()
+
+        # self.agent_name = self.file["meta"]["agent_name"]
+
+    def generate_file(self) -> list:
+
+        load_dotenv()
+        url = f"https://prunesearch.com/manage?action=looksession&agent_id={self.agent_id}"
+        # os.system(f'curl "{url}" -k -u "{os.getenv("USER-NAME")}:{os.getenv("PASS")}" > emit.yaml')
+        response = requests.get(
+            url,
+            verify=False,
+            auth=HTTPBasicAuth(
+                username=os.getenv("USER-NAME"),
+                password=os.getenv("PASS")
+            )
+        )
+        # file = {"products": []}
+        # with open("emit.yaml", "r", encoding="utf-8") as fd:
+        # content = yaml.load_all(response.content, Loader=yaml.FullLoader)
+
+        # product_count = 0
+        # for items in content:
+        #     meta = items[0].get("meta")
+
+        #     if meta:
+        #         file["meta"] = meta
+        #     else:
+        #         product = {}
+        #         for item in items:
+        #             for key, value in item.items():
+        #                 product[key] = value
+
+        #         file['products'].append(product)
+        #         product_count += 1
+
+        #     if not product_count % 100:
+        #         print(product_count)
+
+        # print(f"{product_count=}")
+        content = response.content.decode()
+        print("asdsadsad", len(content))
+        print(len(content.split("\n")))
+        self.save_file(content)
+
+        # return file
+
+    def open_file(self):
+        with open(self.file_path, "r", encoding="utf-8") as fd:
+            file = json.load(fd)
+        return file
+
+    def save_file(self, file):
+        with open(self.file_path, "w", encoding="utf-8") as fd:
+            json.dump(file, fd, indent=2)
 
 class Product:
     def __init__(self, agent_id: int, reload=False):
@@ -82,32 +144,9 @@ class Test:
         self.agent_name = product.agent_name
         self.xproduct_names = ["review", "test", " + ", " - ", "...", "•"] + xproduct_names
         self.xreview_excerpt = ["summary", "conclusion", "fazit", "•"]
-        self.xreview_pros_cons = ["-", "+", "•"]
+        self.xreview_pros_cons = ["-", "+", "•", "None found"]
         self.path = Path(f"test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
-
-    def save(self, file: dict, type_err: str) -> None:
-        file_path = self.path / f"{self.agent_name}-{type_err}.json"
-        with open(file_path, "w", encoding="utf-8") as fd:
-            json.dump(file, fd, indent=2)
-
-    def test_product_category(self) -> None:
-        error_category = []
-        for product in self.products:
-            properties = product.get("product", {}).get("properties", {})
-            category = [property.get("value") for property in properties if property.get("type") == "category"][0]
-
-            if not category or category.startswith("+ ") or category.endswith(" +") or category.startswith("- ") or category.endswith(" -"):
-                error_category.append(properties)
-                continue
-
-            for xproduct_name in self.xproduct_names:
-                if xproduct_name in category.lower():
-                    error_category.append(properties)
-                    break
-
-        print(f"Count error product category: {len(error_category)}")
-        self.save(error_category, type_err="prod_category")
 
     def test_product_name(self) -> None:
         error_name = []
@@ -127,25 +166,23 @@ class Test:
         print(f"Count error product name: {len(error_name)}")
         self.save(error_name, type_err="prod_name")
 
-    def test_review_excerpt(self) -> None:
-        error_excerpt = []
+    def test_product_category(self) -> None:
+        error_category = []
         for product in self.products:
-            properties = product.get("review", {}).get("properties", {})
-            excerpt = [property for property in properties if property.get("type") == "excerpt"]
+            properties = product.get("product", {}).get("properties", {})
+            category = [property.get("value") for property in properties if property.get("type") == "category"][0]
 
-            if excerpt:
-                excerpt = excerpt[0]
-            else:
-                error_excerpt.append(properties)
+            if not category or category.startswith("+ ") or category.endswith(" +") or category.startswith("- ") or category.endswith(" -"):
+                error_category.append(properties)
                 continue
 
-            for xreview_excerpt in self.xreview_excerpt:
-                if xreview_excerpt in excerpt:
-                    error_excerpt.append(properties)
+            for xproduct_name in self.xproduct_names:
+                if xproduct_name in category.lower():
+                    error_category.append(properties)
                     break
 
-        print(f"Count error review excerpt: {len(error_excerpt)}")
-        self.save(error_excerpt, type_err="rev_excerpt")
+        print(f"Count error product category: {len(error_category)}")
+        self.save(error_category, type_err="prod_category")
 
     def test_review_grade(self) -> None:
         error_grade = []
@@ -182,3 +219,28 @@ class Test:
 
         print(f"Count error review pros_cons: {len(error_pros_cons)}")
         self.save(error_pros_cons, type_err="rev_pros_cons")
+
+    def test_review_excerpt(self) -> None:
+        error_excerpt = []
+        for product in self.products:
+            properties = product.get("review", {}).get("properties", {})
+            excerpt = [property for property in properties if property.get("type") == "excerpt"]
+
+            if excerpt:
+                excerpt = excerpt[0]
+            else:
+                error_excerpt.append(properties)
+                continue
+
+            for xreview_excerpt in self.xreview_excerpt:
+                if xreview_excerpt in excerpt:
+                    error_excerpt.append(properties)
+                    break
+
+        print(f"Count error review excerpt: {len(error_excerpt)}")
+        self.save(error_excerpt, type_err="rev_excerpt")
+
+    def save(self, file: dict, type_err: str) -> None:
+        file_path = self.path / f"{self.agent_name}-{type_err}.json"
+        with open(file_path, "w", encoding="utf-8") as fd:
+            json.dump(file, fd, indent=2)

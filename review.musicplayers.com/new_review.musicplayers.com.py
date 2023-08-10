@@ -3,33 +3,33 @@ from models.products import *
 
 
 def run(context, session):
-    session.queue(Request("https://musicplayers.com/category/reviews/", force_charset='utf-8'), process_revlist, dict())
+    session.queue(Request("https://musicplayers.com/category/reviews/"), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
     revs = data.xpath("//ul[@class='bk-blog-content clearfix']//h4/a")
     for rev in revs:
-        title = rev.xpath(".//text()").string()
+        title = rev.xpath(".//text()").string().replace(u'\uFEFF', '').strip()
         url = rev.xpath("@href").string()
-        session.queue(Request(url, force_charset='utf-8'), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url), process_review, dict(context, title=title, url=url))
 
     next_url  = data.xpath('//link[@rel="next"]/@href').string()
     if next_url :
-        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict())
+        session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace("Album Review:", "").replace("Album Review -", "").replace("ALBUM REVIEW:", "").replace("DVD Review:", "").split(":")[0].split(" - ")[0].strip()
+    product.name = context['title'].split("Album Review:")[-1].split("Album Review -")[-1].split("ALBUM REVIEW:")[-1].split("DVD Review:")[-1].split(":")[0].split(" - ")[0].strip()
     product.url = context['url']
-    product.ssid = context['url'].split("/")[-2]
+    product.ssid = context['url'].split("/")[-2].replace('%ef%bb%bf', '')
 
     categories = data.xpath('//div[@class="breadcrumbs"]//span[@itemprop="title" and not(text()="Home" or text()="Reviews")]/text()').strings()
     if categories:
         categories = [cat.replace('Reviews:', '').replace('Review:', '').replace('Reviews', '').replace('Review', '').strip() for cat in categories]
         product.category = '|'.join(categories)
     else:
-        product.category = data.xpath('//meta[@property="article:section"]/@content').string()
+        product.category = data.xpath('//meta[@property="article:section"]/@content').string().replace('Reviews:', '').replace('Review:', '').replace('Reviews', '').replace('Review', '').strip()
 
     review = Review()
     review.type = 'pro'
@@ -45,7 +45,7 @@ def process_review(data, context, session):
     if author:
         name = author.xpath(".//text()").string()
         url = author.xpath("@href").string()
-        ssid = url.split("/")[-2]
+        ssid = url.split("/")[-2].replace('%ef%bb%bf', '')
         review.authors.append(Person(name=name, ssid=ssid, profile_url=url))
 
     grades = data.xpath("//tbody/tr/following-sibling::tr")
