@@ -8,7 +8,7 @@ from tests import Product, Test
 "13600 - music"
 "13085 - mixonline"
 
-product = Product(19734, reload=False)
+product = Product(19734, reload=True)
 test = Test(product)
 test.test_product_name()
 test.test_product_category()

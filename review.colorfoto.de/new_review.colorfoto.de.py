@@ -43,7 +43,7 @@ def process_review(data, context, session):
             prod_json = prod_json[1]
 
     product = Product()
-    product.name = context['title'].split(' im ')[0].split('Test: ')[-1].split('test: ')[-1].split('TEST: ')[-1].split(' - Test')[0].split(' Test')[0].split('-Test')[0].split(' angetestet')[0].split('testet: ')[-1].split('Details')[0].split('als Download')[0].split('-Download')[0].split('- Download')[0].split('Download')[0].split('Test Aldi-PC:')[-1].split(':')[0].split('Test - ')[-1].split(' -')[0].replace('[TEST]', '').strip()
+    product.name = context['title'].split(' im ')[0].split('Test: ')[-1].split('test: ')[-1].split('TEST: ')[-1].split(' - Test')[0].split(' Test')[0].split('-Test')[0].split(' angetestet')[0].split('testet: ')[-1].split('Details')[0].split('als Download')[0].split('-Download')[0].split('- Download')[0].split('Test Aldi-PC:')[-1].split(':')[0].split('Test - ')[-1].split(' -')[0].replace('[TEST]', '').strip()
     product.ssid = context['url'].split('-')[-1].replace('.html', '')
 
     product.category = context.get('cat')

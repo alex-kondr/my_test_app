@@ -128,7 +128,7 @@ def process_review_next(data, context, session):
                 excerpt = data.xpath("//div//font//text()").string(multiple=True)
 
         if excerpt:
-                context['excerpt'] += ' ' + excerpt
+            context['excerpt'] += ' ' + excerpt
 
     if context['excerpt']:
         review.add_property(type="excerpt", value=context['excerpt'])
