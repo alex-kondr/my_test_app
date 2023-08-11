@@ -29,7 +29,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Preview:', '').replace('(Consumer Preview)', '').split('Passport:')[0].replace('Test Drive:', '').replace('(Review)', '').replace('Zvon:', '').replace('￢', '').replace('- REVIEW', '').replace('- VEZI VIDEO', '').strip()
+    product.name = context['title'].replace('Preview:', '').replace('(Consumer Preview)', '').split('Passport:')[0].replace('Test Drive:', '').replace('Test-soc:', '').replace('Teste:', '').replace('Review HIT.ro:', '').replace('(Review)', '').replace('- Preview', '').replace('Preview ', '').replace('(Video)', '').replace('(VIDEO)', '').replace('- VIDEO', '').replace('(foto&video)', '').replace('(review)', '').replace('(teste)', '').replace(' TEST', '').replace('Zvon:', '').replace('￢', '').replace(', in teste', '').replace('- mini review', '').split('- REVIEW')[0].split('- VEZI VIDEO')[0].split(', video review')[0].split('- Video Review')[0].split('- Review video')[0].split(', preview')[0].split('- trailer')[0].strip()
     product.url = context['url']
     product.category = context['cat']
     product.ssid = product.url.split('--')[-1].replace('.html', '')
@@ -53,14 +53,22 @@ def process_review(data, context, session):
     excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 30 and not(contains(., "\\"))]').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('(//div[br]/div|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 30 and not(contains(., "\\"))]').string(multiple=True)
-    if not excerpt:
+    if not excerpt and summary:
         excerpt = data.xpath('(//div[contains(@class, "supporting-text-body")]//strong)[position() > 1]/text()').string(multiple=True)
+    elif not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "supporting-text-body")]//strong/text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "supporting-text-body")]/span//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "supporting-text-body")]//span//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "supporting-text-body")]//font[not(contains(., "Sursa"))]//text()').string(multiple=True)
     if excerpt:
         if summary:
-            excerpt = excerpt.replace(summary, '(//div[contains(@class, "supporting-text-body")]//strong)[1]/text()').strip()
+            excerpt = excerpt.replace(summary, '').strip()
 
         review.add_property(type='excerpt', value=excerpt)
 
-    product.reviews.append(review)
+        product.reviews.append(review)
 
-    session.emit(product)
+        session.emit(product)

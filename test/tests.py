@@ -67,6 +67,7 @@ class TestLogProduct:
                 if log_product.startswith(xword):
                     error = [
                         self.log_product.file[i-7].split("Request GET u'")[-1].split("'&gt;")[0],
+                        self.log_product.file[i-8].split("Request GET u'")[-1].split("'&gt;")[0],
                         log_product
                     ]
                     error_log.append(error)
@@ -149,12 +150,12 @@ class Product:
 
 class TestProduct:
 
-    def __init__(self, product: Product, xproduct_names: list[str]=[]):
+    def __init__(self, product: Product, xproduct_names: list[str]=[], xreview_excerpt: list[str] = []):
         self.products = product.file.get("products")
         self.agent_name = product.agent_name
         self.xproduct_names_category = ["review", "test"]#, "...", "•"] + xproduct_names
         self.xproduct_names_category_start_end = ["+", "-"]
-        self.xreview_excerpt = ["summary", "conclusion", "fazit", "•"]
+        self.xreview_excerpt = ["summary", "conclusion", "fazit", "•"] + xreview_excerpt
         self.xreview_pros_cons = ["-", "+", "•", "None found"]
         self.path = Path(f"test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
