@@ -23,7 +23,7 @@ class LogProduct:
             self.file = self.open_file()
 
     def generate_file(self) -> list:
-
+        print("Get logs...")
         url = f"https://prunesearch.com/manage?action=looksession&agent_id={self.agent_id}"
         response = requests.get(
             url,
@@ -35,8 +35,10 @@ class LogProduct:
         )
 
         content = response.content.decode("utf-8").split("\n")
-        self.save_file(content)
+        print("Get logs complete. Saving logs...")
 
+        self.save_file(content)
+        print("Logs saved succesfull.")
         return self.open_file()
 
     def open_file(self):
@@ -58,18 +60,28 @@ class TestLogProduct:
 
     def test_log(self):
         error_log = []
-        for log_product in self.log_product.file:
+        count_lines = 0
+        for i, log_product in enumerate(self.log_product.file):
+            count_lines += 1
             for xword in self.xwords:
                 if log_product.startswith(xword):
-                    error_log.append(log_product)
+                    error = [
+                        self.log_product.file[i-7].split("Request GET u'")[-1].split("'&gt;")[0],
+                        log_product
+                    ]
+                    error_log.append(error)
                     break
+
+            if not count_lines % 10000:
+                print(f"{count_lines=}")
+
         print(f"All count logs: {len(self.log_product.file)}")
         print(f"Find error in logs: {len(error_log)}")
         self.save(error_log)
 
     def save(self, error_log: list):
         with open(self.path / f"log.json", "w", encoding="utf-8") as fd:
-            json.dump(error_log, fd)
+            json.dump(error_log, fd, indent=2)
 
 
 class Product:
