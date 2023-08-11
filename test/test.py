@@ -5,8 +5,9 @@ from tests import Product, TestProduct, LogProduct, TestLogProduct
 "18011 - colorfoto"
 "13600 - music"
 "13085 - mixonline"
+"13884 - hit.ro"
 
-product = Product(19734, reload=True)
+product = Product(13884, reload=True)
 test = TestProduct(product, xreview_excerpt=["Sursa"])
 test.test_product_name()
 test.test_product_category()
@@ -14,6 +15,6 @@ test.test_product_category()
 test.test_review_pros_cons()
 test.test_review_excerpt()
 
-log = LogProduct(19734, reload=True)
+log = LogProduct(13884, reload=True)
 test_log = TestLogProduct(log)
 test_log.test_log()
