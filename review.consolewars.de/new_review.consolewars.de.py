@@ -75,9 +75,11 @@ def process_review(data, context, session):
         pro = pro.replace('+', '').replace(' -', '').replace('- ', '').replace('...', '').replace('…', '').strip()
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[@id="review_pro"]/div[@class="contenteditdiv"]//text()[normalize-space(.)]').strings()
+    cons = data.xpath('//div[@id="review_contra"]/div[@class="contenteditdiv"]//text()[normalize-space(.)]').strings()
     for con in cons:
         con = con.replace('+', '').replace(' -', '').replace('- ', '').replace('...', '').replace('…', '').strip()
+        if '-' == con[-1]:
+            con = con[:-1]
         review.add_property(type='cons', value=con)
 
     summary = data.xpath('//h2[@id="review_headline"]/span[@itemprop="author"]/text()').string()

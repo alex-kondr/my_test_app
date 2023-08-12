@@ -225,18 +225,36 @@ class TestProduct:
         for product in self.products:
             temp_pros_cons = None
             properties = product.get("review", {}).get("properties", {})
-            pros_cons = [property.get("value") for property in properties if property.get("type") == "pros" or property.get("type") == "cons"]
+            pros = [property.get("value") for property in properties if property.get("type") == "pros"]
+            cons = [property.get("value") for property in properties if property.get("type") == "cons"]
 
-            for pro_con in pros_cons:
+            for pro in pros:
                 if temp_pros_cons:
                     break
-                if len(pro_con) < 3:
+                if len(pro) < 3:
+                    temp_pros_cons = properties
+                    break
+                if pro in cons:
                     temp_pros_cons = properties
                     break
                 for xreview_pros_cons in self.xreview_pros_cons:
-                    if pro_con.startswith(xreview_pros_cons) or pro_con.endswith(xreview_pros_cons):
+                    if pro.startswith(xreview_pros_cons) or pro.endswith(xreview_pros_cons):
                         temp_pros_cons = properties
                         break
+
+                for con in cons:
+                    if temp_pros_cons:
+                        break
+                    if len(con) < 3:
+                        temp_pros_cons = properties
+                        break
+                    if con in pros:
+                        temp_pros_cons = properties
+                        break
+                    for xreview_pros_cons in self.xreview_pros_cons:
+                        if con.startswith(xreview_pros_cons) or con.endswith(xreview_pros_cons):
+                            temp_pros_cons = properties
+                            break
 
             if temp_pros_cons:
                 error_pros_cons.append(temp_pros_cons)

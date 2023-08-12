@@ -6,15 +6,17 @@ from tests import Product, TestProduct, LogProduct, TestLogProduct
 "13600 - music"
 "13085 - mixonline"
 "13884 - hit.ro"
+"15069 - consolewars"
 
-product = Product(13884, reload=True)
-test = TestProduct(product, xreview_excerpt=["Sursa"])
+
+product = Product(15069, reload=True)
+test = TestProduct(product, xreview_excerpt=["sursa"])
 test.test_product_name()
 test.test_product_category()
-# test.test_review_grade()
+test.test_review_grade()
 test.test_review_pros_cons()
 test.test_review_excerpt()
 
-log = LogProduct(13884, reload=True)
+log = LogProduct(15069, reload=True)
 test_log = TestLogProduct(log)
 test_log.test_log()
