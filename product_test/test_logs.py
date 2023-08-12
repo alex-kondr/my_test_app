@@ -10,65 +10,6 @@ import json
 load_dotenv()
 
 
-class ResultParse:
-    def __init__(self, agent_id: int):
-        self.agent_id = agent_id
-        self.result()
-
-    def __str__(self):
-        return f"""
-Agent id: {self.agent_id}
-Found {self.emitted} emitted objects
-Completed_jobs: {self.completed_jobs}
-Dupe jobs: {self.dupe_jobs}
-Denied jobs: {self.denied_jobs}
-Failed jobs: {self.failed_jobs}
-Wasted time: {self.time}
-            """
-
-    def result(self):
-        url = f"https://prunesearch.com/manage?action=looksession&agent_id={self.agent_id}&lastbytes=400"
-        response = requests.get(
-            url,
-            verify=False,
-            auth=HTTPBasicAuth(
-                username=os.getenv("USER-NAME"),
-                password=os.getenv("PASS")
-            )
-        )
-
-        content = response.content.decode("utf-8").split("\n")
-
-        emitted = content[-4].split("Found ")[-1].split(" emitted")[0]
-        self.emitted = int(emitted)
-
-        statistic = "".join(content[-7:-5])
-        print(statistic)
-
-        completed_jobs = statistic.split("completed_jobs:")[-1].split(" dupe_jobs:")
-        print(f"{completed_jobs=}")
-        self.completed_jobs = int(completed_jobs[0])
-
-        dupe_jobs = completed_jobs[-1].split(" denied_jobs:")
-        print(f"{dupe_jobs}")
-        self.dupe_jobs = int(dupe_jobs[0])
-
-        denied_jobs = dupe_jobs[-1].split(" failed_jobs:")
-        print(f"{denied_jobs=}")
-        self.denied_jobs = int(denied_jobs[0])
-
-        failed_jobs = denied_jobs[-1].split(" browse-cache-hits:")
-        print(f"{failed_jobs=}")
-        self.failed_jobs = int(failed_jobs[0])
-
-        time = failed_jobs[-1].split(":")[-1]
-        print(f"{time=}")
-        hours = int(float(time) // 3600)
-        minutes = int(float(time) % 3600 // 60)
-        seconds = int(round(float(time) % 3600 % 60, 0))
-        self.time = f"Hours: {hours}, minutes: {minutes}, seconds: {seconds}"
-
-
 class LogProduct:
     def __init__(self, agent_id: int, reload=False):
         self.agent_id = agent_id

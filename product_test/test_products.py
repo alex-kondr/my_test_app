@@ -10,11 +10,65 @@ from pathlib import Path
 load_dotenv()
 
 
+class ResultParse:
+    def __init__(self, agent_id: int):
+        self.agent_id = agent_id
+        self.result()
+
+    def __str__(self):
+        return f"""
+Agent id: {self.agent_id}
+Found {self.emitted} emitted objects
+Completed_jobs: {self.completed_jobs}
+Dupe jobs: {self.dupe_jobs}
+Denied jobs: {self.denied_jobs}
+Failed jobs: {self.failed_jobs}
+Wasted time: {self.time}
+            """
+
+    def result(self):
+        url = f"https://prunesearch.com/manage?action=looksession&agent_id={self.agent_id}&lastbytes=400"
+        response = requests.get(
+            url,
+            verify=False,
+            auth=HTTPBasicAuth(
+                username=os.getenv("USER-NAME"),
+                password=os.getenv("PASS")
+            )
+        )
+
+        content = response.content.decode("utf-8").split("\n")
+
+        emitted = content[-4].split("Found ")[-1].split(" emitted")[0]
+        self.emitted = int(emitted)
+
+        statistic = "".join(content[-7:-5])
+
+        completed_jobs = statistic.split("completed_jobs:")[-1].split(" dupe_jobs:")
+        self.completed_jobs = int(completed_jobs[0])
+
+        dupe_jobs = completed_jobs[-1].split(" denied_jobs:")
+        self.dupe_jobs = int(dupe_jobs[0])
+
+        denied_jobs = dupe_jobs[-1].split(" failed_jobs:")
+        self.denied_jobs = int(denied_jobs[0])
+
+        failed_jobs = denied_jobs[-1].split(" browse-cache-hits:")
+        self.failed_jobs = int(failed_jobs[0])
+
+        time = failed_jobs[-1].split(":")[-1]
+        hours = int(float(time) // 3600)
+        minutes = int(float(time) % 3600 // 60)
+        seconds = int(round(float(time) % 3600 % 60, 0))
+        self.time = f"Hours: {hours}, minutes: {minutes}, seconds: {seconds}"
+
+
 class Product:
     def __init__(self, agent_id: int, reload=False):
         self.agent_id = agent_id
-        self.emits_dir = Path("test/emits")
+        self.emits_dir = Path("product_test/emits")
         self.file_path = self.emits_dir / f"agent-{self.agent_id}.json"
+        self.result = ResultParse(self.agent_id)
 
         if not self.file_path.exists() or reload:
             self.file = self.generate_file()
@@ -25,7 +79,6 @@ class Product:
 
     def generate_file(self) -> dict[list[dict]]:
 
-        load_dotenv()
         url = f"https://prunesearch.com/manage?action=yaml&agent_id={self.agent_id}"
         # os.system(f'curl "{url}" -k -u "{os.getenv("USER-NAME")}:{os.getenv("PASS")}" > emit.yaml')
         response = requests.get(
@@ -41,6 +94,7 @@ class Product:
         content = yaml.load_all(response.content, Loader=yaml.FullLoader)
 
         product_count = 0
+        precent = 0
         for items in content:
             meta = items[0].get("meta")
 
@@ -55,8 +109,10 @@ class Product:
                 file['products'].append(product)
                 product_count += 1
 
-            if not product_count % 100:
-                print(product_count)
+            precent_ = int(((product_count / self.result.emitted) * 100))
+            if precent_ > precent:
+                print(f" Done {precent_} %")
+                precent = precent_
 
         print(f"{product_count=}")
         self.save_file(file)
@@ -75,17 +131,18 @@ class Product:
 
 class TestProduct:
 
-    def __init__(self, product: Product, xproduct_names: list[str]=[], xreview_excerpt: list[str] = []):
+    def __init__(self, product: Product):
         self.products = product.file.get("products")
         self.agent_name = product.agent_name
-        self.xproduct_names_category = ["review", "test"]#, "...", "•"] + xproduct_names
+        self.xproduct_names_category = ["review", "test", "...", "•"]
         self.xproduct_names_category_start_end = ["+", "-"]
-        self.xreview_excerpt = ["summary", "conclusion", "fazit", "•"] + xreview_excerpt
+        self.xreview_excerpt = ["Summary", "Conclusion", "Verdict", "Fazit"]#, "•"]
         self.xreview_pros_cons = ["-", "+", "•", "None found"]
-        self.path = Path(f"test/error/{self.agent_name}")
+        self.path = Path(f"product_test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
 
-    def test_product_name(self) -> None:
+    def test_product_name(self, xproduct_names: list[str]=[]) -> None:
+        xproduct_names_category = self.xproduct_names_category + xproduct_names
         error_name = []
         for product in self.products:
             properties = product.get("product", {}).get("properties", {})
@@ -98,7 +155,7 @@ class TestProduct:
                     break
 
             if not temp_name:
-                for xproduct_name in self.xproduct_names_category:
+                for xproduct_name in xproduct_names_category:
                     if xproduct_name in name.lower():
                         temp_name = properties
                         break
@@ -109,7 +166,8 @@ class TestProduct:
         print(f"Count error product name: {len(error_name)}")
         self.save(error_name, type_err="prod_name")
 
-    def test_product_category(self) -> None:
+    def test_product_category(self, xproduct_names: list[str]=[]) -> None:
+        xproduct_names_category = self.xproduct_names_category + xproduct_names
         error_category = []
         for product in self.products:
             properties = product.get("product", {}).get("properties", {})
@@ -122,7 +180,7 @@ class TestProduct:
                     continue
 
             if not temp_cat:
-                for xproduct_name in self.xproduct_names_category:
+                for xproduct_name in xproduct_names_category:
                     if xproduct_name in category.lower():
                         temp_cat = properties
                         break
@@ -187,11 +245,32 @@ class TestProduct:
         print(f"Count error review pros_cons: {len(error_pros_cons)}")
         self.save(error_pros_cons, type_err="rev_pros_cons")
 
-    def test_review_excerpt(self) -> None:
+    def test_review_conclusion(self, xreview_conclusion: list[str] = []) -> None:
+        xreview_conclusions = self.xreview_excerpt + xreview_conclusion
+        error_conclusion = []
+        for product in self.products:
+            properties = product.get("review", {}).get("properties", {})
+            conclusion = [property.get("value") for property in properties if property.get("type") == "conclusion"]
+
+            if conclusion:
+                conclusion = conclusion[0]
+            else:
+                continue
+
+            for xreview_conclusion in xreview_conclusions:
+                if xreview_conclusion in conclusion:
+                    error_conclusion.append(properties)
+                    break
+
+        print(f"Count error review conclusion: {len(error_conclusion)}")
+        self.save(error_conclusion, type_err="rev_conclusion")
+
+    def test_review_excerpt(self, xreview_excerpt: list[str] = []) -> None:
+        xreview_excerpts = self.xreview_excerpt + xreview_excerpt
         error_excerpt = []
         for product in self.products:
             properties = product.get("review", {}).get("properties", {})
-            excerpt = [property for property in properties if property.get("type") == "excerpt"]
+            excerpt = [property.get("value") for property in properties if property.get("type") == "excerpt"]
 
             if excerpt:
                 excerpt = excerpt[0]
@@ -199,7 +278,7 @@ class TestProduct:
                 error_excerpt.append(properties)
                 continue
 
-            for xreview_excerpt in self.xreview_excerpt:
+            for xreview_excerpt in xreview_excerpts:
                 if xreview_excerpt in excerpt:
                     error_excerpt.append(properties)
                     break

@@ -1,28 +1,26 @@
+import urllib3
+
 from test_products import Product, TestProduct
-from test_logs import LogProduct, TestLogProduct, ResultParse
+from test_logs import LogProduct, TestLogProduct
+import list_of_agents
 
 
+urllib3.disable_warnings()
 
-"19734 - test"
-"18011 - colorfoto"
-"13600 - music"
-"13085 - mixonline"
-"13884 - hit.ro"
-"15069 - consolewars"
+agent = list_of_agents.AMATEURPHOTOGRAPHER
 
-agent_id = 15069
+# result = ResultParse(agent)
+# print(result)
 
-result = ResultParse(agent_id)
-print(result)
-
-# product = Product(agent_id, reload=True)
-# test = TestProduct(product, xreview_excerpt=["sursa"])
-# test.test_product_name()
-# test.test_product_category()
+product = Product(agent, reload=True)
+test = TestProduct(product)#, xreview_excerpt=["sursa"])
+test.test_product_name()
+test.test_product_category()
 # test.test_review_grade()
-# test.test_review_pros_cons()
-# test.test_review_excerpt()
+test.test_review_pros_cons()
+test.test_review_conclusion(["Read our full"])
+test.test_review_excerpt(["Read our full"])
 
-# log = LogProduct(agent_id, reload=True)
-# test_log = TestLogProduct(log)
-# test_log.test_log()
+log = LogProduct(agent, reload=True)
+test_log = TestLogProduct(log)
+test_log.test_log()
