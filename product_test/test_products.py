@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import yaml
 import json
 from pathlib import Path
+from pprint import pprint
 
 
 load_dotenv()
@@ -136,7 +137,7 @@ class TestProduct:
         self.agent_name = product.agent_name
         self.xproduct_names_category = ["review", "test"]#, "...", "•"]
         self.xproduct_names_category_start_end = ["+", "-"]
-        self.xreview_excerpt = ["Summary", "Conclusion", "Verdict", "Fazit", "\\u"]#, "•"]
+        self.xreview_excerpt = ["Summary", "Conclusion", "Verdict", "Fazit", "\uFEFF"]#, "•"]
         self.xreview_pros_cons = ["-", "+", "•", "None found"]
         self.path = Path(f"product_test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
@@ -279,11 +280,13 @@ class TestProduct:
         print(f"Count error review conclusion: {len(error_conclusion)}")
         self.save(error_conclusion, type_err="rev_conclusion")
 
-    def test_review_excerpt(self, xreview_excerpt: list[str] = []) -> None:
+    def test_review_excerpt(self, xreview_excerpt: list[str] = [], len_chank: int = 50) -> None:
         xreview_excerpts = self.xreview_excerpt + xreview_excerpt
         error_excerpt = []
         for product in self.products:
             properties = product.get("review", {}).get("properties", {})
+            conclusion = [property.get("value") for property in properties if property.get("type") == "conclusion"]
+            summary = [property.get("value") for property in properties if property.get("type") == "summary"]
             property = [property for property in properties if property.get("type") == "excerpt"]
 
             if property:
@@ -293,6 +296,20 @@ class TestProduct:
                 properties.append({"error": "No excerpt"})
                 error_excerpt.append(properties)
                 continue
+
+            if summary:
+                summary = summary[0]
+                chank_count = len(summary) // len_chank
+                summary_list = []
+                for i in range(chank_count):
+                    summ = summary[len_chank * i:len_chank * ( i + 1)]
+                    summary_list.append(summ)
+
+                for element in summary_list:
+                    if element in excerpt:
+                        property["error"] = f"This element in excerpt: '{element}'"
+                        error_excerpt.append(properties)
+                        break
 
             for xreview_excerpt in xreview_excerpts:
                 if xreview_excerpt in excerpt:

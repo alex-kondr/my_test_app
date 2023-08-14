@@ -29,7 +29,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Preview:', '').replace('(Consumer Preview)', '').split('Passport:')[0].replace('Test Drive:', '').replace('Test-soc:', '').replace('Teste:', '').replace('Review HIT.ro:', '').replace('(Review)', '').replace('- Preview', '').replace('Preview ', '').replace('(Video)', '').replace('(VIDEO)', '').replace('- VIDEO', '').replace('(foto&video)', '').replace('(review)', '').replace('(teste)', '').replace(' TEST', '').replace('Zvon:', '').replace('￢', '').replace(', in teste', '').replace('- mini review', '').split('- REVIEW')[0].split('- VEZI VIDEO')[0].split(', video review')[0].split('- Video Review')[0].split('- Review video')[0].split(', preview')[0].split('- trailer')[0].strip()
+    product.name = context['title'].replace('Preview:', '').replace('(Consumer Preview)', '').split('Passport:')[0].replace('Test Drive:', '').replace('Test-soc:', '').replace('Teste:', '').replace('Review HIT.ro:', '').replace('(Review)', '').split('- REVIEW')[0].replace(' REVIEW','').replace('- Preview', '').replace('Preview ', '').replace('(Video)', '').replace('(VIDEO)', '').replace('- VIDEO', '').replace('(foto&video)', '').replace('(review)', '').replace('(teste)', '').replace(' TEST', '').replace('Zvon:', '').replace('￢', '').replace(', in teste', '').replace('- mini review', '').split('- REVIEW')[0].split('- VEZI VIDEO')[0].split(', video review')[0].split('- Video Review')[0].split('- Review video')[0].split(', preview')[0].split('- trailer')[0].split('PureView -')[0].split('PureView, ')[0].split('cu Pureview')[0].split(' PureView')[0].replace(' preview', '').replace('Review ', '').strip()
     product.url = context['url']
     product.category = context['cat']
     product.ssid = product.url.split('--')[-1].replace('.html', '')
@@ -44,13 +44,13 @@ def process_review(data, context, session):
     if date:
         review.date = date.split(',')[0]
 
-    summary = data.xpath('//div[contains(@class, "supporting-text-body")]//p/b[1]/text()').string()
+    summary = data.xpath('//div[contains(@class, "supporting-text-body")]//p/b[1]/text()[string-length() > 5]').string()
     if not summary:
-        summary = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong)[1]|//div[br]/b/strong)/text()').string(multiple=True)
+        summary = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong)[1]|//div[br]/b/strong)/text()[string-length() > 5]').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 30 and not(contains(., "\\"))]').string(multiple=True)
+    excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong|//div[br]/b/strong)/text()[string-length() > 30 and not(contains(., "\\"))]').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('(//div[br]/div|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 30 and not(contains(., "\\"))]').string(multiple=True)
     if not excerpt and summary:
