@@ -56,10 +56,10 @@ Wasted time: {self.time}
         failed_jobs = denied_jobs[-1].split(" browse-cache-hits:")
         self.failed_jobs = int(failed_jobs[0])
 
-        time = failed_jobs[-1].split(":")[-1]
-        hours = int(float(time) // 3600)
-        minutes = int(float(time) % 3600 // 60)
-        seconds = int(round(float(time) % 3600 % 60, 0))
+        time = float(failed_jobs[-1].split(":")[-1])
+        hours = int(time // 3600)
+        minutes = int(time % 3600 // 60)
+        seconds = int(time % 3600 % 60)
         self.time = f"Hours: {hours}, minutes: {minutes}, seconds: {seconds}"
 
 
@@ -134,29 +134,34 @@ class TestProduct:
     def __init__(self, product: Product):
         self.products = product.file.get("products")
         self.agent_name = product.agent_name
-        self.xproduct_names_category = ["review", "test", "...", "•"]
+        self.xproduct_names_category = ["review", "test"]#, "...", "•"]
         self.xproduct_names_category_start_end = ["+", "-"]
-        self.xreview_excerpt = ["Summary", "Conclusion", "Verdict", "Fazit"]#, "•"]
+        self.xreview_excerpt = ["Summary", "Conclusion", "Verdict", "Fazit", "\\u"]#, "•"]
         self.xreview_pros_cons = ["-", "+", "•", "None found"]
         self.path = Path(f"product_test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
 
-    def test_product_name(self, xproduct_names: list[str]=[]) -> None:
+    def test_product_name(self, xproduct_names: list[str]=[], not_xproduct_name: str=None) -> None:
         xproduct_names_category = self.xproduct_names_category + xproduct_names
+        if not_xproduct_name:
+            xproduct_names_category.remove(not_xproduct_name)
         error_name = []
         for product in self.products:
             properties = product.get("product", {}).get("properties", {})
-            name = [property.get("value") for property in properties if property.get("type") == "name"][0]
+            property = [property for property in properties if property.get("type") == "name"][0]
+            name = property.get("value")
 
             temp_name = None
             for xname in self.xproduct_names_category_start_end:
                 if name.startswith(xname) or name.endswith(xname):
+                    property["error"] = f"Starts or ends '{xname}'"
                     temp_name = properties
                     break
 
             if not temp_name:
                 for xproduct_name in xproduct_names_category:
                     if xproduct_name in name.lower():
+                        property["error"] = xproduct_name
                         temp_name = properties
                         break
 
@@ -208,34 +213,41 @@ class TestProduct:
         for product in self.products:
             temp_pros_cons = None
             properties = product.get("review", {}).get("properties", {})
-            pros = [property.get("value") for property in properties if property.get("type") == "pros"]
-            cons = [property.get("value") for property in properties if property.get("type") == "cons"]
+            property_pros = [property for property in properties if property.get("type") == "pros"]
+            property_cons = [property for property in properties if property.get("type") == "cons"]
+            pros = [property.get("value") for property in property_pros]
+            cons = [property.get("value") for property in property_cons]
 
-            for pro in pros:
+            for i, pro in enumerate(pros):
                 if temp_pros_cons:
                     break
                 if len(pro) < 3:
+                    property_pros[i]["error"] = "< 3"
                     temp_pros_cons = properties
                     break
                 if pro in cons:
+                    property_pros[i]["error"] = f"Pro: '{pro}' in cons"
                     temp_pros_cons = properties
                     break
                 for xreview_pros_cons in self.xreview_pros_cons:
                     if pro.startswith(xreview_pros_cons) or pro.endswith(xreview_pros_cons):
+                        property_pros[i]["error"] = f"starts or ends '{xreview_pros_cons}'"
                         temp_pros_cons = properties
                         break
 
-                for con in cons:
+                for i, con in enumerate(cons):
                     if temp_pros_cons:
                         break
                     if len(con) < 3:
                         temp_pros_cons = properties
                         break
                     if con in pros:
+                        property_cons[i]["error"] = f"Con: '{con}' in pros"
                         temp_pros_cons = properties
                         break
                     for xreview_pros_cons in self.xreview_pros_cons:
                         if con.startswith(xreview_pros_cons) or con.endswith(xreview_pros_cons):
+                            property_cons[i]["error"] = f"starts or ends '{xreview_pros_cons}'"
                             temp_pros_cons = properties
                             break
 
@@ -250,15 +262,17 @@ class TestProduct:
         error_conclusion = []
         for product in self.products:
             properties = product.get("review", {}).get("properties", {})
-            conclusion = [property.get("value") for property in properties if property.get("type") == "conclusion"]
+            property = [property for property in properties if property.get("type") == "conclusion"]
 
-            if conclusion:
-                conclusion = conclusion[0]
+            if property:
+                property = property[0]
+                conclusion = property.get("value")
             else:
                 continue
 
             for xreview_conclusion in xreview_conclusions:
                 if xreview_conclusion in conclusion:
+                    property["error"] = xreview_conclusion
                     error_conclusion.append(properties)
                     break
 
@@ -270,16 +284,19 @@ class TestProduct:
         error_excerpt = []
         for product in self.products:
             properties = product.get("review", {}).get("properties", {})
-            excerpt = [property.get("value") for property in properties if property.get("type") == "excerpt"]
+            property = [property for property in properties if property.get("type") == "excerpt"]
 
-            if excerpt:
-                excerpt = excerpt[0]
+            if property:
+                property = property[0]
+                excerpt = property.get("value")
             else:
+                properties.append({"error": "No excerpt"})
                 error_excerpt.append(properties)
                 continue
 
             for xreview_excerpt in xreview_excerpts:
                 if xreview_excerpt in excerpt:
+                    property["error"] = xreview_excerpt
                     error_excerpt.append(properties)
                     break
 

@@ -8,7 +8,7 @@ def run(context, session):
 
 
 def process_frontpage(data, context, session):
-    cats = data.xpath('//a[i[text()="chevron_right"]]')
+    cats = data.xpath('//a[@class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent"]')
     for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
@@ -46,7 +46,7 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[contains(@class, "supporting-text-body")]//p/b[1]/text()').string()
     if not summary:
-        summary = data.xpath('(//div[contains(@class, "supporting-text-body")]//strong)[1]/text()').string()
+        summary = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong)[1]|//div[br]/b/strong)/text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
@@ -66,6 +66,7 @@ def process_review(data, context, session):
     if excerpt:
         if summary:
             excerpt = excerpt.replace(summary, '').strip()
+        excerpt = excerpt.encode("ascii", errors='ignore')
 
         review.add_property(type='excerpt', value=excerpt)
 

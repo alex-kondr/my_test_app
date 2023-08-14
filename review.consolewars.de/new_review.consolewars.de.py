@@ -39,7 +39,7 @@ def process_review(data, context, session):
 
     date = data.xpath("//time[@itemprop='datePublished']/@datetime").string()
     if date:
-        review.date = date.split(" ")[0]
+        review.date = date.split()[0]
 
     author_name = data.xpath("//div[@class='wrapper topmostwrapper']/a/span/text()").string()
     author_url = data.xpath("//div[@class='wrapper topmostwrapper']/a/@href").string()
@@ -72,13 +72,15 @@ def process_review(data, context, session):
 
     pros = data.xpath('//div[@id="review_pro"]/div[@class="contenteditdiv"]//text()[normalize-space(.)]').strings()
     for pro in pros:
-        pro = pro.replace('+', '').replace(' -', '').replace('- ', '').replace('...', '').replace('…', '').strip()
+        if pro.startswith("+"):
+            pro = pro[1:]
+        pro = pro.replace(' +', '').replace('+ ', '').replace(' -', '').replace('- ', '').replace('...', '').replace('…', '').strip()
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[@id="review_contra"]/div[@class="contenteditdiv"]//text()[normalize-space(.)]').strings()
+    cons = data.xpath('//div[@id="review_contra"]/div[@class="contenteditdiv"]//text()[not(contains(., "[/head]")) and normalize-space(.)]').strings()
     for con in cons:
         con = con.replace('+', '').replace(' -', '').replace('- ', '').replace('...', '').replace('…', '').strip()
-        if '-' == con[-1]:
+        if con.endswith("-"):
             con = con[:-1]
         review.add_property(type='cons', value=con)
 
@@ -90,7 +92,7 @@ def process_review(data, context, session):
     if conclusion:
         review.properties.append(ReviewProperty(type='conclusion', value=conclusion))
 
-    excerpt = data.xpath('//div[@id="review_content"]/div[@class="contenteditdiv"]/h3/span/text()|//div[@id="review_content"]/div[@class="contenteditdiv"]/span/text()').string(multiple=True)
+    excerpt = data.xpath('//div[@id="review_content"]/div[@class="contenteditdiv" and not(.//@data-videoid)]//span[not(.//@class="bold")]//text()').string(multiple=True)
     if excerpt:
         review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
 
