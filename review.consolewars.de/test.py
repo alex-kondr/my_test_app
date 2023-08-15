@@ -18,7 +18,7 @@ urllib3.disable_warnings()
 agent = agents.CONSOLEWARS
 # agent = agents.TEST
 
-product = Product(agent, reload=False)
+product = Product(agent, reload=True)
 print(product.result)
 test = TestProduct(product)
 test.test_product_name()
@@ -26,8 +26,8 @@ test.test_product_category()
 # test.test_review_grade()
 test.test_review_pros_cons()
 test.test_review_conclusion()
-test.test_review_excerpt()
+test.test_review_excerpt(len_chank=100)
 
-log = LogProduct(agent, reload=False)
+log = LogProduct(agent, reload=True)
 test_log = TestLogProduct(log)
 test_log.test_log()

@@ -92,7 +92,7 @@ def process_review(data, context, session):
     if conclusion:
         review.properties.append(ReviewProperty(type='conclusion', value=conclusion))
 
-    excerpt = data.xpath('//div[@id="review_content"]/div[@class="contenteditdiv" and not(.//@data-videoid)]//span[not(.//@class="bold")]//text()').string(multiple=True)
+    excerpt = data.xpath('(//div[@id="review_content"]/div[@class="contenteditdiv" and not(.//@data-videoid)]//span[not(.//@class="bold")]|//div[@id="review_content"]/div[@class="contenteditdiv"]/span)//text()').string(multiple=True)
     if excerpt:
         review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
 

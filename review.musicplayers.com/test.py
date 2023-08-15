@@ -15,21 +15,21 @@ import product_test.list_of_agents as agents
 
 urllib3.disable_warnings()
 
-# agent = agents.HIT_RO
+# agent = agents.MUSIC
 agent = agents.TEST
-
-log = LogProduct(agent, reload=True)
-test_log = TestLogProduct(log)
-test_log.test_log()
 
 product = Product(agent, reload=True)
 print(product.result)
 test = TestProduct(product)
-test.test_product_name(not_xproduct_name="test")
+test.test_product_name()
 test.test_product_category()
 test.test_review_title()
 test.test_review_grade()
 test.test_review_author()
 test.test_review_pros_cons()
-test.test_review_conclusion(["Sursa:"])
-test.test_review_excerpt(["Sursa:"], len_chank=300)
+test.test_review_conclusion(["Overall Rating", "www.", "Contact Information"])
+test.test_review_excerpt(["Overall Rating", "www.", "Contact Information"], len_chank=300)
+
+log = LogProduct(agent, reload=True)
+test_log = TestLogProduct(log)
+test_log.test_log()

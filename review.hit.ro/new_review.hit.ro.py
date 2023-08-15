@@ -46,13 +46,13 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[contains(@class, "supporting-text-body")]//p/b[1]/text()[string-length() > 5]').string()
     if not summary:
-        summary = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong)[1]|//div[br]/b/strong)/text()[string-length() > 5]').string(multiple=True)
+        summary = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong)[1]|//div[br]/b/strong)/text()[string-length() > 11]').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong|//div[br]/b/strong)/text()[string-length() > 30 and not(contains(., "\\"))]').string(multiple=True)
+    excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong|//div[br]/b/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//div[br]/div|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 30 and not(contains(., "\\"))]').string(multiple=True)
+        excerpt = data.xpath('(//div[br]/div|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:"))]').string(multiple=True)
     if not excerpt and summary:
         excerpt = data.xpath('(//div[contains(@class, "supporting-text-body")]//strong)[position() > 1]/text()').string(multiple=True)
     elif not excerpt:
@@ -62,7 +62,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "supporting-text-body")]//span//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "supporting-text-body")]//font[not(contains(., "Sursa"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "supporting-text-body")]//font[not(contains(., "Sursa:"))]//text()').string(multiple=True)
     if excerpt:
         if summary:
             excerpt = excerpt.replace(summary, '').strip()

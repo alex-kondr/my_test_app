@@ -135,9 +135,10 @@ class TestProduct:
     def __init__(self, product: Product):
         self.products = product.file.get("products")
         self.agent_name = product.agent_name
-        self.xproduct_names_category = ["review", "test"]#, "...", "•"]
+        self.xproduct_names_category = ["review", "test", "\uFEFF", "\ufeff"]#, "...", "•"]
         self.xproduct_names_category_start_end = ["+", "-"]
-        self.xreview_excerpt = ["Summary", "Conclusion", "Verdict", "Fazit", "\uFEFF"]#, "•"]
+        self.xproduct_title = ["\uFEFF", "\ufeff"]
+        self.xreview_excerpt = ["Summary", "Conclusion", "Verdict", "Fazit", "\uFEFF", "\ufeff"]#, "•"]
         self.xreview_pros_cons = ["-", "+", "•", "None found"]
         self.path = Path(f"product_test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
@@ -197,6 +198,23 @@ class TestProduct:
         print(f"Count error product category: {len(error_category)}")
         self.save(error_category, type_err="prod_category")
 
+    def test_review_title(self, xproduct_title: list[str]=[]) -> None:
+        xproduct_title = self.xproduct_title + xproduct_title
+        error_title = []
+        for product in self.products:
+            properties = product.get("review", {}).get("properties", {})
+            property = [property for property in properties if property.get("type") == "title"][0]
+            title = property.get("value")
+
+            for xtitle in xproduct_title:
+                if xtitle in title:
+                    property["error"] = xtitle
+                    error_title.append(properties)
+                    break
+
+        print(f"Count error review title: {len(error_title)}")
+        self.save(error_title, type_err="rev_title")
+
     def test_review_grade(self) -> None:
         error_grade = []
         for product in self.products:
@@ -208,6 +226,18 @@ class TestProduct:
 
         print(f"Count error review grades: {len(error_grade)}")
         self.save(error_grade, type_err="rev_grades")
+
+    def test_review_author(self) -> None:
+        error_author = []
+        for product in self.products:
+            properties = product.get("person", {}).get("properties", {})
+            author = [property for property in properties if property.get("type") == "name"]
+
+            if not author:
+                error_author.append(properties)
+
+        print(f"Count error review author: {len(error_author)}")
+        self.save(error_author, type_err="rev_author")
 
     def test_review_pros_cons(self) -> None:
         error_pros_cons = []
@@ -311,6 +341,20 @@ class TestProduct:
                         error_excerpt.append(properties)
                         break
 
+            if conclusion:
+                conclusion = conclusion[0]
+                chank_count = len(conclusion) // len_chank
+                conclusion_list = []
+                for i in range(chank_count):
+                    summ = conclusion[len_chank * i:len_chank * ( i + 1)]
+                    conclusion_list.append(summ)
+
+                for element in conclusion_list:
+                    if element in excerpt:
+                        property["error"] = f"This element in excerpt: '{element}'"
+                        error_excerpt.append(properties)
+                        break
+
             for xreview_excerpt in xreview_excerpts:
                 if xreview_excerpt in excerpt:
                     property["error"] = xreview_excerpt
@@ -320,7 +364,7 @@ class TestProduct:
         print(f"Count error review excerpt: {len(error_excerpt)}")
         self.save(error_excerpt, type_err="rev_excerpt")
 
-    def save(self, file: dict, type_err: str) -> None:
+    def save(self, file: list, type_err: str) -> None:
         file_path = self.path / f"{self.agent_name}-{type_err}.json"
         with open(file_path, "w", encoding="utf-8") as fd:
             json.dump(file, fd, indent=2)

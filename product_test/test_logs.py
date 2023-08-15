@@ -72,8 +72,8 @@ class TestLogProduct:
                     error_log.append(error)
                     break
 
-            # if not count_lines % 10000:
-            #     print(f"{count_lines=}")
+            if not count_lines % 50000:
+                print(f"{count_lines=}")
 
         print(f"All count logs: {len(self.log_product.file)}")
         print(f"Find error in logs: {len(error_log)}")

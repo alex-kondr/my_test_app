@@ -9,7 +9,7 @@ def run(context, session):
 def process_revlist(data, context, session):
     revs = data.xpath("//ul[@class='bk-blog-content clearfix']//h4/a")
     for rev in revs:
-        title = rev.xpath(".//text()").string().replace(u'\uFEFF', '').strip()
+        title = rev.xpath(".//text()").string().encode('ascii', errors='ignore').strip()
         url = rev.xpath("@href").string()
         session.queue(Request(url), process_review, dict(context, title=title, url=url))
 
@@ -82,15 +82,22 @@ def process_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=grade_overall, best=4.0))
 
-    excerpt = data.xpath("//div[@class='entrytext']/p/text()").string(multiple=True)
+    conclusion = data.xpath('//div[@class="article-content clearfix"]/p[contains(., "The Verdict:")]/following-sibling::p[not(contains(., "www.")) and not(contains(., "Overall Rating")) and not(contains(., "Contact Information"))]/text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    if conclusion:
+        excerpt = data.xpath('//div[@class="article-content clearfix"]/p[contains(., "The Verdict:")]/preceding-sibling::p[not(contains(., "www.")) and not(contains(., "Overall Rating")) and not(contains(., "Contact Information"))]/text()').string(multiple=True)
+    else:
+        excerpt = data.xpath('//div[@class="entrytext"]/p[not(contains(., "www.")) and not(contains(., "Overall Rating")) and not(contains(., "Contact Information"))]/text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath("//div[@class='article-content clearfix']/p/text()").string(multiple=True)
+        excerpt = data.xpath('//div[@class="article-content clearfix"]/p[not(contains(., "www.")) and not(contains(., "Overall Rating")) and not(contains(., "Contact Information"))]/text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath("//div[@class='article-content clearfix']/p/span/text()").string(multiple=True)
+        excerpt = data.xpath('//div[@class="article-content clearfix"]/p[not(contains(., "www.")) and not(contains(., "Overall Rating")) and not(contains(., "Contact Information"))]/span/text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@itemprop="articleBody"]/h3[contains(text(), "Contact Information")]/preceding-sibling::text()[normalize-space(.)]').string(multiple=True)
+        excerpt = data.xpath('//div[@itemprop="articleBody"]/h3[contains(text(), "Contact Information")]/preceding-sibling::text()').string(multiple=True)
     if not excerpt:
-            excerpt = data.xpath('//div[@itemprop="articleBody"]/p/text()[normalize-space(.)]').string(multiple=True)
+            excerpt = data.xpath('//div[@itemprop="articleBody"]/p[not(contains(., "www.")) and not(contains(., "Overall Rating")) and not(contains(., "Contact Information"))]/text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
