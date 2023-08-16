@@ -4,9 +4,11 @@ from pathlib import Path
 from pprint import pprint
 import requests
 from requests.auth import HTTPBasicAuth
+import urllib3
 import json
 
 
+urllib3.disable_warnings()
 load_dotenv()
 
 

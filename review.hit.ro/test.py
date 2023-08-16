@@ -1,4 +1,3 @@
-import urllib3
 import sys
 import os
 
@@ -13,16 +12,11 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-urllib3.disable_warnings()
-
 # agent = agents.HIT_RO
 agent = agents.TEST
+reload = True
 
-log = LogProduct(agent, reload=True)
-test_log = TestLogProduct(log)
-test_log.test_log()
-
-product = Product(agent, reload=True)
+product = Product(agent, reload=reload)
 print(product.result)
 test = TestProduct(product)
 test.test_product_name(not_xproduct_name="test")
@@ -31,5 +25,9 @@ test.test_review_title()
 test.test_review_grade()
 test.test_review_author()
 test.test_review_pros_cons()
-test.test_review_conclusion(["Sursa:"])
-test.test_review_excerpt(["Sursa:"], len_chank=300)
+test.test_review_conclusion(["Sursa:", "Surse:", "Specificatii "])
+test.test_review_excerpt(["Sursa:", "Surse:", "Specificatii "], len_chank=300, len_excerpt=10)
+
+log = LogProduct(agent, reload=reload)
+test_log = TestLogProduct(log)
+test_log.test_log()

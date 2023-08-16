@@ -46,13 +46,15 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[contains(@class, "supporting-text-body")]//p/b[1]/text()[string-length() > 5]').string()
     if not summary:
-        summary = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong)[1]|//div[br]/b/strong)/text()[string-length() > 11]').string(multiple=True)
+        summary = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong[1])|//div[br]/b/strong)/text()[string-length() > 11]').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong|//div[br]/b/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:"))]').string(multiple=True)
+    excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong|//div[br]/b/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:")) and not(contains(., "Surse:"))]|//u[text()="Specificații"]/text()').string(multiple=True)
+    if excerpt and data.xpath('//u[text()="Specificații"]'):
+        excerpt = excerpt.split('Specificații')[0]
     if not excerpt:
-        excerpt = data.xpath('(//div[br]/div|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:"))]').string(multiple=True)
+        excerpt = data.xpath('(//div[br]/div|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:")) and not(contains(., "Surse:"))]').string(multiple=True)
     if not excerpt and summary:
         excerpt = data.xpath('(//div[contains(@class, "supporting-text-body")]//strong)[position() > 1]/text()').string(multiple=True)
     elif not excerpt:
@@ -62,14 +64,19 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "supporting-text-body")]//span//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "supporting-text-body")]//font[not(contains(., "Sursa:"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "supporting-text-body")]//font[not(contains(., "Sursa:")) and not(contains(., "Surse:"))]//text()').string(multiple=True)
+
     if excerpt:
         if summary:
             excerpt = excerpt.replace(summary, '').strip()
-        excerpt = excerpt.encode("ascii", errors='ignore')
+        excerpt = excerpt.encode("ascii", errors='ignore').split('Specificatii tehnice')[0].split('Specificatii oficiale:')[0]
 
-        review.add_property(type='excerpt', value=excerpt)
+        if data.xpath('//strong[contains(text(), "Specificatii ")]/text()').string():
+            excerpt = excerpt.split('Specificatii ')[0]
 
-        product.reviews.append(review)
+        if len(excerpt) > 30:
+            review.add_property(type='excerpt', value=excerpt.strip())
 
-        session.emit(product)
+            product.reviews.append(review)
+
+            session.emit(product)

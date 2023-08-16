@@ -1,5 +1,6 @@
 import requests
 from requests.auth import HTTPBasicAuth
+import urllib3
 import os
 from dotenv import load_dotenv
 import yaml
@@ -8,6 +9,7 @@ from pathlib import Path
 from pprint import pprint
 
 
+urllib3.disable_warnings()
 load_dotenv()
 
 
@@ -310,7 +312,7 @@ class TestProduct:
         print(f"Count error review conclusion: {len(error_conclusion)}")
         self.save(error_conclusion, type_err="rev_conclusion")
 
-    def test_review_excerpt(self, xreview_excerpt: list[str] = [], len_chank: int = 50) -> None:
+    def test_review_excerpt(self, xreview_excerpt: list[str] = [], len_chank: int = 50, len_excerpt: int = 10) -> None:
         xreview_excerpts = self.xreview_excerpt + xreview_excerpt
         error_excerpt = []
         for product in self.products:
@@ -354,6 +356,10 @@ class TestProduct:
                         property["error"] = f"This element in excerpt: '{element}'"
                         error_excerpt.append(properties)
                         break
+
+            if len(excerpt) < len_excerpt:
+                property["error"] = f"Len excerpt < {len_excerpt}"
+                error_excerpt.append(properties)
 
             for xreview_excerpt in xreview_excerpts:
                 if xreview_excerpt in excerpt:
