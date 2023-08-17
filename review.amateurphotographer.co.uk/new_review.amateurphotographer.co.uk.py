@@ -88,6 +88,8 @@ def process_review(data, context, session):
     conclusion = data.xpath('//div[@class="editable-content"]/h2[contains(., "Verdict") or contains(., "Our verdict") or contains(., "Conclusion")]/following-sibling::p[not(@class)][not(li)][not(em)][not(br)][not(contains(., "Read our full")) and not(contains(., "Related reading:"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//li[h3[contains(text(), "Verdict") or contains(., "Our verdict") or contains(., "Conclusion")]]/p/text()').string()
+    if conclusion:
+        conclusion = conclusion.split('Related articles:')[0]
 
     if data.xpath('//div[@class="editable-content"]/h2[contains(., "Verdict") or contains(., "Our verdict") or contains(., "Conclusion")]//text()').string():
         excerpt = data.xpath('//div[@class="editable-content"]/h2[contains(., "Verdict") or contains(., "Our verdict") or contains(., "Conclusion")][1]/preceding-sibling::p[not(@class)][not(li)][not(em)][not(contains(., "Read our full")) and not(contains(., "Related reading:"))]//text()').string(multiple=True)
@@ -120,7 +122,7 @@ def process_review_next(data, context, session):
         if not conclusion:
             conclusion = data.xpath('//li[h3[contains(text(), "Verdict") or contains(., "Our verdict") or contains(., "Conclusion")]]/p/text()').string()
         if conclusion:
-            context['conclusion'] = conclusion
+            context['conclusion'] = conclusion.split('Related articles:')[0]
 
         if data.xpath('//div[@class="editable-content"]/h2[contains(., "Verdict") or contains(., "Our verdict") or contains(., "Conclusion")]//text()').string():
             excerpt = data.xpath('//div[@class="editable-content"]/h2[contains(., "Verdict") or contains(., "Our verdict") or contains(., "Conclusion")][1]/preceding-sibling::p[not(@class)][not(li)][not(em)][not(contains(., "Read our full")) and not(contains(., "Related reading:"))]//text()').string(multiple=True)

@@ -12,8 +12,8 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.AMATEURPHOTOGRAPHER
-# agent = agents.TEST
+# agent = agents.MIXONLINE
+agent = agents.TEST
 reload = 1
 
 product = Product(agent, reload=reload)
@@ -25,8 +25,8 @@ test.test_review_title()
 test.test_review_grade()
 test.test_review_author()
 test.test_review_pros_cons()
-test.test_review_conclusion(["Read our full", "Related reading", "Our verdict", "Related articles:"])#, "pecification"])
-test.test_review_excerpt(["Read our full", "Related reading", "Our verdict", "Related articles:"], len_chank=300, len_excerpt=10)# "Specification"])
+test.test_review_conclusion(["Product Summary", "PRODUCT SUMMARY", "CONS:", "PROS:", "PRICE:", "PRODUCT:", "COMPANY:"])
+test.test_review_excerpt(["Product Summary", "PRODUCT SUMMARY", "CONS:", "PROS:", "PRICE:", "Price:", "PRODUCT:", "COMPANY:"], len_chank=200, len_excerpt=10)
 
 log = LogProduct(agent, reload=reload)
 test_log = TestLogProduct(log)

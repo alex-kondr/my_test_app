@@ -45,10 +45,9 @@ def process_review(data, context, session):
         review.date = date.split(',')[0]
 
     summary = data.xpath('//div[contains(@class, "supporting-text-body")]//p/b[1]/text()[string-length() > 5]').string()
+    summary2 = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong)[2]|//div[br]/b/strong)/text()[string-length() > 11]').string(multiple=True)
     if not summary:
-        summary = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong[1])|//div[br]/b/strong)/text()[string-length() > 11]').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
+        summary = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong)[1]|//div[br]/b/strong)/text()[string-length() > 11]').string(multiple=True)
 
     excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong|//div[br]/b/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:")) and not(contains(., "Surse:"))]|//u[text()="Specificații"]/text()').string(multiple=True)
     if excerpt and data.xpath('//u[text()="Specificații"]'):
@@ -68,8 +67,15 @@ def process_review(data, context, session):
 
     if excerpt:
         if summary:
+            if summary2:
+                summary_ = summary + ' ' + summary2
+                if excerpt.startswith(summary_):
+                    summary = summary_
+
+            review.add_property(type='summary', value=summary)
             excerpt = excerpt.replace(summary, '').strip()
-        excerpt = excerpt.encode("ascii", errors='ignore').split('Specificatii tehnice')[0].split('Specificatii oficiale:')[0]
+
+        excerpt = excerpt.encode("ascii", errors='ignore').split('Specificatii tehnice')[0].split('Specificatii oficiale:')[0].split('Specificatii complete:')[0]
 
         if data.xpath('//strong[contains(text(), "Specificatii ")]/text()').string():
             excerpt = excerpt.split('Specificatii ')[0]

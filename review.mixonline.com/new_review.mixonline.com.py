@@ -10,7 +10,7 @@ def run(context, session):
 def process_revlist(data, context, session):
     prods = data.xpath('//div[@class="col-8"]')
     for prod in prods:
-        ssid = prod.xpath('parent::*/preceding-sibling::article[1]/@id').string().split('-')[-1]
+        ssid = prod.xpath('preceding::article[1]/@id').string().split('-')[-1]
         title = prod.xpath('h2/text()').string()
         url = prod.xpath('a[@class="post-title"]/@href').string()
         session.queue(Request(url), process_product, dict(context, ssid=ssid, title=title, url=url))
@@ -22,10 +22,15 @@ def process_revlist(data, context, session):
 
 def process_product(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Reviews', '').replace('Review', '').replace('Test ', '').replace('TEST ', '').split('-')[0].split(':')[-1].strip()
+    product.name = context['title'].split('Review: ')[-1].split('Test: ')[-1].replace('Reviews', '').replace('Review', '').replace('Test ', '').replace('TEST ', '').split(' - ')[0].strip()
     product.category = data.xpath("//div[@class='col-12']/p/a[not(contains(., 'Review'))][last()]/text()").string()
-    product.url = context['url']
     product.ssid = context['ssid']
+
+    product.url = data.xpath('//section[@class="entry-content"]/following-sibling::p/a/@href').string()
+    if not product.url:
+        product.url = data.xpath('//td[strong[contains(text(), "COMPANY")]]/a/@href').string()
+    if not product.url:
+        product.url = context['url']
 
     manufacturer = data.xpath('//strong[contains(text(), "COMPANY") or contains(text(), "Company")]/following-sibling::text()[1]').string()
     if manufacturer:
@@ -43,10 +48,10 @@ def process_product(data, context, session):
     author = data.xpath('//p[@class="author-name"]/a').first()
     if not author:
         author = data.xpath('//a[@rel="author"]').first()
-        if author:
-            name = author.xpath('text()').string()
-            url = author.xpath('@href').string()
-            review.authors.append(Person(name=name, ssid=name, url=url))
+    if author:
+        name = author.xpath('text()').string().replace('⋅', '').strip()
+        url = author.xpath('@href').string()
+        review.authors.append(Person(name=name, ssid=name, url=url))
 
     summary = data.xpath('//p[@class="excerpt"]/text()').string()
     if not summary:
@@ -87,7 +92,7 @@ def process_product(data, context, session):
             con = con.replace('\n', '').replace('•', '').strip('.').strip()
             review.properties.append(ReviewProperty(type='cons', value=con))
 
-    conclusion = data.xpath('//strong[contains(text(), "CONCLUSION")]/parent::*/following-sibling::p[not(a)]//text()|//strong[contains(text(), "CONCLUSION")]/following-sibling::text()').string(multiple=True)
+    conclusion = data.xpath('((//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict")]/parent::*/following-sibling::p|//p[contains(text(), "And the Verdict?") or contains(text(), "Digital Conclusions")]/following-sibling::p)[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()|//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict")]/following-sibling::text())[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//td[strong[contains(text(), "TAKEAWAY")]]/text()').string()
     if conclusion:
@@ -97,25 +102,26 @@ def process_product(data, context, session):
         return
 
     if conclusion:
-        excerpt = data.xpath('//strong[contains(text(), "CONCLUSION")]/parent::*/preceding-sibling::p[not(@class) and not(@style) and not(a)]//text()[normalize-space(.)]').string(multiple=True)
+        excerpt = data.xpath('//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict")]/parent::*/preceding-sibling::p[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()|//p[contains(text(), "And the Verdict?") or contains(text(), "Digital Conclusions")]/preceding-sibling::p[not(@class)]/text()').string(multiple=True)
     else:
-        excerpt = data.xpath('//strong[contains(text(), "PRODUCT SUMMARY")]/parent::*/preceding-sibling::p[not(@class) and not(@style) and not(a) and not(em)]//text()[normalize-space(.)]').string(multiple=True)
+        excerpt = data.xpath('(//strong[contains(., "PRODUCT SUMMARY") or contains(., "Product Summary")]/parent::*/preceding-sibling::p[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()|//strong[contains(., "PRODUCT SUMMARY") or contains(., "Product Summary")]/parent::*/preceding-sibling::p[strong or a]/text())[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span) and not(contains(text(), "•"))]//text()[normalize-space(.)]').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span) and not(contains(text(), "•")) and not(strong) and not(em) and not(a)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "Product Summary")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "Price:")) and not(contains(., "PROS:")) and not(contains(., "CONS:")) and not(contains(., "Contact:"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span)]//text()[normalize-space(.)]').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(span/strong)]//text()[normalize-space(.)]').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(span/strong) and not(b) and not(a)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "Price:")) and not(contains(., "PROS:")) and not(contains(., "CONS:")) and not(contains(., "Contact:"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class)]//text()[normalize-space(.)]').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[contains(@class, "Body")]//text()[normalize-space(.)]').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[contains(@class, "Body")]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
 
     if excerpt and summary:
         excerpt = excerpt.replace(summary, '')
 
     if excerpt:
-        review.add_property(type='excerpt', value=excerpt.replace('', '').strip())
+        excerpt = excerpt.replace('', '').replace('PRODUCT SUMMARY', '').strip()
+        review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
 

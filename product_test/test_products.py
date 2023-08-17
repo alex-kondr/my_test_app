@@ -140,12 +140,12 @@ class TestProduct:
         self.xproduct_names_category = ["review", "test", "\uFEFF", "\ufeff"]#, "...", "•"]
         self.xproduct_names_category_start_end = ["+", "-"]
         self.xproduct_title = ["\uFEFF", "\ufeff"]
-        self.xreview_excerpt = ["Summary", "Conclusion", "Verdict", "Fazit", "\uFEFF", "\ufeff"]#, "•"]
+        self.xreview_excerpt = ["Conclusion", "Verdict", "Fazit", "\uFEFF", "\ufeff"]#, "•", "Summary"]
         self.xreview_pros_cons = ["-", "+", "•", "None found"]
         self.path = Path(f"product_test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
 
-    def test_product_name(self, xproduct_names: list[str]=[], not_xproduct_name: str=None) -> None:
+    def test_product_name(self, xproduct_names: list[str]=[], not_xproduct_name: str = None, len_name: int = 6) -> None:
         xproduct_names_category = self.xproduct_names_category + xproduct_names
         if not_xproduct_name:
             xproduct_names_category.remove(not_xproduct_name)
@@ -158,14 +158,18 @@ class TestProduct:
             temp_name = None
             for xname in self.xproduct_names_category_start_end:
                 if name.startswith(xname) or name.endswith(xname):
-                    property["error"] = f"Starts or ends '{xname}'"
+                    property["error_start_end"] = f"Starts or ends '{xname}'"
                     temp_name = properties
                     break
+
+            if len(name) < len_name:
+                property["error_len"] = f"Len name < {len_name}"
+                temp_name = properties
 
             if not temp_name:
                 for xproduct_name in xproduct_names_category:
                     if xproduct_name in name.lower():
-                        property["error"] = xproduct_name
+                        property["error_name"] = xproduct_name
                         temp_name = properties
                         break
 
@@ -210,7 +214,7 @@ class TestProduct:
 
             for xtitle in xproduct_title:
                 if xtitle in title:
-                    property["error"] = xtitle
+                    property["error_name"] = xtitle
                     error_title.append(properties)
                     break
 
@@ -236,6 +240,8 @@ class TestProduct:
             author = [property for property in properties if property.get("type") == "name"]
 
             if not author:
+                properties = product.get("review", {}).get("properties", {})
+                properties.append({"error_no_author": "No author"})
                 error_author.append(properties)
 
         print(f"Count error review author: {len(error_author)}")
@@ -255,16 +261,16 @@ class TestProduct:
                 if temp_pros_cons:
                     break
                 if len(pro) < 3:
-                    property_pros[i]["error"] = "< 3"
+                    property_pros[i]["error_len"] = "< 3"
                     temp_pros_cons = properties
                     break
                 if pro in cons:
-                    property_pros[i]["error"] = f"Pro: '{pro}' in cons"
+                    property_pros[i]["error_in_con"] = f"Pro: '{pro}' in cons"
                     temp_pros_cons = properties
                     break
                 for xreview_pros_cons in self.xreview_pros_cons:
                     if pro.startswith(xreview_pros_cons) or pro.endswith(xreview_pros_cons):
-                        property_pros[i]["error"] = f"starts or ends '{xreview_pros_cons}'"
+                        property_pros[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
                         temp_pros_cons = properties
                         break
 
@@ -272,15 +278,16 @@ class TestProduct:
                     if temp_pros_cons:
                         break
                     if len(con) < 3:
+                        property_cons[i]["error_len"] = "< 3"
                         temp_pros_cons = properties
                         break
                     if con in pros:
-                        property_cons[i]["error"] = f"Con: '{con}' in pros"
+                        property_cons[i]["error_in_pro"] = f"Con: '{con}' in pros"
                         temp_pros_cons = properties
                         break
                     for xreview_pros_cons in self.xreview_pros_cons:
                         if con.startswith(xreview_pros_cons) or con.endswith(xreview_pros_cons):
-                            property_cons[i]["error"] = f"starts or ends '{xreview_pros_cons}'"
+                            property_cons[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
                             temp_pros_cons = properties
                             break
 
@@ -305,14 +312,14 @@ class TestProduct:
 
             for xreview_conclusion in xreview_conclusions:
                 if xreview_conclusion in conclusion:
-                    property["error"] = xreview_conclusion
+                    property["error_name"] = xreview_conclusion
                     error_conclusion.append(properties)
                     break
 
         print(f"Count error review conclusion: {len(error_conclusion)}")
         self.save(error_conclusion, type_err="rev_conclusion")
 
-    def test_review_excerpt(self, xreview_excerpt: list[str] = [], len_chank: int = 50, len_excerpt: int = 10) -> None:
+    def test_review_excerpt(self, xreview_excerpt: list[str] = [], len_chank: int = 100, len_excerpt: int = 10) -> None:
         xreview_excerpts = self.xreview_excerpt + xreview_excerpt
         error_excerpt = []
         for product in self.products:
@@ -325,7 +332,7 @@ class TestProduct:
                 property = property[0]
                 excerpt = property.get("value")
             else:
-                properties.append({"error": "No excerpt"})
+                properties.append({"error_no": "No excerpt"})
                 error_excerpt.append(properties)
                 continue
 
@@ -339,7 +346,7 @@ class TestProduct:
 
                 for element in summary_list:
                     if element in excerpt:
-                        property["error"] = f"This element in excerpt: '{element}'"
+                        property["error_in_sum"] = f"This element in excerpt: '{element}'"
                         error_excerpt.append(properties)
                         break
 
@@ -353,17 +360,17 @@ class TestProduct:
 
                 for element in conclusion_list:
                     if element in excerpt:
-                        property["error"] = f"This element in excerpt: '{element}'"
+                        property["error_in_con"] = f"This element in excerpt: '{element}'"
                         error_excerpt.append(properties)
                         break
 
             if len(excerpt) < len_excerpt:
-                property["error"] = f"Len excerpt < {len_excerpt}"
+                property["error_len"] = f"Len excerpt < {len_excerpt}"
                 error_excerpt.append(properties)
 
             for xreview_excerpt in xreview_excerpts:
                 if xreview_excerpt in excerpt:
-                    property["error"] = xreview_excerpt
+                    property["error_name"] = xreview_excerpt
                     error_excerpt.append(properties)
                     break
 
