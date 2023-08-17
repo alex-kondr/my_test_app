@@ -13,17 +13,16 @@ def process_revlist(data, context, session):
         if url and title:
             session.queue(Request(url, use="curl", force_charset='utf-8'), process_review, dict(url=url, title=title))
 
-    nexturl = data.xpath("//a[@class='page-link next page-numbers']//@href").string()
-    if nexturl:
-        session.queue(Request(nexturl, use="curl", force_charset='utf-8'), process_revlist, dict(context))
+    next_url = data.xpath("//a[@class='page-link next page-numbers']//@href").string()
+    if next_url:
+        session.queue(Request(next_url, use="curl", force_charset='utf-8'), process_revlist, dict())
 
 
 def process_review(data, context, session):
     product = Product()
     product.url = context["url"]
     product.ssid = product.url.split("/")[-3]
-
-    product.name  = context["title"].split("Review of ")[-1].split(" Review")[0].split("Review: ")[-1]
+    product.name  = context["title"].split("Review of ")[-1].split('Preview:')[0].split(" Review")[0].split("Review: ")[-1]
 
     category = data.xpath("//div[@class='post-body']//p[contains(., 'Reviewed on')]//text()").string(multiple=True)
     if category:
@@ -49,7 +48,6 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     pros = data.xpath("(//strong[contains(text(), 'What Impressed') or contains(text(), 'Playtime') or contains(text(), 'Sweet') or contains(text(), 'The Good') or contains(text(), 'The good')]//parent::p/following-sibling::ul[1]//li//text())[normalize-space(.)][not(contains(., 'Sweet'))]")
-    "//strong[contains(text(), 'What Impressed') or contains(text(), 'Playtime') or contains(text(), 'Sweet') or contains(text(), 'The Good') or contains(text(), 'The good')]/parent::p//following-sibling::p[1]//text()"
     if not pros:
         pros = data.xpath("(//strong[contains(text(), 'What Impressed') or contains(text(), 'Playtime') or contains(text(), 'Sweet') or contains(text(), 'The Good') or contains(text(), 'The good')]//following-sibling::text())[normalize-space(.)][not(contains(., 'Sweet'))]")
     for pro in pros:
@@ -74,38 +72,38 @@ def process_review(data, context, session):
         grade = data.xpath("//strong[contains(text(), 'Verdict: ')]//text()").string(multiple=True)
     if not grade:
         grade = data.xpath("//strong[contains(text(), 'out of')]//text()").string(multiple=True)
-    if grade:
-        if 'Verdict:' in grade:
-            grade = grade.split(' ')[-1].split('/')[0]
-            review.grades.append(Grade(type="overall", value=float(grade), best=5.0))
-        elif ':' in grade:
-            grade = grade.split(': ')[-1].split(" ")[0]
-            review.grades.append(Grade(type="overall", value=float(grade), best=10.0))
+    if not grade:
+        grade = data.xpath('//strong[contains(text(), "Overall score")]//parent::p//text()').string(multiple=True)
+    if grade and 'Verdict:' in grade:
+        grade = grade.split(' ')[-1].split('/')[0]
+        review.grades.append(Grade(type="overall", value=float(grade), best=5.0))
+    elif grade and ':' in grade:
+        grade = grade.split(': ')[-1].split(" ")[0].split('/')[0]
+        review.grades.append(Grade(type="overall", value=float(grade), best=10.0))
 
     summary = data.xpath("//strong[contains(text(), 'Summary')]//following-sibling::text()").string(multiple=True)
     if summary:
         summary = summary.replace('\n', ' ')
-        review.properties.append(ReviewProperty(type="summary", value=summary))
+        review.add_property(type="summary", value=summary)
 
-    body = data.xpath('//div[@class="post-body"]//text()[normalize-space(.)]').string(multiple=True)
-    '//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word")]/following-sibling::text()|//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word")]//parent::p//following-sibling::p//text()'
-
-    if 'Conclusion' in body:
-        conclusion = body.split('Conclusion')[-1]
-    elif 'The Verdict' in body:
-        conclusion = body.split('The Verdict')[-1]
-    elif body and ('Final word' in body):
-        conclusion = body.split('Final word')[-1]
-    else:
-        conclusion = None
-
+    conclusion = data.xpath('//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word")]/following::p[not(strong)]/text()').string(multiple=True)
     if conclusion:
-        conclusion = conclusion.split('What Impressed')[0].split('Playtime')[0].split('Sweet')[0].split('The Good')[0].split('Follow this author')[0].split('Score')[0].replace('\n', ' ').strip()
-        review.properties.append(ReviewProperty(type="conclusion", value=conclusion))
+        review.add_property(type='conclusion', value=conclusion)
 
-    if body:
-        excerpt = body.split('Conclusion')[0].split('The Verdict')[0].split('Final word')[0].split('Summary')[0].split('What Impressed')[0].split('Playtime')[0].split('Sweet')[0].split('The Good')[0].split('Follow this author')[0].split('Score')[0].split('Follow this author')[0]
-        review.properties.append(ReviewProperty(type="excerpt", value=excerpt.strip()))
+    excerpt = data.xpath('//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word") or contains(text(), "Score:")]/preceding::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//strong[contains(text(), "What Impressed") or contains(text(), "Playtime") or contains(text(), "Sweet") or contains(text(), "The Good") or contains(text(), "The good")]/preceding::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//strong[contains(text(), "Overall score")]/preceding::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[contains(text(), "Score: ")]/preceding::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//i[contains(text(), "Follow this author")]/preceding::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="post-body"]//text()').string(multiple=True)
+
+    if excerpt:
+        review.add_property(type="excerpt", value=excerpt)
 
         product.reviews.append(review)
 
