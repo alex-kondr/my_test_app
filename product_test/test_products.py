@@ -1,16 +1,8 @@
-import requests
-from requests.auth import HTTPBasicAuth
-import urllib3
-import os
-from dotenv import load_dotenv
 import yaml
 import json
 from pathlib import Path
-from pprint import pprint
 
-
-urllib3.disable_warnings()
-load_dotenv()
+from product_test.functions import load_file, is_include
 
 
 class ResultParse:
@@ -30,17 +22,8 @@ Wasted time: {self.time}
             """
 
     def result(self):
-        url = f"https://prunesearch.com/manage?action=looksession&agent_id={self.agent_id}&lastbytes=400"
-        response = requests.get(
-            url,
-            verify=False,
-            auth=HTTPBasicAuth(
-                username=os.getenv("USER-NAME"),
-                password=os.getenv("PASS")
-            )
-        )
-
-        content = response.content.decode("utf-8").split("\n")
+        content = load_file(agent_id=self.agent_id, type_file="log", size=400, decode=True)
+        content = content.split("\n")
 
         emitted = content[-4].split("Found ")[-1].split(" emitted")[0]
         self.emitted = int(emitted)
@@ -70,6 +53,7 @@ class Product:
     def __init__(self, agent_id: int, reload=False):
         self.agent_id = agent_id
         self.emits_dir = Path("product_test/emits")
+        self.emits_dir.mkdir(exist_ok=True)
         self.file_path = self.emits_dir / f"agent-{self.agent_id}.json"
         self.result = ResultParse(self.agent_id)
 
@@ -81,21 +65,10 @@ class Product:
         self.agent_name = self.file["meta"]["agent_name"]
 
     def generate_file(self) -> dict[list[dict]]:
+        content = load_file(agent_id=self.agent_id, type_file="yaml")
+        content = yaml.load_all(content, Loader=yaml.FullLoader)
 
-        url = f"https://prunesearch.com/manage?action=yaml&agent_id={self.agent_id}"
-        # os.system(f'curl "{url}" -k -u "{os.getenv("USER-NAME")}:{os.getenv("PASS")}" > emit.yaml')
-        response = requests.get(
-            url,
-            verify=False,
-            auth=HTTPBasicAuth(
-                username=os.getenv("USER-NAME"),
-                password=os.getenv("PASS")
-            )
-        )
         file = {"products": []}
-        # with open("emit.yaml", "r", encoding="utf-8") as fd:
-        content = yaml.load_all(response.content, Loader=yaml.FullLoader)
-
         product_count = 0
         precent = 0
         for items in content:
@@ -143,6 +116,7 @@ class TestProduct:
         self.xreview_excerpt = ["Conclusion", "Verdict", "Fazit", "\uFEFF", "\ufeff"]#, "•", "Summary"]
         self.xreview_pros_cons = ["-", "+", "•", "None found"]
         self.path = Path(f"product_test/error/{self.agent_name}")
+        Path("product_test/error").mkdir(exist_ok=True)
         self.path.mkdir(exist_ok=True)
 
     def test_product_name(self, xproduct_names: list[str]=[], not_xproduct_name: str = None, len_name: int = 6) -> None:
@@ -166,12 +140,10 @@ class TestProduct:
                 property["error_len"] = f"Len name < {len_name}"
                 temp_name = properties
 
-            if not temp_name:
-                for xproduct_name in xproduct_names_category:
-                    if xproduct_name in name.lower():
-                        property["error_name"] = xproduct_name
-                        temp_name = properties
-                        break
+            xproduct_name = is_include(xproduct_names_category, name, lower=True)
+            if xproduct_name:
+                property["error_name"] = xproduct_name
+                temp_name = properties
 
             if temp_name:
                 error_name.append(temp_name)
@@ -190,13 +162,11 @@ class TestProduct:
             for xname in self.xproduct_names_category_start_end:
                 if not category or category.startswith(xname) or category.endswith(xname):
                     temp_cat = properties
-                    continue
+                    break
 
-            if not temp_cat:
-                for xproduct_name in xproduct_names_category:
-                    if xproduct_name in category.lower():
-                        temp_cat = properties
-                        break
+            xproduct_name = is_include(xproduct_names_category, category, lower=True)
+            if xproduct_name:
+                temp_cat = properties
 
             if temp_cat:
                 error_category.append(properties)
@@ -212,11 +182,10 @@ class TestProduct:
             property = [property for property in properties if property.get("type") == "title"][0]
             title = property.get("value")
 
-            for xtitle in xproduct_title:
-                if xtitle in title:
-                    property["error_name"] = xtitle
-                    error_title.append(properties)
-                    break
+            xtitle = is_include(xproduct_title, title)
+            if xtitle:
+                property["error_name"] = xtitle
+                error_title.append(properties)
 
         print(f"Count error review title: {len(error_title)}")
         self.save(error_title, type_err="rev_title")
@@ -310,11 +279,10 @@ class TestProduct:
             else:
                 continue
 
-            for xreview_conclusion in xreview_conclusions:
-                if xreview_conclusion in conclusion:
-                    property["error_name"] = xreview_conclusion
-                    error_conclusion.append(properties)
-                    break
+            xreview_conclusion = is_include(xreview_conclusions, conclusion)
+            if xreview_conclusion:
+                property["error_name"] = xreview_conclusion
+                error_conclusion.append(properties)
 
         print(f"Count error review conclusion: {len(error_conclusion)}")
         self.save(error_conclusion, type_err="rev_conclusion")
@@ -344,11 +312,10 @@ class TestProduct:
                     summ = summary[len_chank * i:len_chank * ( i + 1)]
                     summary_list.append(summ)
 
-                for element in summary_list:
-                    if element in excerpt:
-                        property["error_in_sum"] = f"This element in excerpt: '{element}'"
-                        error_excerpt.append(properties)
-                        break
+                element = is_include(summary_list, excerpt)
+                if element:
+                    property["error_in_sum"] = f"This element in excerpt: '{element}'"
+                    error_excerpt.append(properties)
 
             if conclusion:
                 conclusion = conclusion[0]
@@ -358,21 +325,19 @@ class TestProduct:
                     summ = conclusion[len_chank * i:len_chank * ( i + 1)]
                     conclusion_list.append(summ)
 
-                for element in conclusion_list:
-                    if element in excerpt:
-                        property["error_in_con"] = f"This element in excerpt: '{element}'"
-                        error_excerpt.append(properties)
-                        break
+                element = is_include(conclusion_list, excerpt)
+                if element:
+                    property["error_in_con"] = f"This element in excerpt: '{element}'"
+                    error_excerpt.append(properties)
 
             if len(excerpt) < len_excerpt:
                 property["error_len"] = f"Len excerpt < {len_excerpt}"
                 error_excerpt.append(properties)
 
-            for xreview_excerpt in xreview_excerpts:
-                if xreview_excerpt in excerpt:
-                    property["error_name"] = xreview_excerpt
-                    error_excerpt.append(properties)
-                    break
+            xreview_excerpt = is_include(xreview_excerpts, excerpt)
+            if xreview_excerpt:
+                property["error_name"] = xreview_excerpt
+                error_excerpt.append(properties)
 
         print(f"Count error review excerpt: {len(error_excerpt)}")
         self.save(error_excerpt, type_err="rev_excerpt")

@@ -1,21 +1,14 @@
-from dotenv import load_dotenv
-import os
 from pathlib import Path
-from pprint import pprint
-import requests
-from requests.auth import HTTPBasicAuth
-import urllib3
 import json
 
-
-urllib3.disable_warnings()
-load_dotenv()
+from product_test.functions import load_file
 
 
 class LogProduct:
     def __init__(self, agent_id: int, reload=False):
         self.agent_id = agent_id
         self.emits_dir = Path("product_test/logs")
+        self.emits_dir.mkdir(exist_ok=True)
         self.file_path = self.emits_dir / f"agent-{self.agent_id}.json"
 
         if not self.file_path.exists() or reload:
@@ -25,20 +18,13 @@ class LogProduct:
 
     def generate_file(self) -> list:
         print("Get logs...")
-        url = f"https://prunesearch.com/manage?action=looksession&agent_id={self.agent_id}"
-        response = requests.get(
-            url,
-            verify=False,
-            auth=HTTPBasicAuth(
-                username=os.getenv("USER-NAME"),
-                password=os.getenv("PASS")
-            )
-        )
 
-        content = response.content.decode("utf-8").split("\n")
+        content = load_file(agent_id=self.agent_id, type_file="log", decode=True)
+        content = content.split("\n")
+
         print("Get logs complete. Saving logs...")
-
         self.save_file(content)
+
         print("Logs saved succesfull.")
         return self.open_file()
 
