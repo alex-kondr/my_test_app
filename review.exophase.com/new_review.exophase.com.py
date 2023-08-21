@@ -81,26 +81,21 @@ def process_review(data, context, session):
         grade = grade.split(': ')[-1].split(" ")[0].split('/')[0]
         review.grades.append(Grade(type="overall", value=float(grade), best=10.0))
 
-    summary = data.xpath("//strong[contains(text(), 'Summary')]//following-sibling::text()").string(multiple=True)
-    if summary:
-        summary = summary.replace('\n', ' ')
-        review.add_property(type="summary", value=summary)
-
-    conclusion = data.xpath('//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word")]/following::p[not(strong)]/text()').string(multiple=True)
+    conclusion = data.xpath('(//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word") or contains(text(), "Summary")]/following-sibling::text()|//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word")]/following::p[not(strong)]/text())[string-length() > 3]').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word") or contains(text(), "Score:")]/preceding::p//text()').string(multiple=True)
+    excerpt = data.xpath('(//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word") or contains(text(), "Summary")]/preceding::p//text()|//strong[contains(text(), "The Verdict") or contains(text(), "Conclusion") or contains(text(), "Final word") or contains(text(), "Summary")]/preceding-sibling::text())[not(contains(., "Reviewed on "))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//strong[contains(text(), "What Impressed") or contains(text(), "Playtime") or contains(text(), "Sweet") or contains(text(), "The Good") or contains(text(), "The good")]/preceding::p//text()').string(multiple=True)
+        excerpt = data.xpath('(//strong[contains(text(), "What Impressed") or contains(text(), "Playtime") or contains(text(), "Sweet") or contains(text(), "The Good") or contains(text(), "The good")]/preceding::p//text()|//strong[contains(text(), "What Impressed") or contains(text(), "Playtime") or contains(text(), "Sweet") or contains(text(), "The Good") or contains(text(), "The good")]/preceding-sibling::text())[not(contains(., "Reviewed on "))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//strong[contains(text(), "Overall score")]/preceding::p//text()').string(multiple=True)
+        excerpt = data.xpath('//strong[contains(text(), "Overall score")]/preceding::p//text()[not(contains(., "Reviewed on "))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[contains(text(), "Score: ")]/preceding::p//text()').string(multiple=True)
+        excerpt = data.xpath('(//p[contains(text(), "Score: ")]/preceding::p//text()|//strong[contains(text(), "Score: ")]/preceding::p//text())[not(contains(., "Reviewed on "))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//i[contains(text(), "Follow this author")]/preceding::p//text()').string(multiple=True)
+        excerpt = data.xpath('//i[contains(text(), "Follow this author")]/preceding::p[not(strong/em)]//text()[not(contains(., "Reviewed on "))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="post-body"]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="post-body"]//text()[not(contains(., "Reviewed on "))]').string(multiple=True)
 
     if excerpt:
         review.add_property(type="excerpt", value=excerpt)
