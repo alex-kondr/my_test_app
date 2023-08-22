@@ -51,7 +51,7 @@ def process_review(data, context, session):
     if summary and summary2:
         summary2 = summary + ' ' + summary2
 
-    excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong|//div[br]/b/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:")) and not(contains(., "*")) and not(contains(., "Surse:")) and not(contains(., "Detalii Rail Nation")) and not(contains(., "Toți jucătorii care")) and not(contains(., "Accesati Forumul oficial")) and not(contains(., "Jucătorii care cumpară"))]|//u[text()="Specificații"]/text()').string(multiple=True)
+    excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong|//div[br]/b/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:")) and not(contains(., "*")) and not(contains(., "Surse:")) and not(contains(., "Detalii Rail Nation")) and not(contains(., "Toți jucătorii care")) and not(contains(., "Accesati Forumul oficial")) and not(contains(., "Jucătorii care cumpară")) and not(contains(., "Trailer:")) and not(contains(., "precum:"))]|//u[text()="Specificații"]/text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('(//div[br]/div|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:")) and not(contains(., "Surse:"))]').string(multiple=True)
     if not excerpt and summary:
