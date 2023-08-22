@@ -10,10 +10,11 @@ def run(context, session):
 def process_revlist(data, context, session):
     prods = data.xpath('//div[@class="col-8"]')
     for prod in prods:
+        cat = prod.xpath('a[@class="label-category"]/text()').string()
         ssid = prod.xpath('preceding::article[1]/@id').string().split('-')[-1]
         title = prod.xpath('h2/text()').string()
         url = prod.xpath('a[@class="post-title"]/@href').string()
-        session.queue(Request(url), process_product, dict(context, ssid=ssid, title=title, url=url))
+        session.queue(Request(url), process_product, dict(context, ssid=ssid, title=title, url=url, cat=cat))
 
     next_url = data.xpath('//a[@class="next"]/@href').string()
     if next_url:
@@ -23,13 +24,16 @@ def process_revlist(data, context, session):
 def process_product(data, context, session):
     product = Product()
     product.name = context['title'].split('Review: ')[-1].split('Test: ')[-1].replace('Reviews', '').replace('Review', '').replace('Test ', '').replace('TEST ', '').split(' - ')[0].strip()
-    product.category = data.xpath("//div[@class='col-12']/p/a[not(contains(., 'Review'))][last()]/text()").string()
     product.ssid = context['ssid']
+
+    product.category = data.xpath("//div[@class='col-12']/p/a[not(contains(., 'Review')) and not(contains(., 'New Products'))][last()]/text()").string()
+    if product.category != context['cat'] and 'review' not in context['cat'].lower() and 'new products' not in context['cat'].lower():
+                product.category = product.category + '|' + context['cat']
 
     product.url = data.xpath('//section[@class="entry-content"]/following-sibling::p/a/@href').string()
     if not product.url:
         product.url = data.xpath('//td[strong[contains(text(), "COMPANY")]]/a/@href').string()
-    if not product.url:
+    if not product.url or 'mixonline.com' in product.url:
         product.url = context['url']
 
     manufacturer = data.xpath('//strong[contains(text(), "COMPANY") or contains(text(), "Company")]/following-sibling::text()[1]').string()

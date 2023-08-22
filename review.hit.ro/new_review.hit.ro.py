@@ -20,7 +20,7 @@ def process_revlist(data, context, session):
     for prod in prods:
         title = prod.xpath('text()').string()
         url = prod.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//a[i[text()="skip_next"]]/@href').string()
     if next_url:
@@ -48,10 +48,10 @@ def process_review(data, context, session):
     summary2 = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong)[2]|//div[br]/b/strong)/text()[string-length() > 11]').string(multiple=True)
     if not summary:
         summary = data.xpath('((//div[contains(@class, "supporting-text-body")]//strong)[1]|//div[br]/b/strong)/text()[string-length() > 11]').string(multiple=True)
+    if summary and summary2:
+        summary2 = summary + ' ' + summary2
 
-    excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong|//div[br]/b/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:")) and not(contains(., "Surse:"))]|//u[text()="Specificații"]/text()').string(multiple=True)
-    if excerpt and data.xpath('//u[text()="Specificații"]'):
-        excerpt = excerpt.split('Specificații')[0]
+    excerpt = data.xpath('(//div[br]|//p[br]|//div[br]/b|//div[br]/strong|//div[br]/b/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:")) and not(contains(., "*")) and not(contains(., "Surse:")) and not(contains(., "Detalii Rail Nation")) and not(contains(., "Toți jucătorii care")) and not(contains(., "Accesati Forumul oficial")) and not(contains(., "Jucătorii care cumpară"))]|//u[text()="Specificații"]/text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('(//div[br]/div|//p[br]|//div[br]/b|//div[br]/strong)/text()[string-length() > 18 and not(contains(., "\\")) and not(contains(., "Sursa:")) and not(contains(., "Surse:"))]').string(multiple=True)
     if not excerpt and summary:
@@ -66,22 +66,17 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[contains(@class, "supporting-text-body")]//font[not(contains(., "Sursa:")) and not(contains(., "Surse:"))]//text()').string(multiple=True)
 
     if excerpt:
-        if summary:
-            if summary2:
-                summary_ = summary + ' ' + summary2
-                if excerpt.startswith(summary_):
-                    summary = summary_
-
+        if summary2 and excerpt.startswith(summary2):
+            review.add_property(type='summary', value=summary2)
+            excerpt = excerpt.replace(summary2, '')
+        elif summary and excerpt.startswith(summary):
             review.add_property(type='summary', value=summary)
-            excerpt = excerpt.replace(summary, '').strip()
+            excerpt = excerpt.replace(summary, '')
 
-        excerpt = excerpt.encode("ascii", errors='ignore').split('Specificatii tehnice')[0].split('Specificatii oficiale:')[0].split('Specificatii complete:')[0]
-
-        if data.xpath('//strong[contains(text(), "Specificatii ")]/text()').string():
-            excerpt = excerpt.split('Specificatii ')[0]
+        excerpt = excerpt.split('Specificații')[0].split('Specificatii ')[0].strip()
 
         if len(excerpt) > 30:
-            review.add_property(type='excerpt', value=excerpt.strip())
+            review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
 

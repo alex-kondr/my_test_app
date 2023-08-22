@@ -24,16 +24,15 @@ def process_review(data, context, session):
     product.ssid = product.url.split("/")[-3]
     product.name  = context["title"].split("Review of ")[-1].split('Preview:')[0].split(" Review")[0].split("Review: ")[-1]
 
-    category = data.xpath("//div[@class='post-body']//p[contains(., 'Reviewed on')]//text()").string(multiple=True)
-    if category:
-        product.category = "Games|" + category.split("Reviewed on ")[-1].split(" ")[0]
-    else:
-        product.category = "Games"
+    product.category = "Games"
+    platform = data.xpath("//div[@class='post-body']//p[contains(., 'Reviewed on')]//text()").string(multiple=True)
+    if platform:
+        product.category += "|" + platform.split("Reviewed on ")[-1].split(" ")[0]
 
     review = Review()
     review.type = "pro"
     review.title = context["title"]
-    review.url = context["url"]
+    review.url = product.url
     review.ssid = product.ssid
 
     date = data.xpath("//h4[@class='mt-3 mb-3']//span//following-sibling::text()").string(multiple=True)
