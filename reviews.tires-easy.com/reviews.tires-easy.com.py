@@ -61,6 +61,7 @@ def process_product(data, context, session):
 
 
 def process_review(data, context, session):
+    # https://www.tires-easy.com/5.00-15/carlisle-tires/farm-specialist-i-1/tirecode/51F235
     revs_json = simplejson.loads(data.content)
     revs_html = data.parse_fragment(revs_json['ratings_html'])
 
