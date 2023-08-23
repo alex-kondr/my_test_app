@@ -27,10 +27,12 @@ def process_product(data, context, session):
     product.ssid = context['ssid']
 
     product.category = data.xpath("//div[@class='col-12']/p/a[not(contains(., 'Review')) and not(contains(., 'New Products'))][last()]/text()").string()
-    if product.category != context['cat'] and 'review' not in context['cat'].lower() and 'new products' not in context['cat'].lower():
-                product.category = product.category + '|' + context['cat']
+    if product.category:
+        product.category = product.category.replace('Home', 'Technology').replace('Blog', 'Technology')
+    if product.category != context['cat'] and not context['cat'].isdigit() and 'review' not in context['cat'].lower() and 'new products' not in context['cat'].lower() and 'news' not in context['cat'].lower():
+        product.category = product.category + '|' + context['cat']
 
-    product.url = data.xpath('//section[@class="entry-content"]/following-sibling::p/a/@href').string()
+    product.url = data.xpath('//section[@class="entry-content"]/following-sibling::p/a[contains(@href, "http://") or contains(@href, "https://")]/@href').string()
     if not product.url:
         product.url = data.xpath('//td[strong[contains(text(), "COMPANY")]]/a/@href').string()
     if not product.url or 'mixonline.com' in product.url:

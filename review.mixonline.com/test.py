@@ -12,9 +12,9 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-# agent = agents.MIXONLINE
-agent = agents.TEST
-reload = 1
+agent = agents.MIXONLINE
+# agent = agents.TEST
+reload = 0
 
 product = Product(agent, reload=reload)
 print(product.result)
