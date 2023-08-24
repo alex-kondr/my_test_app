@@ -216,6 +216,20 @@ class TestProduct:
         print(f"Count error review author: {len(error_author)}")
         self.save(error_author, type_err="rev_author")
 
+    def test_review_award(self) -> None:
+        error_award = []
+        for product in self.products:
+            properties = product.get("review", {}).get("properties", {})
+            award = [property for property in properties if property.get("type") == "awards"]
+
+            if not award:
+                properties = product.get("review", {}).get("properties", {})
+                properties.append({"error_no_award": "No award"})
+                error_award.append(properties)
+
+        print(f"Count error review award: {len(error_award)}")
+        self.save(error_award, type_err="rev_award")
+
     def test_review_pros_cons(self) -> None:
         error_pros_cons = []
         for product in self.products:
