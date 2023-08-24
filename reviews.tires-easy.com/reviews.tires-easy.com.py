@@ -61,7 +61,6 @@ def process_product(data, context, session):
 
 
 def process_review(data, context, session):
-    # https://www.tires-easy.com/5.00-15/carlisle-tires/farm-specialist-i-1/tirecode/51F235
     revs_json = simplejson.loads(data.content)
     revs_html = data.parse_fragment(revs_json['ratings_html'])
 
@@ -82,12 +81,19 @@ def process_review(data, context, session):
         recommend = rev.xpath('.//div[@class="acs_review_recommend rr-heavy-txt acs_review_recommend_bottom acs_js_hide_on_filter"]/text()').string(multiple=True)
         if recommend:
             review.properties.append(ReviewProperty(type='is_recommended', value=True))
-        # review.add_property(type='helpful_votes', value=int(hlp_yes))
-        # review.add_property(type='not_helpful_votes', value=int(hlp_total)-int(hlp_yes))
 
-        grade = rev.xpath('count(.//div[@data-ratingtype="stars"]//text())')
+        helpful = rev.xpath('.//div[@class="acs_review_helpful"]/text()').string()
+        if helpful:
+            helpful_total = int(helpful.split('of ')[-1].split(' found')[0])
+            if helpful_total > 0:
+                helpful_votes = int(helpful.split(' of')[0])
+                review.add_property(type='helpful_votes', value=helpful_votes)
+
+                review.add_property(type='not_helpful_votes', value=helpful_total-helpful_votes)
+
+        grade = rev.xpath('count(.//div[@data-ratingtype="stars"]//span[contains(@class, "acs_blox_fill_100")])')
         if grade:
-            review.grades.append(Grade(type='overall', value=grade/2, best=5.0))
+            review.grades.append(Grade(type='overall', value=grade, best=5.0))
 
         author = rev.xpath('.//div[@class="acs_reviewer_name"]/text()').string()
         if author:

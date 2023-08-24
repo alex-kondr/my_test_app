@@ -4,6 +4,7 @@ import os
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
+parent = os.path.dirname(parent)
 sys.path.append(parent)
 
 
@@ -11,7 +12,7 @@ from product_test.test_products import Product, TestProduct
 from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
-
+quit()
 agent = agents.AMATEURPHOTOGRAPHER
 # agent = agents.TEST
 reload = 1
