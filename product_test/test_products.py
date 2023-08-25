@@ -241,38 +241,38 @@ class TestProduct:
             cons = [property.get("value") for property in property_cons]
 
             for i, pro in enumerate(pros):
-                if temp_pros_cons:
-                    break
+                # if temp_pros_cons:
+                #     break
                 if len(pro) < 3:
                     property_pros[i]["error_len"] = "< 3"
                     temp_pros_cons = properties
-                    break
+                    # break
                 if pro in cons:
                     property_pros[i]["error_in_con"] = f"Pro: '{pro}' in cons"
                     temp_pros_cons = properties
-                    break
+                    # break
                 for xreview_pros_cons in self.xreview_pros_cons:
                     if pro.startswith(xreview_pros_cons) or pro.endswith(xreview_pros_cons):
                         property_pros[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
                         temp_pros_cons = properties
-                        break
+                        # break
 
                 for i, con in enumerate(cons):
-                    if temp_pros_cons:
-                        break
+                    # if temp_pros_cons:
+                        # break
                     if len(con) < 3:
                         property_cons[i]["error_len"] = "< 3"
                         temp_pros_cons = properties
-                        break
+                        # break
                     if con in pros:
                         property_cons[i]["error_in_pro"] = f"Con: '{con}' in pros"
                         temp_pros_cons = properties
-                        break
+                        # break
                     for xreview_pros_cons in self.xreview_pros_cons:
                         if con.startswith(xreview_pros_cons) or con.endswith(xreview_pros_cons):
                             property_cons[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
                             temp_pros_cons = properties
-                            break
+                            # break
 
             if temp_pros_cons:
                 error_pros_cons.append(temp_pros_cons)
