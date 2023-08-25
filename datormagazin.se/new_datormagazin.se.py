@@ -19,7 +19,7 @@ def process_category(data, context, session):
         date = prod.xpath('.//span[@class="date-link"]/text()').string()
         category = prod.xpath('.//a[@rel="category"]/text()').string()
         url = prod.xpath('.//h2[@class="is-title post-title"]/a/@href').string()
-        session.queue(Request(url, force_charset='utf-8'), process_product, dict(title=title, author=author, author_url=author_url, date=date, category=category, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, author=author, author_url=author_url, date=date, category=category, url=url))
 
     if len(prods) > 0:
         page = context['page']
@@ -27,7 +27,7 @@ def process_category(data, context, session):
         session.do(Request(URL, use='curl', options=OPTIONS+str(page)+"'", max_age=0, force_charset='utf-8'), process_category, dict(page=page))
 
 
-def process_product(data, context, session):
+def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split('Test:')[-1].split(':')[-1].replace('GODLIKE', '').strip()
     product.url = context['url']
@@ -57,7 +57,9 @@ def process_product(data, context, session):
         for pro in pros:
             pros_ = pro.split('. ')
             for pro_ in pros_:
-                review.add_property(type='pros', value=pro_.replace('.', ''))
+                _pros = pro_.split(';')
+                for _pro in _pros:
+                    review.add_property(type='pros', value=_pro.replace('.', ''))
 
     cons = data.xpath('(//div[@class="rwp-cons"])[1]//text()').string(multiple=True)
     if cons:
@@ -65,7 +67,9 @@ def process_product(data, context, session):
         for con in cons:
             cons_ = con.split('. ')
             for con_ in cons_:
-                review.add_property(type='cons', value=con_.replace('.', ''))
+                _cons = con_.split(';')
+                for _con in _cons:
+                    review.add_property(type='cons', value=_con.replace('.', ''))
 
     award = data.xpath('//a[contains(@href, "_toppklass_")]/@href').string()
     if not award:
