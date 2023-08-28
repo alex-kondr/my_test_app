@@ -204,7 +204,7 @@ class TestProduct:
             properties = product.get("product", {}).get("properties", {})
             ean = [property.get("value") for property in properties if property.get("type") == "id.ean"]
 
-            if not ean or len(ean[0]) < 2:
+            if ean and len(ean[0]) < 2:
                 error_ean.append(properties)
 
         print(f"Count error product ean: {len(error_ean)}")

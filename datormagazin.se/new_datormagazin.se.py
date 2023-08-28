@@ -59,7 +59,7 @@ def process_review(data, context, session):
             for pro_ in pros_:
                 _pros = pro_.split(';')
                 for _pro in _pros:
-                    review.add_property(type='pros', value=_pro.replace('.', ''))
+                    review.add_property(type='pros', value=_pro.replace('.', '').strip())
 
     cons = data.xpath('(//div[@class="rwp-cons"])[1]//text()').string(multiple=True)
     if cons:
@@ -69,7 +69,7 @@ def process_review(data, context, session):
             for con_ in cons_:
                 _cons = con_.split(';')
                 for _con in _cons:
-                    review.add_property(type='cons', value=_con.replace('.', ''))
+                    review.add_property(type='cons', value=_con.replace('.', '').strip())
 
     award = data.xpath('//a[contains(@href, "_toppklass_")]/@href').string()
     if not award:

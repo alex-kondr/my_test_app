@@ -65,24 +65,7 @@ def process_product(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    pros = data.xpath('//strong[contains(text(), "PROS:")]/following-sibling::text()[1]').strings()
-    if not pros:
-        pros = data.xpath('//strong[contains(text(), "PRO:")]/following-sibling::text()').strings()
-    if not pros:
-        pros = data.xpath('//strong[contains(text(), "PROS:")]/parent::*/following-sibling::*/text()').strings()
-    if not pros:
-        pros = data.xpath('//strong[contains(text(), "PRO:")]/parent::*/following-sibling::*/text()').strings()
-    if not pros:
-        pros = data.xpath('//strong[contains(text(), "Pros:")]/following-sibling::text()').strings()
-    if not pros:
-        pros = data.xpath('//span[contains(., "PROS:")]/following-sibling::*/text()').strings()
-    for pro in pros:
-        pro = pro.replace('\n', '').replace('•', '').strip('.').strip()
-        if not pro:
-            break
-        review.properties.append(ReviewProperty(type='pros', value=pro))
-
-    cons = data.xpath('//strong[contains(text(), "CONS:")]/following-sibling::text()[1]').strings()
+    cons = data.xpath('//strong[contains(text(), "CONS:")]/following-sibling::text()').strings()
     if not cons:
         cons = data.xpath('//strong[contains(text(), "CON:")]/following-sibling::text()').strings()
     if not cons:
@@ -97,6 +80,24 @@ def process_product(data, context, session):
         if 'None found' not in con:
             con = con.replace('\n', '').replace('•', '').strip('.').strip()
             review.properties.append(ReviewProperty(type='cons', value=con))
+
+    pros = data.xpath('//strong[contains(text(), "PROS:")]/following-sibling::text()').strings()
+    if not pros:
+        pros = data.xpath('//strong[contains(text(), "PRO:")]/following-sibling::text()').strings()
+    if not pros:
+        pros = data.xpath('//strong[contains(text(), "PROS:")]/parent::*/following-sibling::*/text()').strings()
+    if not pros:
+        pros = data.xpath('//strong[contains(text(), "PRO:")]/parent::*/following-sibling::*/text()').strings()
+    if not pros:
+        pros = data.xpath('//strong[contains(text(), "Pros:")]/following-sibling::text()').strings()
+    if not pros:
+        pros = data.xpath('//span[contains(., "PROS:")]/following-sibling::*/text()').strings()
+    for pro in pros:
+        if pro not in cons:
+            pro = pro.replace('\n', '').replace('•', '').strip('.').strip()
+            if not pro:
+                break
+            review.properties.append(ReviewProperty(type='pros', value=pro))
 
     conclusion = data.xpath('((//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict")]/parent::*/following-sibling::p|//p[contains(text(), "And the Verdict?") or contains(text(), "Digital Conclusions")]/following-sibling::p)[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()|//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict") or contains(text(), "AND THE VERDICT?")]/following-sibling::text())[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
     if not conclusion:

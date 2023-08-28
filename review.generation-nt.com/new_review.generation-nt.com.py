@@ -9,21 +9,21 @@ URL = 'https://www.generation-nt.com/api/articles/list-tests-guides-0?page='
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request(URL + '1', force_charset='utf-8'), process_productlist, dict(page=1))
+    session.queue(Request(URL + '1', force_charset='utf-8'), process_revlist, dict(page=1))
 
 
-def process_productlist(data, context, session):
-    prods_json = simplejson.loads(data.content)
-    prods_html = data.parse_fragment(prods_json.get('data', {}).get('html'))
-    prods = prods_html.xpath('//div[contains(@class, "flex-col justify-between mb-1")]//a')
-    for prod in prods:
-        url = prod.xpath('@href').string()
-        title = prod.xpath('text()').string()
+def process_revlist(data, context, session):
+    revs_json = simplejson.loads(data.content)
+    new_data = data.parse_fragment(revs_json.get('data', {}).get('html'))
+    revs = new_data.xpath('//div[contains(@class, "flex-col justify-between mb-1")]//a')
+    for rev in revs:
+        url = rev.xpath('@href').string()
+        title = rev.xpath('text()').string()
         session.queue(Request(url, force_charset='utf-8'), process_review, dict(context, url=url, title=title))
 
-    if prods_json.get('data', {'action': 'delete'}).get('action') != 'delete':
-        page = context['page'] + 1
-        session.queue(Request(URL + str(page), force_charset='utf-8'), process_productlist, dict(page=page))
+    if revs_json.get('data', {'action': 'delete'}).get('action') != 'delete':
+        next_page = context['page'] + 1
+        session.queue(Request(URL + str(next_page), force_charset='utf-8'), process_revlist, dict(page=next_page))
 
 
 def process_review(data, context, session):
