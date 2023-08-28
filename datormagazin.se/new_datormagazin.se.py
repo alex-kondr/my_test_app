@@ -7,31 +7,31 @@ OPTIONS = "--data-raw 'action=bunyad_block&block%5Bid%5D=grid&block%5Bprops%5D%5
 
 
 def run(context, session):
-    session.queue(Request(URL, use='curl', options=OPTIONS+"1'", max_age=0, force_charset='utf-8'), process_category, dict(page=1))
+    session.queue(Request(URL, use='curl', options=OPTIONS+"1'", max_age=0, force_charset='utf-8'), process_revlist, dict(page=1))
 
 
-def process_category(data, context, session):
-    prods = data.xpath('//div[@class="content" and .//span[@class="meta-item post-author"]]')
-    for prod in prods:
-        title = prod.xpath('.//h2[@class="is-title post-title"]/a/text()').string()
-        author = prod.xpath('.//span[contains(@class, "post-author")]/a/text()').string()
-        author_url = prod.xpath('.//span[contains(@class, "post-author")]/a/@href').string()
-        date = prod.xpath('.//span[@class="date-link"]/text()').string()
-        category = prod.xpath('.//a[@rel="category"]/text()').string()
-        url = prod.xpath('.//h2[@class="is-title post-title"]/a/@href').string()
+def process_revlist(data, context, session):
+    revs_cnt = data.xpath('count(//div[@class="content" and .//span[@class="meta-item post-author"]])')
+    revs = data.xpath('//div[@class="content" and .//span[@class="meta-item post-author"]]')
+    for rev in revs:
+        title = rev.xpath('.//h2[@class="is-title post-title"]/a/text()').string()
+        author = rev.xpath('.//span[contains(@class, "post-author")]/a/text()').string()
+        author_url = rev.xpath('.//span[contains(@class, "post-author")]/a/@href').string()
+        date = rev.xpath('.//span[@class="date-link"]/text()').string()
+        category = rev.xpath('.//a[@rel="category"]/text()').string()
+        url = rev.xpath('.//h2[@class="is-title post-title"]/a/@href').string()
         session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, author=author, author_url=author_url, date=date, category=category, url=url))
 
-    if len(prods) > 0:
-        page = context['page']
-        page += 1
-        session.do(Request(URL, use='curl', options=OPTIONS+str(page)+"'", max_age=0, force_charset='utf-8'), process_category, dict(page=page))
+    if revs_cnt > 0:
+        next_page = context['page'] + 1
+        session.do(Request(URL, use='curl', options=OPTIONS+str(next_page)+"'", max_age=0, force_charset='utf-8'), process_revlist, dict(page=next_page))
 
 
 def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split('Test:')[-1].split(':')[-1].replace('GODLIKE', '').strip()
     product.url = context['url']
-    product.category = context['category'].replace('Tester', 'Technik').replace('test', '')
+    product.category = context['category'].replace('Tester', 'Technik').replace('test', '').replace('DMZ Rekommenderar', 'Technik').replace('Artikel', 'Technik').replace('Toppklass', 'Technik').replace('Nyheter', 'Technik').replace('Jämförande','Technik')
 
     ssid = data.xpath('//article/@id').string()
     if ssid:
@@ -44,8 +44,8 @@ def process_review(data, context, session):
     review.title = context['title']
     review.url = product.url
     review.ssid = product.ssid
-    review.date = context['date']
-    review.authors.append(Person(name=context['author'], ssid=context['author'], url=context['author_url']))
+    review.date = context.get('date')
+    review.authors.append(Person(name=context.get('author'), ssid=context.get('author'), url=context.get('author_url')))
 
     grade_overall = data.xpath('//span[@property="ratingValue"]/text()').string()
     if grade_overall and float(grade_overall) > 0:
@@ -77,11 +77,17 @@ def process_review(data, context, session):
     if award:
         review.add_property(type='awards', value=dict(image_src=award))
 
-    summary = data.xpath('(//div[@class="rwp-summary"])[1]//text()').string(multiple=True)
+    summary = data.xpath('//div[@class="post-content cf entry-content content-spacious"]/h2/text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
+    conclusion = data.xpath('(//div[@class="rwp-summary"])[1]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
     excerpt = data.xpath('//div[contains(@class,"post-content")]/p[not(strong)]/text()[not(contains(., "SPECIFIKATIONER"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class,"post-content")]/p[not(strong)]//text()[not(contains(., "SPECIFIKATIONER"))]').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

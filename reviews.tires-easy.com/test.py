@@ -13,15 +13,18 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-# agent = agents.TIRES_EASY
-agent = agents.TEST
-reload = 1
+agent = agents.TIRES_EASY
+# agent = agents.TEST
+reload = 0
 
 product = Product(agent, reload=reload)
 print(product.result)
 test = TestProduct(product)
 test.test_product_name(not_xproduct_name="", len_name=8)
 test.test_product_category(xproduct_names=[])
+test.test_product_sku()
+test.test_product_id_manufacturer()
+test.test_product_ean_gtin()
 test.test_review_title()
 test.test_review_grade()
 test.test_review_author()

@@ -174,6 +174,42 @@ class TestProduct:
         print(f"Count error product category: {len(error_category)}")
         self.save(error_category, type_err="prod_category")
 
+    def test_product_sku(self):
+        error_sku = []
+        for product in self.products:
+            properties = product.get("product", {}).get("properties", {})
+            sku = [property.get("value") for property in properties if property.get("type") == "id.sku"]
+
+            if not sku or len(sku[0]) < 2:
+                error_sku.append(properties)
+
+        print(f"Count error product sku: {len(error_sku)}")
+        self.save(error_sku, type_err="prod_sku")
+
+    def test_product_id_manufacturer(self):
+        error_id_manufacturer = []
+        for product in self.products:
+            properties = product.get("product", {}).get("properties", {})
+            id_manufacturer = [property.get("value") for property in properties if property.get("type") == "id.manufacturer"]
+
+            if not id_manufacturer or len(id_manufacturer[0]) < 2:
+                error_id_manufacturer.append(properties)
+
+        print(f"Count error product id.manufacturer: {len(error_id_manufacturer)}")
+        self.save(error_id_manufacturer, type_err="prod_id_manufacturer")
+
+    def test_product_ean_gtin(self):
+        error_ean = []
+        for product in self.products:
+            properties = product.get("product", {}).get("properties", {})
+            ean = [property.get("value") for property in properties if property.get("type") == "id.ean"]
+
+            if not ean or len(ean[0]) < 2:
+                error_ean.append(properties)
+
+        print(f"Count error product ean: {len(error_ean)}")
+        self.save(error_ean, type_err="prod_ean")
+
     def test_review_title(self, xproduct_title: list[str]=[]) -> None:
         xproduct_title = self.xproduct_title + xproduct_title
         error_title = []

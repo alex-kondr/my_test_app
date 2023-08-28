@@ -98,7 +98,9 @@ def process_product(data, context, session):
             con = con.replace('\n', '').replace('•', '').strip('.').strip()
             review.properties.append(ReviewProperty(type='cons', value=con))
 
-    conclusion = data.xpath('((//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict")]/parent::*/following-sibling::p|//p[contains(text(), "And the Verdict?") or contains(text(), "Digital Conclusions")]/following-sibling::p)[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()|//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict")]/following-sibling::text())[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
+    conclusion = data.xpath('((//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict")]/parent::*/following-sibling::p|//p[contains(text(), "And the Verdict?") or contains(text(), "Digital Conclusions")]/following-sibling::p)[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()|//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict") or contains(text(), "AND THE VERDICT?")]/following-sibling::text())[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h4[text()="TRIALS"]/following-sibling::p[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//td[strong[contains(text(), "TAKEAWAY")]]/text()').string()
     if conclusion:
@@ -111,6 +113,10 @@ def process_product(data, context, session):
         excerpt = data.xpath('//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict")]/parent::*/preceding-sibling::p[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()|//p[contains(text(), "And the Verdict?") or contains(text(), "Digital Conclusions")]/preceding-sibling::p[not(@class)]/text()').string(multiple=True)
     else:
         excerpt = data.xpath('(//strong[contains(., "PRODUCT SUMMARY") or contains(., "Product Summary")]/parent::*/preceding-sibling::p[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()|//strong[contains(., "PRODUCT SUMMARY") or contains(., "Product Summary")]/parent::*/preceding-sibling::p[strong or a]/text())[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//strong[contains(text(), "AND THE VERDICT?")]/preceding::p[not(@class) and not(@style) and not(span) and not(contains(text(), "•")) and not(em)]//text()[not(contains(., "Update your browser to view this website correctly")) and not(contains(., "Update my browser now"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h4[text()="TRIALS"]/preceding-sibling::p[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span) and not(contains(text(), "•")) and not(strong) and not(em) and not(a)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "Product Summary")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "Price:")) and not(contains(., "PROS:")) and not(contains(., "CONS:")) and not(contains(., "Contact:"))]').string(multiple=True)
     if not excerpt:
