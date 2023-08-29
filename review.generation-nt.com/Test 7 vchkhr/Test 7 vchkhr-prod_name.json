@@ -135,6 +135,25 @@
   [
     {
       "type": "name",
+      "value": "T",
+      "error_len": "Len name < 3"
+    },
+    {
+      "type": "ssid",
+      "value": "1901042"
+    },
+    {
+      "type": "url",
+      "value": "https://www.generation-nt.com/tests/dossier-presentation-moto-e-android-1901042"
+    },
+    {
+      "type": "category",
+      "value": "Guides"
+    }
+  ],
+  [
+    {
+      "type": "name",
       "value": "God of War Ascension",
       "error_name": "god"
     },

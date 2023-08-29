@@ -66,7 +66,7 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2/span[contains(., "Conclusion")]/following::p[not(@align|@id|@class|.//picture|.//a[contains(@rel, "sponsored")])][not(contains(., "La discussion est réservée aux membres GNT")) and not(contains(., "en précommande et sera disponible")) and not(contains(., "Caractéristiques")) and not(contains(., "Commencez par")) and not(contains(., "Copyright ©")) and not(starts-with(., "-"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2/span[contains(., "Conclusion")]/following::p[not(@align|@id|@class|.//em|.//strong|.//picture|.//a[contains(@rel, "sponsored")])][not(contains(., "La discussion est réservée aux membres GNT")) and not(contains(., "AliExpress au prix")) and not(contains(., "Amazon")) and not(contains(., "en précommande et sera disponible")) and not(contains(., "Caractéristiques")) and not(contains(., "Commencez par")) and not(contains(., "Copyright ©")) and not(starts-with(., "-"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2/span[contains(., "Conclusion")]/following::span[br]//text()').string(multiple=True)
     if not conclusion:
@@ -74,17 +74,17 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2/span[contains(., "Conclusion")]/preceding::p[not(@align|@id|@class|.//picture|.//a[contains(@rel, "sponsored")])][not(contains(., "La discussion est réservée aux membres GNT")) and not(contains(., "en précommande et sera disponible")) and not(contains(., "Caractéristiques")) and not(contains(., "Commencez par")) and not(contains(., "Copyright ©")) and not(starts-with(., "-"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2/span[contains(., "Conclusion")]/preceding::p[not(@align|@id|@class|.//em|.//strong|.//picture|.//a[contains(@rel, "sponsored")])][not(contains(., "La discussion est réservée aux membres GNT")) and not(contains(., "AliExpress au prix")) and not(contains(., "Amazon")) and not(contains(., "en précommande et sera disponible")) and not(contains(., "Caractéristiques")) and not(contains(., "Commencez par")) and not(contains(., "Copyright ©")) and not(starts-with(., "-"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//h2/span[contains(., "Conclusion")]/preceding::span[br]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//h2/span[contains(., "Conclusion")]/preceding::p[@class="MsoNormal"]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="w-full lg:w-2/3"]//p[not(@align|@id|@class|.//picture|.//a[contains(@rel, "sponsored")])][not(contains(., "La discussion est réservée aux membres GNT")) and not(contains(., "en précommande et sera disponible")) and not(contains(., "Caractéristiques")) and not(contains(., "Commencez par")) and not(contains(., "Copyright ©")) and not(starts-with(., "-"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="w-full lg:w-2/3"]//p[not(@align|@id|@class|.//em|.//picture|.//a[contains(@rel, "sponsored")])][not(contains(., "La discussion est réservée aux membres GNT")) and not(contains(., "en précommande et sera disponible")) and not(contains(., "Caractéristiques")) and not(contains(., "Commencez par")) and not(contains(., "Copyright ©")) and not(starts-with(., "-"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="w-full lg:w-2/3"]//span[br and not(em)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//body[not(@class)]/span/span/span/text()|//body[not(@class)]//p[not(@align|@id|@class|.//picture|.//a[contains(@rel, "sponsored")]) and not(contains(., "Commencez par"))]//text())[normalize-space(.)][not(contains(., "La discussion est réservée aux membres GNT")) and not(contains(., "en précommande et sera disponible")) and not(contains(., "Caractéristiques")) and not(contains(., "Copyright ©")) and not(starts-with(., "-"))]').string(multiple=True)
+        excerpt = data.xpath('(//body[not(@class)]/span/span/span/text()|//body[not(@class)]//p[not(@align|@id|@class|.//em|.//picture|.//a[contains(@rel, "sponsored")]) and not(contains(., "Commencez par"))]//text())[normalize-space(.)][not(contains(., "La discussion est réservée aux membres GNT")) and not(contains(., "en précommande et sera disponible")) and not(contains(., "Caractéristiques")) and not(contains(., "Copyright ©")) and not(starts-with(., "-"))]').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//span[br]//text()').string(multiple=True)
     if not excerpt:
