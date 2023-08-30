@@ -4,7 +4,7 @@ from models.products import *
 
 URL = 'https://www.datormagazin.se/wp-admin/admin-ajax.php'
 OPTIONS = "--data-raw 'action=bunyad_block&block%5Bid%5D=grid&block%5Bprops%5D%5Bcat_labels%5D=&block%5Bprops%5D%5Bcat_labels_pos%5D=top-left&block%5Bprops%5D%5Breviews%5D=bars&block%5Bprops%5D%5Bpost_formats_pos%5D=center&block%5Bprops%5D%5Bload_more_style%5D=a&block%5Bprops%5D%5Bmeta_cat_style%5D=text&block%5Bprops%5D%5Bmedia_style_shadow%5D=0&block%5Bprops%5D%5Bshow_post_formats%5D=1&block%5Bprops%5D%5Bmeta_above%5D%5B%5D=cat&block%5Bprops%5D%5Bmeta_above%5D%5B%5D=date&block%5Bprops%5D%5Bmeta_above%5D%5B%5D=read_time&block%5Bprops%5D%5Bmeta_below%5D%5B%5D=author&block%5Bprops%5D%5Bmeta_below%5D%5B%5D=comments&block%5Bprops%5D%5Bmedia_ratio%5D=&block%5Bprops%5D%5Bmedia_ratio_custom%5D=&block%5Bprops%5D%5Bread_more%5D=none&block%5Bprops%5D%5Bcontent_center%5D=0&block%5Bprops%5D%5Bexcerpts%5D=1&block%5Bprops%5D%5Bexcerpt_length%5D=20&block%5Bprops%5D%5Bstyle%5D=&block%5Bprops%5D%5Bpagination%5D=true&block%5Bprops%5D%5Bpagination_type%5D=load-more&block%5Bprops%5D%5Bspace_below%5D=none&block%5Bprops%5D%5Bsticky_posts%5D=false&block%5Bprops%5D%5Bcolumns%5D=2&block%5Bprops%5D%5Bexclude_ids%5D%5B%5D=42117&block%5Bprops%5D%5Bexclude_ids%5D%5B%5D=42077&block%5Bprops%5D%5Bexclude_ids%5D%5B%5D=42069&block%5Bprops%5D%5Bexclude_ids%5D%5B%5D=42057&block%5Bprops%5D%5Bexclude_ids%5D%5B%5D=42044&block%5Bprops%5D%5Bmeta_items_default%5D=true&block%5Bprops%5D%5Bpost_type%5D=&block%5Bprops%5D%5Bposts%5D=100&block%5Bprops%5D%5Btaxonomy%5D=category&block%5Bprops%5D%5Bterms%5D=73&paged="
-NOCATS = ['Tester', 'DMZ Rekommenderar', 'Artikel', 'Toppklass', 'Nyheter', 'Jämförande', 'Jämförande test', 'Topphändelser']
+NOCATS = ['Tester', 'DMZ Rekommenderar', 'Artikel', 'Toppklass', 'Nyheter', 'Jämförande', 'Jämförande test', 'Topphändelser', 'Reportage']
 
 
 def run(context, session):
@@ -95,9 +95,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[contains(@class,"post-content")]/p[not(strong)]/text()[not(contains(., "SPECIFIKATIONER"))]').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//div[contains(@class,"post-content")]/p[not(strong)]//text()[not(contains(., "SPECIFIKATIONER"))]').string(multiple=True)
+    excerpt = data.xpath('//div[contains(@class,"post-content")]/p//text()[not(contains(., "SPECIFIKATIONER"))]').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

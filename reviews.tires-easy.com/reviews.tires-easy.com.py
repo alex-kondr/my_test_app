@@ -33,9 +33,9 @@ def process_prodlist(data, context, session):
         sku = prod.xpath('.//select[@name="qty"]/@productcode').string()
         manufacturer = prod.xpath('.//select[@name="qty"]/@data-gtm-product-brand').string()
 
-        revs_cnt = prod.xpath('.//input[@class="rating-count"]/@value').string()
-        if revs_cnt and int(revs_cnt) > 0:
-            session.queue(Request(url), process_product, dict(context, name=name, url=url, sku=sku, manufacturer=manufacturer))
+        revs_cnt_all = prod.xpath('.//input[@class="rating-count"]/@value').string()
+        if revs_cnt_all and int(revs_cnt_all) > 0:
+            session.queue(Request(url), process_product, dict(context, name=name, url=url, sku=sku, manufacturer=manufacturer, revs_cnt_all=int(revs_cnt_all)))
 
     next_url = data.xpath('//li[@class="next"]/a/@href').string()
     if next_url:
@@ -53,16 +53,19 @@ def process_product(data, context, session):
 
     product_info = data.xpath('//div[@class="main-content row"]/script/text()').string()
     if product_info:
-        mpn = product_info.split('mpn: "')[-1].split('",')[0]
+        product_info_json = (product_info.split('= ')[-1].split(', img')[0] + '}').replace('name', '"name"').replace('sku', '"sku"').replace('mpn', '"mpn"').replace('gtin', '"gtin"')
+        product_info = simplejson.loads(product_info_json)
+
+        mpn = product_info.get('mpn')
         if mpn:
             product.add_property(type='id.manufacturer', value=mpn)
 
-        ean = product_info.split('gtin: "')[-1].split('",')[0]
+        ean = product_info.get('gtin')
         if ean:
             product.add_property(type='id.ean', value=ean)
 
-    revs_url = 'https://www.resellerratings.com//product_ratings/ui/reviews.json?product_id=' + product.sku + '&merchant_id=1037&limit=1000'
-    session.queue(Request(revs_url), process_review, dict(product=product))
+    revs_url = 'https://www.resellerratings.com//product_ratings/ui/reviews.json?product_id=' + product.sku + '&merchant_id=1037&limit=50'
+    session.queue(Request(revs_url), process_review, dict(context, product=product, revs_cnt_current=0))
 
 
 def process_review(data, context, session):
@@ -70,9 +73,11 @@ def process_review(data, context, session):
     new_data = data.parse_fragment(revs_json['ratings_html'])
 
     product = context['product']
+    revs_cnt_current = context['revs_cnt_current']
 
     revs = new_data.xpath('//div[@class="grid-x grid-container"]')
     for rev in revs:
+        revs_cnt_current += 1
         if product.name.lower() not in rev.xpath('.//div[@class="rr-heavy-txt rr-product-variant-name"]/text()').string().lower():
             continue
 
@@ -115,5 +120,9 @@ def process_review(data, context, session):
 
             product.reviews.append(review)
 
-    if product.reviews:
+    if revs_cnt_current < context['revs_cnt_all']:
+        next_url = 'https://www.resellerratings.com//product_ratings/ui/reviews.json?product_id=' + product.sku + '&merchant_id=1037&limit=50&offset=' + str(revs_cnt_current)
+        session.queue(Request(next_url), process_review, dict(context, product=product, revs_cnt_current=revs_cnt_current))
+
+    elif product.reviews:
         session.emit(product)

@@ -34,5 +34,5 @@ def is_include(xnames: list = [], text: str = "", lower: bool = False) -> str|No
     text_ = text.lower() if lower else text
 
     for xname in xnames:
-        if xname in text_:
+        if xname.lower() in text_:
             return xname
