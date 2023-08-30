@@ -15,7 +15,7 @@ import product_test.list_of_agents as agents
 
 agent = agents.TIRES_EASY
 # agent = agents.TEST
-reload = 0
+reload = 1
 
 product = Product(agent, reload=reload)
 print(product.result)

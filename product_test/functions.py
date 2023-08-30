@@ -31,8 +31,10 @@ def load_file(agent_id: int, type_file: str = "yaml", size: int|str = "", decode
 
 
 def is_include(xnames: list = [], text: str = "", lower: bool = False) -> str|None:
-    text_ = text.lower() if lower else text
-
     for xname in xnames:
-        if xname.lower() in text_:
-            return xname
+        if lower:
+            if xname.lower() in text.lower():
+                return xname
+        else:
+            if xname in text:
+                return xname

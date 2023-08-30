@@ -119,15 +119,19 @@ def process_product(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//h4[text()="TRIALS"]/preceding-sibling::p[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span) and not(contains(text(), "•")) and not(strong) and not(em) and not(a)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "Product Summary")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "Price:")) and not(contains(., "PROS:")) and not(contains(., "CONS:")) and not(contains(., "Contact:"))]').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span) and not(contains(text(), "•")) and not(a)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "Product Summary")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "Price:")) and not(contains(., "PROS:")) and not(contains(., "CONS:")) and not(contains(., "Contact:"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(@style) and not(span)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "Price:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class) and not(span/strong) and not(b) and not(a)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "Price:")) and not(contains(., "PROS:")) and not(contains(., "CONS:")) and not(contains(., "Contact:"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[not(@class)]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "Price:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[contains(@class, "Body")]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
+        excerpt = data.xpath('//section[@class="entry-content"]/following-sibling::p[contains(@class, "Body")]//text()[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "Price:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
+
+    author_info = data.xpath('(//footer[@class="article-footer"]/preceding-sibling::p/em//text())[last()]').string()
+    if excerpt and author_info:
+        excerpt = excerpt.replace(author_info, '')
 
     if excerpt and summary:
         excerpt = excerpt.replace(summary, '')
