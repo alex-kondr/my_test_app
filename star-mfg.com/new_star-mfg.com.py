@@ -1,21 +1,25 @@
+import simplejson
+
 from agent import *
 from models.products import *
 
 
 def run(context, session):
-    session.queue(Request('https://star-mfg.com'), process_catlist, dict())
+    session.queue(Request('https://star-mfg.com/products/'), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
-    cats = data.xpath('//li[contains(@class, "ubermenu-item-level-2")]')
+    cats = data.xpath("//li[contains(@class, 'product-category')]")
+    category = context.get("cat")
     for cat in cats:
-        name = cat.xpath("a/span/text()").string()
+        name = cat.xpath("h2/text()").string()
+        if category:
+            name = category + '|' + name
+        url = cat.xpath("a/@href").string()
+        session.queue(Request(url), process_catlist, dict(cat=name))
 
-        subcats = cat.xpath('.//li[contains(@class, "ubermenu-item-level-3")]')
-        for subcat in subcats:
-            subname = subcat.xpath('a/span/text()').string()
-            url = cat.xpath("a/@href").string()
-            session.queue(Request(url), process_catlist, dict(cat=name + '|' + subname))
+    if not cats:
+        process_prodlist(data, context, session)
 
 
 def process_prodlist(data, context, session):
@@ -44,10 +48,16 @@ def process_product(data, context, session):
     if mpn and '*' in mpn:
         mpn = data.xpath("//div[contains(@class, 'woocommerce-product-gallery')]//img/@src").string()
         mpn = mpn.split('/')[-1].split('-')[0]
+    if not mpn:
+        product_json = data.xpath('//script[@type="application/ld+json"]/text()').string()
+        if product_json:
+            product_info = simplejson.loads(product_json)
+            mpn = product_info[2].get("mpn")
+            if not mpn:
+                mpn = product_info[2].get("sku")
     if mpn:
         product.properties.append(ProductProperty(type="id.manufacturer", value=mpn))
         product.sku = mpn
-        product.ssid = mpn
 
     imgs = data.xpath("//div[contains(@class, 'woocommerce-product-gallery')]//img/@src")
     for img in imgs:
@@ -56,7 +66,7 @@ def process_product(data, context, session):
 
     desc = data.xpath("(//div[@class='woocommerce-product-details__short-description']//p)[last()]/text()").string()
     info = data.xpath("//div[contains(@aria-labelledby, 'tab-title-description')]//text() | //div[contains(@aria-labelledby, 'tab-title-product_editor')]//text()").string(multiple=True)
-    if info:
+    if desc and info and desc not in info:
         desc += ' ' + info
     if desc:
         product.properties.append(ProductProperty(name='Description', value=desc))
