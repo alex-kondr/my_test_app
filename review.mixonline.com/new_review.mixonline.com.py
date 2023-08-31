@@ -40,13 +40,14 @@ def process_product(data, context, session):
 
     manufacturer = data.xpath('//strong[contains(text(), "COMPANY") or contains(text(), "Company")]/following-sibling::text()[1]').string()
     if manufacturer:
-        product.manufacturer = manufacturer.replace('•', '').strip()
+        product.manufacturer = manufacturer.replace('•', '').lstrip(': ').strip()
 
     review = Review()
     review.type = 'pro'
     review.title = context['title']
     review.url = context['url']
     review.ssid = product.ssid
+
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
     if date:
         review.date = date.split('T')[0]
@@ -58,12 +59,6 @@ def process_product(data, context, session):
         name = author.xpath('text()').string().replace('⋅', '').strip()
         url = author.xpath('@href').string()
         review.authors.append(Person(name=name, ssid=name, url=url))
-
-    summary = data.xpath('//p[@class="excerpt"]/text()').string()
-    if not summary:
-        summary = data.xpath('//h1[@class="entry-title"]/following-sibling::p[not(@class)]/text()').string()
-    if summary:
-        review.add_property(type='summary', value=summary)
 
     cons = data.xpath('//strong[contains(text(), "CONS:")]/following-sibling::text()').strings()
     if not cons:
@@ -98,6 +93,12 @@ def process_product(data, context, session):
             if not pro:
                 break
             review.properties.append(ReviewProperty(type='pros', value=pro))
+
+    summary = data.xpath('//p[@class="excerpt"]/text()').string()
+    if not summary:
+        summary = data.xpath('//h1[@class="entry-title"]/following-sibling::p[not(@class)]/text()').string()
+    if summary:
+        review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('((//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict")]/parent::*/following-sibling::p|//p[contains(text(), "And the Verdict?") or contains(text(), "Digital Conclusions")]/following-sibling::p)[not(@class) and not(@style) and not(a) and not(em) and not(strong)]//text()|//strong[contains(text(), "CONCLUSION") or contains(text(), "The Verdict") or contains(text(), "AND THE VERDICT?")]/following-sibling::text())[not(contains(., "PRODUCT SUMMARY")) and not(contains(., "COMPANY:")) and not(contains(., "PRODUCT:")) and not(contains(., "PRICE:")) and not(contains(., "PROS:")) and not(contains(., "CONS:"))]').string(multiple=True)
     if not conclusion:
