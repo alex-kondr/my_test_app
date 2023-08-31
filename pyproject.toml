@@ -9,6 +9,9 @@ packages = [{include = "my_test_app"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 python-dotenv = "^1.0.0"
+usb = "^0.0.83.dev0"
+pyusb = "^1.2.1"
+libusb = "^1.0.26b5"
 
 
 [build-system]
