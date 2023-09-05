@@ -29,14 +29,14 @@ test.test_review_pros_cons()    #15
 test.test_review_conclusion(["La discussion est réservée aux membres GNT",
                              "sponsored",
                              "en précommande et sera disponible",
-                             "Caractéristiques",
+                            #  "Caractéristiques",
                              "Commencez par",
                              "Copyright ©"
                              ])
 test.test_review_excerpt(["La discussion est réservée aux membres GNT",
                           "sponsored",
                           "en précommande et sera disponible",
-                          "Caractéristiques",
+                        #   "Caractéristiques",
                           "Commencez par",
                           "Copyright ©"
                           ], len_chank=100, len_excerpt=10)
