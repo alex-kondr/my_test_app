@@ -13,8 +13,8 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-# agent = agents.
-agent = agents.TEST
+agent = agents.PHOTOAXE
+# agent = agents.TEST
 reload = 1
 
 product = Product(agent, reload=reload)
@@ -29,8 +29,8 @@ test.test_review_title()
 # test.test_review_grade()
 test.test_review_author()
 # test.test_review_pros_cons()
-test.test_review_conclusion([])
-test.test_review_excerpt([], len_chank=200, len_excerpt=10)
+test.test_review_conclusion(["Specifications", "Functions", "Technical"])
+test.test_review_excerpt(["Specifications", "Functions", "Technical"], len_chank=200, len_excerpt=10)
 
 log = LogProduct(agent, reload=reload)
 test_log = TestLogProduct(log)
