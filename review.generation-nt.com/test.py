@@ -31,14 +31,16 @@ test.test_review_conclusion(["La discussion est réservée aux membres GNT",
                              "en précommande et sera disponible",
                             #  "Caractéristiques",
                              "Commencez par",
-                             "Copyright ©"
+                             "Copyright ©",
+                             "+ Les plus"
                              ])
 test.test_review_excerpt(["La discussion est réservée aux membres GNT",
                           "sponsored",
                           "en précommande et sera disponible",
                         #   "Caractéristiques",
                           "Commencez par",
-                          "Copyright ©"
+                          "Copyright ©",
+                          "+ Les plus"
                           ], len_chank=100, len_excerpt=10)
 
 log = LogProduct(agent, reload=reload)
