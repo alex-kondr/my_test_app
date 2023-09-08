@@ -9,9 +9,8 @@ def run(context, session):
 def process_revlist(data, context, session):
     revs = data.xpath('//h2[contains(@class, "entry-title")]')
     for rev in revs:
-        title = rev.xpath('a/text()').string()
         url = rev.xpath('a/@href').string()
-        session.queue(Request(url), process_review, dict(title=title, url=url))
+        session.queue(Request(url), process_review, dict(url=url))
 
     next_url = data.xpath('//a[@class="next page-numbers"]/@href').string()
     if next_url:
@@ -20,7 +19,11 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Review', '').split('review')[0].strip()
+
+    title = data.xpath('//h1[@class="entry-title"]/text()').string()
+    if title:
+        product.name = title.replace('Review', '').replace('Release', '').split('review')[0].strip()
+
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
 
@@ -31,7 +34,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = title
     review.url = product.url
     review.ssid = product.ssid
 
@@ -57,9 +60,11 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//p//strong[contains(., "Specifications:")]/preceding::p[not(@class)]//text()[not(contains(., "Camera Specifications"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p//strong[contains(., "Functions:")]/preceding::p[not(@class)]//text()[not(contains(., "Camera Specifications"))]').string(multiple=True)
+        excerpt = data.xpath('(//p//strong[contains(., "Functions:")]/preceding::p[not(@class)]/text()|//p//strong[contains(., "Functions:")]/preceding::p[not(@class)]/a/text()|//p//strong[contains(., "Functions:")]/preceding::p[not(@class)]/strong/text())[not(contains(., "Camera Specifications"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p//strong[contains(., "Technical Data:")]/preceding::p[not(@class)]//text()[not(contains(., "Camera Specifications"))]').string(multiple=True)
+        excerpt = data.xpath('(//p//strong[contains(., "Technical Data:")]/preceding::p[not(@class)]//text()|//p//strong[contains(., "Technical Data:")]/preceding-sibling::text())[not(contains(., "Camera Specifications"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('(//p//strong[contains(., "Key features:")]/preceding::p[not(@class)]/text()|//p//strong[contains(., "Key features:")]/preceding::p[not(@class)]/a/text()|//p//strong[contains(., "Key features:")]/preceding::p[not(@class)]/strong/text())[not(contains(., "Camera Specifications"))]').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="entry-content"]/p//text()[not(contains(., "Camera Specifications"))]').string(multiple=True)
     if excerpt:

@@ -1,7 +1,7 @@
-import simplejson
-
 from agent import *
 from models.products import *
+
+import simplejson
 
 
 URL = 'https://www.generation-nt.com/api/articles/list-tests-guides-0?page='

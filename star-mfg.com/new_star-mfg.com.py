@@ -1,7 +1,7 @@
-import simplejson
-
 from agent import *
 from models.products import *
+
+import simplejson
 
 
 def run(context, session):
@@ -65,7 +65,7 @@ def process_product(data, context, session):
         product.properties.append(ProductProperty(type='image', value=dict(src=img)))
 
     desc = data.xpath("(//div[@class='woocommerce-product-details__short-description']//p)[last()]/text()").string()
-    info = data.xpath("//div[contains(@aria-labelledby, 'tab-title-description')]//text() | //div[contains(@aria-labelledby, 'tab-title-product_editor')]//text()").string(multiple=True)
+    info = data.xpath("(//div[contains(@aria-labelledby, 'tab-title-description')]/p|//div[contains(@aria-labelledby, 'tab-title-product_editor')]/p)//text()").string(multiple=True)
     if desc and info and desc not in info:
         desc += ' ' + info
     if desc:

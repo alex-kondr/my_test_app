@@ -20,7 +20,7 @@ reload = 1
 product = Product(agent, reload=reload)
 print(product.result)
 test = TestProduct(product)
-test.test_product_name(not_xproduct_name="", len_name=8)
+test.test_product_name(xproduct_names=["Release"], not_xproduct_name="", len_name=8)
 test.test_product_category(xproduct_names=["Other"])
 # test.test_product_sku()
 # test.test_product_id_manufacturer()
