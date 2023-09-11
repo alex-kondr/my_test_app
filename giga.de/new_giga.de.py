@@ -98,13 +98,13 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h3[contains(., "Persönliches Fazit:")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Spezifikationen") or figure)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h3[contains(., "Persönliches Fazit:")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Spezifikationen") or contains(., "Facebook") or contains(., "Twitter") or figure)]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2[contains(., "Fazit:")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure)]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//div[@class="topic"]/p[not(contains(., "Vorteile:") or contains(., "Nachteile:") or contains(., "Gesamt"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//div[@class="topic"]/p[not(contains(., "Vorteile:") or contains(., "Nachteile:") or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('(//p[contains(., "Fazit:")]|//p[contains(., "Fazit:")]/following-sibling::p)//text()').string(multiple=True)
+        conclusion = data.xpath('(//p[contains(., "Fazit:")]|//p[contains(., "Fazit:")]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter"))])//text()').string(multiple=True)
 
     if conclusion:
         conclusion = conclusion.replace('Fazit:', '').strip()
