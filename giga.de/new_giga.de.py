@@ -79,11 +79,15 @@ def process_review(data, context, session):
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=float(best)))
 
     pros = data.xpath('//p[contains(., "Vorteile")]/following-sibling::ul[1]/li')
+    if not pros:
+        pros = data.xpath('//strong[text()="Pro"]/following-sibling::ul/li')
     for pro in pros:
         pro = pro.xpath('text').string()
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//p[contains(., "Nachteile")]/following-sibling::ul[1]/li')
+    if not cons:
+        cons = data.xpath('//strong[text()="Kontra"]/following-sibling::ul/li')
     for con in cons:
         con = con.xpath('text()').string()
         review.add_property(type='pros', value=con)
@@ -105,9 +109,13 @@ def process_review(data, context, session):
         conclusion = data.xpath('//div[@class="topic"]/p[not(contains(., "Vorteile:") or contains(., "Nachteile:") or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('(//p[contains(., "Fazit:")]|//p[contains(., "Fazit:")]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter"))])//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@class="update"]/p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p/strong[contains(., "Mein persönliches Fazit")]/parent::p//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = conclusion.replace('Fazit:', '').strip()
+        conclusion = conclusion.replace('Fazit:', '').replace('Kurz-Fazit vorweg:', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h3[contains(., "Persönliches Fazit:")]/preceding-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or figure)]//text()').string(multiple=True)
@@ -120,14 +128,16 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//p[contains(., "Fazit:")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//body//p[not(@class|figure|em or contains(., "Gesamt"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="update"]/following-sibling::p[not(@class|figure|em or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//body//p[not(@class|figure|em or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter"))]//text()').string(multiple=True)
 
-    if excerpt:
-        if summary:
-            excerpt = excerpt.replace(summary, '')
-        if conclusion:
-            excerpt = excerpt.replace(conclusion, '')
+    if excerpt and summary:
+        excerpt = excerpt.replace(summary, '').strip()
+    if excerpt and conclusion:
+        excerpt = excerpt.replace(conclusion, '').strip()
 
+    if excerpt and len(excerpt) > 10:
         review.add_property(type='excerpt', value=excerpt)
 #############################
     product.reviews.append(review)
