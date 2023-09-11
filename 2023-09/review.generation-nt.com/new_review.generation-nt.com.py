@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-
 import simplejson
 
 
@@ -14,7 +13,9 @@ def run(context, session):
 
 def process_revlist(data, context, session):
     revs_json = simplejson.loads(data.content)
+
     new_data = data.parse_fragment(revs_json.get('data', {}).get('html'))
+
     revs = new_data.xpath('//div[contains(@class, "flex-col justify-between mb-1")]//a')
     for rev in revs:
         url = rev.xpath('@href').string()
@@ -74,6 +75,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('//span[contains(., "Conclusion")]/following-sibling::text()|//span[contains(., "Conclusion")]/following::p[not(@align|@id|@class|.//picture|.//a[contains(@rel, "sponsored")])][not(contains(., "La discussion est réservée aux membres GNT")) and not(contains(., "AliExpress au prix")) and not(contains(., "Amazon")) and not(contains(., "en précommande et sera disponible")) and not(contains(., "à prix réduit avec le")) and not(contains(., "prix officiel")) and not(contains(., "site officiel")) and not(contains(., "chez Goboo")) and not(contains(., "Goboo organise")) and not(contains(., "Gearbest")) and not(contains(., "propose la précommande")) and not(contains(., "coupon de réduction")) and not(contains(., "tarif réduit sur la")) and not(contains(., "Caractéristiques")) and not(contains(., "Commencez par")) and not(contains(., "Copyright ©")) and not(starts-with(., "-"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//strong[contains(., "Verdict")]/following::text()').string(multiple=True)
+
     if conclusion:
         conclusion = conclusion.split('+ Les plus')[0].split('Créateur et rédacteur en chef du site GNT')[0].split('Sur le même sujet')[0].lstrip('Conclusion').strip()
         review.add_property(type='conclusion', value=conclusion)
@@ -101,6 +103,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//span[br]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//p[@class="MsoNormal"]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
