@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 # URL = 'https://www.giga.de/laptops/dell-xps-15-2-in-1/tests/dell-xps-15-2-in-1-9575-im-test-4k-notebook-mit-intel-amd-kombiprozessor/'
 def run(context, session):
@@ -21,7 +22,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' im Test')[0].split('im Alltagstest')[0].split(' von ')[0].split(':')[0].split(' im ')[0].strip()
+    product.name = context['title'].split(' im Test')[0].split('im Alltagstest')[0].replace('Test:', '').split(' von ')[0].split(':')[0].split(' im ')[0].strip()
     product.ssid = context['url'].split('/')[-2]
     product.url = context['url']
 
@@ -74,25 +75,24 @@ def process_review(data, context, session):
 
 # https://www.giga.de/audio/beoplay-h4/tests/beoplay-h4-im-test-einstieg-ins-kabellose-luxussegment/
 # https://www.giga.de/laptops/dell-xps-15-2-in-1/tests/dell-xps-15-2-in-1-9575-im-test-4k-notebook-mit-intel-amd-kombiprozessor/
-    grades = data.xpath('//p[contains(., "Einzelwertung")]/following-sibling::ul[1]/li')
+    grades = data.xpath('//p[contains(., "Einzelwertung")]/following-sibling::ul[1]/li//text()[contains(., ":")]').strings()
     if not grades:
-        grades = data.xpath('//h3[contains(., "Wertung im Detail")]/following-sibling::dl/dt')
+        grades = data.xpath('//h3[contains(., "Wertung im Detail")]/following-sibling::dl/dt//text()[contains(., ":")]').strings()
     if not grades:
-        grades = data.xpath('//h2[contains(., "Bewertung")]/following-sibling::ul[1]/li')
+        grades = data.xpath('//h2[contains(., "Bewertung")]/following-sibling::ul[1]/li//text()[contains(., ":") and not(contains(., "Aber:"))]').strings()
 
     for grade in grades:
-        grade = grade.xpath('text()').string()
-        if ':' in grade:
-            name, grade = grade.split(':')
-            grade = grade.split()[0].strip()
+        name, grade = grade.split(':')
+        if re.search(r'^\d[0-9, /, \s][0-9, /, \s]?', grade):
+            grade = grade.split()[0].replace(',', '.').strip()
+            best = 100
             if '/' in grade:
                 grade, best = grade.split('/')
-                review.grades.append(Grade(name=name, value=float(grade), best=float(best)))
-            else:
-                review.grades.append(Grade(name=name, value=float(grade), best=100.0))
+
+            review.grades.append(Grade(name=name, value=float(grade), best=float(best)))
 
     if not grades:
-        names = data.xpath('//h2[contains(., "Wertung")]/following-sibling::p[1]/strong/text()').strings()
+        names = data.xpath('//h2[contains(., "Wertung")]/following-sibling::p[1]/strong/text()[not(contains(., "Wertung"))]').strings()
         grades = data.xpath('//h2[contains(., "Wertung")]/following-sibling::p[1]/text()').strings()
         if names and grades:
             names = [name.replace(':', '').strip() for name in names]
@@ -101,7 +101,7 @@ def process_review(data, context, session):
                 review.grades.append(Grade(name=names[i], value=float(grade), best=float(best)))
 
 
-    pros = data.xpath('//p[contains(., "Vorteile")]/following-sibling::ul[1]/li')
+    pros = data.xpath('//p[strong[contains(., "Vorteile")]]/following-sibling::ul[1]/li')
     if not pros:
         pros = data.xpath('//h3[contains(., "Vorteile")]/following-sibling::ul[1]/li')
     if not pros:
