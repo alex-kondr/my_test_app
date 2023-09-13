@@ -80,10 +80,12 @@ def process_review(data, context, session):
         grades = data.xpath('//h3[contains(., "Wertung im Detail")]/following-sibling::dl/dt//text()[contains(., ":")]').strings()
     if not grades:
         grades = data.xpath('//h2[contains(., "Bewertung")]/following-sibling::ul[1]/li//text()[contains(., ":") and not(contains(., "Aber:"))]').strings()
-
+    if not grades:
+        grades = data.xpath('//h2[contains(., "Bewertung")]/following-sibling::ul[1]/li//text()[contains(., ":") and not(contains(., "Aber:"))]').strings()
+# //*[regexp:test(text(), "\d/\d")][not(contains(., "@context") or contains(., "Gesamt:"))]
     for grade in grades:
         name, grade = grade.split(':')
-        if re.search(r'^\d[0-9, /, \s][0-9, /, \s]?', grade):
+        if re.search(r'^[\d, \s][0-9, /, \s][0-9, /, \s]?', grade):
             grade = grade.split()[0].replace(',', '.').strip()
             best = 100
             if '/' in grade:
