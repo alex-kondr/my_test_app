@@ -88,14 +88,34 @@ def process_review(data, context, session):
     for grade in grades:
         name, grade = grade.xpath('text()').string().split(':')
         grade, best = grade.split('/')
-        review.grades.append(Grade(name=name, value=float(grade), best=float(best)))
+
+        grade = Grade(name=name, value=float(grade), best=float(best))
+        grade_exist = False
+        if review.grades:
+            for review_grade in review.grades:
+                if grade.name in review_grade.name:
+                    grade_exist = True
+                    break
+
+        if not grade_exist:
+            review.grades.append(grade)
 
     grades = data.xpath('//*[regexp:test(text(), "^[^:]+: \d\d Prozent")][not(contains(., "@context"))]/text()[not(contains(., "Gesamt:"))]').strings()
     for grade in grades:
         name, grade = grade.split(':')
         name = name.strip()
         grade = grade.split()[0]
-        review.grades.append(Grade(name=name, value=float(grade), best=100.0))
+
+        grade = Grade(name=name, value=float(grade), best=100.0)
+        grade_exist = False
+        if review.grades:
+            for review_grade in review.grades:
+                if grade.name in review_grade.name:
+                    grade_exist = True
+                    break
+
+        if not grade_exist:
+            review.grades.append(grade)
 
     pros = data.xpath('//li[@class="arg-pro"]//text()').strings()
     if not pros:
