@@ -90,7 +90,9 @@ def process_review(data, context, session):
         grade, best = grade.split('/')
         review.grades.append(Grade(name=name, value=float(grade), best=float(best)))
 
-    grades = data.xpath('//*[regexp:test(text(), "^[^:]+: \d\d Prozent")][not(contains(., "@context"))]/text()[not(contains(., "Gesamt:"))]').strings()
+    grades = data.xpath('(//*[regexp:test(text(), "^[^:]+: \d\d Prozent")][not(contains(., "@context") or contains(., "Gesamt"))]/parent::ul)[last()]/li//text()[not(contains(., "Gesamt:"))]').strings()
+    if not grades:
+        grades = data.xpath('//*[regexp:test(text(), "^[^:]+: \d\d Prozent")][not(contains(., "@context") or contains(., "Gesamt"))]/text()[not(contains(., "Gesamt:"))]').strings()
     for grade in grades:
         name, grade = grade.split(':')
         name = name.strip()
