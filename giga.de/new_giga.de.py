@@ -101,7 +101,9 @@ def process_review(data, context, session):
 
     pros = data.xpath('//li[@class="arg-pro"]')
     if not pros:
-        pros = data.xpath('//p[strong[contains(., "Vorteile") and contains(., "+")]]')
+        pros = data.xpath('//p[strong[contains(., "Vorteile")]]')
+    if not pros:
+        pros = data.xpath('//span[strong[contains(., "Vorteile")]]')
     if not pros:
         pros = data.xpath('//p[strong[contains(., "Vorteile")]]/following-sibling::ul[1]/li[not(.//a)]')
     if not pros:
@@ -116,12 +118,19 @@ def process_review(data, context, session):
         pros = data.xpath('//h2[contains(., "Das hat uns gut gefallen")]/following-sibling::ul/li[not(@class)]')
 
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True).replace('+', '').strip()
-        review.add_property(type='pros', value=pro)
+        pro_ = pro.xpath('.//text()[contains(., "+")]').strings()
+        for _pro in pro_:
+            _pro = _pro.replace('+', '').strip()
+            review.add_property(type='pros', value=_pro)
+        if not pro_:
+            pro_ = pro.xpath('.//text()').string(multiple=True).replace('+', '').strip()
+            review.add_property(type='pros', value=pro_)
 
     cons = data.xpath('//li[@class="arg-con"]')
     if not cons:
-        cons = data.xpath('//p[strong[contains(., "Nachteile")]][contains(., "-")]')
+        cons = data.xpath('//p[strong[contains(., "Nachteile")]]')
+    if not cons:
+        cons = data.xpath('//span[strong[contains(., "Nachteile")]]')
     if not cons:
         cons = data.xpath('//p[strong[contains(., "Nachteile")]]/following-sibling::ul[1]/li[not(contains(., "/") or contains(., "Prozent") or .//a)]')
     if not cons:
@@ -137,8 +146,13 @@ def process_review(data, context, session):
 
     if pros:
         for con in cons:
-            con = con.xpath('.//text()').string(multiple=True).replace('-', '').strip()
-            review.add_property(type='cons', value=con)
+            con_ = con.xpath('.//text()[contains(., "-")]').strings()
+            for _con in con_:
+                _con = _con.replace('-', '').strip()
+                review.add_property(type='cons', value=_con)
+            if not con_:
+                con_ = con.xpath('.//text()').string(multiple=True).replace('-', '').strip()
+                review.add_property(type='cons', value=con_)
 
     summary = data.xpath('//div[@data-init="toc-box"]/preceding-sibling::p//text()').string(multiple=True)
     if not summary:
@@ -146,7 +160,7 @@ def process_review(data, context, session):
     if not summary:
         summary = data.xpath('//div[@class="product-box-content"]/following-sibling::p[1]//text()').string(multiple=True)
     if not summary:
-        summary = data.xpath('//div[contains(@class, "alice-layout-article-body")]/p//text()').string(multiple=True)
+        summary = data.xpath('//div[contains(@class, "alice-layout-article-body")]/p[1]//text()').string(multiple=True)
 
     if summary:
         review.add_property(type='summary', value=summary)
@@ -166,10 +180,6 @@ def process_review(data, context, session):
         conclusion = data.xpath('//div[@class="update"]/p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p/strong[contains(., "Mein persönliches Fazit")]/parent::p//text()').string(multiple=True)
-
-    if conclusion:
-        conclusion = conclusion.replace('Fazit:', '').replace('Kurz-Fazit vorweg:', '').strip()
-        review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h3[contains(., "Persönliches Fazit:")]/preceding-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or figure)]//text()').string(multiple=True)
     if not excerpt:
@@ -193,8 +203,6 @@ def process_review(data, context, session):
 
     if excerpt and summary:
         excerpt = excerpt.replace(summary, '').strip()
-    if excerpt and conclusion:
-        excerpt = excerpt.replace(conclusion, '').strip()
 
     context['product'] = product
     context['conclusion'] = conclusion
@@ -221,7 +229,9 @@ def process_review_next(data, context, session):
 
         pros = data.xpath('//li[@class="arg-pro"]')
         if not pros:
-            pros = data.xpath('//p[strong[contains(., "Vorteile") and contains(., "+")]]')
+            pros = data.xpath('//p[strong[contains(., "Vorteile")]]')
+        if not pros:
+            pros = data.xpath('//span[strong[contains(., "Vorteile")]]')
         if not pros:
             pros = data.xpath('//p[strong[contains(., "Vorteile")]]/following-sibling::ul[1]/li[not(.//a)]')
         if not pros:
@@ -236,12 +246,19 @@ def process_review_next(data, context, session):
             pros = data.xpath('//h2[contains(., "Das hat uns gut gefallen")]/following-sibling::ul/li[not(@class)]')
 
         for pro in pros:
-            pro = pro.xpath('.//text()').string(multiple=True).replace('+', '').strip()
-            review.add_property(type='pros', value=pro)
+            pro_ = pro.xpath('.//text()[contains(., "+")]').strings()
+            for _pro in pro_:
+                _pro = _pro.replace('+', '').strip()
+                review.add_property(type='pros', value=_pro)
+            if not pro_:
+                pro_ = pro.xpath('.//text()').string(multiple=True).replace('+', '').strip()
+                review.add_property(type='pros', value=pro_)
 
         cons = data.xpath('//li[@class="arg-con"]')
         if not cons:
-            cons = data.xpath('//p[strong[contains(., "Nachteile")]][contains(., "-")]')
+            cons = data.xpath('//p[strong[contains(., "Nachteile")]]')
+        if not cons:
+            cons = data.xpath('//span[strong[contains(., "Nachteile")]]')
         if not cons:
             cons = data.xpath('//p[strong[contains(., "Nachteile")]]/following-sibling::ul[1]/li[not(contains(., "/") or contains(., "Prozent") or .//a)]')
         if not cons:
@@ -255,10 +272,14 @@ def process_review_next(data, context, session):
         if not cons:
             cons = data.xpath('//h2[contains(., "Das hat uns nicht so gut gefallen")]/following::ul[1]/li[not(@class)]')
 
-        if pros:
-            for con in cons:
-                con = con.xpath('.//text()').string(multiple=True).replace('-', '').strip()
-                review.add_property(type='cons', value=con)
+        for con in cons:
+            con_ = con.xpath('.//text()[contains(., "-")]').strings()
+            for _con in con_:
+                _con = _con.replace('-', '').strip()
+                review.add_property(type='cons', value=_con)
+            if not con_:
+                con_ = con.xpath('.//text()').string(multiple=True).replace('-', '').strip()
+                review.add_property(type='cons', value=con_)
 
         if not conclusion:
             conclusion = data.xpath('//h3[contains(., "Persönliches Fazit:")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Spezifikationen") or contains(., "Facebook") or contains(., "Twitter") or figure)]//text()').string(multiple=True)
@@ -276,10 +297,6 @@ def process_review_next(data, context, session):
             conclusion = data.xpath('//div[@class="update"]/p//text()').string(multiple=True)
         if not conclusion:
             conclusion = data.xpath('//p/strong[contains(., "Mein persönliches Fazit")]/parent::p//text()').string(multiple=True)
-
-        if conclusion:
-            conclusion = conclusion.replace('Fazit:', '').replace('Kurz-Fazit vorweg:', '').strip()
-            review.add_property(type='conclusion', value=conclusion)
 
         excerpt = data.xpath('//h3[contains(., "Persönliches Fazit:")]/preceding-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or figure)]//text()').string(multiple=True)
         if not excerpt:
@@ -310,6 +327,13 @@ def process_review_next(data, context, session):
 
     elif context['excerpt'] and len(context['excerpt']) > 10:
         product = context['product']
+
+        if conclusion:
+            conclusion = conclusion.replace('Fazit:', '').replace('Kurz-Fazit vorweg:', '').strip()
+            review.add_property(type='conclusion', value=conclusion)
+
+            context['excerpt'] = context['excerpt'].replace(conclusion, '').strip()
+
 
         review.add_property(type="excerpt", value=context['excerpt'])
 
