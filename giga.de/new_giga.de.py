@@ -127,7 +127,7 @@ def process_review(data, context, session):
     if not cons:
         cons = data.xpath('//h3[contains(., "Nachteile")]/following-sibling::ul[1]/li[not(contains(., "/") or contains(., "Prozent"))]')
     if not cons:
-        cons = data.xpath('//h3[.//strong[contains(., "Contra")]]/following-sibling::ul[1]/li/text()[string-length() > 2]')
+        cons = data.xpath('//h3[.//strong[contains(., "Contra")]]/following-sibling::ul[1]/li[string-length() > 2]')
     if not cons:
         cons = data.xpath('//strong[text()="Kontra"]/following-sibling::ul/li')
     if not cons:
@@ -247,7 +247,7 @@ def process_review_next(data, context, session):
         if not cons:
             cons = data.xpath('//h3[contains(., "Nachteile")]/following-sibling::ul[1]/li[not(contains(., "/") or contains(., "Prozent"))]')
         if not cons:
-            cons = data.xpath('//h3[.//strong[contains(., "Contra")]]/following-sibling::ul[1]/li/text()[string-length() > 2]')
+            cons = data.xpath('//h3[.//strong[contains(., "Contra")]]/following-sibling::ul[1]/li[string-length() > 2]')
         if not cons:
             cons = data.xpath('//strong[text()="Kontra"]/following-sibling::ul/li')
         if not cons:
