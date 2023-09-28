@@ -99,41 +99,45 @@ def process_review(data, context, session):
         grade = grade.split()[0]
         review.grades.append(Grade(name=name, value=float(grade), best=100.0))
 
-    pros = data.xpath('//li[@class="arg-pro"]//text()').strings()
+    pros = data.xpath('//li[@class="arg-pro"]')
     if not pros:
-        pros = data.xpath('//p[strong[contains(., "Vorteile")]]//text()[contains(., "+")]').strings()
+        pros = data.xpath('//p[strong[contains(., "Vorteile") and contains(., "+")]]')
     if not pros:
-        pros = data.xpath('//p[strong[contains(., "Vorteile")]]/following-sibling::ul[1]/li[not(.//a)]//text()').strings()
+        pros = data.xpath('//p[strong[contains(., "Vorteile")]]/following-sibling::ul[1]/li[not(.//a)]')
     if not pros:
-        pros = data.xpath('//h3[contains(., "Vorteile")]/following-sibling::ul[1]/li//text()').strings()
+        pros = data.xpath('//h3[contains(., "Vorteile")]/following-sibling::ul[1]/li')
     if not pros:
-        pros = data.xpath('//h3[.//strong[contains(., "Pro")]]/following-sibling::ul[1]/li/text()[string-length() > 2]').strings()
+        pros = data.xpath('//h3[.//strong[contains(., "Pro")]]/following-sibling::ul[1]/li[string-length() > 2]')
     if not pros:
-        pros = data.xpath('//strong[text()="Pro"]/following-sibling::ul/li//text()').strings()
+        pros = data.xpath('//strong[text()="Pro"]/following-sibling::ul/li')
     if not pros:
-        pros = data.xpath('//p[strong[text()="Pro:"]]/following-sibling::ul[1]/li//text()').strings()
+        pros = data.xpath('//p[strong[text()="Pro:"]]/following-sibling::ul[1]/li')
+    if not pros:
+        pros = data.xpath('//h2[contains(., "Das hat uns gut gefallen")]/following-sibling::ul/li[not(@class)]')
 
     for pro in pros:
-        pro = pro.replace('+', '').strip()
+        pro = pro.xpath('.//text()').string(multiple=True).replace('+', '').strip()
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//li[@class="arg-con"]//text()').strings()
+    cons = data.xpath('//li[@class="arg-con"]')
     if not cons:
-        cons = data.xpath('//p[strong[contains(., "Nachteile")]]//text()[contains(., "-")]').strings()
+        cons = data.xpath('//p[strong[contains(., "Nachteile")]][contains(., "-")]')
     if not cons:
-        cons = data.xpath('//p[strong[contains(., "Nachteile")]]/following-sibling::ul[1]/li[not(contains(., "/") or contains(., "Prozent") or .//a)]//text()').strings()
+        cons = data.xpath('//p[strong[contains(., "Nachteile")]]/following-sibling::ul[1]/li[not(contains(., "/") or contains(., "Prozent") or .//a)]')
     if not cons:
-        cons = data.xpath('//h3[contains(., "Nachteile")]/following-sibling::ul[1]/li[not(contains(., "/") or contains(., "Prozent"))]//text()').strings()
+        cons = data.xpath('//h3[contains(., "Nachteile")]/following-sibling::ul[1]/li[not(contains(., "/") or contains(., "Prozent"))]')
     if not cons:
-        cons = data.xpath('//h3[.//strong[contains(., "Contra")]]/following-sibling::ul[1]/li/text()[string-length() > 2]').strings()
+        cons = data.xpath('//h3[.//strong[contains(., "Contra")]]/following-sibling::ul[1]/li/text()[string-length() > 2]')
     if not cons:
-        cons = data.xpath('//strong[text()="Kontra"]/following-sibling::ul/li//text()').strings()
+        cons = data.xpath('//strong[text()="Kontra"]/following-sibling::ul/li')
     if not cons:
-        cons = data.xpath('//p[strong[text()="Contra:"]]/following-sibling::ul[1]/li//text()').strings()
+        cons = data.xpath('//p[strong[text()="Contra:"]]/following-sibling::ul[1]/li')
+    if not cons:
+        cons = data.xpath('//h2[contains(., "Das hat uns nicht so gut gefallen")]/following::ul[1]/li[not(@class)]')
 
     if pros:
         for con in cons:
-            con = con.replace('-', '').strip()
+            con = con.xpath('.//text()').string(multiple=True).replace('-', '').strip()
             review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@data-init="toc-box"]/preceding-sibling::p//text()').string(multiple=True)
@@ -149,7 +153,7 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//h3[contains(., "Persönliches Fazit:")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Spezifikationen") or contains(., "Facebook") or contains(., "Twitter") or figure)]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure)]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure or contains(., "wertung") or contains(., "US-Dollar") or contains(., "nicht gefallen"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2[contains(., "Fazit zur")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure)]//text()').string(multiple=True)
     if not conclusion:
@@ -192,8 +196,122 @@ def process_review(data, context, session):
     if excerpt and conclusion:
         excerpt = excerpt.replace(conclusion, '').strip()
 
-    if excerpt and len(excerpt) > 10:
-        review.add_property(type='excerpt', value=excerpt)
+    context['product'] = product
+    context['conclusion'] = conclusion
+    context['excerpt'] = excerpt
+
+    next_url = data.xpath('//a[@rel="next"]/@href').string()
+    if next_url:
+        review.add_property(type='pages', value=dict(title=review.title + ' - page 1', url=context['url']))
+        session.do(Request(next_url), process_review_next, dict(context, review=review, url=next_url, page=2))
+    else:
+        context['review'] = review
+        context['page'] = 1
+
+        process_review_next(data, context, session)
+
+
+def process_review_next(data, context, session):
+    review = context['review']
+    conclusion = context['conclusion']
+
+    page = context['page']
+    if page > 1:
+        review.add_property(type="pages", value=dict(title=review.title+' - page '+str(page), url=context["url"]))
+
+        pros = data.xpath('//li[@class="arg-pro"]')
+        if not pros:
+            pros = data.xpath('//p[strong[contains(., "Vorteile") and contains(., "+")]]')
+        if not pros:
+            pros = data.xpath('//p[strong[contains(., "Vorteile")]]/following-sibling::ul[1]/li[not(.//a)]')
+        if not pros:
+            pros = data.xpath('//h3[contains(., "Vorteile")]/following-sibling::ul[1]/li')
+        if not pros:
+            pros = data.xpath('//h3[.//strong[contains(., "Pro")]]/following-sibling::ul[1]/li[string-length() > 2]')
+        if not pros:
+            pros = data.xpath('//strong[text()="Pro"]/following-sibling::ul/li')
+        if not pros:
+            pros = data.xpath('//p[strong[text()="Pro:"]]/following-sibling::ul[1]/li')
+        if not pros:
+            pros = data.xpath('//h2[contains(., "Das hat uns gut gefallen")]/following-sibling::ul/li[not(@class)]')
+
+        for pro in pros:
+            pro = pro.xpath('.//text()').string(multiple=True).replace('+', '').strip()
+            review.add_property(type='pros', value=pro)
+
+        cons = data.xpath('//li[@class="arg-con"]')
+        if not cons:
+            cons = data.xpath('//p[strong[contains(., "Nachteile")]][contains(., "-")]')
+        if not cons:
+            cons = data.xpath('//p[strong[contains(., "Nachteile")]]/following-sibling::ul[1]/li[not(contains(., "/") or contains(., "Prozent") or .//a)]')
+        if not cons:
+            cons = data.xpath('//h3[contains(., "Nachteile")]/following-sibling::ul[1]/li[not(contains(., "/") or contains(., "Prozent"))]')
+        if not cons:
+            cons = data.xpath('//h3[.//strong[contains(., "Contra")]]/following-sibling::ul[1]/li/text()[string-length() > 2]')
+        if not cons:
+            cons = data.xpath('//strong[text()="Kontra"]/following-sibling::ul/li')
+        if not cons:
+            cons = data.xpath('//p[strong[text()="Contra:"]]/following-sibling::ul[1]/li')
+        if not cons:
+            cons = data.xpath('//h2[contains(., "Das hat uns nicht so gut gefallen")]/following::ul[1]/li[not(@class)]')
+
+        if pros:
+            for con in cons:
+                con = con.xpath('.//text()').string(multiple=True).replace('-', '').strip()
+                review.add_property(type='cons', value=con)
+
+        if not conclusion:
+            conclusion = data.xpath('//h3[contains(., "Persönliches Fazit:")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Spezifikationen") or contains(., "Facebook") or contains(., "Twitter") or figure)]//text()').string(multiple=True)
+        if not conclusion:
+            conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure or contains(., "wertung") or contains(., "US-Dollar") or contains(., "nicht gefallen"))]//text()').string(multiple=True)
+        if not conclusion:
+            conclusion = data.xpath('//h2[contains(., "Fazit zur")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure)]//text()').string(multiple=True)
+        if not conclusion:
+            conclusion = data.xpath('//h2[contains(., "Testfazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or contains(., "Preis") or contains(., "Links") or contains(., "für die Unterstützung!") or figure)]//text()').string(multiple=True)
+        if not conclusion:
+            conclusion = data.xpath('//div[@class="topic"]/p[not(contains(., "Wertung:") or contains(., "Pro:") or contains(., "Contra:") or contains(., "Gut zu wissen:") or contains(., "Vorteile:") or contains(., "Nachteile:") or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter"))]//text()').string(multiple=True)
+        if not conclusion:
+            conclusion = data.xpath('(//p[contains(., "Fazit:")]|//p[contains(., "Fazit:")]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or contains(., "Disclosure:") or (contains(., "Gesamt")))])//text()').string(multiple=True)
+        if not conclusion:
+            conclusion = data.xpath('//div[@class="update"]/p//text()').string(multiple=True)
+        if not conclusion:
+            conclusion = data.xpath('//p/strong[contains(., "Mein persönliches Fazit")]/parent::p//text()').string(multiple=True)
+
+        if conclusion:
+            conclusion = conclusion.replace('Fazit:', '').replace('Kurz-Fazit vorweg:', '').strip()
+            review.add_property(type='conclusion', value=conclusion)
+
+        excerpt = data.xpath('//h3[contains(., "Persönliches Fazit:")]/preceding-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or figure)]//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p[not(contains(., "Euro UVP"))]//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = data.xpath('//h2[contains(., "Fazit zur")]/preceding-sibling::p[not(contains(., "Euro UVP"))]//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = data.xpath('//h2[contains(., "Testfazit")]/preceding-sibling::p[not(contains(., "Euro UVP"))]//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = data.xpath('//div[@data-init="toc-box"]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or em)]//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = data.xpath('//p[contains(., "Fazit:")]/preceding-sibling::p//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = data.xpath('//div[@class="topic"]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or em)]//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = data.xpath('//div[@class="update"]/following-sibling::p[not(@class|figure|em or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter"))]//text()').string(multiple=True)
+        if not excerpt and not conclusion:
+            excerpt = data.xpath('//p[@class="p1"][not(contains(., "Nächste Seite:"))]//text()').string(multiple=True)
+            if not excerpt:
+                excerpt = data.xpath('//body//p[not(@class|figure or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter"))]//text()').string(multiple=True)
+
+        if excerpt and len(excerpt) > 10:
+            context['excerpt'] += ' ' + excerpt
+
+    next_url = data.xpath('//a[@rel="next"]/@href').string()
+    if next_url:
+        session.do(Request(next_url), process_review_next, dict(context, review=review, conclusion=conclusion, url=next_url, page=page + 1))
+
+    elif context['excerpt'] and len(context['excerpt']) > 10:
+        product = context['product']
+
+        review.add_property(type="excerpt", value=context['excerpt'])
 
         product.reviews.append(review)
 
