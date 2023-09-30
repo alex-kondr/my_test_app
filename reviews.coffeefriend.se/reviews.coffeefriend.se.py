@@ -29,19 +29,22 @@ def process_frontpage(data, context, session):
 
 def process_prodlist(data, context, session):
     prods = data.xpath('//div[@class="row"]/ul/li')
-    count_prods = 0
+    count_prods = data.xpath('count(//div[@class="row"]/ul/li)')
+    count_prods_revs = 0
     for prod in prods:
         revs_count = prod.xpath('.//span[@itemprop="reviewCount"]/text()').string()
-        if revs_count and int(revs_count) > 0:
-            count_prods += 1
-            name = prod.xpath('div/@data-name').string()
-            sku = prod.xpath('div/@data-sku').string()
-            id = prod.xpath('div/@data-id').string()
-            url = prod.xpath('.//a[@itemprop="url"]/@href').string()
-            session.queue(Request(url), process_product, dict(context, name=name, sku=sku, id=id, url=url))
+        if not revs_count or int(revs_count) == 0:
+            break
+
+        count_prods_revs += 1
+        name = prod.xpath('div/@data-name').string()
+        sku = prod.xpath('div/@data-sku').string()
+        id = prod.xpath('div/@data-id').string()
+        url = prod.xpath('.//a[@itemprop="url"]/@href').string()
+        session.queue(Request(url), process_product, dict(context, name=name, sku=sku, id=id, url=url))
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
-    if count_prods == 48 and next_url:
+    if count_prods == count_prods_revs and next_url:
         session.queue(Request(next_url+'?orderby=rating', use='curl', options='--data-raw "ppp=48"', max_age=0), process_prodlist, dict(context))
 
 
@@ -87,3 +90,6 @@ def process_product(data, context, session):
             review.ssid = review.digest() if author else review.digest(excerpt)
 
             product.reviews.append(review)
+
+    if product.reviews:
+        session.emit(product)
