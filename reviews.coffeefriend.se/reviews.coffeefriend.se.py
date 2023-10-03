@@ -6,7 +6,6 @@ XCAT = ['ERBJUDANDEN', 'Kontakter']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.coffeefriend.se/'), process_frontpage, dict())
 
 
@@ -23,8 +22,9 @@ def process_frontpage(data, context, session):
                 sub_cats1 = sub_cat.xpath('ul/li')
                 for sub_cat1 in sub_cats1:
                     sub_cat1_name = sub_cat1.xpath('a/text()').string()
-                    url = sub_cat1.xpath('a/@href').string()
-                    session.queue(Request(url+'?orderby=rating', use='curl', options='--data-raw "ppp=48"', max_age=0), process_prodlist, dict(cat=cat_name+'|'+sub_cat_name+'|'+sub_cat1_name))
+                    if not sub_cat1_name.startswith('Alla'):
+                        url = sub_cat1.xpath('a/@href').string()
+                        session.queue(Request(url+'?orderby=rating', use='curl', options='--data-raw "ppp=48"', max_age=0), process_prodlist, dict(cat=cat_name+'|'+sub_cat_name+'|'+sub_cat1_name))
 
 
 def process_prodlist(data, context, session):
@@ -53,7 +53,7 @@ def process_product(data, context, session):
     product.name = context['name']
     product.url = context['url']
     product.category = context['cat']
-    product.ssid = context['url'].split('/')[-1]
+    product.ssid = context['url'].split('/')[-2]
     product.sku = context['sku']
     product.manufacturer = data.xpath('//div[@class="spec" and contains(., "Tillverkare")]/div[not(text()="Tillverkare")]/text()').string()
     product.add_property(type='id.manufacturer', value=context['id'])
