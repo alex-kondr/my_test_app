@@ -28,7 +28,15 @@ def process_review(data, context, session):
 
     name = data.xpath('//h1[@class="entry-title td-page-title"]//span[not(@itemprop)]/text()').string()
     if name:
-        product.name = name.split(' Testbericht')[0]
+        product.name = name.split('Testbericht')[0].split('PureView')[0].strip()
+
+    product_url = data.xpath('//a[contains(., "jetzt kaufen") or contains(., "im Shop")]/@href').string()
+    if product_url:
+        product.url = product_url
+
+    manufacturer = data.xpath('(//span[@class="td-bread-sep"]/following-sibling::span//span[@itemprop="name"])[2]/text()').string()
+    if manufacturer:
+        product.manufacturer = manufacturer
 
     imgs = data.xpath("//div[@class='td-post-content']//img/@src").strings()
     for img in imgs:
@@ -51,9 +59,9 @@ def process_review(data, context, session):
     elif author_name:
         review.authors.append(Person(name=author_name, ssid=author_name))
 
-    grade_overall = len(data.xpath("(//div[@class='star-rating'])[1]//i[@class='fas fa-star full']"))
+    grade_overall = data.xpath('count((//div[@class="star-rating"])[1]//i[@class="fas fa-star full"])')
     if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+        review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     summary = data.xpath('//div[@class="post-excerpt"]//text()').string(multiple=True)
     if summary:
@@ -61,55 +69,40 @@ def process_review(data, context, session):
 
     pros = data.xpath('//span[@id="pro"]/ancestor::h2/following-sibling::ul[1]/li')
     if not pros:
-        pros = data.xpath('//p[.//strong[contains(., "Pros")]]/following-sibling::ul[1]/li')
+        pros = data.xpath('//p[.//strong[starts-with(., "Pro")]]/following-sibling::ul[1]/li')
 
     for pro in pros:
-        pro = pro.xpath('.//text()').string()
+        pro = pro.xpath('.//text()').string(multiple=True)
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//span[@id="contra"]/ancestor::h2/following-sibling::ul[1]/li')
     if not cons:
-        cons = data.xpath('//p[.//strong[contains(., "Contras")]]/following-sibling::ul[1]/li')
+        cons = data.xpath('//p[.//strong[starts-with(., "Contra")]]/following-sibling::ul[1]/li')
 
     for con in cons:
-        con = con.xpath('.//text()').string()
+        con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(@id, "fazit")]/following-sibling::p[1]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(@id, "fazit")]/following-sibling::p[not(contains(., "Pros ") or contains(., "Pro ") or contains(., "Contras") or contains(., "•"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[starts-with(., "Fazit")]/following-sibling::p[not(contains(., "Pros ") or contains(., "Pro ") or contains(., "Contras") or .//strong or contains(., "•"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[.//strong[starts-with(., "Fazit")]]/following-sibling::p[not(contains(., "Pros ") or contains(., "Pro ") or contains(., "Contras") or .//strong or contains(., "•"))]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    # excerpt = data.xpath('//div[@class="td-post-content"]//*[not(descendant-or-self::script)]//text()').string(multiple=True)
     excerpt = data.xpath('//h2[contains(@id, "fazit")]/preceding::p[not(.//strong)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//body//p[not(@class or .//*[@class="td-page-meta"])]//text()[not(contains(., "Euro"))]').string(multiple=True)
+        excerpt = data.xpath('//h2[starts-with(., "Fazit")]/preceding::p[not(.//strong)]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[.//strong[starts-with(., "Fazit")]]/preceding-sibling::p[not(.//strong or contains(., "•"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//body//p[not(@class or .//*[@class="td-page-meta"] or contains(., "•"))]//text()[not(contains(., "Euro"))]').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
-    product.reviews.append(review)
+        product.reviews.append(review)
 
-    session.emit(product)
-
-    # conclusion_set = data.xpath("//span[contains(@id, 'fazit')]/ancestor::h2/following-sibling::p//text()")
-    # conclusion = ''
-    # for concl in conclusion_set:
-    #     conclusion += concl.string()
-    #     excerpt = excerpt.replace(concl.string(), '')
-
-    # after_conclusion = data.xpath("//span[contains(@id, 'fazit')]/ancestor::h2/following-sibling::h2/following-sibling::p//text()").string(multiple=True)
-    # if not after_conclusion:
-    #     after_conclusion = data.xpath("//span[contains(@id, 'fazit')]/ancestor::h2/following-sibling::h3//text()").string(multiple=True)
-
-    # affiliate = data.xpath('//p[contains(@class, "affiliate")]//text()').string(multiple=True)
-    # if affiliate:
-    #     excerpt = excerpt.replace(affiliate, '')
-
-    # if conclusion:
-    #     if after_conclusion:
-    #         conclusion = conclusion.replace(after_conclusion, '')
-    #     if affiliate:
-    #         conclusion = conclusion.replace(affiliate, '')
-    #     review.properties.append(ReviewProperty(type='conclusion', value=conclusion))
-
-
-
+        session.emit(product)
