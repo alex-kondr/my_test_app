@@ -226,6 +226,18 @@ class TestProduct:
         print(f"Count error review title: {len(error_title)}")
         self.save(error_title, type_err="rev_title")
 
+    def test_review_date(self) -> None:
+        error_date = []
+        for product in self.products:
+            properties = product.get("review", {}).get("properties", {})
+            date = [property for property in properties if property.get("type") == "date"]
+
+            if not date:
+                error_date.append(properties)
+
+        print(f"Count error review date: {len(error_date)}")
+        self.save(error_date, type_err="rev_date")
+
     def test_review_grade(self) -> None:
         error_grade = []
         for product in self.products:

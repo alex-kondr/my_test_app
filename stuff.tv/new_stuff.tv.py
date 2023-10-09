@@ -31,7 +31,7 @@ def process_review(data, context, session):
     product = Product()
     product.name = context["title"].split(" review")[0].split(" Review")[0]
     product.url = context["url"]
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = context["cat"]
 
     review = Review()
@@ -41,6 +41,8 @@ def process_review(data, context, session):
     review.url = product.url
 
     date = data.xpath("//div[@class='c-singular__author']//time[contains(@class, 'published')]/@datetime").string()
+    if not date:
+        date = data.xpath('//time[@class="c-singular__date-time published"]/@datetime').string()
     if date:
         review.date = date.split('T')[0]
 
@@ -66,21 +68,23 @@ def process_review(data, context, session):
         con = con.string()
         review.add_property(type="cons", value=con)
 
-    summary = data.xpath("//div[@class='c-singular__text']//p[@class='c-stuff-says__verdict']/text()").string()
-    if not summary:
-        summary = data.xpath("//p[@class='c-singular__subtitle']/text()").string()
+    summary = data.xpath("//p[@class='c-singular__subtitle']/text()").string()
     if not summary:
         summary = data.xpath("(//div[@class='c-singular__text']//p/strong)[1]/text()").string()
     if summary:
         review.add_property(type="summary", value=summary)
 
-    conclusion = data.xpath("//div[@class='c-singular__text']//*[contains(local-name(), 'h')][contains(@id, 'verdict')]/following-sibling::p[not(@class)]/text()").string()
+    conclusion = data.xpath('//h3[contains(@id, "verdict")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath("//div[@class='c-singular__text']//*[contains(local-name(), 'h')][contains(text(), 'verdict')]/following-sibling::p[not(@class)]/text()").string()
+        conclusion = data.xpath('//h3[contains(., "verdict") or contains(., "Verdict")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath("//div[@class='c-singular__text']//p[not(@class)][not(strong)][not(a)]//text()").string(multiple=True)
+    excerpt = data.xpath('//h3[contains(., "verdict") or contains(., "Verdict")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[.//h3[contains(., "Stuff Says")]]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath("//div[@class='c-singular__text']//p[not(@class)]//text()").string(multiple=True)
     if excerpt:
         excerpt = excerpt.split("Stuff says: ")[0]
         if conclusion:

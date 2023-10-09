@@ -32,11 +32,11 @@ def process_prodlist(data, context, session):
 
     for prod in prods:
         revs_count = prod.xpath('.//span[@itemprop="reviewCount"]/text()').string()
+        name = prod.xpath('div/@data-name').string()
+        sku = prod.xpath('div/@data-sku').string()
+        ssid = prod.xpath('div/@data-id').string()
+        url = prod.xpath('.//a[@itemprop="url"]/@href').string()
         if revs_count and int(revs_count) > 0:
-            name = prod.xpath('div/@data-name').string()
-            sku = prod.xpath('div/@data-sku').string()
-            ssid = prod.xpath('div/@data-id').string()
-            url = prod.xpath('.//a[@itemprop="url"]/@href').string()
             session.queue(Request(url), process_product, dict(context, name=name, sku=sku, ssid=ssid, url=url))
         else:
             return

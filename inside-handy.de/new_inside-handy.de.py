@@ -21,22 +21,20 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
-    product.url = context['url']
     product.ssid = context['url'].split('/')[-2]
-    product.category = data.xpath('//span[@class="td-bread-sep"]/following-sibling::span//text()').string()
+    product.category = 'Handys'
 
-    name = data.xpath('//h1[@class="entry-title td-page-title"]//span[not(@itemprop)]/text()').string()
-    if name:
-        product.name = name.split('Testbericht')[0].split('PureView')[0].strip()
+    product.url = data.xpath('//a[contains(text(), "Amazon ansehen!")]/@href').string()
+    if not product.url:
+        product.url = context['url']
 
-    product_url = data.xpath('//a[contains(., "jetzt kaufen") or contains(., "im Shop")]/@href').string()
-    if product_url:
-        product.url = product_url
+    product.name = data.xpath('//h1[@class="entry-title td-page-title"]//span[not(@itemprop)]/text()').string()
+    if product.name:
+        product.name = product.name.split('Testbericht')[0].split('PureView')[0].strip()
+    else:
+        product.name = context['title']
 
-    manufacturer = data.xpath('(//span[@class="td-bread-sep"]/following-sibling::span//span[@itemprop="name"])[2]/text()').string()
-    if manufacturer:
-        product.manufacturer = manufacturer
+    product.manufacturer = data.xpath('(//span[@class="td-bread-sep"]/following-sibling::span//span[@itemprop="name"])[2]/text()').string()
 
     imgs = data.xpath("//div[@class='td-post-content']//img/@src").strings()
     for img in imgs:
@@ -48,9 +46,9 @@ def process_review(data, context, session):
     review.title = context['title']
     review.ssid = product.ssid
 
-    review_date = data.xpath('//meta[@itemprop="datePublished"]/@content').string()
-    if review_date:
-        review.date = review_date.split('T')[0]
+    date = data.xpath('//meta[@itemprop="datePublished"]/@content').string()
+    if date:
+        review.date = date.split('T')[0]
 
     author_name = data.xpath('//span[@class="fn"]/a/text()').string()
     author_url = data.xpath('//span[@class="fn"]/a/@href').string()
@@ -69,7 +67,7 @@ def process_review(data, context, session):
 
     pros = data.xpath('//span[@id="pro"]/ancestor::h2/following-sibling::ul[1]/li')
     if not pros:
-        pros = data.xpath('//p[.//strong[starts-with(., "Pro")]]/following-sibling::ul[1]/li')
+        pros = data.xpath('//p[starts-with(., "Pro")]/following-sibling::ul[1]/li')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
