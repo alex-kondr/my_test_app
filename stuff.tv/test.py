@@ -19,7 +19,7 @@ reload = 1
 product = Product(agent, reload=reload)
 print(product.result)
 test = TestProduct(product)
-test.test_product_name(xproduct_names=[], not_xproduct_name="", len_name=3)
+test.test_product_name(xproduct_names=[], not_xproduct_name="", len_name=3)     #25
 test.test_product_category(xproduct_names=[])
 test.test_review_title(xproduct_title=[])
 test.test_review_date()
@@ -28,7 +28,7 @@ test.test_review_author()
 # test.test_review_award()
 test.test_review_pros_cons()    #15
 test.test_review_conclusion([])
-test.test_review_excerpt([], len_chank=100, len_excerpt=10)     #3
+test.test_review_excerpt([], len_chank=100, len_excerpt=10)     #4
 
 log = LogProduct(agent, reload=reload)
 test_log = TestLogProduct(log)

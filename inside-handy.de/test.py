@@ -22,6 +22,7 @@ test = TestProduct(product)
 test.test_product_name(xproduct_names=[], not_xproduct_name="", len_name=3)    #13
 test.test_product_category(xproduct_names=[])
 test.test_review_title(xproduct_title=[])
+test.test_review_date()
 test.test_review_grade()
 test.test_review_author()   #6
 # test.test_review_award()
