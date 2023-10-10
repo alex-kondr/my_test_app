@@ -80,9 +80,10 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "verdict") or contains(., "Verdict")]/preceding::div[@class="wp-block-group"]//p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath('//h3[contains(., "verdict") or contains(., "Verdict")]/preceding::p[not(@class or a[contains(@href, "about-us")] or contains(., "•"))]//text()').string(multiple=True)
+    #'//h3[contains(., "verdict") or contains(., "Verdict")]/preceding::div[@class="wp-block-group"]/div/text()'
     if not excerpt:
-        excerpt = data.xpath('//div[.//h3[contains(., "Stuff Says")]]/preceding::div[@class="wp-block-group"]//p[not(@class)]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[.//h3[contains(., "Stuff Says")]]/preceding::p[not(@class or a[contains(@href, "about-us")] or contains(., "•"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath("//div[@class='c-singular__text']//p[not(@class)]//text()").string(multiple=True)
 
