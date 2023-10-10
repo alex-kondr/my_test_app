@@ -29,9 +29,9 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context["title"].split(" review")[0].split(" Review")[0]
+    product.name = context["title"].split(" review")[0].split("review:")[0].split(" Review")[0].replace("Long Term Test:", "").replace("Long term test:", "").replace("Long-term test:", "").replace(": hands-on preview", "").replace("hands-on preview", "").replace("PureView hands-on", "").replace(" preview", "").replace("review", "").strip()
     product.url = context["url"]
-    product.ssid = product.url.split('/')[-2].replace('-review', '')
+    product.ssid = product.url.split('/')[-2].replace('-review', '').replace('-preview', '')
     product.category = context["cat"]
 
     review = Review()
@@ -80,11 +80,12 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "verdict") or contains(., "Verdict")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath('//h3[contains(., "verdict") or contains(., "Verdict")]/preceding::div[@class="wp-block-group"]//p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[.//h3[contains(., "Stuff Says")]]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[.//h3[contains(., "Stuff Says")]]/preceding::div[@class="wp-block-group"]//p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath("//div[@class='c-singular__text']//p[not(@class)]//text()").string(multiple=True)
+
     if excerpt:
         excerpt = excerpt.split("Stuff says: ")[0]
         if conclusion:

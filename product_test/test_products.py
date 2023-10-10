@@ -230,7 +230,7 @@ class TestProduct:
         error_date = []
         for product in self.products:
             properties = product.get("review", {}).get("properties", {})
-            date = [property for property in properties if property.get("type") == "date"]
+            date = [property for property in properties if property.get("type") == "publish_date"]
 
             if not date:
                 error_date.append(properties)
