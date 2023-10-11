@@ -41,7 +41,7 @@ def process_review(data, context, session):
         product.add_property(type="image", value={'src': img})
 
     review = Review()
-    review.url = product.url
+    review.url = context['url']
     review.type = "user"
     review.title = context['title']
     review.ssid = product.ssid
