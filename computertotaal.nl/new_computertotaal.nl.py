@@ -7,7 +7,7 @@ def run(context, session):
     session.queue(Request('https://id.nl/'), process_frontpage, {})
 
 
-def process_fronpage(data, context, session):
+def process_frontpage(data, context, session):
     cats = data.xpath('//div[@class="flex flex-row justify-start w-full"]/a')
     sub_cats = data.xpath('//div[@class="hidden navigation_navigation-sub-menu__V_oxX"]')
     for cat, sub_cat in zip(cats, sub_cats):
@@ -24,6 +24,6 @@ def process_fronpage(data, context, session):
                 sub_name2 = sub_cat2.xpath('.//div/text()').string()
                 print('cat=', name + '|' + sub_name + '|' + sub_name2)
                 url = sub_cat2.xpath('a/@href').string()
-                session.queue(Request(url + '?filter=Reviews'), process_revlist, dict(cat=name + '|' + sub_name + '|' + sub_name2))
+            #     session.queue(Request(url + '?filter=Reviews'), process_revlist, dict(cat=name + '|' + sub_name + '|' + sub_name2))
 
-            session.queue(Request(sub_url + '?filter=Reviews'), process_revlist, dict(cat=name + '|' + sub_name))
+            # session.queue(Request(sub_url + '?filter=Reviews'), process_revlist, dict(cat=name + '|' + sub_name))
