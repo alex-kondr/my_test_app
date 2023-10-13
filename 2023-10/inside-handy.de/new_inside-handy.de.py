@@ -14,9 +14,9 @@ def process_revlist(data, context, session):
         if url:
             session.queue(Request(url), process_review, dict(url=url, title=title))
 
-    nexturl = data.xpath("//div[@class='pager-button-next']//a/@href").string()
-    if nexturl:
-        session.queue(Request(nexturl), process_revlist, dict())
+    next_url = data.xpath("//div[@class='pager-button-next']//a/@href").string()
+    if next_url:
+        session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data, context, session):
@@ -42,7 +42,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.url = context['url']
-    review.type = "user"
+    review.type = "pro"
     review.title = context['title']
     review.ssid = product.ssid
 

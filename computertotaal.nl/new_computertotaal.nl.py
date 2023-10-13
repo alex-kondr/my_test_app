@@ -26,7 +26,6 @@ def process_frontpage(data, context, session):
                 url = sub_cat2.xpath('a/@href').string()
                 if sub_name2:
                     session.queue(Request(url + '?filter=Reviews&catid=47700387'), process_revlist, dict(cat=name + '|' + sub_name + '|' + sub_name2, url=url))
-                    return
 
             session.queue(Request(sub_url + '?filter=Reviews&catid=47700387'), process_revlist, dict(cat=name + '|' + sub_name, url=sub_url))
 
@@ -35,17 +34,14 @@ def process_revlist(data, context, session):
     offset = context.get('offset')
     product_groups = set()
     if offset:
-        print('data=', data.raw)
         revs_json = simplejson.loads(data.raw)
+        total_pages = revs_json.get('totalPages', {}).get('count')
         revs = revs_json.get('pages', {})
-        total_pages = revs_json.get('totalPages', {}).get('count', 21)
-        print('total_pages=', total_pages)
     else:
         revs_json = data.xpath('//script[@type="application/json"]/text()').string()
         revs_json = simplejson.loads(revs_json)
         revs = revs_json.get('props', {}).get('pageProps', {}).get('pageData', {}).get('pages', {})
 
-    print('count_revs', len(revs))
     for rev in revs:
         product_group_id = rev.get('productGroup', {}).get('id')
         if product_group_id:
@@ -55,10 +51,8 @@ def process_revlist(data, context, session):
         author = rev.get('author', {}).get('authorName')
         date = rev.get('publishedAt')
         title = rev.get('title')
-        print('title=', title)
         url = context['url'] + '/' + rev.get('slug')
         session.queue(Request(url), process_review, dict(ssid=ssid, author=author, data=date, title=title, url=url))
-        break
 
     product_group_ = ''
     for product_group in product_groups:
@@ -70,8 +64,8 @@ def process_revlist(data, context, session):
         offset = 20
     else:
         return
+
     options = """--compressed -X POST -H 'Content-Type: text/plain;charset=UTF-8' --data-raw '{"first":100,"skip":""" + str(offset) + ""","filter":{"pageType":{"eq":"47700387"}, "OR":{"productGroup":{"in":[""" + product_group_[:-1] + """]}}}}'"""
-    print('options=', options)
     session.queue(Request('https://id.nl/api/content/pages', use='curl', options=options), process_revlist, dict(context, offset=offset))
 
 
