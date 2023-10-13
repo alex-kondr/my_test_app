@@ -5,7 +5,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers=[SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://id.nl/'), process_frontpage, {})
 
 
@@ -49,10 +49,10 @@ def process_revlist(data, context, session):
 
         ssid = rev.get('id')
         author = rev.get('author', {}).get('authorName')
-        date = rev.get('publishedAt')
+        date = rev.get('publishedAt').split('T')[0]
         title = rev.get('title')
         url = context['url'] + '/' + rev.get('slug')
-        session.queue(Request(url), process_review, dict(ssid=ssid, author=author, data=date, title=title, url=url))
+        session.queue(Request(url), process_review, dict(context, ssid=ssid, author=author, date=date, title=title, url=url))
 
     product_group_ = ''
     for product_group in product_groups:
@@ -69,39 +69,62 @@ def process_revlist(data, context, session):
     session.queue(Request('https://id.nl/api/content/pages', use='curl', options=options), process_revlist, dict(context, offset=offset))
 
 
-def process_review(data,context, session):
+def process_review(data, context, session):
     product = Product()
     product.url = context['url']
     product.ssid = context['ssid']
     product.category = context['cat']
 
-    product.name = data.xpath('//p[contains(@class, "text-2xl")]/text()').string()
-    if not product.name:
-        product.name = context['title']
+    name = data.xpath('//p[contains(@class, "text-2xl")]/text()').string()
+    if name:
+        product.name = name.replace('Review', '').strip()
+    else:
+        product.name = context['title'].replace('Review', '').strip()
 
     review = Review()
     review.type = 'pro'
+    review.title = context['title']
     review.url = product.url
+    review.ssid = product.ssid
     review.date = context['date']
-    review.authors.append(Person(name=context['author'], ssid=context['author']))
+
+    author_url = data.xpath('//div[@class="flex content-center mb-3 md:mb-4"]/a/@href').string()
+    if author_url:
+        review.authors.append(Person(name=context['author'], ssid=context['author'], profile_url=author_url))
+    else:
+        review.authors.append(Person(name=context['author'], ssid=context['author']))
 
     grade_overall = data.xpath('//div[contains(@class, "bg-primary p-2")]/text()').string()
     if grade_overall:
         grade_overall = float(grade_overall.replace(',', '.'))
         review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
 
-    summary = data.xapth('//div[@class="undefined max-w-full mb-2"]//text()').string(multiple=True)
+    summary = data.xpath('//div[@class="undefined max-w-full mb-2"]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
     pros = data.xpath('//div[p[text()="Pluspunten"]]//p[@class="small"]')
+    if not pros:
+        pros = data.xpath('//ul[contains(., "Pluspunten")]/li[not(contains(., "Pluspunten"))]')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[p[text()="Minpunten"]]//p[@class="small"]')
+    if not cons:
+        cons = data.xpath('//ul[contains(., "Minpunten")]/li[not(contains(., "Minpunten"))]')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(text(), "Conclusie")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(text(), "Conclusie")]/following-sibling::p/text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//div[@class="md:col-span-8"]/p[not(contains(., "Lees ook:"))]//text()').string(multiple=True)
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+    product.reviews.append(review)
+
+    session.emit(product)
