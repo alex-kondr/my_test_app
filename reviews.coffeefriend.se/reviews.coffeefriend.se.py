@@ -3,7 +3,7 @@ from models.products import *
 
 
 XCAT = ['ERBJUDANDEN', 'Kontakter']
-XSUBCAT = ['Enligt metoden för bryggning', 'Varumärken', 'För Företag', 'Manuell kaffebryggare', 'Tips för rengöring av din kaffemaskin', 'Köksapparater varumärken', 'Packning']
+XSUBCAT = ['Enligt metoden för bryggning', 'Varumärken', 'För Företag', 'Tips för rengöring av din kaffemaskin', 'Köksapparater varumärken', 'Packning']
 
 
 def run(context, session):
@@ -26,7 +26,9 @@ def process_catlist(data, context, session):
                         sub_cat1_name = sub_cat1.xpath('a/text()').string()
                         url = sub_cat1.xpath('a/@href').string()
 
-                        if not sub_cat1_name.startswith('All'):
+                        if sub_cat1_name.startswith('All') or sub_cat1_name == sub_cat_name:
+                            session.queue(Request(url+'?orderby=rating', use='curl', options='--data-raw "ppp=48"', max_age=0), process_prodlist, dict(cat=cat_name+'|'+sub_cat_name))
+                        else:
                             session.queue(Request(url+'?orderby=rating', use='curl', options='--data-raw "ppp=48"', max_age=0), process_prodlist, dict(cat=cat_name+'|'+sub_cat_name+'|'+sub_cat1_name))
 
 
@@ -53,7 +55,7 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.category = context['cat'].replace('Typ|', '')
+    product.category = context['cat'].replace('|Typ', '')
     product.ssid = context['ssid']
     product.sku = context['sku']
     product.manufacturer = data.xpath('//div[@class="spec" and contains(., "Tillverkare")]/div[not(text()="Tillverkare")]/text()').string()

@@ -6,10 +6,10 @@ import simplejson
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request('https://id.nl/'), process_frontpage, {})
+    session.queue(Request('https://id.nl/'), process_catlist, {})
 
 
-def process_frontpage(data, context, session):
+def process_catlist(data, context, session):
     cats = data.xpath('//div[@class="flex flex-row justify-start w-full"]/a')
     sub_cats = data.xpath('//div[@class="hidden navigation_navigation-sub-menu__V_oxX"]')
     for cat, sub_cat in zip(cats, sub_cats):
@@ -76,10 +76,9 @@ def process_review(data, context, session):
     product.category = context['cat']
 
     name = data.xpath('//p[contains(@class, "text-2xl")]/text()').string()
-    if name:
-        product.name = name.replace('Review', '').strip()
-    else:
-        product.name = context['title'].replace('Review', '').strip()
+    if not name:
+        name = context['title']
+    product.name = name.replace('Review', '').replace('getest', '').replace('...', '').replace('- Getest', '').replace('Getest:', '').replace('Massatest:', '').replace('Consumenten testen:', '').replace('Test ', '').strip()
 
     review = Review()
     review.type = 'pro'
@@ -104,27 +103,44 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     pros = data.xpath('//div[p[text()="Pluspunten"]]//p[@class="small"]')
-    if not pros:
-        pros = data.xpath('//ul[contains(., "Pluspunten")]/li[not(contains(., "Pluspunten"))]')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         review.add_property(type='pros', value=pro)
 
+    pros = data.xpath('//li[p[text()="Minpunten"]]')
+    for pros_ in pros:
+        pros_ = pros_.xpath('preceding-sibling::li/p[not(text()="Pluspunten")]')
+        for pro in pros_:
+            pro = pro.xpath('.//text()').string(multiple=True)
+            review.add_property(type='pros', value=pro)
+
     cons = data.xpath('//div[p[text()="Minpunten"]]//p[@class="small"]')
-    if not cons:
-        cons = data.xpath('//ul[contains(., "Minpunten")]/li[not(contains(., "Minpunten"))]')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
+
+    cons = data.xpath('//li[p[text()="Minpunten"]]')
+    for cons_ in cons:
+        cons_ = cons_.xpath('following-sibling::li/p')
+        for con in cons_:
+            con = con.xpath('.//text()').string(multiple=True)
+            review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//h2[contains(text(), "Conclusie")]/following-sibling::p/text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="md:col-span-8"]/p[not(contains(., "Lees ook:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//p[contains(., "Pluspunten")]/preceding-sibling::p[not(contains(., "Pluspunten") or contains(., "Minpunten"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[contains(., "Minpunten")]/preceding-sibling::p[not(contains(., "Pluspunten") or contains(., "Minpunten"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h2[contains(text(), "Conclusie")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="md:col-span-8"]/p[not(contains(., "Lees ook:"))]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
-    product.reviews.append(review)
+        product.reviews.append(review)
 
-    session.emit(product)
+        session.emit(product)
