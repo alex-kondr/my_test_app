@@ -65,15 +65,16 @@ def process_product(data, context, session):
         product.add_property(type='id.ean', value=ean)
 
     context['product'] = product
-    process_review(data, context, session)
+    process_reviews(data, context, session)
 
 
-def process_review(data, context, session):
+def process_reviews(data, context, session):
+    product = context['product']
     revs = data.xpath('//body[div[@class="comment-info"]]')
     for rev in revs:
         review = Review()
         review.type = 'user'
-        review.url = context['product'].url
+        review.url = product.url
         review.date = rev.xpath('./following-sibling::body[1]/div[@class="comment-date"]/text()').string()
 
         author = rev.xpath('.//div[@class="user-name"]/text()').string()
@@ -98,12 +99,12 @@ def process_review(data, context, session):
 
             review.ssid = review.digest() if author else review.digest(excerpt)
 
-            context['product'].reviews.append(review)
+            product.reviews.append(review)
 
     if data.xpath('//span[text()="Nästa"]/text()').string():
         next_page = context.get('page', 1) + 1
-        next_url = context['product'].url + 'comment-page-' + str(next_page) + '/'
-        session.queue(Request(next_url), process_review, dict(context, page=next_page))
+        next_url = product.url + 'comment-page-' + str(next_page) + '/'
+        session.queue(Request(next_url), process_reviews, dict(product=product, page=next_page))
 
-    elif context['product'].reviews:
-        session.emit(context['product'])
+    elif product.reviews:
+        session.emit(product)
