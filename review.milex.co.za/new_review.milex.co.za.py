@@ -1,19 +1,28 @@
 from agent import *
 from models.products import *
+
 import simplejson
 
 
+XCAT = ["View the Milex Range", "Request Spares"]
+
+
 def run(context, session):
-    session.queue(Request("https://milex.co.za/", use="curl", force_charset="utf-8"), process_frontpage, dict())
+    session.queue(Request("https://milex.co.za/"), process_catlist, dict())
 
 
-def process_frontpage(data, context, session):
-    cats1 = data.xpath("//li[contains(@class, 'lvl1 parent dropdown')]//ul/li")
-    for cat1 in cats1:
-        cat1_name = cat1.xpath(".//a[contains(@class, 'site-nav lvl-1')]/text()").string()
-        if cat1_name != "View the Milex Range":
-            url = cat1.xpath(".//a[contains(@class, 'site-nav lvl-1')]/@href").string()
-            session.queue(Request(url, use="curl", force_charset="utf-8"), process_prodlist, dict(cat=cat1_name, url=url))
+def process_catlist(data, context, session):
+    cats = data.xpath("//li[contains(@class, 'lvl1 parent dropdown')]")
+    for cat in cats:
+        name = cat.xpath("a/text()").string()
+
+        sub_cats = cat.xpath(".//li")
+        for sub_cat in sub_cats:
+            sub_name = sub_cat.xpath("a/text()").string()
+            url = sub_cat.xpath("a/@href").string()
+
+            if sub_name not in XCAT:
+                session.queue(Request(url), process_prodlist, dict(cat=name + "|" + sub_name, url=url))
 
 
 def process_prodlist(data, context, session):
@@ -21,37 +30,36 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod.xpath(".//a[contains(@class, 'grid-view-item__title')]/text()").string()
         url = prod.xpath(".//a[contains(@class, 'grid-view-item__title')]/@href").string()
-        ssid = prod.xpath(".//span[@class='shopify-product-reviews-badge']/@data-id").string()
 
-        rating = prod.xpath(".//span[contains(@class, 'jdgm-prev-badge__text')]/text()")
-        if url and rating != "No reviews":
-            session.queue(Request(url, use="curl", force_charset="utf-8"), process_product, dict(context, name=name, url=url, ssid=ssid))
+        revs = prod.xpath(".//span[contains(@class, 'jdgm-prev-badge__text')]/text()").string()
+        if url and revs != "No reviews":
+            session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
-    if prods:
-        page = context.get("page", 1) + 1
-        next_url = context['url'] + "?page=" + str(page)
-        session.queue(Request(next_url, use="curl", force_charset="utf-8"), process_prodlist, dict(context, page=page))
-        
 
 def process_product(data, context, session):
+    product_json = data.xpath("""//script[@type='application/ld+json']/text()[contains(., '"@type": "Product"')]""").string()
+    product_json = simplejson.loads(product_json)
+
     product = Product()
     product.name = context["name"]
     product.url = context["url"]
-    product.ssid = context["ssid"]
+    product.ssid = data.xpath("//input[@name='product-id']/@value").string()
     product.category = context["cat"]
     product.manufacturer = "Milex"
-    
-    revs_url = "https://judge.me/reviews/reviews_for_widget?url=milex-south-africa.myshopify.com&shop_domain=milex-south-africa.myshopify.com&platform=shopify&page=" 
-    session.do(Request(revs_url + '1' + "&per_page=5&product_id=" + context["ssid"], use="curl", force_charset="utf-8"), process_reviews, dict(product=product, revs_url=revs_url, ssid_2=context["ssid"]))
-    
+    product.sku = product_json["sku"]
+    product.add_property(type='id.manufacturer', value=product_json["mpn"])
+
+    revs_url = "https://judge.me/reviews/reviews_for_widget?url=milex-south-africa.myshopify.com&shop_domain=milex-south-africa.myshopify.com&platform=shopify&page="
+    session.do(Request(revs_url + '1' + "&per_page=5&product_id=" + product.ssid), process_reviews, dict(product=product, revs_url=revs_url))
+
 
 def process_reviews(data, context, session):
     product = context["product"]
 
-    json = simplejson.loads(data.content.replace("{}\r\n", ''))
-    html = data.parse_fragment(json["html"])
+    revs_json = simplejson.loads(data.content.replace("{}\r\n", ''))
+    new_data = data.parse_fragment(revs_json["html"])
 
-    revs = html.xpath("//div[@class='jdgm-rev-widg__reviews']/div")
+    revs = new_data.xpath("//div[@class='jdgm-rev-widg__reviews']/div")
     for rev in revs:
         review = Review()
         review.type = "user"
@@ -59,15 +67,13 @@ def process_reviews(data, context, session):
         review.ssid = rev.xpath("@data-review-id").string()
         review.url = product.url
 
-        review.date = rev.xpath(".//span[contains(@class, 'jdgm-rev__timestamp')]/@data-content").string()
-        if review.date:
-            review.date = review.date.split(' ')[0]
+        date = rev.xpath(".//span[contains(@class, 'jdgm-rev__timestamp')]/@data-content").string()
+        if date:
+            review.date = date.split(' ')[0]
 
         is_verified_buyer = rev.xpath("@data-verified-buyer").string()
         if is_verified_buyer == "true":
             review.add_property(type="is_verified_buyer", value=True)
-        else:
-            continue
 
         grade_overall = rev.xpath(".//span[contains(@class, 'jdgm-rev__rating')]/@data-score").string()
         if grade_overall:
@@ -82,11 +88,10 @@ def process_reviews(data, context, session):
             review.add_property(type="excerpt", value=excerpt)
 
             product.reviews.append(review)
-    
-    ssid_2 = context["ssid_2"]
+
     if revs:
         page = context.get("page", 1) + 1
-        session.do(Request(context["revs_url"] + str(page) + "&per_page=5&product_id=" + ssid_2, use="curl", force_charset="utf-8"), process_reviews, dict(context, page=page))
+        session.do(Request(context["revs_url"] + str(page) + "&per_page=5&product_id=" + product.ssid), process_reviews, dict(context, product=product, page=page))
 
     elif product.reviews:
         session.emit(product)
