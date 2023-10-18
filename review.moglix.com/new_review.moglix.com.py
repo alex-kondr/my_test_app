@@ -22,31 +22,31 @@ def process_catlist(data, context, session):
             for sub_cat1 in sub_cats1:
                 sub_name1 = sub_cat1.xpath('text()').string()
                 url = sub_cat1.xpath('@href').string()
-                ###########################
-                session.queue(Request(url), process_subcatlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
 
-
-def process_subcatlist(data, context, session):
-    subcats = data.xpath("//div[@class='allCategorySlide']")
-    for subcat in subcats:
-        name = subcat.xpath("p/text()").string()
-        url = subcat.xpath("a/@href").string()
-        session.queue(Request(url, use="curl", force_charset="utf-8"), process_prodlist, dict(cat=context["cat"]+'|'+name))
+            else:
+                url = sub_cat.xpath('a[strong]/@href').string()
+                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
+        else:
+            url = cat.xpath('a/@href').string()
+            session.queue(Request(url), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
-    prods = data.xpath("//div[contains(@class, 'row prod_list')]/div")
+    prods = data.xpath('//div[@class="product-vertical-grid-card-container"]')
     for prod in prods:
-        name = prod.xpath("a/@title").string()
-        url = prod.xpath("a/@href").string()
+        name = prod.xpath('.//div[@class="name"]//span/text()').string()
+        if name:
+            manufacturer = prod.xpath('.//div[@class="brand"]/span/text()').string().replace('By:', '').strip()
+            url = prod.xpath('.//div[@class="name"]/a/@href').string()
 
-        revs_count = prod.xpath(".//span[contains(@class, 'ratingCount')]")
-        if revs_count:
-            session.queue(Request(url, use="curl", force_charset="utf-8"), process_product, dict(context, name=name, url=url))
+            revs_count = prod.xpath('.//span[@class="count"]/text()')
+            if revs_count:
+                session.queue(Request(url), process_product, dict(context, name=name, manufacturer=manufacturer, url=url))
 
-    next_url = data.xpath("//link[@rel='next']/@href").string()
+    next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use="curl", force_charset="utf-8"), process_prodlist, dict(context))
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -62,15 +62,18 @@ def process_product(data, context, session):
         product.add_property(type="id.manufacturer", value=mpn)
         product.ssid = mpn
 
-    revs_info = data.xpath("//script[@id='online-web-state']/text()").string()
-    if not "reviewList" in revs_info:
-        return
+    revs_json = data.xpath('//script[@type="application/json"]/text()').string().replace('&q;', '"')
+    revs_json = simplejson.loads(revs_json)
+    revs = revs_json['product-review-msnl5gl1p4wek4']['data']['reviewList']
+    # revs_info = data.xpath("//script[@id='online-web-state']/text()").string()
+    # if not "reviewList" in revs_info:
+    #     return
 
-    revs_info = revs_info.replace("&q;", "\"")
-    revs_info = '{"reviews"' + revs_info.split('"RRD"')[-1].split('"RRDC"')[0][:-1].replace('\n', '') + '}'
-    revs_info = simplejson.loads(revs_info)
+    # revs_info = revs_info.replace("&q;", "\"")
+    # revs_info = '{"reviews"' + revs_info.split('"RRD"')[-1].split('"RRDC"')[0][:-1].replace('\n', '') + '}'
+    # revs_info = simplejson.loads(revs_info)
 
-    revs = revs_info["reviews"]["reviewList"]
+    # revs = revs_info["reviews"]["reviewList"]
     for rev in revs:
         review = Review()
         review.type = "user"
