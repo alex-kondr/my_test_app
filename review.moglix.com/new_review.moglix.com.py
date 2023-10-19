@@ -73,44 +73,45 @@ def process_product(data, context, session):
     else:
         revs = revs_json.get('product-review-' + product.ssid.split('-')[0], {}).get('data', {}).get('reviewList', {})
 
-    for rev in revs:
-        review = Review()
-        review.type = 'user'
-        review.title = rev['reviewSubject']
-        review.ssid = rev['reviewId']
-        review.url = product.url
+    if revs:
+        for rev in revs:
+            review = Review()
+            review.type = 'user'
+            review.title = rev['reviewSubject']
+            review.ssid = rev['reviewId']
+            review.url = product.url
 
-        date = rev.get('createdAt')
-        if not date:
-            date = rev.get('updatedAt')
-        if date:
-            review.date = date.split('T')[0]
+            date = rev.get('createdAt')
+            if not date:
+                date = rev.get('updatedAt')
+            if date:
+                review.date = date.split('T')[0]
 
-        grade_overall = rev.get('rating')
-        if grade_overall:
-            review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
+            grade_overall = rev.get('rating')
+            if grade_overall:
+                review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
 
-        author = rev.get('userName')
-        if author:
-            review.authors.append(Person(name=author, ssid=author))
+            author = rev.get('userName')
+            if author:
+                review.authors.append(Person(name=author, ssid=author))
 
-        is_verified = rev.get('isApproved')
-        if is_verified:
-            review.add_property(type="is_verified_buyer", value=True)
+            is_verified = rev.get('isApproved')
+            if is_verified:
+                review.add_property(type="is_verified_buyer", value=True)
 
-        helpful = rev.get('isReviewHelpfulCountYes')
-        if helpful:
-            review.add_property(type='helpful_votes', value=helpful)
+            helpful = rev.get('isReviewHelpfulCountYes')
+            if helpful:
+                review.add_property(type='helpful_votes', value=helpful)
 
-        not_helpful = rev.get('isReviewHelpfulCountNo')
-        if not_helpful:
-            review.add_property(type='not_helpful_votes', value=not_helpful)
+            not_helpful = rev.get('isReviewHelpfulCountNo')
+            if not_helpful:
+                review.add_property(type='not_helpful_votes', value=not_helpful)
 
-        excerpt = rev.get('reviewText')
-        if excerpt:
-            review.add_property(type="excerpt", value=excerpt)
+            excerpt = rev.get('reviewText')
+            if excerpt:
+                review.add_property(type="excerpt", value=excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
-    if product.reviews:
-        session.emit(product)
+        if product.reviews:
+            session.emit(product)
