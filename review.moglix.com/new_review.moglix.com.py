@@ -37,12 +37,13 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod.xpath('.//div[@class="name"]//span/text()').string()
         if name:
-            manufacturer = prod.xpath('.//div[@class="brand"]/span/text()').string().replace('By:', '').strip()
+            manufacturer = prod.xpath('.//div[contains(@class, "brand")]/span/text()').string().replace('By:', '').strip()
             url = prod.xpath('.//div[@class="name"]/a/@href').string()
 
-            revs_count = prod.xpath('.//span[@class="count"]/text()')
-            if revs_count:
+            if prod.xpath('.//span[starts-with(@class, "count")]/text()'):
                 session.queue(Request(url), process_product, dict(context, name=name, manufacturer=manufacturer, url=url))
+        else:
+            return
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -51,54 +52,64 @@ def process_prodlist(data, context, session):
 
 def process_product(data, context, session):
     product = Product()
+
+    prod_json = data.xpath('//script[@type="application/ld+json"]/text()[contains(., "sku")]').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
+        product.sku = prod_json['sku']
+        product.add_property(type="id.manufacturer", value=prod_json['mpn'])
+
     product.name = context["name"]
     product.url = context["url"]
-    product.ssid = context["url"].split('/')[-1]
+    product.ssid = context['url'].split('/')[-1]
     product.category = context["cat"]
-    product.manufacturer = data.xpath("//h3[@id='product-spec']/following-sibling::div[1]//table/tr/td[contains(text(), 'Brand')]/following-sibling::td//text()").string()
-
-    mpn = data.xpath("//h3[@id='product-spec']/following-sibling::div[1]//table/tr/td[contains(text(), 'Item Code')]/following-sibling::td//text()").string()
-    if mpn:
-        product.add_property(type="id.manufacturer", value=mpn)
-        product.ssid = mpn
+    product.manufacturer = context['manufacturer']
 
     revs_json = data.xpath('//script[@type="application/json"]/text()').string().replace('&q;', '"')
     revs_json = simplejson.loads(revs_json)
-    revs = revs_json['product-review-msnl5gl1p4wek4']['data']['reviewList']
-    # revs_info = data.xpath("//script[@id='online-web-state']/text()").string()
-    # if not "reviewList" in revs_info:
-    #     return
 
-    # revs_info = revs_info.replace("&q;", "\"")
-    # revs_info = '{"reviews"' + revs_info.split('"RRD"')[-1].split('"RRDC"')[0][:-1].replace('\n', '') + '}'
-    # revs_info = simplejson.loads(revs_info)
+    if product.sku:
+        revs = revs_json.get('product-review-' + product.sku.lower(), {}).get('data', {}).get('reviewList', {})
+    else:
+        revs = revs_json.get('product-review-' + product.ssid.split('-')[0], {}).get('data', {}).get('reviewList', {})
 
-    # revs = revs_info["reviews"]["reviewList"]
     for rev in revs:
         review = Review()
-        review.type = "user"
-        review.title = rev["review_subject"]
-        review.ssid = rev["review_id"]["uuid"]
-        review.date = rev["date"]
+        review.type = 'user'
+        review.title = rev['reviewSubject']
+        review.ssid = rev['reviewId']
         review.url = product.url
 
-        overall = int(rev["rating"])
-        if overall > 5:
-            overall = 5
-        review.grades.append(Grade(type="overall", value=overall, best=5))
+        date = rev.get('createdAt')
+        if not date:
+            date = rev.get('updatedAt')
+        if date:
+            review.date = date.split('T')[0]
 
-        author = rev["user_name"]
+        grade_overall = rev.get('rating')
+        if grade_overall:
+            review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
+
+        author = rev.get('userName')
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-        is_verified = rev["is_approved"]
-        review.add_property(type="is_verified_buyer", value=is_verified)
+        is_verified = rev.get('isApproved')
+        if is_verified:
+            review.add_property(type="is_verified_buyer", value=True)
 
-        excerpt = rev["review_text"]
+        helpful = rev.get('isReviewHelpfulCountYes')
+        if helpful:
+            review.add_property(type='helpful_votes', value=helpful)
+
+        not_helpful = rev.get('isReviewHelpfulCountNo')
+        if not_helpful:
+            review.add_property(type='not_helpful_votes', value=not_helpful)
+
+        excerpt = rev.get('reviewText')
         if excerpt:
-            excerpt = excerpt.strip()
-
             review.add_property(type="excerpt", value=excerpt)
+
             product.reviews.append(review)
 
     if product.reviews:
