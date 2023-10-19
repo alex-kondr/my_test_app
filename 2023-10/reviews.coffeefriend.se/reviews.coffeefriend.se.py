@@ -43,8 +43,6 @@ def process_prodlist(data, context, session):
         revs_count = prod.xpath('.//span[@itemprop="reviewCount"]/text()').string()
         if revs_count and int(revs_count) > 0:
             session.queue(Request(url), process_product, dict(context, name=name, sku=sku, ssid=ssid, url=url))
-        else:
-            return
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
