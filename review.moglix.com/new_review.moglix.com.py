@@ -4,6 +4,9 @@ from models.products import *
 import simplejson
 
 
+XCAT = ['Ink Cartridges', 'Paper & Notebooks', 'Softwares', 'Gifts & Combos', 'Wires & Cables', 'Wire & Cable Accessories', 'Paints & Coatings', 'USB Data Cables', 'Mobile Cases & Covers', 'Mobile Screen Guards', 'Aux Cables', 'Mobile Camera Protectors', 'Network Cables']
+
+
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.moglix.com/all-categories'), process_catlist, dict())
@@ -14,22 +17,26 @@ def process_catlist(data, context, session):
     for cat in cats:
         name = cat.xpath('h3[@class="red-txt"]/text()').string()
 
-        sub_cats = cat.xpath('.//div[@class="cate-type"]')
-        for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath('.//strong[@data-_ngcontent-sc230]/text()').string()
+        if name not in XCAT:
+            sub_cats = cat.xpath('.//div[@class="cate-type"]')
+            for sub_cat in sub_cats:
+                sub_name = sub_cat.xpath('.//strong[@*[contains(name(), "data-_ngcontent-sc")]]/text()').string()
 
-            sub_cats1 = sub_cat.xpath('a[not(strong)]')
-            for sub_cat1 in sub_cats1:
-                sub_name1 = sub_cat1.xpath('text()').string()
-                url = sub_cat1.xpath('@href').string()
-                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                if sub_name not in XCAT:
+                    sub_cats1 = sub_cat.xpath('a[not(strong)]')
+                    for sub_cat1 in sub_cats1:
+                        sub_name1 = sub_cat1.xpath('text()').string()
+                        url = sub_cat1.xpath('@href').string()
 
+                        if sub_name1 not in XCAT:
+                            session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+
+                    else:
+                        url = sub_cat.xpath('a[strong]/@href').string()
+                        session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
             else:
-                url = sub_cat.xpath('a[strong]/@href').string()
-                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
-        else:
-            url = cat.xpath('a/@href').string()
-            session.queue(Request(url), process_prodlist, dict(cat=name))
+                url = cat.xpath('a/@href').string()
+                session.queue(Request(url), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
@@ -56,13 +63,12 @@ def process_product(data, context, session):
     prod_json = data.xpath('//script[@type="application/ld+json"]/text()[contains(., "sku")]').string()
     if prod_json:
         prod_json = simplejson.loads(prod_json)
-        product.sku = prod_json['sku']
-        product.add_property(type="id.manufacturer", value=prod_json['mpn'])
+        product.sku = prod_json.get('sku')
 
-    product.name = context["name"]
-    product.url = context["url"]
+    product.name = context['name']
+    product.url = context['url']
     product.ssid = context['url'].split('/')[-1]
-    product.category = context["cat"]
+    product.category = context['cat'].replace('Other ', '')
     product.manufacturer = context['manufacturer']
 
     revs_json = data.xpath('//script[@type="application/json"]/text()').string().replace('&q;', '"')
@@ -73,45 +79,47 @@ def process_product(data, context, session):
     else:
         revs = revs_json.get('product-review-' + product.ssid.split('-')[0], {}).get('data', {}).get('reviewList', {})
 
-    if revs:
-        for rev in revs:
-            review = Review()
-            review.type = 'user'
-            review.title = rev['reviewSubject']
-            review.ssid = rev['reviewId']
-            review.url = product.url
+    if not revs:
+        return
 
-            date = rev.get('createdAt')
-            if not date:
-                date = rev.get('updatedAt')
-            if date:
-                review.date = date.split('T')[0]
+    for rev in revs:
+        review = Review()
+        review.type = 'user'
+        review.title = rev['reviewSubject']
+        review.ssid = rev['reviewId']
+        review.url = product.url
 
-            grade_overall = rev.get('rating')
-            if grade_overall:
-                review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
+        date = rev.get('createdAt')
+        if not date:
+            date = rev.get('updatedAt')
+        if date:
+            review.date = date.split('T')[0]
 
-            author = rev.get('userName')
-            if author:
-                review.authors.append(Person(name=author, ssid=author))
+        grade_overall = rev.get('rating')
+        if grade_overall:
+            review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
 
-            is_verified = rev.get('isApproved')
-            if is_verified:
-                review.add_property(type="is_verified_buyer", value=True)
+        author = rev.get('userName')
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
 
-            helpful = rev.get('isReviewHelpfulCountYes')
-            if helpful:
-                review.add_property(type='helpful_votes', value=helpful)
+        is_verified = rev.get('isApproved')
+        if is_verified:
+            review.add_property(type="is_verified_buyer", value=True)
 
-            not_helpful = rev.get('isReviewHelpfulCountNo')
-            if not_helpful:
-                review.add_property(type='not_helpful_votes', value=not_helpful)
+        helpful = rev.get('isReviewHelpfulCountYes')
+        if helpful:
+            review.add_property(type='helpful_votes', value=helpful)
 
-            excerpt = rev.get('reviewText')
-            if excerpt:
-                review.add_property(type="excerpt", value=excerpt)
+        not_helpful = rev.get('isReviewHelpfulCountNo')
+        if not_helpful:
+            review.add_property(type='not_helpful_votes', value=not_helpful)
 
-                product.reviews.append(review)
+        excerpt = rev.get('reviewText')
+        if excerpt:
+            review.add_property(type='excerpt', value=excerpt)
 
-        if product.reviews:
-            session.emit(product)
+            product.reviews.append(review)
+
+    if product.reviews:
+        session.emit(product)

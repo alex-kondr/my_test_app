@@ -10,7 +10,7 @@ def run(context, session):
 
 
 def process_catlist(data, context, session):
-    cats = data.xpath("//ul[contains(@class, 'megamenu')]/li[(contains(@class, 'with-sub-menu') or @class='fyndmenu') and not(contains(@class, 'pull-right'))][position() < 6]")
+    cats = data.xpath("//ul[contains(@class, 'megamenu')]/li[(contains(@class, 'with-sub-menu') or @class='fyndmenu') and not(contains(@class, 'pull-right'))]")
     for cat in cats:
         name = cat.xpath("a/span//text()").string()
 
@@ -37,10 +37,17 @@ def process_catlist(data, context, session):
 def process_prodlist(data, context, session):
     prods = data.xpath("//div[@class='item well']")
     for prod in prods:
-        name = prod.xpath(".//span[@class='product-name']/a/text()").string()
-        manufacturer = prod.xpath(".//div[@class='details-area']//p/a/i/text()").string()
+        product = Product()
+        product.name = prod.xpath(".//span[@class='product-name']/a/text()").string()
+        product.url = prod.xpath(".//span[@class='product-name']/a/@href").string()
+        product.ssid = product.url.split('/')[-1].split('?')[0]
+        product.category = context["cat"]
+        product.manufacturer = prod.xpath(".//div[@class='details-area']//p/a/i/text()").string()
+
         mpn = prod.xpath(".//div[@class='details-area']//p/text()").string(multiple=True)
-        url = prod.xpath(".//span[@class='product-name']/a/@href").string()
+        if mpn:
+            mpn = mpn.split(' -')[0].strip()
+            product.properties.append(ProductProperty(type="id.manufacturer", value=mpn))
 
         product_id = prod.xpath(".//a[contains(@class, 'btn-wishlist')]/@onclick").string().split("'", 1)[-1].replace("');", "")
         revs_url = "https://www.lohelectronics.se/product/product/review?product_id=" + product_id + "&page=1"
@@ -48,29 +55,13 @@ def process_prodlist(data, context, session):
         rating = prod.xpath(".//div[contains(@class, 'star-rating')]")
         if rating:
             options = "--compressed -H 'X-Requested-With: XMLHttpRequest'"
-            session.queue(Request(revs_url, use='curl', options=options, max_age=0, force_charset='utf-8'), process_product, dict(context, name=name, url=url, manufacturer=manufacturer, mpn=mpn))
+            session.do(Request(revs_url, use='curl', options=options, max_age=0, force_charset='utf-8'), process_reviews, dict(product=product))
         else:
             return
 
-    next_url = data.xpath("//a[i[@class='fas fa-chevron-right'] and not(i[@style])]").string()
+    next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
         session.queue(Request(next_url), process_prodlist, dict(context))
-
-
-def process_product(data, context, session):
-        product = Product()
-        product.name = context["name"]
-        product.url = context["url"].split("?")[0]
-        product.ssid = product.url.split('/')[-1].split('?')[0]
-        product.category = context["cat"]
-        product.manufacturer = context["manufacturer"]
-
-        if context["mpn"]:
-            mpn = context["mpn"].split(' -')[0].strip()
-            product.properties.append(ProductProperty(type="id.manufacturer", value=mpn))
-
-        context["product"] = product
-        process_reviews(data, context, session)
 
 
 def process_reviews(data, context, session):
