@@ -70,6 +70,11 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
+    conclusion_json = ''
+    prod_json = data.xpath('//script[@type="application/json"]/text()').string()
+    if prod_json:
+        conclusion_json = simplejson.loads(prod_json).get('props', {}).get('pageProps', {}).get('pageData', {}).get('articleContentBody', [{}])[0].get('content', {}).get('blocks', [{}])[0].get('conclusion')
+
     product = Product()
     product.url = context['url']
     product.ssid = context['ssid']
@@ -80,67 +85,99 @@ def process_review(data, context, session):
         name = context['title']
     product.name = name.replace('Review', '').replace('getest', '').replace('...', '').replace('- Getest', '').replace('Getest:', '').replace('Massatest:', '').replace('Consumenten testen:', '').replace('Test ', '').strip()
 
-    review = Review()
-    review.type = 'pro'
-    review.title = context['title']
-    review.url = product.url
-    review.ssid = product.ssid
-    review.date = context['date']
+    if 'Waar voor je geld:' in name:
+        revs = data.xpath('//h2[@class="heading2 mt-3 mb-1"]')
+        for rev in revs:
+            product.name = rev.xpath('text()')
+            product.ssid = product.name.lower().replace('', '-').replace('(', '').replace(')', '')
 
-    author_url = data.xpath('//div[@class="flex content-center mb-3 md:mb-4"]/a/@href').string()
-    if author_url:
-        review.authors.append(Person(name=context['author'], ssid=context['author'], profile_url=author_url))
+            review = Review()
+            review.type = 'pro'
+            review.title = product.name
+            review.url = product.url
+            review.ssid = product.ssid
+            review.date = context['date']
+            author_url = data.xpath('//div[@class="flex content-center mb-3 md:mb-4"]/a/@href').string()
+            if author_url:
+                review.authors.append(Person(name=context['author'], ssid=context['author'], profile_url=author_url))
+            else:
+                review.authors.append(Person(name=context['author'], ssid=context['author']))
+
+            excerpt = rev.xpath('following-sibling::p[position() < 3]//text()').string()
+            if excerpt:
+                review.add_property(type='excerpt', value=excerpt)
+
+                product.reviews.append(review)
+
+                session.emit(product)
+
     else:
-        review.authors.append(Person(name=context['author'], ssid=context['author']))
+        review = Review()
+        review.type = 'pro'
+        review.title = context['title']
+        review.url = product.url
+        review.ssid = product.ssid
+        review.date = context['date']
 
-    grade_overall = data.xpath('//div[contains(@class, "bg-primary p-2")]/text()').string()
-    if grade_overall:
-        grade_overall = float(grade_overall.replace(',', '.'))
-        review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
+        author_url = data.xpath('//div[@class="flex content-center mb-3 md:mb-4"]/a/@href').string()
+        if author_url:
+            review.authors.append(Person(name=context['author'], ssid=context['author'], profile_url=author_url))
+        else:
+            review.authors.append(Person(name=context['author'], ssid=context['author']))
 
-    summary = data.xpath('//div[@class="undefined max-w-full mb-2"]//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
+        grade_overall = data.xpath('//div[contains(@class, "bg-primary p-2")]/text()').string()
+        if grade_overall:
+            grade_overall = float(grade_overall.replace(',', '.'))
+            review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
 
-    pros = data.xpath('//div[p[text()="Pluspunten"]]//p[@class="small"]')
-    for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
-        review.add_property(type='pros', value=pro)
+        summary = data.xpath('//div[@class="undefined max-w-full mb-2"]//text()').string(multiple=True)
+        if summary:
+            review.add_property(type='summary', value=summary)
 
-    pros = data.xpath('//li[p[text()="Minpunten"]]')
-    for pros_ in pros:
-        pros_ = pros_.xpath('preceding-sibling::li/p[not(text()="Pluspunten")]')
-        for pro in pros_:
+        pros = data.xpath('//div[p[text()="Pluspunten"]]//p[@class="small"]')
+        for pro in pros:
             pro = pro.xpath('.//text()').string(multiple=True)
             review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[p[text()="Minpunten"]]//p[@class="small"]')
-    for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
-        review.add_property(type='cons', value=con)
+        pros = data.xpath('//li[p[text()="Minpunten"]]')
+        for pros_ in pros:
+            pros_ = pros_.xpath('preceding-sibling::li/p[not(text()="Pluspunten")]')
+            for pro in pros_:
+                pro = pro.xpath('.//text()').string(multiple=True)
+                review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//li[p[text()="Minpunten"]]')
-    for cons_ in cons:
-        cons_ = cons_.xpath('following-sibling::li/p')
-        for con in cons_:
+        cons = data.xpath('//div[p[text()="Minpunten"]]//p[@class="small"]')
+        for con in cons:
             con = con.xpath('.//text()').string(multiple=True)
             review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(text(), "Conclusie")]/following-sibling::p/text()').string(multiple=True)
-    if conclusion:
-        review.add_property(type='conclusion', value=conclusion)
+        cons = data.xpath('//li[p[text()="Minpunten"]]')
+        for cons_ in cons:
+            cons_ = cons_.xpath('following-sibling::li/p')
+            for con in cons_:
+                con = con.xpath('.//text()').string(multiple=True)
+                review.add_property(type='cons', value=con)
 
-    excerpt = data.xpath('//p[contains(., "Pluspunten")]/preceding-sibling::p[not(contains(., "Pluspunten") or contains(., "Minpunten"))]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//p[contains(., "Minpunten")]/preceding-sibling::p[not(contains(., "Pluspunten") or contains(., "Minpunten"))]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//h2[contains(text(), "Conclusie")]/preceding-sibling::p//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//div[@class="md:col-span-8"]/p[not(contains(., "Lees ook:"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(text(), "Conclusie")]/following-sibling::p/text()').string(multiple=True)
+        if not conclusion:
+            conclusion = data.xpath('//div[p[@class="font-bree" and text()="Conclusie"]]/div[contains(@class, "leading")]//text()').string()
+        if not conclusion:
+            conclusion = conclusion_json
 
-    if excerpt:
-        review.add_property(type='excerpt', value=excerpt)
+        if conclusion:
+            review.add_property(type='conclusion', value=conclusion.replace('...', ''))
 
-        product.reviews.append(review)
+        excerpt = data.xpath('//p[contains(., "Pluspunten")]/preceding-sibling::p[not(contains(., "Pluspunten") or contains(., "Minpunten"))]//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = data.xpath('//p[contains(., "Minpunten")]/preceding-sibling::p[not(contains(., "Pluspunten") or contains(., "Minpunten"))]//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = data.xpath('//h2[contains(text(), "Conclusie")]/preceding-sibling::p//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = data.xpath('//div[@class="md:col-span-8"]/p[not(contains(., "Lees ook:") or contains(., "Ook interessant:"))]//text()|//p[contains(., "Lees ook")]/text()[not(contains(., "Lees ook:"))]').string(multiple=True)
 
-        session.emit(product)
+        if excerpt:
+            review.add_property(type='excerpt', value=excerpt)
+
+            product.reviews.append(review)
+
+            session.emit(product)
