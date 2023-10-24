@@ -4,7 +4,7 @@ from models.products import *
 import simplejson
 
 
-XCAT = ["Top brands", "Offers", "Sale", "Spooky "]
+XCAT = ["Top brands", "Offers", "Sale", "Spooky", "Food type"]
 
 
 def run(context, session):
@@ -47,9 +47,9 @@ def process_prodlist(data, context, session):
         if grade:
             session.queue(Request(url+"/reviewhtml/all/en"), process_reviews, dict(context, name=name, url=url, manufacturer=manufacturer, ssid=ssid))
 
-    next_page = data.xpath("//a[@rel='next']/@href").string()
-    if next_page:
-        session.queue(Request(next_page), process_prodlist, dict(context))
+    next_url = data.xpath("//a[@rel='next']/@href").string()
+    if next_url:
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_reviews(data, context, session):
@@ -57,6 +57,7 @@ def process_reviews(data, context, session):
     product.name = context["name"]
     product.url = context["url"]
     product.ssid = context["ssid"]
+    product.sku = context["ssid"]
     product.category = context["cat"]
     product.manufacturer = context["manufacturer"]
 

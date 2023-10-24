@@ -70,11 +70,6 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
-    conclusion_json = ''
-    prod_json = data.xpath('//script[@type="application/json"]/text()').string()
-    if prod_json:
-        conclusion_json = simplejson.loads(prod_json).get('props', {}).get('pageProps', {}).get('pageData', {}).get('articleContentBody', [{}])[0].get('content', {}).get('blocks', [{}])[0].get('conclusion')
-
     product = Product()
     product.url = context['url']
     product.ssid = context['ssid']
@@ -88,8 +83,12 @@ def process_review(data, context, session):
     if 'Waar voor je geld:' in name:
         revs = data.xpath('//h2[@class="heading2 mt-3 mb-1"]')
         for rev in revs:
-            product.name = rev.xpath('text()')
-            product.ssid = product.name.lower().replace('', '-').replace('(', '').replace(')', '')
+            product = Product()
+            product.url = context['url']
+            product.ssid = context['ssid']
+            product.category = context['cat']
+            product.name = rev.xpath('text()').string()
+            product.ssid = product.name.lower().replace(' ', '-').replace('(', '').replace(')', '')
 
             review = Review()
             review.type = 'pro'
@@ -97,6 +96,7 @@ def process_review(data, context, session):
             review.url = product.url
             review.ssid = product.ssid
             review.date = context['date']
+
             author_url = data.xpath('//div[@class="flex content-center mb-3 md:mb-4"]/a/@href').string()
             if author_url:
                 review.authors.append(Person(name=context['author'], ssid=context['author'], profile_url=author_url))
@@ -161,8 +161,6 @@ def process_review(data, context, session):
         conclusion = data.xpath('//h2[contains(text(), "Conclusie")]/following-sibling::p/text()').string(multiple=True)
         if not conclusion:
             conclusion = data.xpath('//div[p[@class="font-bree" and text()="Conclusie"]]/div[contains(@class, "leading")]//text()').string()
-        if not conclusion:
-            conclusion = conclusion_json
 
         if conclusion:
             review.add_property(type='conclusion', value=conclusion.replace('...', ''))
