@@ -48,9 +48,9 @@ def process_product(data, context, session):
     product.category = context['cat']
     product.manufacturer = data.xpath("//meta[@itemprop='brand']/@content").string()
 
-    # SKU - product.sku
-    # EAN / GTIN - product.add_property(type='id.ean', value=ean)
-    # MPN - product.add_property(type='id.manufacturer', value=mpn)
+    # SKU - product.sku    # без перевірки
+    # EAN / GTIN - product.add_property(type='id.ean', value=ean)    # з перевіркою
+    # MPN - product.add_property(type='id.manufacturer', value=mpn)    # з перевіркою
 
     ean = data.xpath("//strong[@itemprop='gtin13']//text()").string() # None
     if ean:
