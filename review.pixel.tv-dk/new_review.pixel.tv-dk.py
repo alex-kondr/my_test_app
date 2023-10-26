@@ -50,7 +50,10 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//body/p//text()').string(multiple=True)
 
-    if excerpt and excerpt.replace(summary, '') > 10:
+    if excerpt:
+        if summary and len(excerpt.replace(summary, '').strip()) < 10:
+            return
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
