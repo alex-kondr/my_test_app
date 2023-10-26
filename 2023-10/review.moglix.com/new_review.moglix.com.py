@@ -59,17 +59,16 @@ def process_prodlist(data, context, session):
 
 def process_product(data, context, session):
     product = Product()
-
-    prod_json = data.xpath('//script[@type="application/ld+json"]/text()[contains(., "sku")]').string()
-    if prod_json:
-        prod_json = simplejson.loads(prod_json)
-        product.sku = prod_json.get('sku')
-
     product.name = context['name']
     product.url = context['url']
     product.ssid = context['url'].split('/')[-1]
     product.category = context['cat'].replace('Other ', '')
     product.manufacturer = context['manufacturer']
+
+    prod_json = data.xpath('//script[@type="application/ld+json"]/text()[contains(., "sku")]').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
+        product.sku = prod_json.get('sku')
 
     revs_json = data.xpath('//script[@type="application/json"]/text()').string().replace('&q;', '"')
     revs_json = simplejson.loads(revs_json)

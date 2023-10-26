@@ -58,7 +58,7 @@ def process_reviews(data, context, session):
     product.url = context["url"]
     product.ssid = context["ssid"]
     product.sku = context["ssid"]
-    product.category = context["cat"]
+    product.category = context["cat"].replace('|All ', '|')
     product.manufacturer = context["manufacturer"]
 
     revs = data.xpath("//li[@class='review-entry']")

@@ -96,7 +96,7 @@ def process_reviews(data, context, session):
 
             product.reviews.append(review)
 
-    if revs:
+    if new_data.xpath('//a[contains(., "Load More")]/text()').string():
         page = context.get("page", 1) + 1
         session.do(Request(context["revs_url"] + str(page) + "&per_page=5&product_id=" + product.ssid), process_reviews, dict(context, product=product, page=page))
 

@@ -15,18 +15,16 @@ def process_revlist(data, context, session):
         url = rev.xpath(".//a/@href").string()
         session.queue(Request(url), process_review, dict(context, title=title, author=author, date=date, url=url))
 
-    # if revs:
-    for i in range(1, 71):
-        # page = context.get('page', 0) + 1
-        print('i=', i)
+    if revs:
+        page = context.get('page', 0) + 1
         url = 'https://pixel.tv/wp-admin/admin-ajax.php'
-        options = "--compressed -X POST -H 'X-Requested-With: XMLHttpRequest' --data-raw 'action=load_more_posts&page=" + str(i) +"&category_id=7'"
-        session.queue(Request(url, use='curl', options=options, force_charset='utf-8', max_age=0), process_revlist, dict())
+        options = "--compressed -X POST -H 'X-Requested-With: XMLHttpRequest' --data-raw 'action=load_more_posts&page=" + str(page) +"&category_id=7'"
+        session.do(Request(url, use='curl', options=options, force_charset='utf-8', max_age=0), process_revlist, dict(page=page))
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Anmeldelse: ', '').replace('anmeldelse', '')
+    product.name = context['title'].replace('Anmeldelse: ', '').replace('Anmeldelse |', '').replace('Anmeldelse', '').replace('anmeldelse', '').strip()
     product.url = context['url']
     product.ssid = context['url'].split('/')[-2]
     product.category = "Gaming"
@@ -43,13 +41,16 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[@class="hero-container"]/p/text()').string()
     if summary:
+        summary = summary.replace('[…]', '').replace('...', '').strip()
         review.add_property(type='summary', value=summary)
 
     excerpt = data.xpath('//p[contains(., "Se med på")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
+        excerpt = data.xpath('//p[contains(., "Nintendo – Pluto TV")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
         excerpt = data.xpath('//body/p//text()').string(multiple=True)
 
-    if excerpt:
+    if excerpt and excerpt.replace(summary, '') > 10:
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
