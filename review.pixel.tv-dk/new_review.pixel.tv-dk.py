@@ -15,11 +15,13 @@ def process_revlist(data, context, session):
         url = rev.xpath(".//a/@href").string()
         session.queue(Request(url), process_review, dict(context, title=title, author=author, date=date, url=url))
 
-    if revs:
-        page = context.get('page', 0) + 1
+    # if revs:
+    for i in range(1, 71):
+        # page = context.get('page', 0) + 1
+        print('i=', i)
         url = 'https://pixel.tv/wp-admin/admin-ajax.php'
-        options = "--compressed -X POST -H 'X-Requested-With: XMLHttpRequest' --data-raw 'action=load_more_posts&page=" + str(page) +"&category_id=7'"
-        session.queue(Request(url, use='curl', options=options, force_charset='utf-8', max_age=0), process_revlist, dict(page=page))
+        options = "--compressed -X POST -H 'X-Requested-With: XMLHttpRequest' --data-raw 'action=load_more_posts&page=" + str(i) +"&category_id=7'"
+        session.queue(Request(url, use='curl', options=options, force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
