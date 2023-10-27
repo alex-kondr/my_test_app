@@ -4,7 +4,11 @@ from models.products import *
 import simplejson
 
 
+XCAT = ['Weber BBQ Clearance', 'View All']
+
+
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.wowbbq.co.uk/'), process_catlist, dict())
 
 
@@ -13,21 +17,24 @@ def process_catlist(data, context, session):
     for cat in cats:
         name = cat.xpath("a/text()").string()
 
-        sub_cats = cat.xpath(".//li[contains(@class,'li-level-2')]")
-        for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath("a/text()").string()
+        if name not in XCAT:
+            sub_cats = cat.xpath(".//li[contains(@class,'li-level-2')]")
+            for sub_cat in sub_cats:
+                sub_name = sub_cat.xpath("a/text()").string()
 
-            sub_cats1 = sub_cat.xpath(".//li[contains(@class,'li-level-3')]")
-            for sub_cat1 in sub_cats1:
-                sub_name1 = sub_cat1.xpath("a/text()").string()
-                url = sub_cat1.xpath("a/@href").string()
-                session.queue(Request(url + "/page=viewall"), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                sub_cats1 = sub_cat.xpath(".//li[contains(@class,'li-level-3')]")
+                for sub_cat1 in sub_cats1:
+                    sub_name1 = sub_cat1.xpath("a/text()").string()
+
+                    if sub_name1 not in XCAT:
+                        url = sub_cat1.xpath("a/@href").string()
+                        session.queue(Request(url + "/page=viewall"), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                else:
+                    url = sub_cat.xpath("a/@href").string()
+                    session.queue(Request(url + "/page=viewall"), process_prodlist, dict(cat=name + '|' + sub_name))
             else:
-                url = sub_cat.xpath("a/@href").string()
-                session.queue(Request(url + "/page=viewall"), process_prodlist, dict(cat=name + '|' + sub_name))
-        else:
-            url = cat.xpath("a/@href").string()
-            session.queue(Request(url + "/page=viewall"), process_prodlist, dict(cat=name))
+                url = cat.xpath("a/@href").string()
+                session.queue(Request(url + "/page=viewall"), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
@@ -41,9 +48,10 @@ def process_prodlist(data, context, session):
 def process_product(data, context, session):
     product = Product()
     product.name = context["name"]
-    product.category = context["cat"].replace("|View All", "")
+    product.category = context["cat"]
     product.url = context["url"]
     product.manufacturer = "Weber"
+    product.ssid = context['url'].split('/')[-2]
 
     ean = data.xpath("//b[contains(.,'Barcode')]/text()").string()
     if ean:
@@ -51,9 +59,8 @@ def process_product(data, context, session):
 
     sku = data.xpath("//input[@name='sku']/@value").string()
     if sku:
-        product.ssid = sku.replace('WEB', '')
-        product.sku = product.ssid
-        revs_url = "https://api.reviews.co.uk/product/review?store=wowbbq&sku=" + sku + "&mpn=&lookup=&product_group=&minRating=4&tag=&sort=undefined&per_page=100&page=1"
+        product.sku = sku.replace('WEB', '')
+        revs_url = "https://api.reviews.co.uk/product/review?store=wowbbq&sku=" + sku + "&sort=undefined&per_page=100&page=1"
         session.queue(Request(revs_url), process_reviews, dict(product=product))
 
 
@@ -66,9 +73,9 @@ def process_reviews(data, context, session):
     for rev in revs:
         review = Review()
         review.date = rev["date_created"].split()[0]
-        review.ssid = rev["product_review_id"]
         review.type = "user"
         review.url = product.url
+        review.ssid = str(rev["product_review_id"])
 
         author = rev["reviewer"]["first_name"] + " " + rev["reviewer"]["last_name"]
         review.authors.append(Person(name=author, ssid=author))
@@ -89,8 +96,8 @@ def process_reviews(data, context, session):
 
     if revs_json["reviews"]["to"] == 100:
         page = context.get('page', 1) + 1
-        next_url = "https://api.reviews.co.uk/product/review?store=wowbbq&sku=" + product.sku + "&mpn=&lookup=&product_group=&minRating=4&tag=&sort=undefined&per_page=100&page=" + str(page)
-        session.do(Request(next_url), process_reviews, dict(product=product, page=page))
+        next_url = "https://api.reviews.co.uk/product/review?store=wowbbq&sku=" + product.sku + "&sort=undefined&per_page=100&page=" + str(page)
+        session.do(Request(next_url, use='curl'), process_reviews, dict(product=product, page=page))
 
     elif product.reviews:
         session.emit(product)

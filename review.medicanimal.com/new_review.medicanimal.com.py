@@ -65,9 +65,12 @@ def process_reviews(data, context, session):
     for rev in revs:
         review = Review()
         review.type = "user"
-        review.title = rev.xpath("div[@class='title']/text()").string()
         review.date = rev.xpath(".//span[@class='date']/text()").string()
         review.url = product.url
+
+        title = rev.xpath("div[@class='title']/text()").string()
+        if title:
+            review.title = title.replace("â€™", "'").replace('â€œ', '«').replace('â€�', '»').replace('â€˜', "'").replace('â€¦', '...').replace('â€“', '-')
 
         author = rev.xpath(".//span[@class='author']/text()").string()
         if author:
@@ -81,6 +84,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.xpath("div[@class='content']//text()").string(multiple=True)
         if excerpt:
+            excerpt = excerpt.replace("â€™", "'").replace('â€œ', '«').replace('â€�', '»').replace('â€˜', "'").replace('â€¦', '...').replace('â€“', '-')
             review.add_property(type="excerpt", value=excerpt)
 
             review.ssid = review.digest() if author else review.digest(excerpt)
