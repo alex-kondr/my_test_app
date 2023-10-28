@@ -24,10 +24,25 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Anmeldelse: ', '').replace('Anmeldelse |', '').replace('Anmeldelse', '').replace('anmeldelse', '').strip()
     product.url = context['url']
     product.ssid = context['url'].split('/')[-2]
     product.category = "Gaming"
+
+    product.name = context['title'].split('|')[-1].replace('Anmeldelse: ', '').replace('Anmeldelse', '').replace('anmeldelse', '').strip()
+    if '‘' in product.name:
+        product.name = product.name.split('‘')[-1].split('’')[0].strip()
+
+    platforme = data.xpath('//strong[contains(., "PLATFORME")]/following-sibling::text()').string()
+    if not platforme:
+        platforme = data.xpath('//p[contains(., "platforme:")]/text()[2]').string()
+    if platforme:
+        product.category = product.category + '|' + platforme.split(':')[-1].replace(' (anmeldt på)', '').strip()
+
+    manufacturer = data.xpath('//strong[contains(., "UDVIKLER/UDGIVER")]/following-sibling::text()').string()
+    if not manufacturer:
+        manufacturer = data.xpath('//p[contains(., "Udvikler/Udgiver")]/text()').string()
+    if manufacturer:
+        product.manufacturer = manufacturer.split(':')[-1].strip()
 
     review = Review()
     review.title = context['title']
@@ -44,11 +59,21 @@ def process_review(data, context, session):
         summary = summary.replace('[…]', '').replace('...', '').strip()
         review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('//p[contains(., "Se med på")]/preceding-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Konklusion")]/following-sibling::p[not(contains(., "Udvikler") or contains(., "Udgiver") or contains(., "platforme:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[strong[contains(., "Konklusion")]]/following-sibling::p[not(contains(., "Udvikler") or contains(., "Udgiver") or contains(., "platforme:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//h2[contains(., "Konklusion")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[strong[contains(., "Konklusion")]]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[contains(., "Se med på")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//p[contains(., "Nintendo – Pluto TV")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//body/p//text()').string(multiple=True)
+        excerpt = data.xpath('//body/p[not(contains(., "Udvikler") or contains(., "Udgiver") or contains(., "platforme:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
 
     if excerpt:
         if summary and len(excerpt.replace(summary, '').strip()) < 10:

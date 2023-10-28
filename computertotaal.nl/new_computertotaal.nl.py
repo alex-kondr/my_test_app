@@ -103,7 +103,7 @@ def process_review(data, context, session):
             else:
                 review.authors.append(Person(name=context['author'], ssid=context['author']))
 
-            excerpt = rev.xpath('following-sibling::p[position() < 3]//text()').string()
+            excerpt = rev.xpath('following-sibling::p[position() < 3]//text()').string(multiple=True)
             if excerpt:
                 review.add_property(type='excerpt', value=excerpt)
 
