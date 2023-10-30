@@ -55,6 +55,10 @@ def process_review(data, context, session):
     else:
         product.ssid = context['url'].split('/')[-2]
 
+    if context['title'].startswith("Best"):
+        process_reviews(data, context, session)
+        return
+
     review = Review()
     review.title = context['title']
     review.type = 'pro'
@@ -106,22 +110,11 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    summary = data.xpath('//h1[contains(., "Summary")]/following-sibling::p[not(contains(., "amazon") or .//em)]//text()').string(multiple=True)
-    if summary:
-        if conclusion:
-            summary = summary.replace(conclusion, '')
-
-        review.add_property(type='summary', value=summary)
-
-    excerpt = data.xpath('//h1[contains(., "Summary")]/preceding-sibling::p[not(.//span[contains(@style, "text-decoration")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//h1[contains(., "Conclusion")]/preceding-sibling::p[not(.//span[contains(@style, "text-decoration")] or strong[contains(., "Port")] or strong[contains(., "Output:")] or strong[contains(., "USB Type-C:")] or strong[contains(., "Initial Capacity:")] or contains(., "Output Capacity:") or contains(., "Built-in Cable:") or contains(., "Max Output:") or contains(., "Micro-USB input:") or contains(., "Per Micro USB Input") or contains(., "Max Output –") or contains(., "Total if both Micro-USB Inputs") or contains(., "Micro-USB Input:") or contains(., "Lightning Input:") or contains(., "USB-C Input:") or contains(., "Port:") or contains(., "Max Input:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h1[contains(., "Conclusion")]/preceding-sibling::p[not(.//span[contains(@style, "text-decoration")])]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//div[@class="entry-content"]/p[not(.//span[contains(@style, "text-decoration")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="entry-content"]/p[not(.//span[contains(@style, "text-decoration")] or strong[contains(., "Port")] or strong[contains(., "Output:")] or strong[contains(., "USB Type-C:")] or strong[contains(., "Initial Capacity:")] or contains(., "Output Capacity:") or contains(., "Built-in Cable:") or contains(., "Max Output:") or contains(., "Micro-USB input:") or contains(., "Per Micro USB Input") or contains(., "Max Output –") or contains(., "Total if both Micro-USB Inputs") or contains(., "Micro-USB Input:") or contains(., "Lightning Input:") or contains(., "USB-C Input:") or contains(., "Port:") or contains(., "Max Input:"))]//text()').string(multiple=True)
 
     if excerpt:
-        if summary:
-            excerpt = excerpt.replace(summary, '')
         if conclusion:
             excerpt = excerpt.replace(conclusion, '')
 
@@ -130,3 +123,41 @@ def process_review(data, context, session):
         product.reviews.append(review)
 
         session.emit(product)
+
+
+def process_reviews(data, context, session):
+    revs = data.xpath('//div[@class="entry-content"]/h1[b and .//text()]')
+    for i, rev in enumerate(revs, 1):
+        product = Product()
+        product.name = rev.xpath('.//text()').string()
+        product.ssid = product.name.lower().replace(' ', '-').replace(',', '')
+        product.category = context['cat'].replace(' Reviews', '')
+
+        product.url = rev.xpath('following-sibling::p[count(preceding-sibling::h1[b and .//text()])=' + str(i) + ']/a[contains(@href, "amazon")]/@href').string()
+        if not product.url:
+            product.url = context['url']
+
+        review = Review()
+        review.type = 'pro'
+        review.name = product.name
+        review.ssid = product.ssid
+        review.url = product.url
+
+        date = data.xpath('//time[@class="entry-date published"]/@datetime').string()
+        if date:
+            review.date = date.split('T')[0]
+
+        author = data.xpath("//span[@class='author vcard']/a//text()").string()
+        author_url = data.xpath("//span[@class='author vcard']/a/@href").string()
+        if author and author_url:
+            review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
+        elif author:
+            review.authors.append(Person(name=author, ssid=author))
+
+        excerpt = rev.xpath('following-sibling::p[not(.//span[contains(@style, "text-decoration")] or strong[contains(., "Port")] or strong[contains(., "Output:")] or strong[contains(., "USB Type-C:")] or strong[contains(., "Initial Capacity:")] or contains(., "Output Capacity:") or contains(., "Built-in Cable:") or contains(., "Max Output:") or contains(., "Micro-USB input:") or contains(., "Per Micro USB Input") or contains(., "Max Output –") or contains(., "Total if both Micro-USB Inputs") or contains(., "Micro-USB Input:") or contains(., "Lightning Input:") or contains(., "USB-C Input:") or contains(., "Port:") or contains(., "Max Input:"))][count(preceding-sibling::h1[b and .//text()])=' + str(i) + ']//text()').string(multiple=True)
+        if excerpt:
+            review.add_property(type='excerpt', value=excerpt)
+
+            product.reviews.append(review)
+
+            session.emit(product)

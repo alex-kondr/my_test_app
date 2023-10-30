@@ -35,8 +35,14 @@ def process_review(data, context, session):
     platforme = data.xpath('//strong[contains(., "PLATFORME")]/following-sibling::text()').string()
     if not platforme:
         platforme = data.xpath('//p[contains(., "platforme:")]/text()[2]').string()
+    if not platforme or len(platforme) < 2:
+        platforme = data.xpath('//b[contains(., "platforme:")]/following-sibling::a/text()').strings()
+    if not platforme or len(platforme) < 2:
+        platforme = data.xpath('//strong[contains(., "platforme:")]/following-sibling::a/text()').strings()
     if platforme:
-        product.category = product.category + '|' + platforme.split(':')[-1].replace(' (anmeldt på)', '').strip()
+        if isinstance(platforme, list):
+            platforme = '/'.join(set(platforme))
+        product.category = product.category + '|' + platforme.split(':')[-1].replace(' (anmeldt på)', '').replace(', ', '/').replace('|', ',').strip()
 
     manufacturer = data.xpath('//strong[contains(., "UDVIKLER/UDGIVER")]/following-sibling::text()').string()
     if not manufacturer:
@@ -59,21 +65,21 @@ def process_review(data, context, session):
         summary = summary.replace('[…]', '').replace('...', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Konklusion")]/following-sibling::p[not(contains(., "Udvikler") or contains(., "Udgiver") or contains(., "platforme:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Konklusion")]/following-sibling::p[not(contains(., "Udvikler") or contains(., "UDVIKLER") or contains(., "Udgiver") or contains(., "UDGIVER") or contains(., "platforme:") or contains(., "PLATFORME:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//p[strong[contains(., "Konklusion")]]/following-sibling::p[not(contains(., "Udvikler") or contains(., "Udgiver") or contains(., "platforme:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//p[strong[contains(., "Konklusion")]]/following-sibling::p[not(contains(., "Udvikler") or contains(., "UDVIKLER") or contains(., "Udgiver") or contains(., "UDGIVER") or contains(., "platforme:") or contains(., "PLATFORME:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Konklusion")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Konklusion")]/preceding-sibling::p[not(contains(., "Udvikler") or contains(., "UDVIKLER") or contains(., "Udgiver") or contains(., "UDGIVER") or contains(., "platforme:") or contains(., "PLATFORME:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[strong[contains(., "Konklusion")]]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//p[strong[contains(., "Konklusion")]]/preceding-sibling::p[not(contains(., "Udvikler") or contains(., "UDVIKLER") or contains(., "Udgiver") or contains(., "UDGIVER") or contains(., "platforme:") or contains(., "PLATFORME:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[contains(., "Se med på")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//p[contains(., "Se med på")]/preceding-sibling::p[not(contains(., "Udvikler") or contains(., "UDVIKLER") or contains(., "Udgiver") or contains(., "UDGIVER") or contains(., "platforme:") or contains(., "PLATFORME:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[contains(., "Nintendo – Pluto TV")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//p[contains(., "Nintendo – Pluto TV")]/preceding-sibling::p[not(contains(., "Udvikler") or contains(., "UDVIKLER") or contains(., "Udgiver") or contains(., "UDGIVER") or contains(., "platforme:") or contains(., "PLATFORME:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//body/p[not(contains(., "Udvikler") or contains(., "Udgiver") or contains(., "platforme:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//body/p[not(contains(., "Udvikler") or contains(., "UDVIKLER") or contains(., "Udgiver") or contains(., "UDGIVER") or contains(., "platforme:") or contains(., "PLATFORME:") or contains(., "Kopi suppleret"))]//text()').string(multiple=True)
 
     if excerpt:
         if summary and len(excerpt.replace(summary, '').strip()) < 10:
