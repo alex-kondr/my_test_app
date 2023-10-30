@@ -52,9 +52,22 @@ def process_product(data, context, session):
     product.url = context["url"]
     product.manufacturer = "Weber"
 
-    ean = data.xpath("//b[contains(.,'Barcode')]/text()").string()
+    ean = data.xpath('//script[@data-flix-ean]/@data-flix-ean').string()
+    if not ean:
+        ean = data.xpath('(//b[contains(.,"Barcode")]|//p[contains(., "Barcode:")])/text()[contains(., "Barcode")]').string()
     if ean:
-        product.properties.append(ProductProperty(type='id.ean', value=ean.replace('Barcode: ', '')))
+        ean = ean.replace('Barcode:', '').strip()
+    if not ean:
+        ean = data.xpath('//b[contains(.,"Barcode")]/following-sibling::text()').string()
+    if not ean:
+        ean = data.xpath('//b[contains(.,"EAN Number:")]/following-sibling::text()').string()
+    if not ean:
+        ean = data.xpath('//b[contains(.,"EAN:")]/text()').string()
+    if ean:
+        ean = ean.replace('EAN:', '').strip()
+
+    if ean and ean.isnumeric():
+        product.add_property(type='id.ean', value=ean)
 
     ssid = data.xpath("//input[@name='sku']/@value").string()
     if ssid:
