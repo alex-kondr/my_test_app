@@ -44,6 +44,8 @@ def process_review(data, context, session):
             platforme = '/'.join(set(platforme))
         product.category = product.category + '|' + platforme.split(':')[-1].replace(' (anmeldt på)', '').replace(', ', '/').replace('|', ',').strip()
 
+    product.category = product.category.rstrip('|')
+
     manufacturer = data.xpath('//strong[contains(., "UDVIKLER/UDGIVER")]/following-sibling::text()').string()
     if not manufacturer:
         manufacturer = data.xpath('//p[contains(., "Udvikler/Udgiver")]/text()').string()

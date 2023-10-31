@@ -110,9 +110,9 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h1[contains(., "Conclusion")]/preceding-sibling::p[not(.//span[contains(@style, "text-decoration")] or strong[contains(., "Port")] or strong[contains(., "Output:")] or strong[contains(., "USB Type-C:")] or strong[contains(., "Initial Capacity:")] or contains(., "Output Capacity:") or contains(., "Built-in Cable:") or contains(., "Max Output:") or contains(., "Micro-USB input:") or contains(., "Per Micro USB Input") or contains(., "Max Output –") or contains(., "Total if both Micro-USB Inputs") or contains(., "Micro-USB Input:") or contains(., "Lightning Input:") or contains(., "USB-C Input:") or contains(., "Port:") or contains(., "Max Input:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h1[contains(., "Conclusion")]/preceding-sibling::p[not(b)][not(.//span[contains(@style, "text-decoration")] or strong[contains(., "Port")] or strong[contains(., "Output:")] or strong[contains(., "USB Type-C:")] or strong[contains(., "Initial Capacity:")] or contains(., "Output Capacity:") or contains(., "Built-in Cable:") or contains(., "Max Output:") or contains(., "Micro-USB input:") or contains(., "Per Micro USB Input") or contains(., "Max Output –") or contains(., "Total if both Micro-USB Inputs") or contains(., "Micro-USB Input:") or contains(., "Lightning Input:") or contains(., "USB-C Input:") or contains(., "Port:") or contains(., "Max Input:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="entry-content"]/p[not(.//span[contains(@style, "text-decoration")] or strong[contains(., "Port")] or strong[contains(., "Output:")] or strong[contains(., "USB Type-C:")] or strong[contains(., "Initial Capacity:")] or contains(., "Output Capacity:") or contains(., "Built-in Cable:") or contains(., "Max Output:") or contains(., "Micro-USB input:") or contains(., "Per Micro USB Input") or contains(., "Max Output –") or contains(., "Total if both Micro-USB Inputs") or contains(., "Micro-USB Input:") or contains(., "Lightning Input:") or contains(., "USB-C Input:") or contains(., "Port:") or contains(., "Max Input:"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="entry-content"]/p[not(b)][not(.//span[contains(@style, "text-decoration")] or strong[contains(., "Port")] or strong[contains(., "Output:")] or strong[contains(., "USB Type-C:")] or strong[contains(., "Initial Capacity:")] or contains(., "Output Capacity:") or contains(., "Built-in Cable:") or contains(., "Max Output:") or contains(., "Micro-USB input:") or contains(., "Per Micro USB Input") or contains(., "Max Output –") or contains(., "Total if both Micro-USB Inputs") or contains(., "Micro-USB Input:") or contains(., "Lightning Input:") or contains(., "USB-C Input:") or contains(., "Port:") or contains(., "Max Input:"))]//text()').string(multiple=True)
 
     if excerpt:
         if conclusion:
@@ -135,13 +135,15 @@ def process_reviews(data, context, session):
 
         product.url = rev.xpath('following-sibling::p[count(preceding-sibling::h1[b and .//text()])=' + str(i) + ']/a[contains(@href, "amazon")]/@href').string()
         if not product.url:
+            product.url = rev.xpath('following::h2[not(b)][not(contains(., "Read Review for"))][1]/a[contains(@href, "amazon")]/@href').string()
+        if not product.url:
             product.url = context['url']
 
         review = Review()
         review.type = 'pro'
-        review.name = product.name
+        review.title = product.name
         review.ssid = product.ssid
-        review.url = product.url
+        review.url = context['url']
 
         date = data.xpath('//time[@class="entry-date published"]/@datetime').string()
         if date:

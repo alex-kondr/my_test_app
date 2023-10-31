@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-
 import simplejson
 
 
@@ -52,28 +51,27 @@ def process_product(data, context, session):
     product.url = context["url"]
     product.manufacturer = "Weber"
 
+    product.ssid = data.xpath("//input[@name='productcode']/@value").string()
+
     ean = data.xpath('//script[@data-flix-ean]/@data-flix-ean').string()
     if not ean:
         ean = data.xpath('(//b[contains(.,"Barcode")]|//p[contains(., "Barcode:")])/text()[contains(., "Barcode")]').string()
-    if ean:
-        ean = ean.replace('Barcode:', '').strip()
     if not ean:
         ean = data.xpath('//b[contains(.,"Barcode")]/following-sibling::text()').string()
     if not ean:
         ean = data.xpath('//b[contains(.,"EAN Number:")]/following-sibling::text()').string()
     if not ean:
         ean = data.xpath('//b[contains(.,"EAN:")]/text()').string()
-    if ean:
-        ean = ean.replace('EAN:', '').strip()
 
     if ean and ean.isnumeric():
+        ean = ean.replace('EAN:', '').replace('Barcode:', '').strip()
         product.add_property(type='id.ean', value=ean)
 
-    ssid = data.xpath("//input[@name='sku']/@value").string()
-    if ssid:
-        product.ssid = ssid.replace('WEB', '')
-        revs_url = "https://api.reviews.co.uk/product/review?store=wowbbq&sku=" + ssid + "&sort=undefined&per_page=100&page=1"
-        session.queue(Request(revs_url), process_reviews, dict(product=product))
+    mpn = data.xpath("//input[@name='sku']/@value").string()
+    if mpn:
+        product.add_property(type='id.manufacturer', value=mpn)
+        revs_url = "https://api.reviews.co.uk/product/review?store=wowbbq&sku=" + mpn + "&sort=undefined&per_page=100&page=1"
+        session.queue(Request(revs_url), process_reviews, dict(product=product, pid=mpn))
 
 
 def process_reviews(data, context, session):
@@ -91,15 +89,10 @@ def process_reviews(data, context, session):
         if date:
             review.date = date.split()[0]
 
-        first_name = rev.get("reviewer", {}).get("first_name")
-        last_name = rev.get("reviewer", {}).get("last_name")
-        author = ''
-        if first_name:
-            author += first_name
-        if last_name:
-            author += ' ' + last_name
-
-        if author:
+        first_name = rev.get("reviewer", {}).get("first_name", "")
+        last_name = rev.get("reviewer", {}).get("last_name", "")
+        author = first_name + " " + last_name
+        if author.strip():
             review.authors.append(Person(name=author, ssid=author))
 
         if 'yes' in rev.get('reviewer', {}).get('verified_buyer', ''):
@@ -127,8 +120,8 @@ def process_reviews(data, context, session):
 
     if revs_json.get("reviews", {}).get("to", 0) == 100:
         page = context.get('page', 1) + 1
-        next_url = "https://api.reviews.co.uk/product/review?store=wowbbq&sku=" + product.ssid + "&sort=undefined&per_page=100&page=" + str(page)
-        session.do(Request(next_url, use='curl'), process_reviews, dict(product=product, page=page))
+        next_url = "https://api.reviews.co.uk/product/review?store=wowbbq&sku=" + context['pid'] + "&sort=undefined&per_page=100&page=" + str(page)
+        session.do(Request(next_url, use='curl'), process_reviews, dict(product=product, pid=context['pid'], page=page))
 
     elif product.reviews:
         session.emit(product)
