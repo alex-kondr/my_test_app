@@ -6,7 +6,7 @@ XCAT = ["Free product tests"]
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request("https://www.consobaby.co.uk"), process_catlist, dict())
 
 
@@ -112,7 +112,7 @@ def process_reviews(data,context, session):
 
     next_url = data.xpath("//a[@rel='next']//@href").string()
     if next_url:
-        session.do(Request(next_url), process_reviews, dict(context, product=product))
+        session.queue(Request(next_url), process_reviews, dict(context, product=product))
 
     elif product.reviews:
         session.emit(product)

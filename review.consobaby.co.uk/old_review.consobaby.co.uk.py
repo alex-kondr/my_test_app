@@ -12,17 +12,11 @@ def process_frontpage(data, context, session):
 def process_prodlist(data, context, session):
     prods = data.xpath("//div/ul[@id='products-list']/li/a")
     for prod in prods:
-        name = (
-            prod.xpath(".//span[@class='hidden-desktop']//text()")
-            .string(multiple=True)
-            .strip()
-        )
+        name = prod.xpath(".//span[@class='hidden-desktop']//text()").string(multiple=True).strip()
         url = prod.xpath("@href").string()
         no_revs = prod.xpath(".//svg[@name='stars-0']")
         if not no_revs:
-            session.queue(
-                Request(url), process_product, dict(context, name=name, url=url)
-            )
+            session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
     next = data.xpath("//li[@class='next']/a//@href").string()
     if next:
@@ -34,33 +28,20 @@ def process_product(data, context, session):
     if not product:
         product = Product()
         product.name = context["name"]
-        product.category = (
-            context["cat"]
-            + "|"
-            + data.xpath("//li[@class='visible-on-mobile category']//text()").string(
-                multiple=True
-            )
-            or "Baby products"
-        )
+        product.category = context["cat"] + "|" + data.xpath("//li[@class='visible-on-mobile category']//text()").string(multiple=True) or "Baby products"
         product.url = context["url"].split(".html")[0]
         product.ssid = product.url.split("/")[-1]
-        product.manufacturer = data.xpath("//a[@class='h1 brand-name']//text()").string(
-            multiple=True
-        )
+        product.manufacturer = data.xpath("//a[@class='h1 brand-name']//text()").string(multiple=True)
 
     revs = data.xpath("//head[meta[@itemprop='ratingValue']]")
     for rev in revs:
         review = Review()
         review.type = "user"
         review.url = context["url"]
-        review.title = rev.xpath(
-            "preceding-sibling::body[3]//div[@class='review-text']//strong//text()"
-        ).string(multiple=True)
+        review.title = rev.xpath("preceding-sibling::body[3]//div[@class='review-text']//strong//text()").string(multiple=True)
         review.date = rev.xpath("preceding-sibling::head[2]//meta//@content").string()
 
-        author = rev.xpath(
-            "preceding-sibling::body[3]//span[@itemprop='author']//text()"
-        ).string()
+        author = rev.xpath("preceding-sibling::body[3]//span[@itemprop='author']//text()").string()
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
@@ -81,18 +62,10 @@ def process_product(data, context, session):
         grades = rev.xpath("following-sibling::body[1]//ul[@class='details']/li")
         for grade in grades:
             grade_name = grade.xpath(".//span[@class='label']//text()").string()
-            grade_val = (
-                grade.xpath(".//span[@class='value']/svg//@name")
-                .string()
-                .split("stars-")[-1]
-            )
-            review.grades.append(
-                Grade(name=grade_name, value=float(grade_val), best=5.0)
-            )
+            grade_val = grade.xpath(".//span[@class='value']/svg//@name").string().split("stars-")[-1]
+            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
 
-        excerpt = rev.xpath(
-            "following-sibling::body[1]//div[@itemprop='reviewBody']//text()"
-        ).string(multiple=True)
+        excerpt = rev.xpath("following-sibling::body[1]//div[@itemprop='reviewBody']//text()").string(multiple=True)
         if excerpt:
             review.properties.append(ReviewProperty(type="excerpt", value=excerpt))
 
