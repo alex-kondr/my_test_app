@@ -11,20 +11,21 @@ def run(context, session):
 
 
 def process_catlist(data, context, session):
-    cats = data.xpath('//li[@class="products mobile-show-in-sidebar"]')
+    cats = data.xpath('//li[contains(@class, "products mobile-show-in-sidebar")]')
     for cat in cats:
         name = cat.xpath("a//text()").string(multiple=True).title()
 
         if name not in XCAT:
             sub_cats = cat.xpath('div[@class="child"]/ul/li')
             for sub_cat in sub_cats:
-                sub_name = sub_cat.xpath('a/span[not(@class)]/text()').string()
+                sub_name = sub_cat.xpath('a/span[not(@class)]/text()').string().title()
 
                 sub_cats1 = sub_cat.xpath('ul/li/a')
-                for sub_cat1 in sub_cats1:
-                    sub_name1 = sub_cat1.xpath('span[not(@class)]/text()').string()
-                    url = sub_cat1.xpath("@href").string()
-                    session.queue(Request(url + '?dir=desc&order=review'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                if sub_cats1:
+                    for sub_cat1 in sub_cats1:
+                        sub_name1 = sub_cat1.xpath('span[not(@class)]/text()').string()
+                        url = sub_cat1.xpath("@href").string()
+                        session.queue(Request(url + '?dir=desc&order=review'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
                 else:
                     url = sub_cat.xpath('a/@href').string()
                     session.queue(Request(url + '?dir=desc&order=review'), process_prodlist, dict(cat=name + '|' + sub_name ))
