@@ -3,6 +3,7 @@ from models.products import *
 
 
 XCAT = ["Free product tests"]
+XPROSCONS = ['-', 'No', 'NA', 'Na', 'a',  'None']
 
 
 def run(context, session):
@@ -80,12 +81,12 @@ def process_reviews(data,context, session):
             review.authors.append(Person(name=author, ssid=author))
 
         pros = rev.xpath('following::ul[li[@class="pros"]][1]/li[@class="pros"]//text()').string(multiple=True)
-        if pros and 'None' not in pros:
+        if pros and pros not in XPROSCONS:
             pros = pros.replace("Strengths:", "").strip()
             review.add_property(type="pros", value=pros)
 
         cons = rev.xpath('following::ul[li[@class="cons"]][1]/li[@class="cons"]//text()').string(multiple=True)
-        if cons and 'None' not in cons:
+        if cons and cons not in XPROSCONS:
             cons = cons.replace("Weaknesses:", "").strip()
             review.add_property(type="cons", value=cons)
 
@@ -101,6 +102,7 @@ def process_reviews(data,context, session):
 
         excerpt = rev.xpath('following::div[@class="reviewBody"][1]//text()').string(multiple=True)
         if excerpt:
+            excerpt = excerpt.replace('•', '')
             review.add_property(type="excerpt", value=excerpt)
 
             ssid = rev.xpath('.//span[@data-id]/@data-id').string()
