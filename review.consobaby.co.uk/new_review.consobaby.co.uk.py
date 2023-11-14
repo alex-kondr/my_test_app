@@ -81,12 +81,12 @@ def process_reviews(data,context, session):
             review.authors.append(Person(name=author, ssid=author))
 
         pros = rev.xpath('following::ul[li[@class="pros"]][1]/li[@class="pros"]//text()').string(multiple=True)
-        if pros and pros not in XPROSCONS:
+        if pros and pros.replace("Strengths:", "").strip() not in XPROSCONS:
             pros = pros.replace("Strengths:", "").strip()
             review.add_property(type="pros", value=pros)
 
         cons = rev.xpath('following::ul[li[@class="cons"]][1]/li[@class="cons"]//text()').string(multiple=True)
-        if cons and cons not in XPROSCONS:
+        if cons and cons.replace("Weaknesses:", "").strip() not in XPROSCONS:
             cons = cons.replace("Weaknesses:", "").strip()
             review.add_property(type="cons", value=cons)
 
