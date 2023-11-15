@@ -29,7 +29,7 @@ test.test_review_date()
 test.test_review_grade()
 test.test_review_author()
 # test.test_review_award()
-test.test_review_pros_cons()
+test.test_review_pros_cons()    #1
 test.test_review_conclusion([])
 test.test_review_excerpt([], len_chank=100, len_excerpt=10)
 
