@@ -38,8 +38,8 @@ def process_prodlist(data, context, session):
         ssid = prod.xpath('@data-productid').string()
         manufacturer = prod.xpath('.//span[@class="brandName"]//text()').string()
 
-        revs_count = prod.xpath('.//div[@class="reviewsCount"]//text()').string()
-        if revs_count and int(revs_count.strip('()')) > 0:
+        revs_cnt = prod.xpath('.//div[@class="reviewsCount"]//text()').string()
+        if revs_cnt and int(revs_cnt.strip('()')) > 0:
             session.queue(Request(url), process_product, dict(context, name=name, url=url, ssid=ssid, manufacturer=manufacturer))
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
