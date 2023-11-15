@@ -48,8 +48,6 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
-    prod_json = simplejson.loads(data.xpath('//script[@type="application/ld+json" and contains(text(), "Product")]/text()').string())
-
     product = Product()
     product.name = context['name']
     product.category = context['cat']
@@ -60,13 +58,17 @@ def process_product(data, context, session):
     if manufacturer:
         product.manufacturer = manufacturer
 
-    ean = prod_json.get('gtin13')
-    if ean:
-        product.add_property(type='id.ean', value=ean)
+    prod_json = data.xpath('//script[@type="application/ld+json" and contains(text(), "Product")]/text()').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json.replace('	', '').replace('\&', ''))
 
-    mpn = prod_json.get('mpn')
-    if mpn:
-        product.add_property(type='id.manufacturer', value=mpn)
+        ean = prod_json.get('gtin13')
+        if ean:
+            product.add_property(type='id.ean', value=ean)
+
+        mpn = prod_json.get('mpn')
+        if mpn:
+            product.add_property(type='id.manufacturer', value=mpn)
 
     revs_url = 'https://www.snowys.com.au/DbgReviews/ProductDetailsReviews?pagenumber=1&productId=' + product.ssid
     session.do(Request(revs_url), process_reviews, dict(product=product))
@@ -92,11 +94,11 @@ def process_reviews(data, context, session):
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
         hlp_yes = rev.xpath('.//input[@title="Upvote"]/@value').string()
-        if hlp_yes:
+        if hlp_yes and int(hlp_yes) > 0:
             review.add_property(type='helpful_votes', value=int(hlp_yes))
 
         hlp_no = rev.xpath('.//input[@title="Downvote"]/@value').string()
-        if hlp_no:
+        if hlp_no and int(hlp_no) > 0:
             review.add_property(type='not_helpful_votes', value=int(hlp_no))
 
         excerpt = rev.xpath('p//text() | span//text()').string(multiple=True)
