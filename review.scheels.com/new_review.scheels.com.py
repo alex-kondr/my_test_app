@@ -2,6 +2,7 @@ from agent import *
 from models.products import *
 import simplejson
 
+
 XCATS = ['Fan Shop']
 
 
@@ -49,76 +50,72 @@ def process_prodlist(data, context, session):
         product.sku = prod.xpath('@data-itemid').string()
         product.url = prod.xpath('.//div[@class="product-image"]//a/@href').string()
 
-        revs_url = 'https://cdn-ws.turnto.com/v5/sitedata/TXOE2FrZzlhkSdesite/{}/d/review/en_US/0/9999/%7B%7D/RECENT/false/false/'.format(product.sku)
-        revs_count = prod.xpath('(following::div[@class="TTteaser"])[1]/@data-reviewcount').string()
-        if revs_count != "0":
-            session.queue(Request(revs_url), process_reviews, dict(product=product, url=revs_url))
+        revs_cnt = prod.xpath('(following::div[@class="TTteaser"])[1]/@data-reviewcount').string()
+        if revs_cnt and int(revs_cnt) > 0:
+            revs_url = 'https://cdn-ws.turnto.com/v5/sitedata/TXOE2FrZzlhkSdesite/{}/d/review/en_US/0/9999/%7B%7D/RECENT/false/false/'.format(product.sku)
+            session.queue(Request(revs_url), process_reviews, dict(product=product))
 
     next_url = data.xpath('//a[@class="page-next button is-primary"]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_category, dict(context))
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_reviews(data, context, session):
     product = context['product']
 
     revs_json = simplejson.loads(data.content)
-    revs = revs_json['reviews']
+
+    revs = revs_json.get('reviews', [])
     for rev in revs:
         review = Review()
-        review.url = context['url']
+        review.url = product.url
         review.type = 'user'
-        review.ssid = str(rev['id'])
-        review.date = rev['dateCreatedFormatted']
+        review.date = rev.get('dateCreatedFormatted')
 
-        title = rev['title']
-        if title and title != "" and title.isspace() != True:
-            title = title.encode("ascii", errors="ignore")
-            review.title = title
+        ssid = rev.get('id')
+        if ssid:
+            review.ssid = str(ssid)
 
-        if rev['user']['firstName'] and rev['user']['lastName']:
-            author = rev['user']['firstName'] + " " + rev['user']['lastName']
-        else:
-            author = rev['user']['nickName']
-            
-        author_ssid = rev['user']['id']
+        title = rev.get('title', '').strip()
+        if title:
+            review.title = title.strip()
+
+        author = (rev.get('user', {}).get('firstName', '') + " " + rev.get('user', {}).get('lastName', '')).strip()
+        if not author:
+            author = rev.get('user', {}).get('nickName', '')
+
+        author_ssid = rev.get('user', {}).get('id')
         if not author_ssid:
-            author_ssid = author.encode("ascii", errors="ignore")
-        
-        if not author_ssid:
-            continue
+            author_ssid = author
 
-        if author and author.isspace() != True:
-            author = author.encode("ascii", errors="ignore")
+        if author:
             review.authors.append(Person(name=author, ssid=str(author_ssid)))
 
-        is_verified = rev['purchaseDateFormatted']
-        if is_verified != "":
+        is_verified = rev.get('purchaseDateFormatted')
+        if is_verified:
             review.add_property(type='is_verified_buyer', value=True)
 
-        is_recommended = rev['recommended']
-        if is_recommended == "true":
+        is_recommended = rev.get('recommended')
+        if is_recommended:
             review.add_property(type='is_recommended', value=True)
 
-        hlp_yes = rev['upVotes']
-        if hlp_yes:
-            review.add_property(type='helpful_votes', value=int(hlp_yes))
-        
-        hlp_no = rev['downVotes']
-        if hlp_no:
-            review.add_property(type='not_helpful_votes', value=int(hlp_no))
+        hlp_yes = rev.get('upVotes', 0)
+        if hlp_yes > 0:
+            review.add_property(type='helpful_votes', value=hlp_yes)
 
-        grade_overall = rev['rating']
-        if grade_overall:
+        hlp_no = rev.get('downVotes', 0)
+        if hlp_no > 0:
+            review.add_property(type='not_helpful_votes', value=hlp_no)
+
+        grade_overall = rev.get('rating', 0)
+        if grade_overall > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        excerpt = rev['text'].encode("ascii", errors="ignore").replace('<br />', '')        
-        if excerpt and excerpt != "" and excerpt.isspace() != True:
+        excerpt = rev.get('text', '').replace('<br />', '').strip()
+        if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
-    
-    # No next page, load 9999 reviews
 
     if product.reviews:
         session.emit(product)
