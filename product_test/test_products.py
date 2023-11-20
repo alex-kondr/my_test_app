@@ -215,8 +215,12 @@ class TestProduct:
         error_title = []
         for product in self.products:
             properties = product.get("review", {}).get("properties", {})
-            property = [property for property in properties if property.get("type") == "title"][0]
-            title = property.get("value")
+            property = [property for property in properties if property.get("type") == "title"]
+
+            if not property:
+                continue
+
+            title = property[0].get("value")
 
             xtitle = is_include(xproduct_title, title)
             if xtitle:
