@@ -76,13 +76,15 @@ def process_reviews(data, context, session):
         if ssid:
             review.ssid = str(ssid)
 
-        title = rev.get('title', '').strip()
-        if title:
+        title = rev.get('title')
+        if title and title.strip():
             review.title = title.strip()
 
-        author = (rev.get('user', {}).get('firstName', '') + " " + rev.get('user', {}).get('lastName', '')).strip()
+        first_name = rev.get('user', {}).get('firstName')
+        last_name = rev.get('user', {}).get('lastName')
+        author = '{first_name} {last_name}'.format(first_name=first_name, last_name=last_name).replace('None', '').strip()
         if not author:
-            author = rev.get('user', {}).get('nickName', '')
+            author = rev.get('user', {}).get('nickName')
 
         author_ssid = rev.get('user', {}).get('id')
         if not author_ssid:
@@ -99,20 +101,21 @@ def process_reviews(data, context, session):
         if is_recommended:
             review.add_property(type='is_recommended', value=True)
 
-        hlp_yes = rev.get('upVotes', 0)
-        if hlp_yes > 0:
+        hlp_yes = rev.get('upVotes')
+        if hlp_yes and hlp_yes > 0:
             review.add_property(type='helpful_votes', value=hlp_yes)
 
-        hlp_no = rev.get('downVotes', 0)
-        if hlp_no > 0:
+        hlp_no = rev.get('downVotes')
+        if hlp_no and hlp_no > 0:
             review.add_property(type='not_helpful_votes', value=hlp_no)
 
-        grade_overall = rev.get('rating', 0)
-        if grade_overall > 0:
+        grade_overall = rev.get('rating')
+        if grade_overall and grade_overall > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        excerpt = rev.get('text', '').replace('<br />', '').strip()
+        excerpt = rev.get('text')
         if excerpt:
+            excerpt = excerpt.replace('<br />', '').strip()
             review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
