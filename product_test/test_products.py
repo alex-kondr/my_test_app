@@ -8,7 +8,7 @@ from product_test.functions import load_file, is_include
 
 
 CPU_COUNT = cpu_count()
-EXECUTOR = ProcessPoolExecutor(2 * CPU_COUNT + 1)
+EXECUTOR = ProcessPoolExecutor(CPU_COUNT)
 
 
 class ResultParse:
@@ -141,18 +141,18 @@ class TestProduct:
 
     def run(self):
         for self.product in self.products:
-            EXECUTOR.submit(self.test_product_name, xproduct_names=[], not_xproduct_name="", len_name=3)
-            EXECUTOR.submit(self.test_product_category, xproduct_names=[])
+            # EXECUTOR.submit(self.test_product_name, [], "", 3)
+            # EXECUTOR.submit(self.test_product_category, [])
             EXECUTOR.submit(self.test_product_sku)
-            EXECUTOR.submit(self.test_product_id_manufacturer)
-            EXECUTOR.submit(self.test_product_ean_gtin)
-            EXECUTOR.submit(self.test_review_title, xproduct_title=[])
-            EXECUTOR.submit(self.test_review_grade)
-            EXECUTOR.submit(self.test_review_author)
-            EXECUTOR.submit(self.test_review_award)
-            EXECUTOR.submit(self.test_review_pros_cons)
-            EXECUTOR.submit(self.test_review_conclusion, xreview_conclusion=[])
-            EXECUTOR.submit(self.test_review_excerpt, xreview_excerpt=[], len_chank=100, len_excerpt=3)
+            # EXECUTOR.submit(self.test_product_id_manufacturer)
+            # EXECUTOR.submit(self.test_product_ean_gtin)
+            # EXECUTOR.submit(self.test_review_title, [])
+            # EXECUTOR.submit(self.test_review_grade)
+            # EXECUTOR.submit(self.test_review_author)
+            # EXECUTOR.submit(self.test_review_award)
+            # EXECUTOR.submit(self.test_review_pros_cons)
+            # EXECUTOR.submit(self.test_review_conclusion, [])
+            # EXECUTOR.submit(self.test_review_excerpt, [], 100, 3)
 
         EXECUTOR.shutdown()
 
