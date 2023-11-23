@@ -29,13 +29,13 @@ def process_catlist(data, context, session):
 
 
 def process_prodlist(data, context, session):
-    prods = data.xpath("//div[@class='product_container']")
+    prods = data.xpath('//div[@id="injector_container"]//div[@class="product_container"]')
     for prod in prods:
         name = prod.xpath(".//img[@title][1]//@title").string(multiple=True)
         url = prod.xpath(".//a//@href").string()
-        stars_cnt = prod.xpath('count(.//img[contains(@src, "fullstar.png")])')
 
-        if stars_cnt and stars_cnt > 0:##############
+        stars_cnt = prod.xpath('count(.//img[contains(@src, "fullstar.png") or contains(@src, "emptystar.png")])')
+        if stars_cnt and stars_cnt > 0:
             session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
 
@@ -43,38 +43,44 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
+    product.ssid = context['url'].split("/")[-1]
     product.category = context['cat']
     product.manufacturer = context['name'].split(" ")[0]
 
     mpn = data.xpath("//span[@class='product_code_cont']/text()").string()
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
-    product.ssid = mpn or context['url'].split("/")[-1]
+        product.ssid = mpn
 
-    revs = data.xpath("//div[@itemprop='review']")
+    context['product'] = product
+    process_reviews(context, data, session)
+
+
+def process_reviews(context, data, session):
+    product = context['product']
+
+    revs = data.xpath('//body[div[@class="review_text text-left"]]')
     for rev in revs:
         review = Review()
         review.type = 'user'
         review.url = context['url']
-        review.date = rev.xpath("//meta[@itemprop='datePublished']/@content").string()
+        review.date = rev.xpath('.//span[@class="review_date"]/text()').string()
 
-        author_name = rev.xpath("//span[@itemprop='author']/text()").string()
-        if author_name:
-            review.authors.append(Person(name=author_name, ssid=author_name))
+        author = rev.xpath('preceding-sibling::body[1]//span[@itemprop="author"]//text()').string(multiple=True)
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = rev.xpath("//span[@itemprop='ratingValue']/text()").string()
+        grade_overall = rev.xpath('preceding-sibling::body[1]//span[@itemprop="ratingValue"]/text()').string(multiple=True)
         if grade_overall:
             grade_overall = float(grade_overall.split('/')[0])
             review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
-        excerpt = rev.xpath("div[contains(@class, 'review_text')]//text()").string(multiple=True)
+        excerpt = rev.xpath('.//span[@itemprop="description"]//text()').string(multiple=True)
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
-            if author_name:
-                review.ssid = review.digest()
-            else:
-                review.ssid = review.digest(excerpt)
+            review.ssid = review.digest() if author else review.digest(excerpt)
+
             product.reviews.append(review)
 
     if product.reviews:
