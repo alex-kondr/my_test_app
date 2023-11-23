@@ -20,12 +20,12 @@ def process_catlist(data, context, session):
             sub_cats1 = sub_cat.xpath('.//div[@class="megamenu_subitem"]/a')
             if sub_cats1:
                 for sub_cat1 in sub_cats1:
-                    sub_name1 = sub_cat1.xpath('text').string()
+                    sub_name1 = sub_cat1.xpath('text()').string()
                     url = sub_cat1.xpath('@href').string()
-                    session.quque(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                    session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
             else:
                 url = sub_cat.xpath('div[@class="megamenu_item_title"]/a/@href').string()
-                session.quque(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
+                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
 def process_prodlist(data, context, session):
