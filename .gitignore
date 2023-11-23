@@ -163,3 +163,7 @@ cython_debug/
 product_test/emits
 product_test/error
 product_test/logs
+.vs/slnx.sqlite
+.vs/VSWorkspaceState.json
+.vs/my_test_app/FileContentIndex/ba39e0fb-080c-488e-93f8-6a4d295468e4.vsidx
+.vs/my_test_app/v17/.wsuo
