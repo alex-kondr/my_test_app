@@ -9,22 +9,22 @@ def run(context, session):
 
 def process_catlist(data, context, session):
     cats = data.xpath('//a[@class="megamenu_hover hidden-lg"]')
-    cats_ = data.xpath('//div[@class="row card-griddi"]')
-    for cat, cat_ in zip(cats, cats_):
+    sub_cats = data.xpath('//div[@class="row card-griddi"]')
+    for cat, sub_cat in zip(cats, sub_cats):
         name = cat.xpath('text()').string(multiple=True)
 
-        sub_cats = cat_.xpath('.//div[@class="card megamenu_item"]')
-        for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath('div[@class="megamenu_item_title"]/a/text()').string()
+        sub_cats_ = sub_cat.xpath('.//div[@class="card megamenu_item"]')
+        for sub_cat_ in sub_cats_:
+            sub_name = sub_cat_.xpath('div[@class="megamenu_item_title"]/a/text()').string()
 
-            sub_cats1 = sub_cat.xpath('.//div[@class="megamenu_subitem"]/a')
+            sub_cats1 = sub_cat_.xpath('.//div[@class="megamenu_subitem"]/a')
             if sub_cats1:
                 for sub_cat1 in sub_cats1:
                     sub_name1 = sub_cat1.xpath('text()').string()
                     url = sub_cat1.xpath('@href').string()
                     session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
             else:
-                url = sub_cat.xpath('div[@class="megamenu_item_title"]/a/@href').string()
+                url = sub_cat_.xpath('div[@class="megamenu_item_title"]/a/@href').string()
                 session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
@@ -50,7 +50,6 @@ def process_product(data, context, session):
     mpn = data.xpath("//span[@class='product_code_cont']/text()").string()
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
-        product.ssid = mpn
 
     context['product'] = product
     process_reviews(context, data, session)
@@ -85,3 +84,5 @@ def process_reviews(context, data, session):
 
     if product.reviews:
         session.emit(product)
+
+# no next page

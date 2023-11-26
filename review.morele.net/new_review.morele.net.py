@@ -24,7 +24,12 @@ def process_catlist(data, context, session):
                     url = sub_cat1.xpath('@href').string()
                     if ',,,0,,,,' not in url:
                         url = url + ',,,,,,,rr,1,,,,/1/'
-                        session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+
+                        cat = name + '|' + sub_name
+                        if sub_name1 not in cat:
+                            cat = name + '|' + sub_name + '|' + sub_name1
+
+                        session.queue(Request(url), process_prodlist, dict(cat=cat))
             else:
                 url = sub_cat.xpath('a/@href').string() + ',,,,,,,rr,1,,,,/1/'
                 session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
@@ -108,11 +113,12 @@ def process_reviews(data, context, session):
 
             product.reviews.append(review)
 
-    revs_cnt = context['revs_cnt'] - 20
-    if revs_cnt > 0:
-        page = context.get('page', 1)
-        next_url = product.url + '?sekcja=reviews&reviews_page=' + str(page)
-        session.do(Request(next_url), process_reviews, dict(product=product, page=page, revs_cnt=revs_cnt))
+    offset = context.get('offset', 0)
+    if offset < context['revs_cnt']:
+        offset = offset + 20
+        next_page = context.get('page', 1) + 1
+        next_url = product.url + '?sekcja=reviews&reviews_page=' + str(next_page)
+        session.do(Request(next_url), process_reviews, dict(product=product, page=next_page, offset=offset))
 
     elif product.reviews:
         session.emit(product)

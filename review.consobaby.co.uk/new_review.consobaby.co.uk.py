@@ -3,11 +3,11 @@ from models.products import *
 
 
 XCAT = ["Free product tests"]
-XPROSCONS = ['-', 'No', 'NA', 'Na', 'a',  'None', 'Unavailable', 'Hard', 'N/A']
+XPROSCONS = ['-', 'no', 'na', 'a',  'none', 'unavailable', 'hard', 'n/a', 'n\a']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
     session.queue(Request("https://www.consobaby.co.uk"), process_catlist, dict())
 
 
@@ -69,24 +69,24 @@ def process_reviews(data,context, session):
         review = Review()
         review.type = "user"
         review.url = context["url"]
-        review.title = rev.xpath('.//strong/text()').string()
-        review.date = rev.xpath('following::meta[@itemprop="datePublished"][1]/@content').string()
+        review.title = rev.xpath('.//div[@class="meta-data"]//strong/text()').string()
+        review.date = rev.xpath('following::meta[1][@itemprop="datePublished"]/@content').string()
 
         author = rev.xpath('.//span[@itemprop="author"]/text()').string()
         author_id = rev.xpath('.//a[@data-customer]/@data-customer').string()
         if author and author_id:
             author_url = 'https://www.consobaby.co.uk/flexiall/ajax/customer?id=' + author_id
-            review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
+            review.authors.append(Person(name=author, ssid=author_id, profile_url=author_url))
         elif author:
             review.authors.append(Person(name=author, ssid=author))
 
         pros = rev.xpath('following::ul[li[@class="pros"]][1]/li[@class="pros"]//text()').string(multiple=True)
-        if pros and pros.replace("Strengths:", "").strip() not in XPROSCONS:
+        if pros and pros.replace("Strengths:", "").strip().lower() not in XPROSCONS:
             pros = pros.replace("Strengths:", "").strip()
             review.add_property(type="pros", value=pros)
 
         cons = rev.xpath('following::ul[li[@class="cons"]][1]/li[@class="cons"]//text()').string(multiple=True)
-        if cons and cons.replace("Weaknesses:", "").strip() not in XPROSCONS:
+        if cons and cons.replace("Weaknesses:", "").strip().lower() not in XPROSCONS:
             cons = cons.replace("Weaknesses:", "").strip()
             review.add_property(type="cons", value=cons)
 
@@ -105,10 +105,8 @@ def process_reviews(data,context, session):
             excerpt = excerpt.replace('•', '')
             review.add_property(type="excerpt", value=excerpt)
 
-            ssid = rev.xpath('.//span[@data-id]/@data-id').string()
-            if ssid:
-                review.ssid = ssid
-            else:
+            review.ssid = rev.xpath('.//span[@data-id]/@data-id').string()
+            if not review.ssid:
                 review.ssid = review.digest() if author else review.digest(excerpt)
 
             product.reviews.append(review)

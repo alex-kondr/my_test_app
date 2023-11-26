@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=9000)]
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
     session.queue(Request("https://www.snowys.com.au/"), process_catlist, dict())
 
 
@@ -53,12 +53,9 @@ def process_product(data, context, session):
     product.category = context['cat']
     product.url = context['url']
     product.ssid = context['ssid']
+    product.manufacturer = context.get('manufacturer')
 
-    manufacturer = context.get('manufacturer')
-    if manufacturer:
-        product.manufacturer = manufacturer
-
-    prod_json = data.xpath('//script[@type="application/ld+json" and contains(text(), "Product")]/text()').string()
+    prod_json = data.xpath('''//script[contains(text(), '"@type": "Product"')]/text()''').string()
     if prod_json:
         prod_json = simplejson.loads(prod_json.replace('	', '').replace('\&', ''))
 
@@ -71,7 +68,7 @@ def process_product(data, context, session):
             product.add_property(type='id.manufacturer', value=mpn)
 
     revs_url = 'https://www.snowys.com.au/DbgReviews/ProductDetailsReviews?pagenumber=1&productId=' + product.ssid
-    session.do(Request(revs_url), process_reviews, dict(product=product))
+    session.do(Request(revs_url, max_age=0), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -116,5 +113,6 @@ def process_reviews(data, context, session):
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
         session.do(Request(next_url), process_reviews, dict(product=product))
-    else:
+
+    elif product.reviews:
         session.emit(product)

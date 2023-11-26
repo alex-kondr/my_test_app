@@ -36,16 +36,19 @@ def process_product(data, context, session):
     product.url = context['url']
     product.manufacturer = 'Blackview'
     product.ssid = prod_json["@id"]
-    product.sku = prod_json["sku"]
 
-    mpn = prod_json["mpn"]
+    mpn = prod_json.get("sku")
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
+
+    ean = prod_json.get("mpn")
+    if ean:
+        product.add_property(type='id.ean', value=ean)
 
     revs_cnt = prod_json.get("aggregateRating", {}).get("reviewCount")
     if revs_cnt and int(revs_cnt) > 0:
         revs_url = "https://productreviews.shopifycdn.com/proxy/v4/reviews?callback=paginateCallback{ssid}&page={page}&product_id={ssid}&shop=blackview-store.myshopify.com&product_ids[]={ssid}".format(ssid=product.ssid, page=1)
-        session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(product=product, page=1, revs_cnt=int(revs_cnt)))
+        session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(product=product, revs_cnt=int(revs_cnt)))
 
 
 def process_reviews(data, context, session):
@@ -61,18 +64,11 @@ def process_reviews(data, context, session):
     revs = new_data.xpath('//div[@class="spr-review"]')
     for rev in revs:
         review = Review()
-
         review.type = 'user'
         review.url = product.url
+        review.title = rev.xpath('.//h3//text()').string(multiple=True)
+        review.ssid = rev.xpath('@id').string().split('view-')[-1]
         review.date = rev.xpath('.//span[@class="spr-review-header-byline"]/strong[2]/text()').string()
-
-        title = rev.xpath('.//h3//text()').string(multiple=True)
-        if title:
-            review.title = title.encode().decode()
-
-        ssid = rev.xpath('@id').string()
-        if ssid:
-            review.ssid = ssid.split('view-')[-1]
 
         author = rev.xpath('.//span[@class="spr-review-header-byline"]/strong[1]/text()').string()
         if author:
@@ -89,11 +85,12 @@ def process_reviews(data, context, session):
 
             product.reviews.append(review)
 
-    revs_cnt = context['revs_cnt'] - 5
-    if revs_cnt > 0:
-        page = context['page'] + 1
-        revs_url = "https://productreviews.shopifycdn.com/proxy/v4/reviews?callback=paginateCallback{ssid}&page={page}&product_id={ssid}&shop=blackview-store.myshopify.com&product_ids[]={ssid}".format(ssid=product.ssid, page=page)
-        session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(context, product=product, page=page, revs_cnt=revs_cnt))
+    offset = context.get('offset', 0)
+    if offset < context['revs_cnt']:
+        offset = offset + 5
+        next_page = context.get('page', 1) + 1
+        revs_url = "https://productreviews.shopifycdn.com/proxy/v4/reviews?callback=paginateCallback{ssid}&page={next_page}&product_id={ssid}&shop=blackview-store.myshopify.com&product_ids[]={ssid}".format(ssid=product.ssid, next_page=next_page)
+        session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(context, product=product, page=next_page, offset=offset))
 
     elif product.reviews:
         session.emit(product)

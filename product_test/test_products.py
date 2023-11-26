@@ -1,14 +1,14 @@
 import yaml
 import json
 from pathlib import Path
-from concurrent.futures import ProcessPoolExecutor
-from multiprocessing import cpu_count
+# from concurrent.futures import ProcessPoolExecutor
+# from multiprocessing import cpu_count
 
 from product_test.functions import load_file, is_include
 
 
-CPU_COUNT = cpu_count()
-EXECUTOR = ProcessPoolExecutor(CPU_COUNT)
+# CPU_COUNT = cpu_count()
+# EXECUTOR = ProcessPoolExecutor(CPU_COUNT)
 
 
 class ResultParse:
@@ -120,7 +120,7 @@ class TestProduct:
         self.xproduct_names_category_start_end = ["-", "+"]
         self.xproduct_title = ["\uFEFF", "\ufeff"]
         self.xreview_excerpt = ["Conclusion", "Verdict", "\uFEFF", "\ufeff", "Summary", "•", "Fazit"]
-        self.xreview_pros_cons = ["-", "+", "•", "None found", "null"]
+        self.xreview_pros_cons = ["-", "+", "•", "none found", "null", 'na', 'no', 'n/a', 'n\a']
         self.path = Path(f"product_test/error/{self.agent_name}")
         Path("product_test/error").mkdir(exist_ok=True)
         self.path.mkdir(exist_ok=True)
@@ -141,20 +141,20 @@ class TestProduct:
 
     def run(self):
         for self.product in self.products:
-            # EXECUTOR.submit(self.test_product_name, [], "", 3)
-            # EXECUTOR.submit(self.test_product_category, [])
-            EXECUTOR.submit(self.test_product_sku)
-            # EXECUTOR.submit(self.test_product_id_manufacturer)
-            # EXECUTOR.submit(self.test_product_ean_gtin)
-            # EXECUTOR.submit(self.test_review_title, [])
-            # EXECUTOR.submit(self.test_review_grade)
-            # EXECUTOR.submit(self.test_review_author)
-            # EXECUTOR.submit(self.test_review_award)
-            # EXECUTOR.submit(self.test_review_pros_cons)
-            # EXECUTOR.submit(self.test_review_conclusion, [])
-            # EXECUTOR.submit(self.test_review_excerpt, [], 100, 3)
+            self.test_product_name(xproduct_names=[], not_xproduct_name="", len_name=3)
+            self.test_product_category(xproduct_names=[])
+            self.test_product_sku()
+            self.test_product_id_manufacturer()
+            self.test_product_ean_gtin()
+            self.test_review_title(xproduct_title=[])
+            self.test_review_grade()
+            self.test_review_author()
+            self.test_review_award()
+            self.test_review_pros_cons()
+            self.test_review_conclusion(xreview_conclusion=[])
+            self.test_review_excerpt(xreview_excerpt=[], len_chank=100, len_excerpt=3)
 
-        EXECUTOR.shutdown()
+        # EXECUTOR.shutdown()
 
         print(f"Count error product name: {len(self.error_name)}")
         self.save(self.error_name, type_err="prod_name")
@@ -326,7 +326,7 @@ class TestProduct:
                 property_pros[i]["error_in_con"] = f"Pro: '{pro}' in cons"
                 temp_pros_cons = properties
             for xreview_pros_cons in self.xreview_pros_cons:
-                if pro.startswith(xreview_pros_cons) or pro.endswith(xreview_pros_cons):
+                if pro.lower().startswith(xreview_pros_cons) or pro.lower().endswith(xreview_pros_cons):
                     property_pros[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
                     temp_pros_cons = properties
 
@@ -338,7 +338,7 @@ class TestProduct:
                     property_cons[i]["error_in_pro"] = f"Con: '{con}' in pros"
                     temp_pros_cons = properties
                 for xreview_pros_cons in self.xreview_pros_cons:
-                    if con.startswith(xreview_pros_cons) or con.endswith(xreview_pros_cons):
+                    if con.lower().startswith(xreview_pros_cons) or con.lower().endswith(xreview_pros_cons):
                         property_cons[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
                         temp_pros_cons = properties
 
