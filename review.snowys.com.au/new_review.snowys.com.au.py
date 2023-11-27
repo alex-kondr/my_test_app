@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.sessionbreakers = [SessionBreak(max_requests=9000)]
     session.queue(Request("https://www.snowys.com.au/"), process_catlist, dict())
 
 

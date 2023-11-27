@@ -118,7 +118,7 @@ def process_reviews(data, context, session):
         offset = offset + 20
         next_page = context.get('page', 1) + 1
         next_url = product.url + '?sekcja=reviews&reviews_page=' + str(next_page)
-        session.do(Request(next_url), process_reviews, dict(product=product, page=next_page, offset=offset))
+        session.do(Request(next_url), process_reviews, dict(context, product=product, page=next_page, offset=offset))
 
     elif product.reviews:
         session.emit(product)
