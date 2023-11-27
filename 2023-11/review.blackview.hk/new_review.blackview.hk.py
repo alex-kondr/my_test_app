@@ -4,10 +4,10 @@ import simplejson
 
 
 def run(context, session):
-    session.queue(Request("https://store.blackview.hk"), process_catlist, dict())
+    session.queue(Request("https://store.blackview.hk"), process_frontpage, dict())
 
 
-def process_catlist(data, context, session):
+def process_frontpage(data, context, session):
     cats = data.xpath('//li[@data-placement="bottom"]/a')
     for cat in cats:
         name = cat.xpath('text()').string()
@@ -85,9 +85,8 @@ def process_reviews(data, context, session):
 
             product.reviews.append(review)
 
-    offset = context.get('offset', 0)
+    offset = context.get('offset', 0) + 5
     if offset < context['revs_cnt']:
-        offset = offset + 5
         next_page = context.get('page', 1) + 1
         revs_url = "https://productreviews.shopifycdn.com/proxy/v4/reviews?callback=paginateCallback{ssid}&page={next_page}&product_id={ssid}&shop=blackview-store.myshopify.com&product_ids[]={ssid}".format(ssid=product.ssid, next_page=next_page)
         session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(context, product=product, page=next_page, offset=offset))

@@ -115,7 +115,7 @@ def process_reviews(data, context, session):
             review.add_property(type='excerpt', value=excerpt)
 
             review.ssid = str(rev.get('id'))
-            if not review.sssid:
+            if not review.ssid:
                 review.ssid = review.digest() if author else review.digest(excerpt)
 
             product.reviews.append(review)
