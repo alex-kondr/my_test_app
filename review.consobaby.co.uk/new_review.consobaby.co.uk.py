@@ -3,7 +3,7 @@ from models.products import *
 
 
 XCAT = ["Free product tests"]
-XPROSCONS = ['-', 'no', 'na', 'a',  'none', 'unavailable', 'hard', 'n/a', 'n\\a']
+XPROSCONS = ['-', 'no', 'na', 'a', 'non', 'none', 'none.', 'none!', 'none !', 'none!!!', 'none?', 'none???!', 'nothing', 'nothing.', 'nothing!', 'unavailable', 'hard', 'not found', 'not found one', 'not applicable', 'no cons', 'no cons.', 'n/a', 'n\\a']
 
 
 def run(context, session):
@@ -102,7 +102,7 @@ def process_reviews(data,context, session):
 
         excerpt = rev.xpath('following::div[@class="reviewBody"][1]//text()').string(multiple=True)
         if excerpt:
-            excerpt = excerpt.replace('•', '')
+            excerpt = excerpt.replace('•', '').replace('<p>', '').replace('</p>', '').replace('</a>', '').replace('<a href="https://www.consobaby.co.uk/silicone-breast-pump-with-suction-base-150ml-haakaa.html">', '')
             review.add_property(type="excerpt", value=excerpt)
 
             review.ssid = rev.xpath('.//span[@data-id]/@data-id').string()
