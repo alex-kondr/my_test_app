@@ -15,24 +15,20 @@ def process_catlist(data, context, session):
         sub_cats = cat.xpath('.//ul[@class="cn-row"]/li')
         for sub_cat in sub_cats:
             sub_name = sub_cat.xpath('a/text()').string()
+            cat = name + '|' + sub_name
 
             sub_cats1 = sub_cat.xpath('ul/li/a')
-            # if sub_cats1:
             for sub_cat1 in sub_cats1:
                 sub_name1 = sub_cat1.xpath('text()').string()
 
                 url = sub_cat1.xpath('@href').string()
-                if ',,,0,,,,' not in url:
+                if ',,,0,,,,' not in url and sub_name1 not in cat:
                     url = url + ',,,,,,,rr,1,,,,/1/'
+                    session.queue(Request(url), process_prodlist, dict(cat=cat + '|' + sub_name1))
 
-                    cat = name + '|' + sub_name
-                    if sub_name1 not in cat:
-                        cat = name + '|' + sub_name + '|' + sub_name1
-
-                        session.queue(Request(url), process_prodlist, dict(cat=cat))
             else:
                 url = sub_cat.xpath('a/@href').string() + ',,,,,,,rr,1,,,,/1/'
-                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
+                session.queue(Request(url), process_prodlist, dict(cat=cat))
 
 
 def process_prodlist(data, context, session):

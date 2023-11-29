@@ -98,7 +98,6 @@ class Product:
 
         print(f"{product_count=}")
         self.save_file(file)
-
         return file
 
     def open_file(self):
@@ -120,7 +119,7 @@ class TestProduct:
         self.xproduct_names_category_start_end = ["-", "+"]
         self.xproduct_title = ["\uFEFF", "\ufeff"]
         self.xreview_excerpt = ["Conclusion", "Verdict", "\uFEFF", "\ufeff", "Summary", "•", "Fazit", "href="]
-        self.xreview_pros_cons = ["-", "+", "•", "none found", "null", 'na', 'no', 'n/a', 'n\\a']
+        self.xreview_pros_cons = ["-", "+", "•", "none found", "null", 'n/a', 'n\\a',]# 'na', 'no',]
         self.path = Path(f"product_test/error/{self.agent_name}")
         Path("product_test/error").mkdir(exist_ok=True)
         self.path.mkdir(exist_ok=True)

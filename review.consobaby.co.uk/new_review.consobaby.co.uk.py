@@ -3,7 +3,7 @@ from models.products import *
 
 
 XCAT = ["Free product tests"]
-XPROSCONS = ['-', 'no', 'na', 'a', 'non', 'none', 'none.', 'none!', 'none !', 'none!!!', 'none?', 'none???!', 'nothing', 'nothing.', 'nothing!', 'unavailable', 'hard', 'not found', 'not found one', 'not applicable', 'no cons', 'no cons.', 'n/a', 'n\\a']
+XPROSCONS = ['-', 'no', 'na', 'a', 'non', 'none', 'none.', 'none!', 'none !', 'none!!!', 'none?', 'none???!', 'nothing', 'nothing.', 'nothing!', 'Nothing :)', 'unavailable', 'hard', 'not found', 'not found one', 'not applicable', 'no cons', 'no cons.', 'n/a', 'n\\a']
 
 
 def run(context, session):

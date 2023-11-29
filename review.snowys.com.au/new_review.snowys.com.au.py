@@ -4,8 +4,8 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=9000)]
-    session.do(Request("https://www.snowys.com.au/"), process_catlist, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.queue(Request("https://www.snowys.com.au/", max_age=0), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -21,13 +21,13 @@ def process_catlist(data, context, session):
             for sub_cat1 in sub_cats1:
                 sub_name1 = sub_cat1.xpath('.//text()').string(multiple=True)
                 url = sub_cat1.xpath('@href').string()
-                session.do(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
             else:
                 url = sub_cat.xpath('a/@href').string()
-                session.do(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
+                session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + sub_name))
         else:
             url = cat.xpath('a/@href').string()
-            session.do(Request(url), process_prodlist, dict(cat=name))
+            session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
@@ -40,11 +40,11 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.xpath('.//div[@class="reviewsCount"]//text()').string()
         if revs_cnt and int(revs_cnt.strip('()')) > 0:
-            session.do(Request(url), process_product, dict(context, name=name, url=url, ssid=ssid, manufacturer=manufacturer))
+            session.queue(Request(url, max_age=0), process_product, dict(context, name=name, url=url, ssid=ssid, manufacturer=manufacturer))
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
-        session.do(Request(next_url), process_prodlist, dict(context))
+        session.queue(Request(next_url, max_age=0), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -61,7 +61,7 @@ def process_product(data, context, session):
 
         ean = prod_json.get('gtin13')
         if ean:
-            product.add_property(type='id.ean', value=ean)
+            product.add_property(type='id.ean', value=str(ean))
 
         mpn = prod_json.get('mpn')
         if mpn:
@@ -112,7 +112,7 @@ def process_reviews(data, context, session):
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
-        session.do(Request(next_url), process_reviews, dict(product=product))
+        session.do(Request(next_url, max_age=0), process_reviews, dict(product=product))
 
     elif product.reviews:
         session.emit(product)

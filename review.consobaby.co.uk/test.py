@@ -14,7 +14,7 @@ import product_test.list_of_agents as agents
 
 agent = agents.CONSOBABY
 # agent = agents.TEST
-reload = 1
+reload = 0
 
 product = Product(agent, reload=reload)
 print(product.result)

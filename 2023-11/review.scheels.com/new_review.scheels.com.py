@@ -70,11 +70,8 @@ def process_reviews(data, context, session):
         review = Review()
         review.url = product.url
         review.type = 'user'
+        review.title = rev.get('title')
         review.date = rev.get('dateCreatedFormatted')
-
-        title = rev.get('title')
-        if title:
-            review.title = title
 
         first_name = rev.get('user', {}).get('firstName')
         last_name = rev.get('user', {}).get('lastName')
@@ -114,8 +111,10 @@ def process_reviews(data, context, session):
             excerpt = excerpt.replace('<br />', '').strip()
             review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = str(rev.get('id'))
-            if not review.ssid:
+            ssid = rev.get('id')
+            if ssid:
+                review.ssid = str(ssid)
+            else:
                 review.ssid = review.digest() if author else review.digest(excerpt)
 
             product.reviews.append(review)
