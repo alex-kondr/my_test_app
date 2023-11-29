@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=9000)]
     session.queue(Request("https://www.snowys.com.au/", max_age=0), process_catlist, dict())
 
 
@@ -14,17 +14,19 @@ def process_catlist(data, context, session):
         name = cat.xpath('a//text()').string()
 
         sub_cats = cat.xpath('ul[@class="home-subcategory-list"]/li')
-        for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath('a//text()').string()
+        if sub_cats:
+            for sub_cat in sub_cats:
+                sub_name = sub_cat.xpath('a//text()').string()
 
-            sub_cats1 = sub_cat.xpath('ul[@class="home-subsubcategory-list"]/li/a')
-            for sub_cat1 in sub_cats1:
-                sub_name1 = sub_cat1.xpath('.//text()').string(multiple=True)
-                url = sub_cat1.xpath('@href').string()
-                session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
-            else:
-                url = sub_cat.xpath('a/@href').string()
-                session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + sub_name))
+                sub_cats1 = sub_cat.xpath('ul[@class="home-subsubcategory-list"]/li/a')
+                if sub_cats1:
+                    for sub_cat1 in sub_cats1:
+                        sub_name1 = sub_cat1.xpath('.//text()').string(multiple=True)
+                        url = sub_cat1.xpath('@href').string()
+                        session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                else:
+                    url = sub_cat.xpath('a/@href').string()
+                    session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + sub_name))
         else:
             url = cat.xpath('a/@href').string()
             session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name))
