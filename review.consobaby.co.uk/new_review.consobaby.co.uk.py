@@ -8,10 +8,10 @@ XPROSCONS = ['-', 'no', 'na', 'a', 'non', 'none', 'none.', 'none!', 'none !', 'n
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=7000)]
-    session.queue(Request("https://www.consobaby.co.uk"), process_catlist, dict())
+    session.queue(Request("https://www.consobaby.co.uk"), process_frontpage, dict())
 
 
-def process_catlist(data, context, session):
+def process_frontpage(data, context, session):
     cats = data.xpath('//li[contains(@class, "products mobile-show-in-sidebar")]')
     for cat in cats:
         name = cat.xpath("a//text()").string(multiple=True).title()
