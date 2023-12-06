@@ -79,7 +79,7 @@ def process_reviews(data, context, session):
     if 'tempreviews' not in data.content:  # Product has no reviews
         return
 
-    revs_json = data.content.replace("\n", "").split("var tempreviews = ")[-1].split(";sa_product_reviews")[0]
+    revs_json = data.content.replace("\n", "").split("var tempreviews = ")[-1].split(";sa_product_reviews")[0].split(";sa_merchant_reviews")[0]
     revs = simplejson.loads(revs_json)
     for rev in revs:
         review = Review()
@@ -95,7 +95,7 @@ def process_reviews(data, context, session):
 
         grade = rev.get('rating')
         if grade:
-            review.grades.append(Grade(type='overall', value=grade, best=5.0))
+            review.grades.append(Grade(type='overall', value=float(grade), best=5.0))
 
         recommend = rev.get('recommend')
         if recommend:
@@ -107,6 +107,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.get('comments')
         if excerpt:
+            excerpt = excerpt.replace('<br>', '').replace('&#039;', "'")
             review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
