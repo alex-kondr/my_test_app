@@ -97,6 +97,10 @@ def process_reviews(data, context, session):
         if grade:
             review.grades.append(Grade(type='overall', value=grade, best=5.0))
 
+        recommend = rev.get('recommend')
+        if recommend:
+            review.add_property(type='is_recommended', value=True)
+
         verified_buyer = rev.get('verified')
         if verified_buyer:
             review.add_property(type='is_verified_buyer', value=True)
