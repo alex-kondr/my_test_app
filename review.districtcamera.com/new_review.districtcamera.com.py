@@ -106,7 +106,7 @@ def process_reviews(data, context, session):
             review.add_property(type='is_verified_buyer', value=True)
 
         excerpt = rev.get('comments')
-        if excerpt:
+        if excerpt and len(excerpt) > 3:
             excerpt = excerpt.replace('<br>', '').replace('&#039;', "'")
             review.add_property(type='excerpt', value=excerpt)
 

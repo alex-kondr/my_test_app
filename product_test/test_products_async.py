@@ -101,28 +101,29 @@ class Product:
     def generate_file(self) -> dict[list[dict]]:
         content = load_file(agent_id=self.agent_id, type_file="yaml")
         content = yaml.load_all(content, Loader=yaml.FullLoader)
-        futures = []
+        # futures = []
 
         # file = {"products": []}
         product_count = 0
         precent = 0
         for i, items in enumerate(content):
             # print('Start EXECUTOR')
-            futures.append(EXECUTOR.submit(self.items_by_content, items))
+            # futures.append(EXECUTOR.submit(self.items_by_content, items))
 
-            precent_ = int(((i / self.result.emitted) * 100))
-            if precent_ > precent:
-                print(f" Done {precent_} %")
-                precent = precent_
+            # precent_ = int(((i / self.result.emitted) * 100))
+            # if precent_ > precent:
+            #     print(f" Done {precent_} %")
+            #     precent = precent_
             # print(f"{i} in {self.result.emitted}")
             # self.product_count += future.result()
             # print(f"{self.product_count=}")
             # print(EXECUTOR._result_queue)
             # print('End EXECUTOR')
 
-        precent = 0
-        for future in futures:
-            file = future.result()
+        # precent = 0
+        # for future in futures:
+            # file = future.result()
+            file = self.items_by_content(items)
 
             if file.get("meta"):
                 self.file["meta"] = file["meta"]
