@@ -11,6 +11,20 @@ def run(context, session):
 
 
 def process_catlist(data, context, session):
+    # //div[@class="st-category-guide__category-container"]/div[@class="st-category-guide__list"]
+    #     div[@class="st-menu-header"]/a/text()
+    #     div[@class="st-menu-item__title"]
+    #     text()
+    #     preceding-sibling::a[1]/@href
+    
+    # //div[@class="st-category-guide__category-container"]/div[@class="st-category-guide__list"]
+    #     div[@class="st-menu-header"]/a/text()
+    #     div[@class="st-menu-item__title"]
+    #     preceding-sibling::div[@class="st-menu-header"][1]/text()
+    #     contains(preceding-sibling::div[@class="st-menu-header"][1]/text(), "Top Brands")
+    #     text()
+    #     preceding-sibling::a[1]/@href
+    
     cats = data.xpath('//div[@class="st-category-guide__category-container"]/div[@class="st-category-guide__list"]')
     for cat in cats:
         name = cat.xpath('div[@class="st-menu-header"]/a/text()').string()
