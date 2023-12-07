@@ -50,7 +50,7 @@ def process_product(data, context, session):
         if con:
             review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[.//strong[contains(., "Opinión y valoraciones")]]/following-sibling::p[not(@class)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[.//strong[contains(., "Opinión y valoraciones") or contains(., "Impresión y valoración")]]/following-sibling::p[not(@class or a[contains(@href, "soporte")] or strong[contains(., "Opiniones")])]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conslusion', value=conclusion)
 
