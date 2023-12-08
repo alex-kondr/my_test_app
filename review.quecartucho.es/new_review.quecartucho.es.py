@@ -7,7 +7,7 @@ def run(context, session):
 
 
 def process_prodlist(data, context, session):
-    prods = data.xpath('//div[@class="pt-cv-ifield"]//h2//a[contains(@href, "review-del-experto")]')
+    prods = data.xpath('//div[@class="pt-cv-ifield"]//h2//a[contains(@href, "review-del-experto")]') #149
     for prod in prods:
         title = prod.xpath('text()').string()
         url = prod.xpath('@href').string()
@@ -19,7 +19,7 @@ def process_product(data, context, session):
     product.name = context['title'].replace('|', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    # product.category = data.xpath('//li/a[@rel="category tag"][1]/text()').string()
+    product.category = '|'.join(data.xpath('//li/a[@rel="category tag"]/text()').strings())
 
     review = Review()
     review.title = context['title']
@@ -38,7 +38,7 @@ def process_product(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    pros = data.xpath('//span[@id="_Lo_mejor"]/following::ul[1]/li')
+    pros = data.xpath('//span[contains(@id, "_Lo_mejor")]/following::ul[1]/li')
     for pro in pros:
         pro = pro.xpath(".//text()").string(multiple=True)
         if pro:
@@ -53,11 +53,22 @@ def process_product(data, context, session):
     # conclusion = data.xpath('//h2[.//strong[contains(., "Opinión y valoraciones") or contains(., "Impresión y valoración")]]/following::p[not(@class or @style or a[contains(@href, "soporte")] or .//a[@class="rank-math-link"] or .//a[@rel="nofollow"] or strong[contains(., "Opiniones")] or contains(., "el precio puede variar"))]//text()').string(multiple=True)
     conclusion = data.xpath('(//h2[.//strong[contains(., "Opinión y valoraciones") or contains(., "Impresión y valoración")]]/following-sibling::p[not(@class or @style or a[contains(@href, "soporte")] or .//a[@class="rank-math-link"] or .//a[@rel="nofollow"] or strong[contains(., "Opiniones")] or contains(., "el precio puede variar"))]|//h2[.//strong[contains(., "Opinión y valoraciones") or contains(., "Impresión y valoración")]]/following-sibling::div[contains(@class, "wp-block-column")]//p)//text()').string(multiple=True)
     if conclusion:
-        review.add_property(type='conslusion', value=conclusion)
+        review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="nv-content-wrap entry-content"]//h2/following-sibling::*//text()').string(multiple=True)
+    manual_url = data.xpath('//a[@download="download"]/@href').string()
+    if manual_url:
+        product.add_property(type='link.manufacturer.userguide', value=dict(url=manual_url, title='Manual'))
+
+    excerpt = data.xpath('//h2[.//strong[contains(., "Opinión y valoraciones") or contains(., "Impresión y valoración")]]/preceding::p[not(@class or @style or strong[contains(., "Descripción")] or a[contains(@href, "soporte")] or .//a[@rel="nofollow"] or strong[contains(., "Opiniones")] or .//strong[contains(., "Ventajas")] or .//strong[contains(., "Desventajas")] or contains(., "el precio puede variar") or contains(., "Precio por copia"))]//text()').string(multiple=True)
+    # if not excerpt:
+    #     excerpt = data.xpath('').string(multiple=True)
     if excerpt:
-        review.add_property(type='excerpt', value=excerpt)
+        if summary:
+            excerpt = excerpt.replace(summary, '')
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '')
+
+        review.add_property(type='excerpt', value=excerpt.strip())
 
         product.reviews.append(review)
 
