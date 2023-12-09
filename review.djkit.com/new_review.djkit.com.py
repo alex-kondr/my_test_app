@@ -2,7 +2,7 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['']
+XCAT = ['Top Brands', 'Best Sellers', 'Shop by Brand', 'To Brands', 'Best sellers', 'Sale items']
 
 
 def run(context, session):
@@ -11,37 +11,20 @@ def run(context, session):
 
 
 def process_catlist(data, context, session):
-    # //div[@class="st-category-guide__category-container"]/div[@class="st-category-guide__list"]
-    #     div[@class="st-menu-header"]/a/text()
-    #     div[@class="st-menu-item__title"]
-    #     text()
-    #     preceding-sibling::a[1]/@href
-    
-    # //div[@class="st-category-guide__category-container"]/div[@class="st-category-guide__list"]
-    #     div[@class="st-menu-header"]/a/text()
-    #     div[@class="st-menu-item__title"]
-    #     preceding-sibling::div[@class="st-menu-header"][1]/text()
-    #     contains(preceding-sibling::div[@class="st-menu-header"][1]/text(), "Top Brands")
-    #     text()
-    #     preceding-sibling::a[1]/@href
-    
     cats = data.xpath('//div[@class="st-category-guide__category-container"]/div[@class="st-category-guide__list"]')
     for cat in cats:
-        name = cat.xpath('div[@class="st-menu-header"]/a/text()').string()
+        for i in range(int(cat.xpath('count(div[@class="st-menu-header"])'))):
+            name = cat.xpath('div[@class="st-menu-header" and count(preceding-sibling::hr[@class="st-menu-separator"])={i}]//text()'.format(i=i)).string(multiple=True)
 
-        sub_cats = cat.xpath('div[@class="st-menu-item__title"]')
-        for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath('text()').string()
-            url = sub_cat.xpath('preceding-sibling::a[1]/@href').string()
+            if name not in XCAT and 'Top 10' not in name:
+                sub_cats = cat.xpath('div[@class="st-menu-item__title" and count(preceding-sibling::hr[@class="st-menu-separator"])={i}]'.format(i=i))
+                for sub_cat in sub_cats:
+                    sub_name = sub_cat.xpath('text()').string()
 
-            if 'View all' not in sub_name:
-                session.queue(Request(url), process_subcategory, dict(cat=name + '|' + sub_name))
+                    cat = name if 'View all' in sub_name else name + '|' + sub_name
 
-
-def process_subcategory(data, context, session):
-    for name, url in zip(data.xpath("//div[@class='st-subcategory-list']//img/@title"),
-        data.xpath("//div[@class='st-subcategory-list']/a/@href")):
-        session.queue(Request(url.string(), use='curl'), process_prodlist, dict(cat=context['name']+'|'+name.string()))
+                    url = sub_cat.xpath('preceding-sibling::a[1]/@href').string()
+                    session.queue(Request(url), process_prodlist, dict(cat=cat))
 
 
 def process_prodlist(data, context, session):
@@ -49,16 +32,17 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod.xpath(".//a[contains(@class,'st-block-link__target')]/text()").string()
         url = prod.xpath(".//a[contains(@class,'st-block-link__target')]/@href").string()
-        rating = prod.xpath(".//span[@class='st-product-cell__rating-count']")
-        if rating:
-            session.queue(Request(url, use='curl'), process_review, dict(context, url=url, name=name))
+
+        reviews = prod.xpath(".//span[@class='st-product-cell__rating-count']")
+        if reviews:
+            session.queue(Request(url, use='curl'), process_product, dict(context, url=url, name=name))
 
     next_url = data.xpath("//a[@class='st-pagination__next']/@href").string()
     if next_url:
         session.queue(Request(next_url, use='curl'), process_prodlist, context)
 
 
-def process_review(data, context, session):
+def process_product(data, context, session):##############
     product = Product()
     product.name = context['name']
     product.category = context['cat']
@@ -71,12 +55,19 @@ def process_review(data, context, session):
     if sku_id:
         product.sku = sku_id
     if ean_id:
-        product.properties.append(ProductProperty(type='id.ean', value=ean_id))
+        product.add_property(type='id.ean', value=ean_id)
 
     if sku_id or ean_id:
         product.ssid = sku_id or ean_id
     else:
         product.ssid = context['url'].split("/")[-1].split(".html")[0]
+
+    context['product'] = product
+    process_reviews(data, context, session)
+
+
+def process_reviews(data, context, session):
+    product = context['product']
 
     revs = data.xpath("//div[@class='st-review' or @class='st-review hide']")
     for rev in revs:
