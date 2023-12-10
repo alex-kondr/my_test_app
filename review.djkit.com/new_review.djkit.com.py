@@ -21,10 +21,10 @@ def process_catlist(data, context, session):
                 for sub_cat in sub_cats:
                     sub_name = sub_cat.xpath('text()').string()
 
-                    cat = name if 'View all' in sub_name else name + '|' + sub_name
+                    cat_name = name if 'View all' in sub_name else name + '|' + sub_name
 
                     url = sub_cat.xpath('preceding-sibling::a[1]/@href').string()
-                    session.queue(Request(url), process_prodlist, dict(cat=cat))
+                    session.queue(Request(url), process_prodlist, dict(cat=cat_name))
 
 
 def process_prodlist(data, context, session):
@@ -35,32 +35,26 @@ def process_prodlist(data, context, session):
 
         reviews = prod.xpath(".//span[@class='st-product-cell__rating-count']")
         if reviews:
-            session.queue(Request(url, use='curl'), process_product, dict(context, url=url, name=name))
+            session.queue(Request(url), process_product, dict(context, url=url, name=name))
 
     next_url = data.xpath("//a[@class='st-pagination__next']/@href").string()
     if next_url:
-        session.queue(Request(next_url, use='curl'), process_prodlist, context)
+        session.queue(Request(next_url), process_prodlist, context)
 
 
-def process_product(data, context, session):##############
+def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.category = context['cat']
     product.url = context['url']
+    product.ssid = context['url'].split("/")[-1].split(".html")[0]
+    product.sku = data.xpath('//strong[contains(text(), "SKU")]/following-sibling::span[@class="st-product-info__detail"]/text()').string()
 
-    sku_id = data.xpath("//p[contains(@class, 'st-product-info ')]//span[1]/text()").string()
-    ean_id = data.xpath("//p[contains(@class, 'st-product-info ')]//span[last()]/text()").string()
-    if ean_id == sku_id:
-        ean_id = None
-    if sku_id:
-        product.sku = sku_id
-    if ean_id:
-        product.add_property(type='id.ean', value=ean_id)
-
-    if sku_id or ean_id:
-        product.ssid = sku_id or ean_id
-    else:
-        product.ssid = context['url'].split("/")[-1].split(".html")[0]
+    ean = data.xpath('//strong[contains(text(), "EAN")]/following-sibling::span[@class="st-product-info__detail"]/text()').string()
+    if ean:
+        if ean == product.sku:
+            raise ValueError('Found ==')
+        product.add_property(type='id.ean', value=ean)
 
     context['product'] = product
     process_reviews(data, context, session)
@@ -78,23 +72,35 @@ def process_reviews(data, context, session):
         review.date = rev.xpath(".//div[@class='st-review__date']/text()").string()
         review.ssid = rev.xpath("@data-review-id").string()
 
-        author_name = rev.xpath(".//div[@class='st-review__username']/text()").string()
-        if author_name:
-            review.authors.append(Person(name=author_name, ssid=author_name))
-
-        verified_buyer = rev.xpath(".//div[@class='st-review__badge']")
-        if verified_buyer:
-            review.add_property(type='is_verified_buyer', value=True)
+        author = rev.xpath(".//div[@class='st-review__username']/text()").string()
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
 
         grade_overall = rev.xpath("count(.//span[contains(@class, 'st-star--full')])")
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
+        verified_buyer = rev.xpath(".//div[@class='st-review__badge']")
+        if verified_buyer:
+            review.add_property(type='is_verified_buyer', value=True)
+
+        hlp_yes = rev.xpath('.//span[@class="st-review__stats"]/text()').string()
+        if hlp_yes:
+            hlp_yes = int(hlp_yes.split('found')[0])
+            if hlp_yes > 0:
+                review.add_property(type='helpful_votes', value=hlp_yes)
+
+        hlp = rev.xpath('.//span[@class="st-review__stats"]/text()').string()
+        if hlp and 'not' in hlp:
+            raise ValueError('Found not hlp')
+
         excerpt = rev.xpath(".//div[@class='st-review__content']/text()").string(multiple=True)
         if excerpt:
-            review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
+            review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
+
+# no next page
