@@ -26,13 +26,14 @@ def process_frontpage(data, context, session):
                     session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
-def process_prodlist(data, context, session):#######
-    for prod in data.xpath("//div[contains(@class, 'product-item product-item--vertical')]"):
+def process_prodlist(data, context, session):
+    prods = data.xpath("//div[contains(@class, 'product-item product-item--vertical')]")
+    for prod in prods:
         product = Product()
         product.category = context['cat']
         product.name = prod.xpath(".//a[@class='product-item__title text--strong link']/text()").string()
-        product.url = prod.xpath(".//a[@class='product-item__title text--strong link']/@href").string()
         product.ssid = prod.xpath(".//a[@class='product-item__reviews-badge link']/span/@data-id").string()
+        product.url = prod.xpath(".//a[@class='product-item__title text--strong link']/@href").string()
 
         rev_url = "https://productreviews.shopifycdn.com/proxy/v4/reviews?callback=paginateCallback" + product.ssid + "&page=1&product_id=" + product.ssid + "&shop=thedropstore-com.myshopify.com"
         session.do(Request(rev_url, use="curl", force_charset='utf-8'), process_reviews, dict(context, product=product))
