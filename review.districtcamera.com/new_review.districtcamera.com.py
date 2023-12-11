@@ -3,7 +3,7 @@ from models.products import *
 import simplejson
 
 
-XCAT = ["Used Products", "Specials", "Services", "Gifts"]
+XCAT = ["Used Products", "Specials", "Services", "Gifts", "Audio Cables", "Cables & PC Sync", "Power Supplies & Cables"]
 
 
 def run(context, session):
@@ -21,31 +21,36 @@ def process_frontpage(data, context, session):
             for sub_cat in sub_cats:
                 sub_name = sub_cat.xpath('a//text()').string(multiple=True)
 
-                sub_cats1 = sub_cat.xpath('ul[contains(@class, "submenu")]/li')
-                if sub_cats1:
-                    for sub_cat1 in sub_cats1:
-                        sub_name1 = sub_cat1.xpath('a//text()').string(multiple=True)
+                if sub_name not in XCAT:
+                    sub_cats1 = sub_cat.xpath('ul[contains(@class, "submenu")]/li')
+                    if sub_cats1:
+                        for sub_cat1 in sub_cats1:
+                            sub_name1 = sub_cat1.xpath('a//text()').string(multiple=True)
 
-                        sub_cats2 = sub_cat1.xpath('ul[contains(@class, "submenu")]/li')
-                        if sub_cats2:
-                            for sub_cat2 in sub_cats2:
-                                sub_name2 = sub_cat2.xpath("a//text()").string(multiple=True)
-                                url = sub_cat2.xpath('a/@href').string()
-                                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1 + '|' + sub_name2))
-                        else:
-                            url = sub_cat1.xpath('a/@href').string()
-                            session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
-                else:
-                    url = sub_cat.xpath('a/@href').string()
-                    session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
+                            if sub_name1 not in XCAT:
+                                sub_cats2 = sub_cat1.xpath('ul[contains(@class, "submenu")]/li')
+                                if sub_cats2:
+                                    for sub_cat2 in sub_cats2:
+                                        sub_name2 = sub_cat2.xpath("a//text()").string(multiple=True)
+
+                                        if sub_name2 not in XCAT:
+                                            url = sub_cat2.xpath('a/@href').string()
+                                            session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1 + '|' + sub_name2))
+                                else:
+                                    url = sub_cat1.xpath('a/@href').string()
+                                    session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                    else:
+                        url = sub_cat.xpath('a/@href').string()
+                        session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
 def process_prodlist(data, context, session):
-    prods = data.xpath("//strong[@class='product name product-item-name']/a[@class='product-item-link']")
+    prods = data.xpath('//div[@class="product details product-item-details"]')
     for prod in prods:
-        name = prod.xpath("text()").string()
-        url = prod.xpath("@href").string()
-        session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        name = prod.xpath('.//a[@class="product-item-link"]/text()').string()
+        ssid = prod.xpath('div[@data-product-id]/@data-product-id').string()
+        url = prod.xpath('.//a[@class="product-item-link"]/@href').string()
+        session.queue(Request(url), process_product, dict(context, name=name, ssid=ssid, url=url))
 
     next_page = data.xpath("//link[@rel='next']//@href").string()
     if next_page:
@@ -56,8 +61,7 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = data.xpath("//div[@class='product attribute sku']/div[@itemprop='sku']//text()").string()
-    product.sku = product.ssid
+    product.ssid = context['ssid']
     product.category = context['cat']
     product.manufacturer = context['name'].split(" ")[0]
 
@@ -69,22 +73,25 @@ def process_product(data, context, session):
     if ean:
         product.add_property(type='id.ean', value=ean)
 
-    url = 'https://www.shopperapproved.com/product/15521/' + str(product.ssid) + '.js'
+    pid = data.xpath("//div[@class='product attribute sku']/div[@itemprop='sku']//text()").string()
+    url = 'https://www.shopperapproved.com/product/15521/' + str(pid) + '.js'
     session.do(Request(url, use='curl'), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
     product = context['product']
 
-    if 'tempreviews' not in data.content:  # Product has no reviews
+    revs_json = data.content.replace("\n", "").split("var tempreviews = ")[-1].split(";sa_product_reviews")[0].split(";sa_merchant_reviews")[0]
+
+    try:
+        revs = simplejson.loads(revs_json)
+    except simplejson.JSONDecodeError:
         return
 
-    revs_json = data.content.replace("\n", "").split("var tempreviews = ")[-1].split(";sa_product_reviews")[0].split(";sa_merchant_reviews")[0]
-    revs = simplejson.loads(revs_json)
     for rev in revs:
         review = Review()
         review.type = 'user'
-        review.title = rev['heading']
+        review.title = rev.get('heading')
         review.url = product.url
         review.ssid = rev['id']
         review.date = rev.get('date')
@@ -114,3 +121,5 @@ def process_reviews(data, context, session):
 
     if product.reviews:
         session.emit(product)
+
+# no next page
