@@ -48,7 +48,7 @@ def process_prodlist(data, context, session):
     prods = data.xpath('//div[@class="product details product-item-details"]')
     for prod in prods:
         name = prod.xpath('.//a[@class="product-item-link"]/text()').string()
-        ssid = prod.xpath('div[@data-product-id]/@data-product-id').string()
+        ssid = prod.xpath('div/@data-product-id').string()
         url = prod.xpath('.//a[@class="product-item-link"]/@href').string()
         session.queue(Request(url), process_product, dict(context, name=name, ssid=ssid, url=url))
 
@@ -63,7 +63,7 @@ def process_product(data, context, session):
     product.url = context['url']
     product.ssid = context['ssid']
     product.category = context['cat']
-    product.manufacturer = context['name'].split(" ")[0]
+    product.manufacturer = data.xpath('//div[@class="amshopby-option-link"]/a/@title').string()
 
     mpn = data.xpath("//div[@class='product-info-main']/div[@class='product-data']/div/span[contains(., 'MPN')]/following-sibling::div//text()").string()
     if mpn:
@@ -81,11 +81,10 @@ def process_product(data, context, session):
 def process_reviews(data, context, session):
     product = context['product']
 
-    revs_json = data.content.replace("\n", "").split("var tempreviews = ")[-1].split(";sa_product_reviews")[0].split(";sa_merchant_reviews")[0]
-
     try:
+        revs_json = data.content.replace("\n", "").split("var tempreviews = ")[-1].split(";sa_product_reviews")[0].split(";sa_merchant_reviews")[0]
         revs = simplejson.loads(revs_json)
-    except simplejson.JSONDecodeError:
+    except:
         return
 
     for rev in revs:

@@ -20,11 +20,10 @@ def process_catlist(data, context, session):
                 sub_cats = cat.xpath('div[@class="st-menu-item__title" and count(preceding-sibling::hr[@class="st-menu-separator"])={i}]'.format(i=i))
                 for sub_cat in sub_cats:
                     sub_name = sub_cat.xpath('text()').string()
-
-                    cat_name = name if 'View all' in sub_name else name + '|' + sub_name
-
                     url = sub_cat.xpath('preceding-sibling::a[1]/@href').string()
-                    session.queue(Request(url), process_prodlist, dict(cat=cat_name))
+
+                    if 'View all' not in sub_name:
+                        session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
 def process_prodlist(data, context, session):
@@ -47,13 +46,12 @@ def process_product(data, context, session):
     product.name = context['name']
     product.category = context['cat']
     product.url = context['url']
-    product.ssid = context['url'].split("/")[-1].split(".html")[0]
+    product.ssid = context['url'].split("/")[-1].split(".html")[0].split("=")[-1]
+    product.manufacturer = data.xpath('//p[contains(text(), "Visit the")]/a/text()').string()
     product.sku = data.xpath('//strong[contains(text(), "SKU")]/following-sibling::span[@class="st-product-info__detail"]/text()').string()
 
     ean = data.xpath('//strong[contains(text(), "EAN")]/following-sibling::span[@class="st-product-info__detail"]/text()').string()
     if ean:
-        if ean == product.sku:
-            raise ValueError('Found ==')
         product.add_property(type='id.ean', value=ean)
 
     context['product'] = product
@@ -63,14 +61,13 @@ def process_product(data, context, session):
 def process_reviews(data, context, session):
     product = context['product']
 
-    revs = data.xpath("//div[@class='st-review' or @class='st-review hide']")
+    revs = data.xpath("//div[contains(@class, 'st-review')]")
     for rev in revs:
         review = Review()
         review.type = 'user'
         review.title = rev.xpath(".//div[@class='st-review__title']/text()").string()
         review.url = product.url
         review.date = rev.xpath(".//div[@class='st-review__date']/text()").string()
-        review.ssid = rev.xpath("@data-review-id").string()
 
         author = rev.xpath(".//div[@class='st-review__username']/text()").string()
         if author:
@@ -90,13 +87,14 @@ def process_reviews(data, context, session):
             if hlp_yes > 0:
                 review.add_property(type='helpful_votes', value=hlp_yes)
 
-        hlp = rev.xpath('.//span[@class="st-review__stats"]/text()').string()
-        if hlp and 'not' in hlp:
-            raise ValueError('Found not hlp')
-
         excerpt = rev.xpath(".//div[@class='st-review__content']/text()").string(multiple=True)
         if excerpt:
+            excerpt = excerpt.replace('&#65533;', "'")
             review.add_property(type='excerpt', value=excerpt)
+
+            review.ssid = rev.xpath("@data-review-id").string()
+            if not review.ssid:
+                review.ssid = review.digest() if author else review.digest(excerpt)
 
             product.reviews.append(review)
 

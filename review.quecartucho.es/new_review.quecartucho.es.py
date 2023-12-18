@@ -3,27 +3,39 @@ from models.products import *
 
 
 def run(context, session):
-    session.queue(Request('https://quecartucho.es/blog/todos-los-review-de-impresoras-analizadas/'), process_prodlist, dict())
+    session.queue(Request('https://quecartucho.es/blog/todos-los-review-de-impresoras-analizadas/'), process_revlist, dict())
 
 
-def process_prodlist(data, context, session):
+def process_revlist(data, context, session):
     prods = data.xpath('//div[@class="pt-cv-ifield"]//h2//a[contains(@href, "review-del-experto")]')
     for prod in prods:
         title = prod.xpath('text()').string()
         url = prod.xpath('@href').string()
-        session.queue(Request(url), process_product, dict(title=title, url=url))
+        session.queue(Request(url), process_review, dict(title=title, url=url))
 
 
-def process_product(data, context, session):
+def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split('|')[0].strip()
-    product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
-    product.category = '|'.join(data.xpath('//li/a[@rel="category tag"]/text()').strings())
+    product.ssid = context['url'].split('/')[-2]
+    product.category = data.xpath('//li/a[@rel="category tag"][1]/text()').string()
+
+    product.url = data.xpath('//a[contains(@href, "amzn.to")]/@href').string()
+    if not product.url:
+        product.url = context['url']
+
+    mpn = data.xpath('//li[contains(., "SKU")]/text()|//a[contains(@href, "sku=")]/@href').string()
+    if mpn:
+        mpn = mpn.split('=')[-1].split(':')[-1].split(',')[0].split()[-1].split('(')[0].replace(')', '').strip()
+        product.add_property(type='id.manufacturer', value=mpn)
+
+    ean = data.xpath('//li[contains(., "Código de barras")]/text()').string()
+    if ean:
+        product.add_property(type='id.ean', value=ean)
 
     review = Review()
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.type = 'pro'
     review.ssid = product.ssid
     review.date = data.xpath('//li[@class="meta date posted-on nv-show-updated"]/text()').string()
