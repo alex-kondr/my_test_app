@@ -65,9 +65,12 @@ def process_reviews(data, context, session):
     for rev in revs:
         review = Review()
         review.type = 'user'
-        review.title = rev.xpath(".//div[@class='st-review__title']/text()").string()
         review.url = product.url
         review.date = rev.xpath(".//div[@class='st-review__date']/text()").string()
+
+        title = rev.xpath(".//div[@class='st-review__title']/text()").string()
+        if title:
+            review.title = title.replace('&#65533;', "'").replace('&#128513;', '').replace('&#127775;', '').replace('&#128514;', '').replace('&#128077;', '').replace('&#128512;', '').replace('&#128076;', '').replace('&#128525;', '').replace('&#65039;', '').replace('&#10084;', '').replace('&#128079;', '').replace('&#128522;', '').replace('&#128267;', '').replace('&#127996;', '').replace('&#128591;', '').replace('&#128588;', '').replace('&#127995;', '').replace('&#10004;', '').replace('&#128293;', '').replace('&#128562;', '').replace('&#128523;', '').replace('&#128526;', '').replace('&#128074;', '').replace('&#128176;', '').replace('&#127932;', '').replace('&#128266;', '').replace('&#127911;', '')
 
         author = rev.xpath(".//div[@class='st-review__username']/text()").string()
         if author:
@@ -89,7 +92,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.xpath(".//div[@class='st-review__content']/text()").string(multiple=True)
         if excerpt:
-            excerpt = excerpt.replace('&#65533;', "'").replace('&#128513;', '').replace('&#127775;', '').replace('&#128514;', '').replace('&#128077;', '').replace('&#128512;', '').replace('&#128076;', '').replace('&#128525;', '').replace('&#65039;', '').replace('&#10084;', '').replace('&#128079;', '').replace('&#128522;', '').replace('&#128267;', '').replace('&#127996;', '').replace('&#128591;', '')
+            excerpt = excerpt.replace('&#65533;', "'").replace('&#128513;', '').replace('&#127775;', '').replace('&#128514;', '').replace('&#128077;', '').replace('&#128512;', '').replace('&#128076;', '').replace('&#128525;', '').replace('&#65039;', '').replace('&#10084;', '').replace('&#128079;', '').replace('&#128522;', '').replace('&#128267;', '').replace('&#127996;', '').replace('&#128591;', '').replace('&#128588;', '').replace('&#127995;', '').replace('&#10004;', '').replace('&#128293;', '').replace('&#128562;', '').replace('&#128523;', '').replace('&#128526;', '').replace('&#128074;', '').replace('&#128176;', '').replace('&#127932;', '').replace('&#128266;', '').replace('&#127911;', '')
             review.add_property(type='excerpt', value=excerpt)
 
             review.ssid = rev.xpath("@data-review-id").string()
