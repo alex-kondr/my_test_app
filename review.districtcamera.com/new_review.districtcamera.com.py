@@ -70,7 +70,7 @@ def process_product(data, context, session):
         product.add_property(type='id.manufacturer', value=mpn)
 
     ean = data.xpath("//div[@class='product-info-main']/div[@class='product-data']/div/span[contains(., 'UPC')]/following-sibling::div//text()").string()
-    if ean:
+    if ean and ean.isdigit() and len(ean) > 11:
         product.add_property(type='id.ean', value=ean)
 
     pid = data.xpath("//div[@class='product attribute sku']/div[@itemprop='sku']//text()").string()

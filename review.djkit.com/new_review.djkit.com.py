@@ -61,7 +61,7 @@ def process_product(data, context, session):
 def process_reviews(data, context, session):
     product = context['product']
 
-    revs = data.xpath("//div[contains(@class, 'st-review')]")
+    revs = data.xpath("//div[@class='st-review' or @class='st-review hide']")
     for rev in revs:
         review = Review()
         review.type = 'user'
@@ -89,7 +89,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.xpath(".//div[@class='st-review__content']/text()").string(multiple=True)
         if excerpt:
-            excerpt = excerpt.replace('&#65533;', "'")
+            excerpt = excerpt.replace('&#65533;', "'").replace('&#128513;', '').replace('&#127775;', '').replace('&#128514;', '').replace('&#128077;', '').replace('&#128512;' '').replace('&#128076;', '').replace('&#128525;', '').replace('&#65039;', '').replace('&#10084;', '').replace('&#128079;', '').replace('&#128522;', '').replace('&#128267;', '').replace('&#127996;', '').replace('&#128591;', '')
             review.add_property(type='excerpt', value=excerpt)
 
             review.ssid = rev.xpath("@data-review-id").string()
