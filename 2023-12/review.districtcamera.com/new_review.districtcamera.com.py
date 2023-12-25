@@ -52,9 +52,9 @@ def process_prodlist(data, context, session):
         url = prod.xpath('.//a[@class="product-item-link"]/@href').string()
         session.queue(Request(url), process_product, dict(context, name=name, ssid=ssid, url=url))
 
-    next_page = data.xpath("//link[@rel='next']//@href").string()
-    if next_page:
-        session.queue(Request(next_page), process_prodlist, dict(context))
+    next_url = data.xpath("//link[@rel='next']//@href").string()
+    if next_url:
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -99,21 +99,22 @@ def process_reviews(data, context, session):
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-        grade = rev.get('rating')
-        if grade:
-            review.grades.append(Grade(type='overall', value=float(grade), best=5.0))
+        grade_overall = rev.get('rating')
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        recommend = rev.get('recommend')
-        if recommend:
+        is_recommended = rev.get('recommend')
+        if is_recommended:
             review.add_property(type='is_recommended', value=True)
 
-        verified_buyer = rev.get('verified')
-        if verified_buyer:
+        is_verified = rev.get('verified')
+        if is_verified:
             review.add_property(type='is_verified_buyer', value=True)
 
         excerpt = rev.get('comments')
         if excerpt and len(excerpt) > 3:
             excerpt = excerpt.replace('<br>', '').replace('&#039;', "'")
+
             review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
