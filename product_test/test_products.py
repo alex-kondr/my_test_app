@@ -117,7 +117,7 @@ class TestProduct:
         self.agent_name = product.agent_name
         self.xproduct_names_category = ["review", "test", "\uFEFF", "\ufeff", "...", "•", "cable"]
         self.xproduct_names_category_start_end = ["-", "+"]
-        self.xproduct_title = ["\uFEFF", "\ufeff"]
+        self.xreview_title = ["\uFEFF", "\ufeff"]
         self.xreview_excerpt = ["Conclusion", "Verdict", "\uFEFF", "\ufeff", "Summary", "•", "Fazit", "href="]
         self.xreview_pros_cons = ["-", "+", "•", "none found", "null", 'n/a', 'n\\a',]# 'na', 'no',]
         self.path = Path(f"product_test/error/{self.agent_name}")
@@ -138,14 +138,14 @@ class TestProduct:
         self.error_conclusion = []
         self.error_excerpt = []
 
-    def run(self, xproduct_names=[], len_name=3, xproduct_title=[], xreview_conclusion=[], xreview_excerpt=[]):
+    def run(self, xproduct_names=[], len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[]):
         for self.product in self.products:
             self.test_product_name(xproduct_names=xproduct_names, len_name=len_name, not_xproduct_name=None)
             self.test_product_category(xproduct_names)
             self.test_product_sku()
             self.test_product_id_manufacturer()
             self.test_product_ean_gtin()
-            self.test_review_title(xproduct_title)
+            self.test_review_title(xreview_title)
             self.test_review_grade()
             self.test_review_author()
             self.test_review_award()
@@ -261,8 +261,8 @@ class TestProduct:
         if ean and len(ean[0]) < 2:
             self.error_ean.append(properties)
 
-    def test_review_title(self, xproduct_title: list[str]=[]) -> None:
-        xproduct_title = self.xproduct_title + xproduct_title
+    def test_review_title(self, xreview_title: list[str]=[]) -> None:
+        xreview_title = self.xreview_title + xreview_title
 
         properties = self.product.get("review", {}).get("properties", {})
         property = [property for property in properties if property.get("type") == "title"]
@@ -272,7 +272,7 @@ class TestProduct:
 
         title = property[0].get("value")
 
-        xtitle = is_include(xproduct_title, title)
+        xtitle = is_include(xreview_title, title)
         if xtitle:
             property["error_name"] = xtitle
             self.error_title.append(properties)
