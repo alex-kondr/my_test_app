@@ -6,7 +6,7 @@ XCATS = ['Marken', 'Sale', 'NEU']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.dampftbeidir.de/'), process_frontpage, dict())
 
 
