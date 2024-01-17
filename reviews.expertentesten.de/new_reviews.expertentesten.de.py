@@ -77,8 +77,10 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//div[@class="main"]/p//text()|//div[@class="main"]/text()|//div[@class="main"]//div[@class="pane"]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace('Fazit:', '').replace('Fazit', '')
         if conclusion:
             excerpt = excerpt.replace(conclusion, '')
+
         conclusions = data.xpath('//p[strong[contains(text(), "Fazit")]]/following-sibling::p[1]')
         for con in conclusions:
             con = con.xpath('.//text()').string(multiple=True)
