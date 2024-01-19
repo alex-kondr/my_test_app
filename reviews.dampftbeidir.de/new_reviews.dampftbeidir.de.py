@@ -71,7 +71,7 @@ def process_reviews(data, context, session):
         if is_verified_buyer:
             review.add_property(type='is_verified_buyer', value=True)
 
-        excerpt = rev.xpath('.//small[@class="d-none"]//text()').string(multiple=True)
+        excerpt = rev.xpath('.//p[@itemprop="reviewBody"]//small[@class="d-none"]//text()').string(multiple=True)
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
