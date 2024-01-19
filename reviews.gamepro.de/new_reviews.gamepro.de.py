@@ -4,6 +4,7 @@ import simplejson
 
 
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.gamepro.de/spiele/'), process_revlist, dict())
 
 
@@ -15,15 +16,16 @@ def process_revlist(data, context, session):
 
         cat = rev.xpath('.//span[contains(text(), "Genre:")]/text()').string()
         cats = rev.xpath('.//span[@class="label"]/text()').strings()
+        cats = [cat_.strip() for cat_ in cats]
         if cat:
             cat = cat.replace('Genre: ', '') + '|' + '|'.join(cats)
         else:
             cat = '|'.join(cats)
 
         url = rev.xpath('.//a[string-length(text()) > 1]/@href').string()
-        session.queue(Request(url), process_review, dict(cat=cat, title=title, manufacturer=manufacturer, ur=url))
+        session.queue(Request(url), process_review, dict(cat=cat, title=title, manufacturer=manufacturer, url=url))
 
-    page = context['page', 1]
+    page = context.get('page', 1)
     if page > 1 and page < context['page_cnt']:
         page += 1
         next_url = 'https://www.gamepro.de/gp_cb/index.cfm?page={page}&excludeids=%5B%5D&hideplayicon=false&paging=true&showratings=true&usesearch=false&searchtype=1&adddate=false&loadmoremobileonly=false&loadmore=false&maxitemsperrowresponsive=&itemsperrowresponsive=1&showitemhr=true&itemsperrow=0&itemsnippet=contentgameitem&showtag=false&showtime=true&showstar=true&maxrows=24&filterValues=&filter=rating&teasername=Alle%20Spiele&hstyle=&htag=h2&searchterm=&datasource=&fkcontentfilter=0&fktype=0&fkid=0&id=9200_35_138&teasermodule=content&event=content%3Aajax.loadList&r=95868.80243946423'.format(page=page)
@@ -45,6 +47,8 @@ def process_review(data, context, session):
         product.manufacturer = context['manufacturer'].replace('Entwickler: ', '')
 
     review = Review()
+    review.type = 'pro'
+    review.title = context['title']
     review.url = product.url
     review.ssid = product.ssid
 
@@ -56,9 +60,22 @@ def process_review(data, context, session):
         if date:
             review.date = date.split('T')[0]
 
+        author = rev_json.get('review', {}).get('author', {}).get('name')
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
+
+        grade_overall = rev_json.get('review', {}).get('reviewRating', {}).get('ratingValue')
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
+
     excerpt = data.xpath('//div[@id="game-desc-fader-root"]/p//text()').string(multiple=True)
     if excerpt:
-        review.add_property(type='excerpt', value=excerpt)
+        excerpt = excerpt.split('Fazit:')
+
+        if len(excerpt) == 2:
+            review.add_property(type='conclusion', value=excerpt[1])
+
+        review.add_property(type='excerpt', value=excerpt[0])
 
         product.reviews.append(review)
 

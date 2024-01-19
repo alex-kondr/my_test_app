@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-import simplejson
 
 
 def run(context, session):
@@ -11,16 +10,15 @@ def process_revlist(data, context, session):
     revs = data.xpath('//div[h3[contains(@class, "[overflow-wrap:anywhere]")]]')
     for rev in revs:
         url = rev.xpath('a/@href').string()
-        title = rev.xpath('h3//text()').string(multiple=True)
         grade_overall = rev.xpath('count(.//svg[contains(@class, "rating-star-active")])')
-        session.queue(Request(url), process_review, dict(url=url, title=title, grade_overall=grade_overall))
+        session.queue(Request(url), process_review, dict(url=url, grade_overall=grade_overall))
 
     #no next page
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = data.xpath('//title/text()').string()
     product.ssid = context['url'].split('/')[-3].replace('ECE', '')
     product.category = 'Film'
     product.url = context['url']
