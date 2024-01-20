@@ -12,7 +12,7 @@ def process_revlist(data, context, session):
     revs = data.xpath('//div[@class="media test-list article-list game-list p-l-1 p-r-1"]')
     for rev in revs:
         title = rev.xpath('.//a[string-length(text()) > 1]/text()').string()
-        manufacturer = rev.xpath('(.//span[contains(text(), "Entwickler:")]|.//p[contains(text(), "Entwickler:")])/text()').string()
+        manufacturer = rev.xpath('(.//span[contains(text(), "Entwickler:")]|.//p[contains(text(), "Entwickler:")])/text()[normalize-space()]').string()
 
         genre = rev.xpath('(.//span[contains(text(), "Genre:")]|.//p[contains(text(), "Genre:")])/text()').string()
         platforms = rev.xpath('.//span[@class="label"]/text()').strings()
@@ -44,7 +44,9 @@ def process_review(data, context, session):
     product.category = context['cat']
 
     if context.get('manufacturer'):
-        product.manufacturer = context['manufacturer'].replace('Entwickler: ', '')
+        manufacturer = context['manufacturer'].replace('Entwickler: ', '').strip('-')
+        if len(manufacturer) > 1:
+            product.manufacturer = manufacturer
 
     review = Review()
     review.type = 'pro'

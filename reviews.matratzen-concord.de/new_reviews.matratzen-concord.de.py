@@ -18,7 +18,7 @@ def process_frontpage(data, context, session):
 
         if name not in XCATS:
             for sub_cat in cats_[1:]:
-                sub_name = sub_cat.xpath('.//span/text()').string()
+                sub_name = sub_cat.xpath('.//span/text()').string().replace('Alle ', '')
                 url = sub_cat.xpath('a/@href').string()
                 session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name, prods_url=url))
 
@@ -47,6 +47,10 @@ def process_product(data, context, session):
     product.category = context['cat']
     product.manufacturer = data.xpath('//meta[@itemprop="name"]/@content').string()
 
+    mpn = data.xpath('//span[@itemprop="sku"]/strong/text()').string()
+    if mpn:
+        product.add_property(type='id.manufacturer', value=mpn)
+
     ean = data.xpath('//meta[@itemprop="gtin13"]/@content').string()
     if ean:
         product.add_property(type='id.ean', value=ean)
@@ -67,25 +71,35 @@ def process_reviews(data, context, session):
     for rev in revs:
         review = Review()
         review.type = 'user'
-        review.title = rev.get('title').replace('..', '')
         review.url = product.url
 
         date = rev.get('submittedAt')
         if date:
             review.date = date.split('T')[0]
 
+        grade_overall = rev.get('rating')
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
         if context.get('is_verified_buyer'):
             review.add_property(type='is_verified_buyer', value=True)
 
+        title = rev.get('title').replace('..', '').replace(u'\U0001F60A', '').replace(u'\U0001F601', '').replace(u'\U0001F60D', '').replace(u'\U0001F44D', '').replace(u'\U0001F3FD', '').replace(u'\U0001F69A', '').replace(u'\U0001F44C', '').replace(u'\U0001F3FC', '').replace(u'\U0001F609', '').replace(u'\U0001F917', '').replace(u'\U0001F3FB', '').replace(u'\U0001F603', '').replace(u'\U0001F602', '').replace(u'\U0001F634', '').replace(u'\U0001F600', '').replace(u'\U0001F340', '').replace(u'\U0001F643', '').replace(u'\U0001F642', '').replace(u'\U0001F3FF', '').replace(u'\U0001F979', '').replace(u'\U0001F64F', '').replace(u'\U0001F4AA', '')
         excerpt = rev.get('comment')
         if excerpt:
-            excerpt = excerpt.replace('..', '')
-            if len(excerpt) > 2:
-                review.add_property(type='excerpt', value=excerpt)
+            review.title = title
 
-                review.ssid = review.digest(excerpt)
+            excerpt = excerpt.replace('..', '').replace(u'\U0001F60A', '').replace(u'\U0001F601', '').replace(u'\U0001F60D', '').replace(u'\U0001F44D', '').replace(u'\U0001F3FD', '').replace(u'\U0001F69A', '').replace(u'\U0001F44C', '').replace(u'\U0001F3FC', '').replace(u'\U0001F609', '').replace(u'\U0001F917', '').replace(u'\U0001F3FB', '').replace(u'\U0001F603', '').replace(u'\U0001F602', '').replace(u'\U0001F634', '').replace(u'\U0001F600', '').replace(u'\U0001F340', '').replace(u'\U0001F643', '').replace(u'\U0001F642', '').replace(u'\U0001F3FF', '').replace(u'\U0001F979', '').replace(u'\U0001F64F', '').replace(u'\U0001F4AA', '')
 
-                product.reviews.append(review)
+        elif title:
+            excerpt = title
+
+        if excerpt and len(excerpt) > 2:
+            review.add_property(type='excerpt', value=excerpt)
+
+            review.ssid = review.digest(excerpt)
+
+            product.reviews.append(review)
 
     # no next page
 

@@ -67,15 +67,19 @@ def process_review(data, context, session):
         conclusion = data.xpath('//p[strong[contains(text(), "Fazit")]]/following-sibling::p[1]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[strong[contains(text(), "Fazit")]]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h3[contains(text(), "Fazit")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace('Fazit:', '').replace('Fazit', '')
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[text()="Fazit"]/preceding-sibling::strong/text()|//h2[text()="Fazit"]/preceding-sibling::p//text()|//h2[text()="Fazit"]/preceding-sibling::text()|//h2[text()="Fazit"]/preceding-sibling::div[@class="pane"]//text()').string(multiple=True)
     if not excerpt:
+        excerpt = data.xpath('//h3[text()="Fazit"]/preceding-sibling::strong/text()|//h3[text()="Fazit"]/preceding-sibling::p//text()|//h3[text()="Fazit"]/preceding-sibling::text()|//h3[text()="Fazit"]/preceding-sibling::div[@class="pane"]//text()').string(multiple=True)
+    if not excerpt:
         excerpt = data.xpath('//h2[contains(., "Links und Quellen")]/preceding-sibling::strong/text()|//h2[contains(., "Links und Quellen")]/preceding-sibling::p//text()|//h2[contains(., "Links und Quellen")]/preceding-sibling::text()|//h2[contains(., "Links und Quellen")]/preceding-sibling::div[@class="pane"]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="main"]/p//text()|//div[@class="main"]/text()|//div[@class="main"]//div[@class="pane"]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="main"]/p[not(contains(., "http"))]//text()|//div[@class="main"]/text()|//div[@class="main"]//div[@class="pane"]//text()').string(multiple=True)
     if excerpt:
         excerpt = excerpt.replace('Fazit:', '').replace('Fazit', '')
         if conclusion:

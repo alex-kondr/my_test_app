@@ -74,8 +74,8 @@ def process_reviews(data, context, session):
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        title = rev.xpath('.//h4[@class="content--title"]/text()').string()
-        excerpt = rev.xpath('.//p[@itemprop="reviewBody"]/text()').string()
+        title = rev.xpath('.//h4[@class="content--title"]//text()').string(multiple=True)
+        excerpt = rev.xpath('.//p[@itemprop="reviewBody"]//text()').string(multiple=True)
         if excerpt:
             review.title = title
             review.add_property(type='excerpt', value=excerpt)
