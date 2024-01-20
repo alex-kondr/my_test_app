@@ -12,15 +12,15 @@ def process_revlist(data, context, session):
     revs = data.xpath('//div[@class="media test-list article-list game-list p-l-1 p-r-1"]')
     for rev in revs:
         title = rev.xpath('.//a[string-length(text()) > 1]/text()').string()
-        manufacturer = rev.xpath('.//span[contains(text(), "Entwickler:")]/text()').string()
+        manufacturer = rev.xpath('(.//span[contains(text(), "Entwickler:")]|.//p[contains(text(), "Entwickler:")])/text()').string()
 
-        cat = rev.xpath('.//span[contains(text(), "Genre:")]/text()').string()
-        cats = rev.xpath('.//span[@class="label"]/text()').strings()
-        cats = [cat_.strip() for cat_ in cats]
-        if cat:
-            cat = cat.replace('Genre: ', '') + '|' + '|'.join(cats)
+        genre = rev.xpath('(.//span[contains(text(), "Genre:")]|.//p[contains(text(), "Genre:")])/text()').string()
+        platforms = rev.xpath('.//span[@class="label"]/text()').strings()
+        platforms = [platform.strip() for platform in platforms]
+        if genre:
+            cat = '/'.join(platforms) + '|' + genre.replace('Genre: ', '')
         else:
-            cat = '|'.join(cats)
+            cat = '/'.join(platforms)
 
         url = rev.xpath('.//a[string-length(text()) > 1]/@href').string()
         session.queue(Request(url), process_review, dict(cat=cat, title=title, manufacturer=manufacturer, url=url))

@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('test complet', '').replace('Test du', '').replace('TEST du', '').replace('Test de la', '').replace('Test des', '').replace('Test de', '').replace('[TEST]', '').replace('[TESt]', '').replace('[Test]', '').replace('[NON-TEST]', '').replace('TEST :', '').replace('Test :', '').replace('Test', '').replace('TEST', '').split(':')[0].split(',')[0].strip()
+    product.name = context['title'].replace('[CRITIQUE]', '').replace('test complet', '').replace('Test du', '').replace('TEST du', '').replace('Test de la', '').replace('Test des', '').replace('Test de', '').replace('[TEST]', '').replace('[TESt]', '').replace('[Test]', '').replace('[NON-TEST]', '').replace('TEST :', '').replace('Test :', '').replace('Test', '').replace('TEST', '').split(':')[0].split(',')[0].strip()
     product.url = context['url']
     product.ssid = context['url'].split('/')[-2]
     product.category = '|'.join(context['cats'])
@@ -56,20 +56,27 @@ def process_review(data, context, session):
 
     pros = data.xpath('(//ul[@class="kt-svg-icon-list"])[last()-1]//span[@class="kt-svg-icon-list-text"]/text()[string-length()>2]').strings()
     if not pros:
-        pros = data.xpath('((//h4[contains(., "Points positifs")]|//p[contains(., "Points positifs")])/following-sibling::ul)[1]/li//text()[not(contains(., "[one_half]") or contains(., "su_list")) and string-length()>2]').strings()
+        pros = data.xpath('((//h4[contains(., "Points positifs")]|//p[contains(., "Points positifs")])/following-sibling::ul)[1]/li//text()[not(contains(., "[one_half]") or contains(., "su_list") or contains(., "Facebook") or contains(., "Twitter") or contains(., "LinkedIn")) and string-length()>2][normalize-space()]').strings()
+    if not pros:
+        pros = data.xpath('(//h4[contains(., "Points positifs")]|//p[contains(., "Points positifs")])/following-sibling::p[contains(., "– ")][1]/text()').strings()
     for pro in pros:
+        pro = pro.replace('–', '').strip()
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('(//ul[@class="kt-svg-icon-list"])[last()]//span[@class="kt-svg-icon-list-text"]/text()[string-length()>2]').strings()
     if not cons:
-        cons = data.xpath('((//h4[contains(., "Points négatifs")]|//p[contains(., "Points négatifs")])/following-sibling::ul)[1]/li//text()[not(contains(., "[one_half]") or contains(., "su_list")) and string-length()>2]').strings()
+        cons = data.xpath('((//h4[contains(., "Points négatifs")]|//p[contains(., "Points négatifs")])/following-sibling::ul)[1]/li//text()[not(contains(., "[one_half]") or contains(., "su_list") or contains(., "Facebook") or contains(., "Twitter") or contains(., "LinkedIn")) and string-length()>2][normalize-space()]').strings()
     if cons and pros and cons[0] in pros:
         cons = data.xpath('((//h4[contains(., "Points négatifs")]|//p[contains(., "Points négatifs")])/following-sibling::ul)[2]/li//text()[not(contains(., "[one_half]") or contains(., "su_list")) and string-length()>2]').strings()
+    if not cons:
+        cons = data.xpath('(//h4[contains(., "Points négatifs")]|//p[contains(., "Points positifs")])/following-sibling::p[contains(., "– ")][1]/text()').strings()
     for con in cons:
+        con = con.replace('–', '').strip()
         review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@itemprop="articleBody"]/p[1]//text()').string(multiple=True)
     if summary:
+        summary = summary.replace('Test du', '').replace('TEST du', '').replace('Test de la', '').replace('Test des', '').replace('Test de', '').replace('[TEST]', '').replace('[TESt]', '').replace('[Test]', '').replace('[NON-TEST]', '').replace('TEST :', '').replace('Test :', '')
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[contains(., "Verdict") or contains(., "verdict") or contains(., "Conclusion")]/following-sibling::p[not(contains(., "[one_half]") or contains(., "su_list") or contains(., "su_box") or contains(., "su_row"))]//text()[not(starts-with(., ">"))]').string(multiple=True)
