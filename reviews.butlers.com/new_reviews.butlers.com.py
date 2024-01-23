@@ -49,7 +49,7 @@ def process_prodlist(data, context, session):
             url = 'https://www.home24.de/' + prod.get('url')
 
             revs_cnt = prod.get('ratings', {}).get('count')
-            if revs_cnt and revs_cnt > 0:
+            if revs_cnt and int(revs_cnt) > 0:
                 session.queue(Request(url), process_product, dict(context, name=name, url=url))
             else:
                 return
@@ -60,7 +60,7 @@ def process_prodlist(data, context, session):
     else:
         cat_id = data.xpath('//div/@data-cnstrc-filter-value').string()
         prods_cnt = data.xpath('//div/@data-cnstrc-num-results').string()
-        session.queue(Request(prods_url.format(cat_id=cat_id, offset=0)), process_prodlist, dict(context, cat_id=cat_id, prods_cnt=prods_cnt))
+        session.queue(Request(prods_url.format(cat_id=cat_id, offset=0)), process_prodlist, dict(context, cat_id=cat_id, prods_cnt=int(prods_cnt)))
 
 
 def process_product(data,context, session):
@@ -81,8 +81,8 @@ def process_product(data,context, session):
             product.add_property(type='id.ean', value=ean)
 
         revs_cnt = prod_json.get('aggregateRating', {}).get('reviewCount')
-        options = '''-X POST -H 'content-type: application/json' --data-raw '{"query":"query ProductReviews($sku:String! $locale:Locale! $limit:Int! $offset:Int!){articles(skus:[$sku],locale:$locale){reviews(limit:$limit,offset:$offset){title name message rating date city isTranslation}}}","variables":{"sku":"''' + product.sku + """","locale":"de_DE","limit":50,"offset":0}}'"""
-        session.queue(Request('https://www.home24.de/graphql', use='curl', force_charset='utf-8', max_age=0, options=options), process_reviews, dict(product=product, revs_cnt=revs_cnt))
+        options = '''-X POST -H 'content-type: application/json' --data-raw '{"query":"query ProductReviews($sku:String! $locale:Locale! $limit:Int! $offset:Int!){articles(skus:[$sku],locale:$locale){reviews(limit:$limit,offset:$offset){title name message rating date city isTranslation}}}","variables":{"sku":"''' + product.sku + """","locale":"de_DE","limit":1000,"offset":0}}'"""
+        session.do(Request('https://www.home24.de/graphql', use='curl', force_charset='utf-8', max_age=0, options=options), process_reviews, dict(product=product, revs_cnt=int(revs_cnt)))
 
 
 def process_reviews(data, context, session):
@@ -92,6 +92,7 @@ def process_reviews(data, context, session):
     for rev in revs:
         review = Review()
         review.type = 'user'
+        review.url = product.url
 
         date = rev.get('date')
         if date:
@@ -120,10 +121,10 @@ def process_reviews(data, context, session):
 
             product.reviews.append(review)
 
-    offset = context.get('offcet', 0) + 50
+    offset = context.get('offcet', 0) + 1000
     if offset < context['revs_cnt']:
-        options = '''-X POST -H 'content-type: application/json' --data-raw '{"query":"query ProductReviews($sku:String! $locale:Locale! $limit:Int! $offset:Int!){articles(skus:[$sku],locale:$locale){reviews(limit:$limit,offset:$offset){title name message rating date city isTranslation}}}","variables":{"sku":"''' + product.sku + """","locale":"de_DE","limit":50,"offset":""" + str(offset) + """}}'"""
-        session.queue(Request('https://www.home24.de/graphql', use='curl', force_charset='utf-8', max_age=0, options=options), process_reviews, dict(context, offset=offset))
+        options = '''-X POST -H 'content-type: application/json' --data-raw '{"query":"query ProductReviews($sku:String! $locale:Locale! $limit:Int! $offset:Int!){articles(skus:[$sku],locale:$locale){reviews(limit:$limit,offset:$offset){title name message rating date city isTranslation}}}","variables":{"sku":"''' + product.sku + '''","locale":"de_DE","limit":1000,"offset":''' + str(offset) + """}}'"""
+        session.do(Request('https://www.home24.de/graphql', use='curl', force_charset='utf-8', max_age=0, options=options), process_reviews, dict(context, product=product, offset=offset))
 
     elif product.reviews:
         session.emit(product)
