@@ -81,7 +81,7 @@ def process_product(data,context, session):
             product.add_property(type='id.ean', value=ean)
 
         revs_cnt = prod_json.get('aggregateRating', {}).get('reviewCount')
-        options = '''-X POST -H 'content-type: application/json' --data-raw '{"query":"query ProductReviews($sku:String! $locale:Locale! $limit:Int! $offset:Int!){articles(skus:[$sku],locale:$locale){reviews(limit:$limit,offset:$offset){title name message rating date city isTranslation}}}","variables":{"sku":"''' + product.sku + """","locale":"de_DE","limit":1000,"offset":0}}'"""
+        options = '''-X POST -H 'content-type: application/json' --data-raw '{"query":"query ProductReviews($sku:String! $locale:Locale! $limit:Int! $offset:Int!){articles(skus:[$sku],locale:$locale){reviews(limit:$limit,offset:$offset){title name message rating date city isTranslation}}}","variables":{"sku":"''' + product.sku + """","locale":"de_DE","limit":100,"offset":0}}'"""
         session.do(Request('https://www.home24.de/graphql', use='curl', force_charset='utf-8', max_age=0, options=options), process_reviews, dict(product=product, revs_cnt=int(revs_cnt)))
 
 
@@ -121,10 +121,11 @@ def process_reviews(data, context, session):
 
             product.reviews.append(review)
 
-    offset = context.get('offcet', 0) + 1000
+    offset = context.get('offset', 0) + 100
     if offset < context['revs_cnt']:
-        options = '''-X POST -H 'content-type: application/json' --data-raw '{"query":"query ProductReviews($sku:String! $locale:Locale! $limit:Int! $offset:Int!){articles(skus:[$sku],locale:$locale){reviews(limit:$limit,offset:$offset){title name message rating date city isTranslation}}}","variables":{"sku":"''' + product.sku + '''","locale":"de_DE","limit":1000,"offset":''' + str(offset) + """}}'"""
+        options = '''-X POST -H 'content-type: application/json' --data-raw '{"query":"query ProductReviews($sku:String! $locale:Locale! $limit:Int! $offset:Int!){articles(skus:[$sku],locale:$locale){reviews(limit:$limit,offset:$offset){title name message rating date city isTranslation}}}","variables":{"sku":"''' + product.sku + '''","locale":"de_DE","limit":100,"offset":''' + str(offset) + """}}'"""
         session.do(Request('https://www.home24.de/graphql', use='curl', force_charset='utf-8', max_age=0, options=options), process_reviews, dict(context, product=product, offset=offset))
 
     elif product.reviews:
+        print('emit')
         session.emit(product)

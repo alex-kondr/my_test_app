@@ -54,7 +54,7 @@ def process_review(data, context, session):
             grade_name, grade_val = grade.split(' - ')
             review.grades.append(Grade(name=grade_name.strip(), value=float(grade_val), best=10.0))
 
-    pros = data.xpath('(//ul[@class="kt-svg-icon-list"])[last()-1]//span[@class="kt-svg-icon-list-text"]/text()[string-length()>2]').strings()
+    pros = data.xpath('(//div[not(contains(., "Caractéristiques"))]/div/ul[@class="kt-svg-icon-list"])[last()-1]//span[@class="kt-svg-icon-list-text"]/text()[string-length()>2]').strings()
     if not pros:
         pros = data.xpath('((//h4[contains(., "Points positifs")]|//p[contains(., "Points positifs")])/following-sibling::ul)[1]/li//text()[not(contains(., "[one_half]") or contains(., "su_list") or contains(., "Facebook") or contains(., "Twitter") or contains(., "LinkedIn")) and string-length()>2][normalize-space()]').strings()
     if not pros:

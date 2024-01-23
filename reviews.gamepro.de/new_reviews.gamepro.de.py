@@ -39,9 +39,14 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     product = Product()
     product.name = context['title']
-    product.url = context['url']
     product.ssid = context['url'].split('/')[-1].split(',')[0]
     product.category = context['cat']
+
+    product.url = data.xpath('//td[contains(., "Webseite:")]/following-sibling::td/a/@href').string()
+    if product.url and 'http' not in product.url:
+        product.url = 'https://' + product.url
+    elif not product.url:
+        product.url = context['url']
 
     if context.get('manufacturer'):
         manufacturer = context['manufacturer'].replace('Entwickler: ', '').strip('-')
@@ -51,7 +56,7 @@ def process_review(data, context, session):
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     rev_json = data.xpath('//script[@type="application/ld+json" and contains(., "Product")]/text()').string()
