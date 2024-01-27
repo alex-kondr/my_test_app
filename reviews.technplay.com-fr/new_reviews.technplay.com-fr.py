@@ -44,18 +44,18 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//div[@class="review-final-score"]/h3/text()').string()
-    print('overall1=', grade_overall)
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     if not grade_overall:
         grade_overall = data.xpath('//div[@class="review-final-score"]//span/@style').string()
-        print('ovearll2=', grade_overall)
         if grade_overall:
             grade_overall = grade_overall.replace('width:', '').replace('%', '')
-            if grade_overall.isdigit():
+            try:
                 grade_overall = round(float(grade_overall) / 20, 1)
                 review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+            except:
+                pass
 
     grades = data.xpath('//div[@class="review-item"]/h5/span')
     for grade in grades:
@@ -69,9 +69,11 @@ def process_review(data, context, session):
         for grade in grades:
             grade_name = grade.xpath('h5/text()').string()
             grade_val = grade.xpath('.//span/@style').string().replace('width:', '').replace('%', '')
-            if grade_val.isdigit():
+            try:
                 grade_val = round(float(grade_val) / 20, 1)
                 review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
+            except:
+                pass
 
     pros = data.xpath('(//div[not(contains(., "Caractéristiques"))]/div/ul[@class="kt-svg-icon-list"])[last()-1]//span[@class="kt-svg-icon-list-text"]/text()[string-length()>2]').strings()
     if not pros:
