@@ -1,9 +1,33 @@
 from agent import *
 from models.products import *
-import simplejson
+import simplejson, re
 
 
 XCATS = ['Sale Artikel']
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def run(context, session):
@@ -84,12 +108,14 @@ def process_reviews(data, context, session):
         if context.get('is_verified_buyer'):
             review.add_property(type='is_verified_buyer', value=True)
 
-        title = rev.get('title').replace('..', '').replace(u'\U0001F60A', '').replace(u'\U0001F601', '').replace(u'\U0001F60D', '').replace(u'\U0001F44D', '').replace(u'\U0001F3FD', '').replace(u'\U0001F69A', '').replace(u'\U0001F44C', '').replace(u'\U0001F3FC', '').replace(u'\U0001F609', '').replace(u'\U0001F917', '').replace(u'\U0001F3FB', '').replace(u'\U0001F603', '').replace(u'\U0001F602', '').replace(u'\U0001F634', '').replace(u'\U0001F600', '').replace(u'\U0001F340', '').replace(u'\U0001F643', '').replace(u'\U0001F642', '').replace(u'\U0001F3FF', '').replace(u'\U0001F979', '').replace(u'\U0001F64F', '').replace(u'\U0001F4AA', '')
+        title = rev.get('title').replace('..', '')
+        title = remove_emoji(title)
         excerpt = rev.get('comment')
         if excerpt:
             review.title = title
 
-            excerpt = excerpt.replace('..', '').replace(u'\U0001F60A', '').replace(u'\U0001F601', '').replace(u'\U0001F60D', '').replace(u'\U0001F44D', '').replace(u'\U0001F3FD', '').replace(u'\U0001F69A', '').replace(u'\U0001F44C', '').replace(u'\U0001F3FC', '').replace(u'\U0001F609', '').replace(u'\U0001F917', '').replace(u'\U0001F3FB', '').replace(u'\U0001F603', '').replace(u'\U0001F602', '').replace(u'\U0001F634', '').replace(u'\U0001F600', '').replace(u'\U0001F340', '').replace(u'\U0001F643', '').replace(u'\U0001F642', '').replace(u'\U0001F3FF', '').replace(u'\U0001F979', '').replace(u'\U0001F64F', '').replace(u'\U0001F4AA', '')
+            excerpt = excerpt.replace('..', '')
+            excerpt = remove_emoji(excerpt)
 
         elif title:
             excerpt = title

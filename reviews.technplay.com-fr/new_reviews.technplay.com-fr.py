@@ -44,8 +44,18 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//div[@class="review-final-score"]/h3/text()').string()
+    print('overall1=', grade_overall)
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+
+    if not grade_overall:
+        grade_overall = data.xpath('//div[@class="review-final-score"]//span/@style').string()
+        print('ovearll2=', grade_overall)
+        if grade_overall:
+            grade_overall = grade_overall.replace('width:', '').replace('%', '')
+            if grade_overall.isdigit():
+                grade_overall = round(float(grade_overall) / 20, 1)
+                review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     grades = data.xpath('//div[@class="review-item"]/h5/span')
     for grade in grades:
@@ -53,6 +63,15 @@ def process_review(data, context, session):
         if ' - ' in grade:
             grade_name, grade_val = grade.split(' - ')
             review.grades.append(Grade(name=grade_name.strip(), value=float(grade_val), best=10.0))
+
+    if not grades:
+        grades = data.xpath('//div[@class="review-item"]')
+        for grade in grades:
+            grade_name = grade.xpath('h5/text()').string()
+            grade_val = grade.xpath('.//span/@style').string().replace('width:', '').replace('%', '')
+            if grade_val.isdigit():
+                grade_val = round(float(grade_val) / 20, 1)
+                review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
 
     pros = data.xpath('(//div[not(contains(., "Caractéristiques"))]/div/ul[@class="kt-svg-icon-list"])[last()-1]//span[@class="kt-svg-icon-list-text"]/text()[string-length()>2]').strings()
     if not pros:
@@ -79,13 +98,13 @@ def process_review(data, context, session):
         summary = summary.replace('Test du', '').replace('TEST du', '').replace('Test de la', '').replace('Test des', '').replace('Test de', '').replace('[TEST]', '').replace('[TESt]', '').replace('[Test]', '').replace('[NON-TEST]', '').replace('TEST :', '').replace('Test :', '')
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Verdict") or contains(., "verdict") or contains(., "Conclusion")]/following-sibling::p[not(contains(., "[one_half]") or contains(., "su_list") or contains(., "su_box") or contains(., "su_row"))]//text()[not(starts-with(., ">"))]').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Verdict") or contains(., "verdict") or contains(., "Conclusion")]/following-sibling::p[not(contains(., "[one_half]") or contains(., "su_list") or contains(., "su_box") or contains(., "su_row") or contains(., "[double_paragraph]") or contains(., "[row]"))]//text()[not(starts-with(., ">"))]').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h2[contains(., "Verdict") or contains(., "verdict") or contains(., "Conclusion")]/preceding-sibling::p)[position()>1]//text()[not(contains(., "[/slide]") or contains(., "[slideshow]") or contains(., "[slide]") or contains(., "[/slideshow]") or contains(., "»"))]').string(multiple=True)
+    excerpt = data.xpath('(//h2[contains(., "Verdict") or contains(., "verdict") or contains(., "Conclusion")]/preceding-sibling::p)[position()>1 and not(contains(., "Marque :") or contains(., "Catégorie :") or contains(., "Prix :") or contains(., "Testé avec :") or contains(., "Acheter Misfit Shine :"))]//text()[not(contains(., "[/slide]") or contains(., "[slideshow]") or contains(., "[slide]") or contains(., "[/slideshow]") or contains(., "»"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@itemprop="articleBody"]/p[position()>1 and not(contains(., "[one_half]") or contains(., "su_list"))]//text()[not(contains(., "[/slide]") or contains(., "[slideshow]") or contains(., "[slide]") or contains(., "[/slideshow]") or contains(., "»"))]').string(multiple=True)
+        excerpt = data.xpath('//div[@itemprop="articleBody"]/p[position()>1 and not(contains(., "[one_half]") or contains(., "su_list") or contains(., "Marque :") or contains(., "Catégorie :") or contains(., "Prix :") or contains(., "Testé avec :") or contains(., "Acheter Misfit Shine :"))]//text()[not(contains(., "[/slide]") or contains(., "[slideshow]") or contains(., "[slide]") or contains(., "[/slideshow]") or contains(., "»"))]').string(multiple=True)
     if excerpt:
         if conclusion:
             excerpt = excerpt.replace(conclusion, '')
