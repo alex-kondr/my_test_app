@@ -5,7 +5,7 @@ import simplejson
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request('https://nordic.ign.com/article/review'), process_revlist, dict())
+    session.queue(Request('https://pt.ign.com/article/review'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -80,7 +80,17 @@ def process_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    conclusion = data.xpath('(//h3[contains(., "Verdict")]/following-sibling::p)[1]//text()').string(multiple=True)
+    pros = data.xpath('//ul[contains(@id, "pros")]/li')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//ul[contains(@id, "pros")]/li')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        review.add_property(type='cons', value=con)
+
+    conclusion = data.xpath('(//h3[contains(., "Veredito")]/following-sibling::p)[1]//text()').string(multiple=True)
     if conclusion:
         conclusion_ = conclusion.split('<a')
         if len(conclusion_) > 1:

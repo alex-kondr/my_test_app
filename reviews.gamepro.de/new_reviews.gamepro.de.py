@@ -17,23 +17,18 @@ def process_revlist(data, context, session):
         genre = rev.xpath('(.//span[contains(text(), "Genre:")]|.//p[contains(text(), "Genre:")])/text()').string()
         platforms = rev.xpath('.//span[@class="label"]/text()').strings()
         platforms = [platform.strip() for platform in platforms]
+        cat = '/'.join(platforms)
         if genre:
-            cat = '/'.join(platforms) + '|' + genre.replace('Genre: ', '')
-        else:
-            cat = '/'.join(platforms)
+            cat += '|' + genre.replace('Genre: ', '')
 
         url = rev.xpath('.//a[string-length(text()) > 1]/@href').string()
         session.queue(Request(url), process_review, dict(cat=cat, title=title, manufacturer=manufacturer, url=url))
 
-    page = context.get('page', 1)
-    if page > 1 and page < context['page_cnt']:
-        page += 1
-        next_url = 'https://www.gamepro.de/gp_cb/index.cfm?page={page}&excludeids=%5B%5D&hideplayicon=false&paging=true&showratings=true&usesearch=false&searchtype=1&adddate=false&loadmoremobileonly=false&loadmore=false&maxitemsperrowresponsive=&itemsperrowresponsive=1&showitemhr=true&itemsperrow=0&itemsnippet=contentgameitem&showtag=false&showtime=true&showstar=true&maxrows=24&filterValues=&filter=rating&teasername=Alle%20Spiele&hstyle=&htag=h2&searchterm=&datasource=&fkcontentfilter=0&fktype=0&fkid=0&id=9200_35_138&teasermodule=content&event=content%3Aajax.loadList&r=95868.80243946423'.format(page=page)
-        session.queue(Request(next_url), process_revlist, dict(context, page=page))
-    elif page==1:
-        page_cnt = data.xpath('.//span[count(a[@class="btn btn-toc"])=1]/a/@data-page').string()
-        next_url = 'https://www.gamepro.de/gp_cb/index.cfm?page=2&excludeids=%5B%5D&hideplayicon=false&paging=true&showratings=true&usesearch=false&searchtype=1&adddate=false&loadmoremobileonly=false&loadmore=false&maxitemsperrowresponsive=&itemsperrowresponsive=1&showitemhr=true&itemsperrow=0&itemsnippet=contentgameitem&showtag=false&showtime=true&showstar=true&maxrows=24&filterValues=&filter=rating&teasername=Alle%20Spiele&hstyle=&htag=h2&searchterm=&datasource=&fkcontentfilter=0&fktype=0&fkid=0&id=9200_35_138&teasermodule=content&event=content%3Aajax.loadList&r=95868.80243946423'
-        session.queue(Request(next_url), process_revlist, dict(context, page=2, page_cnt=int(page_cnt)))
+    next_page = context.get('page', 1) + 1
+    total_pages = context.get('total_pages', data.xpath('.//span[count(a[@class="btn btn-toc"])=1]/a/@data-page').string())
+    if next_page <= int(total_pages):
+        next_url = 'https://www.gamepro.de/gp_cb/index.cfm?page={next_page}&excludeids=%5B%5D&hideplayicon=false&paging=true&showratings=true&usesearch=false&searchtype=1&adddate=false&loadmoremobileonly=false&loadmore=false&maxitemsperrowresponsive=&itemsperrowresponsive=1&showitemhr=true&itemsperrow=0&itemsnippet=contentgameitem&showtag=false&showtime=true&showstar=true&maxrows=24&filterValues=&filter=rating&teasername=Alle%20Spiele&hstyle=&htag=h2&searchterm=&datasource=&fkcontentfilter=0&fktype=0&fkid=0&id=9200_35_138&teasermodule=content&event=content%3Aajax.loadList&r=95868.80243946423'.format(next_page=next_page)
+        session.queue(Request(next_url), process_revlist, dict(context, page=next_page, total_pages=total_pages))
 
 
 def process_review(data, context, session):
