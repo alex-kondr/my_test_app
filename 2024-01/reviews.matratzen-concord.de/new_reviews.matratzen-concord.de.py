@@ -79,7 +79,7 @@ def process_product(data, context, session):
     if ean:
         product.add_property(type='id.ean', value=ean)
 
-    is_verified_buyer = data.xpath('//script[contains(., "Von verifiziertem Käufer")]').string()
+    is_verified_buyer = data.xpath('//script[contains(., "Von verifiziertem Käufer")]')
 
     prod_id = data.xpath('//script[contains(., "parentID")]/text()').string()
     if prod_id:
@@ -108,8 +108,10 @@ def process_reviews(data, context, session):
         if context.get('is_verified_buyer'):
             review.add_property(type='is_verified_buyer', value=True)
 
-        title = rev.get('title').replace('..', '')
-        title = remove_emoji(title)
+        title = rev.get('title')
+        if title:
+            title = remove_emoji(title.replace('..', ''))
+
         excerpt = rev.get('comment')
         if excerpt:
             review.title = title
@@ -127,7 +129,7 @@ def process_reviews(data, context, session):
 
             product.reviews.append(review)
 
-    # no next page
-
     if product.reviews:
         session.emit(product)
+
+    # no next page
