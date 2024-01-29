@@ -62,20 +62,31 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
+    conclusions_ = []
     conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[strong[contains(text(), "Fazit")]]/following-sibling::p[1]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[strong[contains(text(), "Fazit")]]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h3[contains(text(), "Fazit")]/following-sibling::p//text()').string(multiple=True)
+        conclusions = data.xpath('//h3[contains(text(), "Fazit")]')
+        for cons in conclusions:
+            h2_cnt = cons.xpath('count(following-sibling::p[1]/preceding-sibling::h2)')
+            cons = cons.xpath('following-sibling::p')
+            for con in cons:
+                if con.xpath('count(preceding-sibling::h2)') == h2_cnt:
+                    con = con.xpath('.//text()').string(multiple=True)
+                    if con:
+                        conclusions_.append(con)
+                else:
+                    break
+        conclusion = ' '.join(conclusions_)
+
     if conclusion:
         conclusion = conclusion.replace('Fazit:', '').replace('Fazit', '')
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::strong/text()|//h2[contains(., "Fazit")]/preceding-sibling::p//text()|//h2[contains(., "Fazit")]/preceding-sibling::text()|//h2[contains(., "Fazit")]/preceding-sibling::div[@class="pane"]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//h3[contains(., "Fazit"]/preceding-sibling::strong/text()|//h3[contains(., "Fazit"]/preceding-sibling::p//text()|//h3[contains(., "Fazit"]/preceding-sibling::text()|//h3[contains(., "Fazit"]/preceding-sibling::div[@class="pane"]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//h2[contains(., "Links")]/preceding-sibling::strong/text()|//h2[contains(., "Links")]/preceding-sibling::p//text()|//h2[contains(., "Links")]/preceding-sibling::text()|//h2[contains(., "Links")]/preceding-sibling::div[@class="pane"]//text()').string(multiple=True)
     if not excerpt:
@@ -90,6 +101,9 @@ def process_review(data, context, session):
             con = con.xpath('.//text()').string(multiple=True)
             if con:
                 excerpt = excerpt.replace(con, '')
+
+        for con in conclusions_:
+            excerpt = excerpt.replace(con, '')
 
         review.add_property(type='excerpt', value=excerpt)
 
