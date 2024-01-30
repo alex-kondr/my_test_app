@@ -23,28 +23,28 @@ def process_revlist(data, context, session):
 
 def process_product(data, context, session):
     product = Product()
-    product.name = data.xpath('//div[@class="object-breadcrumbs"]/a/text()').string()
+    product.name = context['title'].split(' - ')[0].replace('Early Access Review', '').replace('Review in Progress', '').replace('- Review', '').replace('-Review', '').replace('Review', '').strip()
     product.url = context['url']
     product.ssid = context['url'].split('/')[-1]
     product.manufacturer = data.xpath('//span[@class="txt"]/text()').string()
 
-    platforme = data.xpath('//body[.//@class="platform" and not(.//div)]/preceding-sibling::head[1]/title/text()').strings()
-    if platforme:
-        product.category = '/'.join(platforme)
+    platforms = data.xpath('//body[.//@class="platform" and not(.//div)]/preceding-sibling::head[1]/title/text()').strings()
+    if platforms:
+        product.category = '/'.join(platforms)
 
-    rev_json = data.xpath('//script[@type="application/ld+json" and contains(., "description")]/text()').string()
-    if rev_json:
-        rev_json = simplejson.loads(rev_json)
+    prod_json = data.xpath('//script[@type="application/ld+json" and contains(., "description")]/text()').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
 
         if product.category:
-            product.category += '|' + rev_json.get('@type')
+            product.category += '|' + prod_json.get('@type')
         else:
-            product.category = rev_json.get('@type')
+            product.category = prod_json.get('@type')
 
         if not product.manufacturer:
-            product.manufacturer = rev_json.get('brand', {}).get('name')
+            product.manufacturer = prod_json.get('brand', {}).get('name')
 
-        sku = rev_json.get('sku')
+        sku = prod_json.get('sku')
         if sku:
             product.sku = str(sku)
 

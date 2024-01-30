@@ -115,7 +115,7 @@ class TestProduct:
     def __init__(self, product: Product):
         self.products = product.file.get("products")
         self.agent_name = product.agent_name
-        self.xproduct_names_category = ["review", "test", "\uFEFF", "\ufeff", "...", "•", "cable"]
+        self.xproduct_names_category = ["review", "test", "\uFEFF", "\ufeff", "...", "•", "cable", "análise"]
         self.xproduct_names_category_start_end = ["-", "+"]
         self.xreview_title = ["\uFEFF", "\ufeff"]
         self.xreview_excerpt = ["Conclusion", "Verdict", "\uFEFF", "\ufeff", "Summary", "•", "Fazit", "href="]
