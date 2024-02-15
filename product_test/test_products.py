@@ -115,11 +115,11 @@ class TestProduct:
     def __init__(self, product: Product):
         self.products = product.file.get("products")
         self.agent_name = product.agent_name
-        self.xproduct_names_category = ["review", "test", "\uFEFF", "\ufeff", "...", "•", "cable", "análise"]
+        self.xproduct_names_category = ["review", "test", "\uFEFF", "\ufeff", "...", "•", "cable", "análise", "U0001", "&amp"]
         self.xproduct_names_category_start_end = ["-", "+"]
-        self.xreview_title = ["\uFEFF", "\ufeff"]
-        self.xreview_excerpt = ["Conclusion", "Verdict", "\uFEFF", "\ufeff", "Summary", "•", "Fazit", "href="]
-        self.xreview_pros_cons = ["-", "+", "•", "none found", "null", 'n/a', 'n\\a',]# 'na', 'no',]
+        self.xreview_title = ["\uFEFF", "\ufeff", "U0001", "&amp"]
+        self.xreview_excerpt = ["Conclusion", "Verdict", "\uFEFF", "\ufeff", "Summary", "•", "Fazit", "href=", "U0001", "&amp"]
+        self.xreview_pros_cons = ["-", "+", "•", "none found", "null", 'n/a', 'n\\a', "U0001", "&amp"]# 'na', 'no',]
         self.path = Path(f"product_test/error/{self.agent_name}")
         Path("product_test/error").mkdir(exist_ok=True)
         self.path.mkdir(exist_ok=True)

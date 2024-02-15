@@ -33,11 +33,11 @@ def process_revlist(data, context, session):
         url = prod.xpath('@href').string()
         session.queue(Request(url), process_review, dict(context, name=name, url=url))
 
-    prods_cnt = context.get('prods_cnt', data.xpath('//div[@class="filter-result-count"]/text()').string().replace('produkter', ''))
-    current_prods_cnt = context.get('current_prods_cnt', 39)
+    revs_cnt = context.get('revs_cnt', data.xpath('//div[@class="filter-result-count"]/text()').string().replace('produkter', ''))
+    offset = context.get('offset', 0) + 39
     next_page = context.get('next_page', 0) + 1
-    if current_prods_cnt < int(prods_cnt):
-        session.queue(Request(context['prods_url'] + '?page=' + str(next_page)), process_revlist, dict(context, prods_cnt=prods_cnt, current_prods_cnt=current_prods_cnt + 39, next_page=next_page))
+    if offset < int(revs_cnt):
+        session.queue(Request(context['prods_url'] + '?page=' + str(next_page)), process_revlist, dict(context, revs_cnt=revs_cnt, offset=offset, next_page=next_page))
 
 
 def process_review(data, context, session):

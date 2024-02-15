@@ -1,9 +1,33 @@
 from agent import *
 from models.products import *
-import simplejson
+import simplejson, re
 
 
 XCATS = ['BUTLERS', 'Marken', 'Shop the Look', 'Beratung', 'Stores', 'Sale']
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def run(context, session):
@@ -108,13 +132,13 @@ def process_reviews(data, context, session):
 
         title = rev.get('title')
         excerpt = rev.get('message')
-        if excerpt:
-            review.title = title
+        if excerpt and title:
+            review.title = title.replace('&amp;', '&').replace('amp;', '')
         elif title:
-            excerpt = title
+            excerpt = title.replace('&amp;', '&').replace('amp;', '')
 
         if excerpt:
-            excerpt = excerpt.replace('\r', '').replace('\n', '')
+            excerpt = remove_emoji(excerpt.replace('\r', '').replace('\n', '').replace('&amp;', '&').replace('amp;', ''))
             review.add_property(type='excerpt', value=excerpt)
 
             review.ssid = review.digest() if author else review.digest(excerpt)
@@ -127,5 +151,4 @@ def process_reviews(data, context, session):
         session.do(Request('https://www.home24.de/graphql', use='curl', force_charset='utf-8', max_age=0, options=options), process_reviews, dict(context, product=product, offset=offset))
 
     elif product.reviews:
-        print('emit')
         session.emit(product)
