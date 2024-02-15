@@ -133,12 +133,12 @@ def process_reviews(data, context, session):
         title = rev.get('title')
         excerpt = rev.get('message')
         if excerpt and title:
-            review.title = title.replace('&amp;', '&').replace('amp;', '')
+            review.title = title.replace('&amp;', '&').replace('amp;', '').replace('&auml;', 'ä')
         elif title:
-            excerpt = title.replace('&amp;', '&').replace('amp;', '')
+            excerpt = title.replace('&amp;', '&').replace('amp;', '').replace('&auml;', 'ä')
 
         if excerpt:
-            excerpt = remove_emoji(excerpt.replace('\r', '').replace('\n', '').replace('&amp;', '&').replace('amp;', ''))
+            excerpt = remove_emoji(excerpt.replace('\r', '').replace('\n', '').replace('&amp;', '&').replace('amp;', '').replace('&auml;', 'ä'))
             review.add_property(type='excerpt', value=excerpt)
 
             review.ssid = review.digest() if author else review.digest(excerpt)
