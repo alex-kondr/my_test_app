@@ -86,35 +86,37 @@ def process_review(data, context, session):
 
         product.reviews.append(review)
 
-        """
-        .replace('\\"', '"').replace('\\\\"', '"')
-        """
+    revs_json = data.xpath('//script[contains(., "window.initialStat") and contains(., "entries")]/text()').string()
+    if revs_json:
+        revs_json = simplejson.loads(revs_json.replace('\\\\\\"', "'").replace('\\\\"', "'").replace('\\"', '"').split('"entries":')[-1].split(']}', 1)[0] + ']')
 
-    revs = data.xpath('//article[@class="sc-6px3uc-0 dYlkFw"]/following-sibling::div[contains(@class, "-4")]')
-    for rev in revs:
-        review = Review()
-        review.type = 'user'
-        review.ssid = product.ssid
-        review.url = product.url
-        review.date = rev.xpath('.//div[not(@class)]/text()').string()
+        for rev in revs_json:
+            review = Review()
+            review.type = 'user'
+            review.ssid = product.ssid
+            review.url = product.url
 
-        author = rev.xpath('div[contains(@class, "6px") and not(.//p)]//text()').string(multiple=True)
-        if author:
-            review.authors.append(Person(name=author, ssid=author))
+            date = rev.get('date')
+            if date:
+                review.date = date.split('T')[0]
 
-        grade_overall = rev.xpath('count(.//div[@class="sc-99sp3o-3 cdTiDh"])')
-        if grade_overall:
-            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+            author = rev.get('name')
+            if author:
+                review.authors.append(Person(name=author, ssid=author))
 
-        is_verified = rev.xpath('.//text()[contains(., "Verificeret køb")]').string()
-        if is_verified:
-            review.add_property(type='is_verified_buyer', value=True)
+            grade_overall = rev.get('rating')
+            if grade_overall:
+                review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        excerpt = rev.xpath('div[contains(@class, "6px")]//p//text()').string(multiple=True)
-        if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+            is_verified = rev.get('verified')
+            if is_verified:
+                review.add_property(type='is_verified_buyer', value=True)
 
-            product.reviews.append(review)
+            excerpt = rev.get('text')
+            if excerpt:
+                review.add_property(type='excerpt', value=excerpt)
+
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
