@@ -47,31 +47,31 @@ def process_frontpage(data, context, session):
                 url = sub_cat.xpath('@href').string()
 
                 if ' alt ' not in sub_name and ' alle ' not in sub_name and sub_name not in XCATS:
-                    session.queue(Request(url), process_revlist, dict(cat=name + '|' + sub_name, prods_url=url))
+                    session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name, prods_url=url))
 
 
-def process_revlist(data, context, session):
+def process_prodlist(data, context, session):
     prods = data.xpath('//a[@class="product-card__brand-name"]')
     for prod in prods:
         name = prod.xpath('text()').string()
         url = prod.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(context, name=name, url=url))
+        session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
-    revs_cnt = context.get('revs_cnt', data.xpath('//div[@class="filter-result-count"]/text()').string().replace('produkter', ''))
+    prods_cnt = context.get('prods_cnt', data.xpath('//div[@class="filter-result-count"]/text()').string().replace('produkter', ''))
     offset = context.get('offset', 0) + 39
-    next_page = context.get('next_page', 0) + 1
-    if offset < int(revs_cnt):
-        session.queue(Request(context['prods_url'] + '?page=' + str(next_page)), process_revlist, dict(context, revs_cnt=revs_cnt, offset=offset, next_page=next_page))
+    next_page = context.get('page', 0) + 1
+    if offset < int(prods_cnt):
+        session.queue(Request(context['prods_url'] + '?page=' + str(next_page)), process_prodlist, dict(context, prods_cnt=prods_cnt, offset=offset, page=next_page))
 
 
-def process_review(data, context, session):
+def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = context['url'].split('/')[-3]
+    product.ssid = product.url.split('/')[-3]
     product.category = context['cat']
 
-    prod_json = data.xpath('//script[@type="application/ld+json" and contains(., "Product")]/text()').string()
+    prod_json = data.xpath('//script[contains(., "Product")]/text()').string()
     if prod_json:
         prod_json = simplejson.loads(prod_json)
 
@@ -85,33 +85,14 @@ def process_review(data, context, session):
         if ean and ean.isdigit() and len(ean) > 12:
             product.add_property(type='id.ean', value=ean)
 
-    review = Review()
-    review.type = 'pro'
-    review.ssid = product.ssid
-    review.url = product.url
+    context['product'] = product
+    process_reviews(data, context, session)
 
-    pros = data.xpath('//div[h4[contains(., "Fordele")]]//li')
-    for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
-        review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[h4[contains(., "Begrænsninger")]]//li')
-    for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
-        review.add_property(type='cons', value=con)
+def process_reviews(data, context, session):
+    product = context['product']
 
-    summary = data.xpath('//h2[contains(., "Beskrivelse")]/following-sibling::h4[1]//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
-    excerpt = data.xpath('//div[contains(@class, "rich-text") and h3]/p//text()').string(multiple=True)
-    if excerpt:
-        excerpt = remove_emoji(excerpt)
-        review.add_property(type='excerpt', value=excerpt)
-
-        product.reviews.append(review)
-
-    revs_json = data.xpath('//script[contains(., "window.initialStat") and contains(., "entries")]/text()').string()
+    revs_json = data.xpath('//script[contains(., "entries")]/text()').string()
     if revs_json:
         revs_json = simplejson.loads(revs_json.replace('\\\\\\"', "'").replace('\\\\"', "'").replace('\\"', '"').split('"entries":')[-1].split(']}', 1)[0] + ']')
 

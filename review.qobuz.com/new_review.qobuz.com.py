@@ -3,6 +3,9 @@ from models.products import *
 import re
 
 
+XCAT = ['NEWS']
+
+
 def remove_emoji(string):
     emoji_pattern = re.compile("["
                                u"\U0001F600-\U0001F64F"  # emoticons
@@ -28,17 +31,19 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.browser.use_new_parser = True
     session.queue(Request('https://www.qobuz.com/fr-fr/magazine'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
-    cats = data.xpath('//div[@class="col-03"]/nav/nav/a')
+    cats = data.xpath('//nav[@id="navbar"]//a[normalize-space()]')
     for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url), process_revlist, dict(cat=name))
+
+        if name not in XCAT:
+            session.queue(Request(url), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
@@ -71,11 +76,12 @@ def process_review(data, context, session):
     review.date = data.xpath('//time/@datetime').string()
 
     author = data.xpath('//div[@class="magazine-header-author"]/a/text()').string()
-    author_url = data.xpath('//div[@class="magazine-header-author"]/a/@href').string()
-    if author and author_url:
-        review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
-    elif author:
+    if author:
         review.authors.append(Person(name=author, ssid=author))
+
+    grade_overall = data.xpath('//div/@rating-star').string()
+    if grade_overall:
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5))
 
     pros = data.xpath('//div[@class="pros-container"]/span')
     if not pros:

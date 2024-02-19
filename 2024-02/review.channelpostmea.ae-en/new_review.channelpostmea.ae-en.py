@@ -22,7 +22,7 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].replace('Review:', '').strip()
     product.url = context['url']
-    product.ssid = context['url'].split('/')[-2]
+    product.ssid = product.url.split('/')[-2]
 
     categories = data.xpath('//a[@rel="category tag" and not(contains(., "Review") or contains(., "Articles") or contains(., "Products") or contains(., "Newsletter"))]/text()').strings()
     if categories:
@@ -41,10 +41,7 @@ def process_review(data, context, session):
         review.date = date.split('T')[0]
 
     author = data.xpath('//div[contains(@class, "entry-byline-author")]/span[@itemprop="author"]/a//text()').string(multiple=True)
-    author_url = data.xpath('//div[contains(@class, "entry-byline-author")]/span[@itemprop="author"]/a/@href').string()
-    if author and author_url:
-        review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
-    elif author:
+    if author:
         review.authors.append(Person(name=author, ssid=author))
 
     conclusion = data.xpath('//span[contains(., "Verdict")]/following::span[@itemprop="publisher"]//text()').string(multiple=True)
@@ -57,6 +54,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//span[contains(., "Price:")]/preceding::span[@itemprop="publisher"]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//span[@style and contains(., "Comments")]/preceding::span[@itemprop="publisher"]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
