@@ -244,7 +244,7 @@ class TestProduct:
         properties = self.product.get("product", {}).get("properties", {})
         sku = [property.get("value") for property in properties if property.get("type") == "id.sku"]
 
-        if not sku or len(sku[0]) < 2:
+        if not sku or len(sku[0]) < 2 or not sku[0].isdigit():
             self.error_sku.append(properties)
 
     def test_product_id_manufacturer(self):
