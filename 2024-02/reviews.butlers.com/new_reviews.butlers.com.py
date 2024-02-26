@@ -65,8 +65,9 @@ def process_frontpage(data, context, session):
 def process_cat_id(data, context, session):
     cat_id = data.xpath('//div/@data-cnstrc-filter-value').string()
     prods_cnt = data.xpath('//div/@data-cnstrc-num-results').string()
-    url = 'https://www.home24.de/graphql?extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%224c0db1839cdad663e84602f7172cfc894d8201a350ea42308caad436f056238e%22%7D%7D&variables=%7B%22urlParams%22%3A%22order%3DAVERAGE_RATING%22%2C%22locale%22%3A%22de_DE%22%2C%22first%22%3A120%2C%22offset%22%3A0%2C%22id%22%3A%22{cat_id}%22%2C%22format%22%3A%22WEBP%22%2C%22sortingScore%22%3A%22A%22%2C%22userIP%22%3A%22%22%2C%22userAgent%22%3A%22Mozilla%2F5.0+%28Windows+NT+10.0%3B+Win64%3B+x64%3B+rv%3A121.0%29+Gecko%2F20100101+Firefox%2F121.0%22%2C%22backend%22%3A%22ThirdParty%22%2C%22thirdPartyClientId%22%3A%22211a0ad7-10da-42a7-9b3f-fc44b6737763%22%2C%22thirdPartySessionId%22%3A%226%22%7D'
-    session.queue(Request(url.format(cat_id=cat_id)), process_prodlist, dict(context, cat_id=cat_id, prods_cnt=int(prods_cnt)))
+    if cat_id and prods_cnt:
+        url = 'https://www.home24.de/graphql?extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%224c0db1839cdad663e84602f7172cfc894d8201a350ea42308caad436f056238e%22%7D%7D&variables=%7B%22urlParams%22%3A%22order%3DAVERAGE_RATING%22%2C%22locale%22%3A%22de_DE%22%2C%22first%22%3A120%2C%22offset%22%3A0%2C%22id%22%3A%22{cat_id}%22%2C%22format%22%3A%22WEBP%22%2C%22sortingScore%22%3A%22A%22%2C%22userIP%22%3A%22%22%2C%22userAgent%22%3A%22Mozilla%2F5.0+%28Windows+NT+10.0%3B+Win64%3B+x64%3B+rv%3A121.0%29+Gecko%2F20100101+Firefox%2F121.0%22%2C%22backend%22%3A%22ThirdParty%22%2C%22thirdPartyClientId%22%3A%22211a0ad7-10da-42a7-9b3f-fc44b6737763%22%2C%22thirdPartySessionId%22%3A%226%22%7D'
+        session.queue(Request(url.format(cat_id=cat_id)), process_prodlist, dict(context, cat_id=cat_id, prods_cnt=int(prods_cnt)))
 
 
 def process_prodlist(data, context, session):
@@ -83,15 +84,15 @@ def process_prodlist(data, context, session):
 
     offset = context.get('offset', 0) + 120
     if offset < context['prods_cnt']:
-        nex_url = 'https://www.home24.de/graphql?extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%224c0db1839cdad663e84602f7172cfc894d8201a350ea42308caad436f056238e%22%7D%7D&variables=%7B%22urlParams%22%3A%22order%3DAVERAGE_RATING%22%2C%22locale%22%3A%22de_DE%22%2C%22first%22%3A120%2C%22offset%22%3A{offset}%2C%22id%22%3A%22{cat_id}%22%2C%22format%22%3A%22WEBP%22%2C%22sortingScore%22%3A%22A%22%2C%22userIP%22%3A%22%22%2C%22userAgent%22%3A%22Mozilla%2F5.0+%28Windows+NT+10.0%3B+Win64%3B+x64%3B+rv%3A121.0%29+Gecko%2F20100101+Firefox%2F121.0%22%2C%22backend%22%3A%22ThirdParty%22%2C%22thirdPartyClientId%22%3A%22211a0ad7-10da-42a7-9b3f-fc44b6737763%22%2C%22thirdPartySessionId%22%3A%226%22%7D'
-        session.queue(Request(nex_url.format(cat_id=context['cat_id'], offset=offset)), process_prodlist, dict(context, offset=offset))
+        next_url = 'https://www.home24.de/graphql?extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%224c0db1839cdad663e84602f7172cfc894d8201a350ea42308caad436f056238e%22%7D%7D&variables=%7B%22urlParams%22%3A%22order%3DAVERAGE_RATING%22%2C%22locale%22%3A%22de_DE%22%2C%22first%22%3A120%2C%22offset%22%3A{offset}%2C%22id%22%3A%22{cat_id}%22%2C%22format%22%3A%22WEBP%22%2C%22sortingScore%22%3A%22A%22%2C%22userIP%22%3A%22%22%2C%22userAgent%22%3A%22Mozilla%2F5.0+%28Windows+NT+10.0%3B+Win64%3B+x64%3B+rv%3A121.0%29+Gecko%2F20100101+Firefox%2F121.0%22%2C%22backend%22%3A%22ThirdParty%22%2C%22thirdPartyClientId%22%3A%22211a0ad7-10da-42a7-9b3f-fc44b6737763%22%2C%22thirdPartySessionId%22%3A%226%22%7D'
+        session.queue(Request(next_url.format(cat_id=context['cat_id'], offset=offset)), process_prodlist, dict(context, offset=offset))
 
 
 def process_product(data,context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = context['url'].split('/')[-1]
+    product.ssid = product.url.split('/')[-1]
     product.category = context['cat']
 
     prod_json = data.xpath("""//script[contains(., '"@type":"Product"')]/text()""").string()
@@ -114,7 +115,7 @@ def process_product(data,context, session):
 def process_reviews(data, context, session):
     product = context['product']
 
-    revs = simplejson.loads(data.content).get('data', {}).get('articles', {})[0].get('reviews', [])
+    revs = simplejson.loads(data.content).get('data', {}).get('articles', [{}])[0].get('reviews', [])
     for rev in revs:
         review = Review()
         review.type = 'user'
