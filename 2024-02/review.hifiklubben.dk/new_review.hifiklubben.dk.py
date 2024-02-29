@@ -98,6 +98,10 @@ def process_reviews(data, context, session):
         revs_json = simplejson.loads(revs_json.replace('\\\\\\"', "'").replace('\\\\"', "'").replace('\\"', '"').split('"entries":')[-1].split(']}', 1)[0] + ']')
 
         for rev in revs_json:
+            is_translated = rev.get('translatedText')
+            if is_translated:
+                continue
+
             review = Review()
             review.type = 'user'
             review.ssid = product.ssid
@@ -120,7 +124,7 @@ def process_reviews(data, context, session):
                 review.add_property(type='is_verified_buyer', value=True)
 
             excerpt = rev.get('text')
-            if excerpt and not rev.get('translatedText'):
+            if excerpt:
                 excerpt = remove_emoji(excerpt).strip()
                 if len(excerpt) > 2:
                     review.add_property(type='excerpt', value=excerpt)
