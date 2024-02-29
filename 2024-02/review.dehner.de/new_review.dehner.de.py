@@ -62,7 +62,6 @@ def process_product(data, context, session):
     product.ssid = product.url.split('/')[-2]
     product.category = context['cat']
     product.manufacturer = data.xpath('//div[contains(@class, "product-brand-icon")]/img/@alt').string()
-    product.add_property(type='id.manufacturer', value=product.ssid.split('-')[-1])
 
     sku = data.xpath('//div[@class="product-sku"]/span/text()').string()
     if not sku:

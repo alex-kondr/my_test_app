@@ -60,7 +60,7 @@ def process_prodlist(data, context, session):
     prods_cnt = context.get('prods_cnt', data.xpath('//div[@class="filter-result-count"]/text()').string().replace('produkter', ''))
     offset = context.get('offset', 0) + 39
     next_page = context.get('page', 0) + 1
-    if offset < int(prods_cnt):
+    if prods_cnt and offset < int(prods_cnt):
         session.queue(Request(context['prods_url'] + '?page=' + str(next_page)), process_prodlist, dict(context, prods_cnt=prods_cnt, offset=offset, page=next_page))
 
 
@@ -86,6 +86,7 @@ def process_product(data, context, session):
             product.add_property(type='id.ean', value=ean)
 
     context['product'] = product
+
     process_reviews(data, context, session)
 
 
@@ -119,7 +120,7 @@ def process_reviews(data, context, session):
                 review.add_property(type='is_verified_buyer', value=True)
 
             excerpt = rev.get('text')
-            if excerpt:
+            if excerpt and not rev.get('translatedText'):
                 excerpt = remove_emoji(excerpt).strip()
                 if len(excerpt) > 2:
                     review.add_property(type='excerpt', value=excerpt)
