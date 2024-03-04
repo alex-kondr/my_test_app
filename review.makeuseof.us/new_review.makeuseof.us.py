@@ -15,7 +15,7 @@ def process_revlist(data, context, session):
 
     next_page = data.xpath('//a[@class="next"]')
     if next_page:
-        next_page = context['page', 1] + 1
+        next_page = context.get('page', 1) + 1
         session.queue(Request('https://www.makeuseof.com/category/product-reviews/' + str(next_page) + '/', use='curl'), process_revlist, dict(page=next_page))
 
 
