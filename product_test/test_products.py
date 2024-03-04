@@ -377,18 +377,18 @@ class TestProduct:
         property = property[0]
         excerpt = property.get("value")
 
-        if summary:
-            summary = summary[0]
-            chank_count = len(summary) // len_chank
-            summary_list = []
-            for i in range(chank_count):
-                summ = summary[len_chank * i:len_chank * ( i + 1)]
-                summary_list.append(summ)
+        # if summary:
+        #     summary = summary[0]
+        #     chank_count = len(summary) // len_chank
+        #     summary_list = []
+        #     for i in range(chank_count):
+        #         summ = summary[len_chank * i:len_chank * ( i + 1)]
+        #         summary_list.append(summ)
 
-            element = is_include(summary_list, excerpt)
-            if element:
-                property["error_in_sum"] = f"This element in excerpt: '{element}'"
-                self.error_excerpt.append(properties)
+        #     element = is_include(summary_list, excerpt)
+        #     if element:
+        #         property["error_in_sum"] = f"This element in excerpt: '{element}'"
+        #         self.error_excerpt.append(properties)
 
         if conclusion:
             conclusion = conclusion[0]

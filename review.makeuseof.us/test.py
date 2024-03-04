@@ -12,8 +12,8 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-# agent = agents.CHANNEL_POST_MEA
-agent = agents.TEST
+agent = agents.MAKE_USE_OF
+# agent = agents.TEST
 reload = 1
 
 
