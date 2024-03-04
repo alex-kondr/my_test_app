@@ -22,6 +22,56 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split(':')[0].replace('Review', '').replace('review', '').strip()
-    product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
-    product.category = data.xpath('').string()
+    product.ssid = context['url'].split('/')[-2]
+    product.category = data.xpath('//meta[@property="article:section"]/@content').string()
+
+    product.url = data.xpath('//div[@class="w-display-card-link"]/a/@href').string()
+    if not product.url:
+        product.url = context['url']
+
+    review = Review()
+    review.type = 'pro'
+    review.url = context['url']
+    review.title = context['title']
+    review.ssid = product.ssid
+
+    date = data.xpath('//span[@class="meta_txt date"]/time/@datetime').string()
+    if date:
+        review.date = date.split('T')[0]
+
+    author = data.xpath('//a[@class="meta_txt author"]/text()').string()
+    author_url = data.xpath('//a[@class="meta_txt author"]/@href').string()
+    if author and author_url:
+        review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    grade_overall = data.xpath('//div[@class="display-card-rating"]/text()').string()
+    if grade_overall:
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+
+    summary = data.xpath('//p[@class="heading_excerpt"]//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    pros = data.xpath('//ul[@class="pro-list"]/li')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//ul[@class="con-list"]/li')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        review.add_property(type='cons', value=con)
+
+    # conclusion = data.xpath('').string(multiple=True)
+    # if conclusion:
+    #     review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('(//div[@class="content-block-regular"]//p|//div[@class="content-block-regular"]//h2)//text()').string(multiple=True)
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
