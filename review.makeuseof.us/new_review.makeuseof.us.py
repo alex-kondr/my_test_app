@@ -63,18 +63,37 @@ def process_review(data, context, session):
         pro = pro.xpath('.//text()').string(multiple=True)
         review.add_property(type='pros', value=pro)
 
+    pros = data.xpath('//p[em[contains(., "Pros")]]')
+    for pros_ in pros:
+        pros_ = pros_.xpath('following-sibling::ul[1]/li')
+        for pro in pros_:
+            pro = pro.xpath('.//text()').string(multiple=True)
+            review.add_property(type='pros', value=pro)
+
     cons = data.xpath('//ul[@class="con-list"]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(., "Verdict") or contains(., "Conclusion")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
+    cons = data.xpath('//p[em[contains(., "Cons")]]')
+    for cons_ in cons:
+        cons_ = cons_.xpath('following-sibling::ul[1]/li')
+        for con in cons_:
+            con = con.xpath('.//text()').string(multiple=True)
+            review.add_property(type='cons', value=con)
+
+    conclusion = data.xpath('//h2[contains(., "Verdict") or contains(., "Conclusion")]/following-sibling::p[not(@class or .//small)]//text()').string(multiple=True)
+    faqs = data.xpath('//h2[contains(., "FAQ")]/following-sibling::p[not(@class)]')
     if conclusion:
+        for faq in faqs:
+            faq = faq.xpath('.//text()').string(multiple=True)
+            conclusion = conclusion.replace(faq, '')
+
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Verdict") or contains(., "Conclusion")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//div[@class="content-block-regular"]//p|//div[@class="content-block-regular"]//h2)//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="content-block-regular"]//p[not(@class or .//small)]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

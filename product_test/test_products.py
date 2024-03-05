@@ -113,6 +113,7 @@ class Product:
 class TestProduct:
 
     def __init__(self, product: Product):
+        Path("product_test/error").mkdir(exist_ok=True)
         self.products = product.file.get("products")
         self.agent_name = product.agent_name
         self.xproduct_names_category = ["review", "test", "\uFEFF", "\ufeff", "...", "•", "cable", "análise", u"U000", u"&amp"]
@@ -121,7 +122,6 @@ class TestProduct:
         self.xreview_excerpt = ["Conclusion", "Verdict", "\uFEFF", "\ufeff", "Summary", "•", "Fazit", "href=", u"U000", u"&amp"]
         self.xreview_pros_cons = ["-", "+", "•", "none found", "null", 'n/a', 'n\\a', u"U000", u"&amp"]# 'na', 'no',]
         self.path = Path(f"product_test/error/{self.agent_name}")
-        Path("product_test/error").mkdir(exist_ok=True)
         self.path.mkdir(exist_ok=True)
         self.product = None
         self.error_name = []
@@ -377,18 +377,18 @@ class TestProduct:
         property = property[0]
         excerpt = property.get("value")
 
-        # if summary:
-        #     summary = summary[0]
-        #     chank_count = len(summary) // len_chank
-        #     summary_list = []
-        #     for i in range(chank_count):
-        #         summ = summary[len_chank * i:len_chank * ( i + 1)]
-        #         summary_list.append(summ)
+        if summary:
+            summary = summary[0]
+            chank_count = len(summary) // len_chank
+            summary_list = []
+            for i in range(chank_count):
+                summ = summary[len_chank * i:len_chank * ( i + 1)]
+                summary_list.append(summ)
 
-        #     element = is_include(summary_list, excerpt)
-        #     if element:
-        #         property["error_in_sum"] = f"This element in excerpt: '{element}'"
-        #         self.error_excerpt.append(properties)
+            element = is_include(summary_list, excerpt)
+            if element:
+                property["error_in_sum"] = f"This element in excerpt: '{element}'"
+                self.error_excerpt.append(properties)
 
         if conclusion:
             conclusion = conclusion[0]
