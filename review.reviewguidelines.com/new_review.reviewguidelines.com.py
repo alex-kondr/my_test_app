@@ -85,30 +85,36 @@ def process_review(data, context, session):
         grade_value = grade.xpath('.//span/@style').string().replace('width:', '').replace('%', '')
         review.grades.append(Grade(name=grade_name, value=float(grade_value), best=100.0))
 
-    pros = data.xpath('//strong[contains(., "PROS")]')
+    pros = data.xpath('//strong[contains(., "PROS")][normalize-space(following-sibling::text())]')
     for pro in pros:
-        pro = pro.xpath('following-sibling::text()').string()
-        review.add_property(type='pros', value=pro)
+        pro = pro.xpath('following-sibling::text()').string().replace('N/A.', '').replace('N/A', '').replace('n/a', '').replace('-', '').strip()
+        if pro:
+            review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//strong[contains(., "CONS")]')
+    cons = data.xpath('//strong[contains(., "CONS")][normalize-space(following-sibling::text())]')
     for con in cons:
-        con = con.xpath('following-sibling::text()').string()
-        review.add_property(type='cons', value=con)
+        con = con.xpath('following-sibling::text()').string().replace('N/A.', '').replace('N/A', '').replace('n/a', '').replace('-', '').strip()
+        if con:
+            review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="entry-content entry clearfix"]//h2[1]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="entry-content entry clearfix"]//text()').string(multiple=True)
+        excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="entry-content entry clearfix"]//p[not(@class)]//text()').string(multiple=True)
     if excerpt:
         if summary:
-            excerpt = excerpt.replace(summary, '')
+            excerpt = excerpt.replace(summary, '').strip()
 
         review.add_property(type='excerpt', value=excerpt)
 

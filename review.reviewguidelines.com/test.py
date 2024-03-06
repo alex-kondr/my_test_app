@@ -14,7 +14,7 @@ import product_test.list_of_agents as agents
 
 agent = agents.REVIEW_GUIDELINES
 # agent = agents.TEST
-reload = 0
+reload = 1
 
 
 if __name__ == "__main__":
