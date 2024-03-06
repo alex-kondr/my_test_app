@@ -318,26 +318,26 @@ class TestProduct:
         cons = [property.get("value") for property in property_cons]
 
         for i, pro in enumerate(pros):
-            if len(pro) < 3:
+            if pro and len(pro) < 3:
                 property_pros[i]["error_len"] = "< 3"
                 temp_pros_cons = properties
             if pro in cons:
                 property_pros[i]["error_in_con"] = f"Pro: '{pro}' in cons"
                 temp_pros_cons = properties
             for xreview_pros_cons in self.xreview_pros_cons:
-                if pro.lower().startswith(xreview_pros_cons) or pro.lower().endswith(xreview_pros_cons):
+                if pro and (pro.lower().startswith(xreview_pros_cons) or pro.lower().endswith(xreview_pros_cons)):
                     property_pros[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
                     temp_pros_cons = properties
 
             for i, con in enumerate(cons):
-                if len(con) < 3:
+                if con and len(con) < 3:
                     property_cons[i]["error_len"] = "< 3"
                     temp_pros_cons = properties
                 if con in pros:
                     property_cons[i]["error_in_pro"] = f"Con: '{con}' in pros"
                     temp_pros_cons = properties
                 for xreview_pros_cons in self.xreview_pros_cons:
-                    if con.lower().startswith(xreview_pros_cons) or con.lower().endswith(xreview_pros_cons):
+                    if con and (con.lower().startswith(xreview_pros_cons) or con.lower().endswith(xreview_pros_cons)):
                         property_cons[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
                         temp_pros_cons = properties
 
