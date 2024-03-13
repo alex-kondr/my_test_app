@@ -37,9 +37,14 @@ def process_product(data, context, session):
     product.name = context['name']
     product.url = context['url']
     product.category = context['cat']
-    product.ssid = re.search(r'/[\w\-\.\d]+-[\w\.]*[\d]+/', product.url + '/').group()[1:-1]
     product.manufacturer = data.xpath('//span[@class="breadcrumb--title" and @itemprop="name"]/text()[not(contains(., "Marken"))]').string()
     product.sku = data.xpath('//meta[@itemprop="sku"]/@content').string()
+
+    ssid = re.search(r'/[\w\-\.\d]+-[\w\.]*[\d]+/', product.url + '/')
+    if ssid:
+        product.ssid = ssid.group().replace('/', '')
+    else:
+        product.ssid = product.url.split('/')[-1]
 
     context['product'] = product
 
