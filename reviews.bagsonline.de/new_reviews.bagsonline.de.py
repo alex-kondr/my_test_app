@@ -1,10 +1,10 @@
 from agent import *
 from models.products import *
+import re
 
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.bagsonline.de/'), process_frontpage, dict())
 
 
@@ -37,7 +37,7 @@ def process_product(data, context, session):
     product.name = context['name']
     product.url = context['url']
     product.category = context['cat']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = re.search(r'/[\w\-\.\d]+-[\w\.]*[\d]+/', product.url + '/').group()[1:-1]
     product.manufacturer = data.xpath('//span[@class="breadcrumb--title" and @itemprop="name"]/text()[not(contains(., "Marken"))]').string()
     product.sku = data.xpath('//meta[@itemprop="sku"]/@content').string()
 
