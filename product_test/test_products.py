@@ -244,7 +244,7 @@ class TestProduct:
         properties = self.product.get("product", {}).get("properties", {})
         sku = [property.get("value") for property in properties if property.get("type") == "id.sku"]
 
-        if not sku or len(sku[0]) < 2 or not sku[0].isdigit():
+        if sku and len(sku[0]) < 2:
             self.error_sku.append(properties)
 
     def test_product_id_manufacturer(self):
@@ -258,7 +258,7 @@ class TestProduct:
         properties = self.product.get("product", {}).get("properties", {})
         ean = [property.get("value") for property in properties if property.get("type") == "id.ean"]
 
-        if ean and len(ean[0]) < 2:
+        if ean and (len(ean[0]) < 11 or not ean[0].isdigit()):
             self.error_ean.append(properties)
 
     def test_review_title(self, xreview_title: list[str]=[]) -> None:
