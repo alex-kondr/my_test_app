@@ -44,10 +44,14 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = product.url.replace('https://www.koffermarkt.com/', '')[:-1]
+    product.ssid = data.xpath('//meta[@itemprop="productID"]/@content').string()
     product.category = context['cat']
     product.manufacturer = data.xpath('//meta[@itemprop="brand"]/@content').string()
     product.sku = data.xpath('//span[@itemprop="sku"]/text()').string()
+
+    ean = data.xpath('//tr[contains(., "EAN-Code")]/td[@class="product--properties-value"]/text()').string()
+    if ean and ean.isdigit() and len(ean) > 12:
+        product.add_property(type='id.ean', value=ean)
 
     context['product'] = product
 
@@ -69,10 +73,12 @@ def process_reviews(data, context, session):
             review.authors.append(Person(name=author, ssid=author))
 
         grade_overall = rev.xpath('.//meta[@itemprop="ratingValue"]/@content').string()
-        grade_worst = rev.xpath('.//meta[@itemprop="worstRating"]/@content').string()
-        grade_best = rev.xpath('.//meta[@itemprop="bestRating"]/@content').string()
         if grade_overall:
-            review.grades.append(Grade(type='overall', value=float(grade_overall), worst=float(grade_worst), best=float(grade_best)))
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
+        is_verified = rev.xpath('.//span[contains(., "Verifizierter Kauf")]')
+        if is_verified:
+            review.add_property(type='is_verified_buyer', value=True)
 
         title = rev.xpath('.//h4[@class="content--title"]//text()').string(multiple=True)
         excerpt = rev.xpath('.//p[@itemprop="reviewBody"]//text()').string(multiple=True)

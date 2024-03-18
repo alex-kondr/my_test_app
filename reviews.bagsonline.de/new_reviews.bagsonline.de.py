@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-import re
 
 
 def run(context, session):
@@ -37,14 +36,13 @@ def process_product(data, context, session):
     product.name = context['name']
     product.url = context['url']
     product.category = context['cat']
-    product.manufacturer = data.xpath('//span[@class="breadcrumb--title" and @itemprop="name"]/text()[not(contains(., "Marken"))]').string()
-    product.sku = data.xpath('//meta[@itemprop="sku"]/@content').string()
+    product.manufacturer = data.xpath('//div[@class="product--supplier"]//img/@alt').string()
+    product.sku = data.xpath('//div/@data-main-ordernumber').string()
+    product.ssid = product.sku
 
-    ssid = re.search(r'/[\w\-\.\d]+-[\w\.]*[\d]+/', product.url + '/')
-    if ssid:
-        product.ssid = ssid.group().replace('/', '')
-    else:
-        product.ssid = product.url.split('/')[-1]
+    ean = data.xpath('//meta[@itemprop="gtin13"]/@content').string()
+    if ean:
+        product.add_property(type='id.ean', value=ean)
 
     context['product'] = product
 
@@ -66,10 +64,8 @@ def process_reviews(data, context, session):
             review.authors.append(Person(name=author, ssid=author))
 
         grade_overall = rev.xpath('.//meta[@itemprop="ratingValue"]/@content').string()
-        grade_worst = rev.xpath('.//meta[@itemprop="worstRating"]/@content').string()
-        grade_best = rev.xpath('.//meta[@itemprop="bestRating"]/@content').string()
         if grade_overall:
-            review.grades.append(Grade(type='overall', value=float(grade_overall), worst=float(grade_worst), best=float(grade_best)))
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
         title = rev.xpath('.//h4[@class="content--title"]//text()').string(multiple=True)
         excerpt = rev.xpath('.//p[@itemprop="reviewBody"]//text()').string(multiple=True)
