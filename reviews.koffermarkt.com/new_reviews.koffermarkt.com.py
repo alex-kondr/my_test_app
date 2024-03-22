@@ -42,7 +42,7 @@ def process_prodlist(data, context, session):
 
 def process_product(data, context, session):
     product = Product()
-    product.name = context['name']
+    product.name = context['name'].replace(u'\x9F', '')
     product.url = context['url']
     product.ssid = data.xpath('//meta[@itemprop="productID"]/@content').string()
     product.category = context['cat']

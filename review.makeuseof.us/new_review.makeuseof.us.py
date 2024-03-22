@@ -22,14 +22,16 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(':')[0].replace('Review', '').replace('review', '').strip()
-    product.ssid = context['url'].split('/')[-2]
+    product.name = context['title'].replace('Review:', '').split(':')[0].replace('Review', '').replace('review', '').strip()
+    product.ssid = context['url'].split('/')[-2].replace('-review', '')
 
     product.category = data.xpath('//meta[@property="article:section"]/@content[not(contains(., "Reviews"))]').string()
     if not product.category:
-        product.category = 'Technik'
+        product.category = 'Tech'
 
     product.url = data.xpath('//div[@class="w-display-card-link"]/a/@href').string()
+    if not product.url:
+        product.url = data.xpath('//h3[@class="review-item-title"]/a[contains(@rel, "sponsored")]/@href').string()
     if not product.url:
         product.url = context['url']
 
@@ -82,19 +84,27 @@ def process_review(data, context, session):
             con = con.xpath('.//text()').string(multiple=True)
             review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(., "Verdict") or contains(., "Conclusion")]/following-sibling::p[not(@class or .//small)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Verdict") or contains(., "Conclusion")]/following-sibling::p[not(@class or .//small or contains(., "for further details") or contains(., "would have received an email"))]//text()').string(multiple=True)
     faqs = data.xpath('//h2[contains(., "FAQ")]/following-sibling::p[not(@class)]')
+    if not conclusion:
+        conclusion = data.xpath('//h2[contains(., "Should You Buy the")]/following-sibling::p[not(@class or .//small or contains(., "for further details") or contains(., "would have received an email"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('(//p[@class="display-card-description"])[1]//text()').string(multiple=True)
+
     if conclusion:
         for faq in faqs:
             faq = faq.xpath('.//text()').string(multiple=True)
             conclusion = conclusion.replace(faq, '')
 
+        conclusion = conclusion.replace('[/recommend]', '').replace('[recommend]', '')
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Verdict") or contains(., "Conclusion")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="content-block-regular"]//p[not(@class or .//small)]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace('[/recommend]', '').replace('[recommend]', '')
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

@@ -13,7 +13,8 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
         session.queue(Request(url), process_review, dict(title=title, url=url))
 
-    if data.xpath('count(//h3[@class="news-item-title"]/a)') == 40:
+    revs_cnt = data.xpath('count(//h3[@class="news-item-title"]/a)')
+    if revs_cnt == 40:
         next_page = context.get('page', 1) + 1
         session.queue(Request('http://www.neowin.net/news/tags/review?page=' + str(next_page)), process_revlist, dict(page=next_page))
 
@@ -21,14 +22,17 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     product = Product()
     product.name = context['title'].replace('Review:', '').split(':')[0].replace('review', '').replace('Review', '').replace('[Update]', '').strip()
-    product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
-    product.category = 'Technik'
+    product.ssid = context['url'].split('/')[-2]
+    product.category = 'Tech'
+
+    product.url = data.xpath('//h3/a[@rel="sponsored"]/@href').string()
+    if not product.url:
+        product.url = context['url']
 
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//p[@class="article-meta"]//time/@datetime').string()
@@ -66,21 +70,21 @@ def process_review(data, context, session):
 
             review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h1[contains(., "Conclusion")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h1[contains(., "Conclusion")]/following-sibling::p[not(@class or @style)]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(@class or @style)]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
+        conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p[not(@class or @style)]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h1[contains(., "Conclusion")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath('//h1[contains(., "Conclusion")]/preceding-sibling::p[not(@class or @style)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(@class or @style)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+        excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p[not(@class or @style)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@itemprop="articleBody"]//p[not(@class)]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@itemprop="articleBody"]//p[not(@class or @style)]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

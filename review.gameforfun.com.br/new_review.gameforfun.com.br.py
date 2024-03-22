@@ -22,8 +22,8 @@ def process_review(data, context, session):
     product = Product()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    product.name = context['title'].replace('Review:', '').split(':')[0].replace('Review', '').replace('review', '').strip()
-    product.category = 'Techik'
+    product.name = context['title'].replace('Review:', '').replace('Review –', '').split(':')[0].replace('Review', '').replace('review', '').strip()
+    product.category = 'Games'
 
     review = Review()
     review.type = 'pro'
@@ -57,10 +57,16 @@ def process_review(data, context, session):
         review.grades.append(Grade(type='overall', value=grade_overall, best=100.0))
 
     conclusion = data.xpath('//div[@data-id="6c44601"]//p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[contains(., "Conclusão")]/following-sibling::p//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="elementor-widget-container"]//p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Conclusão")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="elementor-widget-container"]//p//text()').string(multiple=True)
+
     if excerpt:
         if conclusion:
             excerpt = excerpt.replace(conclusion, '')

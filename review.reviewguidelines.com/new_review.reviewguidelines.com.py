@@ -1,13 +1,12 @@
 from agent import *
 from models.products import *
-import simplejson
 
 
 XCAT = ['Buyer’s Guide', 'Privacy Policy', 'Guide']
 
 
 def run(context, session):
-    session.queue(Request('https://www.reviewguidelines.com/', use='curl'), process_frontpage, dict())
+    session.queue(Request('https://www.reviewguidelines.com/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -27,15 +26,15 @@ def process_frontpage(data, context, session):
                         for sub_cat1 in sub_cats1:
                             sub_name1 = sub_cat1.xpath('text()').string()
                             url = sub_cat1.xpath('@href').string()
-                            session.queue(Request(url, use='curl'), process_revlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                            session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
 
                     else:
                         url = sub_cat.xpath('a/@href').string()
-                        session.queue(Request(url, use='curl'), process_revlist, dict(cat=name + '|' + sub_name))
+                        session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name + '|' + sub_name))
 
             else:
                 url = cat.xpath('a/@href').string()
-                session.queue(Request(url, use='curl'), process_revlist, dict(cat=name))
+                session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
@@ -43,11 +42,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl'), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//li[@class="the-next-page"]/a/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl'), process_revlist, dict(context))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
@@ -76,14 +75,14 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//div[@class="review-final-score"]//span/@style').string()
     if grade_overall:
-        grade_overall = grade_overall.replace('width:', '').replace('%', '')
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
+        grade_overall = round(float(grade_overall.replace('width:', '').replace('%', '')) / 20, 1)
+        review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     grades = data.xpath('//div[@class="review-item"]')
     for grade in grades:
         grade_name = grade.xpath('h5/text()').string()
-        grade_value = grade.xpath('.//span/@style').string().replace('width:', '').replace('%', '')
-        review.grades.append(Grade(name=grade_name, value=float(grade_value), best=100.0))
+        grade_value = round(float(grade.xpath('.//span/@style').string().replace('width:', '').replace('%', '')) / 20, 1)
+        review.grades.append(Grade(name=grade_name, value=grade_value, best=5.0))
 
     pros = data.xpath('//strong[contains(., "PROS")][normalize-space(following-sibling::text())]')
     for pro in pros:
@@ -97,7 +96,7 @@ def process_review(data, context, session):
         if con:
             review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//div[@class="entry-content entry clearfix"]//h2[1]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    summary = data.xpath('(//div[@class="entry-content entry clearfix"]//p[not(@class)])[1]/strong[string-length() > 20]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
@@ -107,11 +106,12 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(@class or contains(., "PROS:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+        excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p[not(@class or contains(., "PROS:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="entry-content entry clearfix"]//p[not(@class)]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="entry-content entry clearfix"]//p[not(@class or contains(., "PROS:"))]//text()').string(multiple=True)
+
     if excerpt:
         if summary:
             excerpt = excerpt.replace(summary, '').strip()

@@ -11,7 +11,7 @@ from models.products import *
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request("https://www.salontopper.nl/"), process_frontpage, dict())
+    session.queue(Request("https://www.salontopper.nl/", use='curl', force_charset='utf-8'), process_frontpage, dict())
     # session.queue(Request("https://www.salontopper.nl/product/sebastian-professional-volupt-spray-150ml-2033"), process_product, dict(cat='cat', name='name', url='https://www.salontopper.nl/product/sebastian-professional-volupt-spray-150ml-2033'))
 
 

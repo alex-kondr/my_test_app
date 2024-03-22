@@ -12,7 +12,9 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(title=title, url=url))
+
+        if '[Videos]' not in title and '[Video]' not in title:
+            session.queue(Request(url), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//li[contains(@class, "page--next")]/a/@href').string()
     if next_url:
@@ -22,10 +24,13 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split(': Schneller Test')[0].split(':1 im Test:')[0].split(': Test ')[0].split(': Mein Langzeit-Test')[0].split('Honeycomb Tablet')[0].split(': ein Erfahrungsbericht')[0].split(' im ')[0].split(':')[-1].split('besteht Langzeit-Test')[0].replace(' Test', '').replace('PureView', '').replace('Test der bunten ', '').replace('[Videos]', '').replace('[Video]', '').replace('[UserReview]', '').replace('[AndroidPIT Exklusiv]', '').replace('von Kamera-Tests', '').replace('[Review]', '' ).replace('[REVIEW]', '').replace('Review', '').replace('[Hands-On]', '').replace('[IFA 2010]', '').replace('Produkttest', '').replace('Gadget Review - ', '').strip()
-    product.url = context['url']
-    product.ssid = product.url.split('/')[-1]
+    product.ssid = context['url'].split('/')[-1]
 
-    cats = data.xpath('//div[@class="articleContentWrapper"]/ul/li/a/text()[not(contains(., "Home"))]').strings()
+    product.url = data.xpath('//span[@class="np-offer__link np-offer__link--AMAZON"]/@data-href').string()
+    if not product.url:
+        product.url = context['url']
+
+    cats = data.xpath('//div[@class="articleContentWrapper"]/ul/li/a/text()[not(contains(., "Home") or contains(., "Mehr"))]').strings()
     if cats:
         product.category = '|'.join(cats)
     else:
@@ -34,7 +39,7 @@ def process_review(data, context, session):
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//time[@class="articlePublishedDate"]/@datetime').string()
