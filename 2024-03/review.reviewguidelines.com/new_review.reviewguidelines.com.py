@@ -82,7 +82,8 @@ def process_review(data, context, session):
     for grade in grades:
         grade_name = grade.xpath('h5/text()').string()
         grade_value = round(float(grade.xpath('.//span/@style').string().replace('width:', '').replace('%', '')) / 20, 1)
-        review.grades.append(Grade(name=grade_name, value=grade_value, best=5.0))
+        if grade_name and "overall" not in grade_name.lower():
+            review.grades.append(Grade(name=grade_name, value=grade_value, best=5.0))
 
     pros = data.xpath('//strong[contains(., "PROS")][normalize-space(following-sibling::text())]')
     for pro in pros:
