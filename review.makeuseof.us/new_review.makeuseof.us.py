@@ -84,7 +84,7 @@ def process_review(data, context, session):
             con = con.xpath('.//text()').string(multiple=True)
             review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(., "Verdict") or contains(., "Conclusion")]/following-sibling::p[not(@class or .//small or contains(., "for further details") or contains(., "would have received an email"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Verdict") or contains(., "Conclusion")]/following-sibling::p[not(@class or .//small or contains(., "for further details") or contains(., "would have received an email") or contains(., "You may enter by submitting") or contains(., "winner") or contains(., "winning"))]//text()').string(multiple=True)
     faqs = data.xpath('//h2[contains(., "FAQ")]/following-sibling::p[not(@class)]')
     if not conclusion:
         conclusion = data.xpath('//h2[contains(., "Should You Buy the")]/following-sibling::p[not(@class or .//small or contains(., "for further details") or contains(., "would have received an email"))]//text()').string(multiple=True)
@@ -102,7 +102,11 @@ def process_review(data, context, session):
     excerpt = data.xpath('//h2[contains(., "Verdict") or contains(., "Conclusion")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="content-block-regular"]//p[not(@class or .//small)]//text()').string(multiple=True)
+
     if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '')
+
         excerpt = excerpt.replace('[/recommend]', '').replace('[recommend]', '')
 
         review.add_property(type='excerpt', value=excerpt)
