@@ -6,6 +6,18 @@ import re
 XCAT = ['Behandlungen ', 'Beratung ', 'Hautberatungsteam', 'Werte', 'Magazin']
 
 
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
 def remove_emoji(string):
     emoji_pattern = re.compile("["
                                u"\U0001F600-\U0001F64F"  # emoticons
@@ -36,6 +48,8 @@ def run(context, session):
 
 
 def process_frontpage(data, context, session):
+    strip_namespace(data)
+
     cats = data.xpath('//div[@class="menu--container"]')
     for cat in cats:
         name = cat.xpath('.//a[@class="button--category"]/@title').string(multiple=True).replace('Zur Kategorie', '').strip()
@@ -59,6 +73,8 @@ def process_frontpage(data, context, session):
 
 
 def process_prodlist(data, context, session):
+    strip_namespace(data)
+
     prods = data.xpath('//div[@class="product--box"]')
     for prod in prods:
         ssid = prod.xpath('@data-ordernumber').string()
@@ -74,9 +90,7 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
-    revs_cnt = data.xpath('//span[@class="rating--count"]/text()').string()
-    if not revs_cnt or int(revs_cnt) < 1:
-        return
+    strip_namespace(data)
 
     product = Product()
     product.name = context['name']
@@ -89,9 +103,11 @@ def process_product(data, context, session):
     if ean and ean.isdigit() and len(ean) > 12:
         product.add_property(type='id.ean', value=ean)
 
-    context['product'] = product
+    revs_cnt = data.xpath('//span[@class="rating--count"]/text()').string()
+    if not revs_cnt or int(revs_cnt) > 0:
+        context['product'] = product
 
-    process_reviews(data, context, session)
+        process_reviews(data, context, session)
 
 
 def process_reviews(data, context, session):
