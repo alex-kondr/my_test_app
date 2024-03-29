@@ -10,10 +10,10 @@ def run(context, session):
 def process_frontpage(data, context, session):
     cats = data.xpath('//li[@id="menu-item-6974"]/ul[@class="sub-menu"]//a')
     if cats:
-        for cat in cats[::-1]:
+        for cat in cats:
             name = cat.xpath('text()').string()
             url = cat.xpath('@href').string()
-            session.queue(Request(url), process_prodlist, dict(cat=name))
+            session.queue(Request(url), process_prodlist, dict(cat='Beauty' + '|' + name))
 
 
 def process_prodlist(data, context, session):
@@ -25,15 +25,11 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
-    revs_cnt = data.xpath('//span[contains(., "Bewertungen")]/text()').string()
-    if not revs_cnt or int(revs_cnt.replace('Bewertungen', '')) < 1:
-        return
-
     product = Product()
     product.name = context['name']
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    product.category = context['cat']
+    product.category = context['cat'].replace('|Produkte', '')
 
     prod_json = data.xpath('''//script[contains(., '"@type":"Product"')]/text()''').string()
     if prod_json:
@@ -45,9 +41,11 @@ def process_product(data, context, session):
         if ean and ean.isdigit() and len(ean) > 12:
             product.add_property(type='id.ean', value=ean)
 
-    context['product'] = product
+    revs_cnt = data.xpath('//span[contains(., "Bewertungen")]/text()').string()
+    if revs_cnt and int(revs_cnt.replace('Bewertungen', '')) > 0:
+        context['product'] = product
 
-    process_reviews(data, context, session)
+        process_reviews(data, context, session)
 
 
 def process_reviews(data, context, session):

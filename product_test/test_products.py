@@ -258,7 +258,7 @@ class TestProduct:
         properties = self.product.get("product", {}).get("properties", {})
         ean = [property.get("value") for property in properties if property.get("type") == "id.ean"]
 
-        if ean and (len(ean[0]) < 11 or not ean[0].isdigit()):
+        if ean and (len(str(ean[0])) < 11 or not str(ean[0]).isdigit()):
             self.error_ean.append(properties)
 
     def test_review_title(self, xreview_title: list[str]=[]) -> None:
