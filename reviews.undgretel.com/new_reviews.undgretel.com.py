@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import simplejson
 
 
 XCAT = ['Gutscheine']
@@ -24,19 +25,19 @@ def process_prodlist(data, context, session):
         url = prod.xpath('.//a[@class="block overflow-hidden group grow empty:bg-gray-100"]/@href').string()
         session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
-###########
-def process_product(data, context, session):
-    revs_cnt = data.xpath('//span[contains(., "Bewertungen")]/text()').string()
-    if not revs_cnt or int(revs_cnt.replace('Bewertungen', '')) < 1:
-        return
+    next_url = data.xpath('//link[@rel="next"]/@href').string()
+    if next_url:
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
+
+def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.split('/')[-1]
     product.category = context['cat']
-
-    prod_json = data.xpath('''//script[contains(., '"@type":"Product"')]/text()''').string()
+###########
+    prod_json = data.xpath('''//script[contains(., '"product": {"id":')]/text()''').string()
     if prod_json:
         prod_json = simplejson.loads(prod_json)
 
@@ -46,9 +47,11 @@ def process_product(data, context, session):
         if ean and ean.isdigit() and len(ean) > 12:
             product.add_property(type='id.ean', value=ean)
 
-    context['product'] = product
+    revs_cnt = data.xpath('//div[contains(text(), "Reviews")]/text()').string()
+    if revs_cnt and int(revs_cnt.replace('Reviews', '')) > 0:
+        context['product'] = product
 
-    process_reviews(data, context, session)
+        process_reviews(data, context, session)
 
 
 def process_reviews(data, context, session):
