@@ -13,7 +13,7 @@ def run(context, session):
 
 def process_frontpage(data, context, session):
     cats = data.xpath('//span[contains(., "Products")]/following-sibling::ul[@class="flex flex-col mb-4"]//a')
-    for cat in cats[::-1]:
+    for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
 
@@ -39,12 +39,11 @@ def process_product(data, context, session):
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
     product.category = context['cat']
+    product.manufacturer = 'UND GRETEL'
 
     prod_json = data.xpath('''//script[contains(., '"product": {"id":')]/text()''').string()
     if prod_json:
         prod_json = simplejson.loads(prod_json)
-
-        product.manufacturer = prod_json.get('product', {}).get('vendor')
 
         ean = prod_json.get('product', {}).get('id')
         if ean:
@@ -54,7 +53,7 @@ def process_product(data, context, session):
 
     revs_cnt = data.xpath('//div[contains(text(), "Reviews")]/text()').string()
     if revs_cnt and int(revs_cnt.replace('Reviews', '').replace('.', '')) > 0:
-        revs_url = 'https://judge.me/reviews/reviews_for_widget?url=undgretel.myshopify.com&shop_domain=undgretel.myshopify.com&platform=shopify&page={next_page}&per_page=10&product_id={id}'.format(next_page=1, id=ean)
+        revs_url = 'https://judge.me/reviews/reviews_for_widget?url=undgretel.myshopify.com&shop_domain=undgretel.myshopify.com&platform=shopify&page=1&per_page=10&product_id={id}'.format(id=ean)
         session.do(Request(revs_url), process_reviews, dict(product=product, ean=ean))
 
 
@@ -62,9 +61,6 @@ def process_reviews(data, context, session):
     product = context['product']
 
     revs_json = simplejson.loads(data.content)
-    if not revs_json:
-        return
-
     new_data = data.parse_fragment(revs_json.get('html'))
 
     revs = new_data.xpath('//div[@class="jdgm-rev jdgm-divider-top"]')
