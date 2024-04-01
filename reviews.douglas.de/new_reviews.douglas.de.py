@@ -8,10 +8,10 @@ XCAT = ['MARKEN', 'OSTERN', 'SALE', 'Nachhaltigkeit', 'LUXUS', 'NEU', 'Beauty-St
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.douglas.de/de', use='curl', force_charset='utf-8'), process_fronpage, dict())
+    session.queue(Request('https://www.douglas.de/de', use='curl', options=options, force_charset='utf-8'), process_frontpage, dict())
 
 
-def process_fronpage(data, context, session):
+def process_frontpage(data, context, session):
     cats = data.xpath('//li[@class="navigation-main-entry" and .//a[normalize-space()]]')
     for cat in cats:
         name = cat.xpath('.//a[contains(@class, "navigation-main-entry__link")]/text()').string()
@@ -56,3 +56,74 @@ def process_prodlist(data, context, session):
         revs_cnt = prod.xpath('.//span[@data-testid="ratings-info"]')
         if revs_cnt:
             session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, manufacturer=manufacturer, url=url))
+
+
+def process_product(data, context, session):
+    product = Product()
+    product.name = context['name']
+    product.url = context['url']
+    product.ssid = product.url.split('/')[-1]
+    product.manufacturer = context['manufacturer']
+    product.sku = data.xpath('//div[contains(., "Art-Nr.")]/span[@class="classification__item"]/text()').string()
+
+    revs_url = 'https://www.douglas.de/jsapi/v2/products/bazaarvoice/reviews?baseProduct=' + product.ssid
+    session.queue(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
+
+
+def process_reviews(data, context, session):
+    product = context['product']
+
+    revs_json = simplejson.loads(data.content)
+    revs = revs_json.get('Results', [])
+    for rev in revs:
+        review = Review()
+        review.type = 'user'
+        review.url = product.url
+
+        date = rev.get('submissionTime')
+        if date:
+            review.date = date.split('T')[0]
+
+        author = rev.get('userNickname')
+        author_id = rev.get('authorId')
+        if author and author_id:
+                review.authors.append(Person(name=author, ssid=author_id))
+        elif author:
+                review.authors.append(Person(name=author, ssid=author))
+
+        grade_overall = rev.get('rating')
+        if grade_overall:
+            review.grades.append(type='overall', value=float(grade_overall), best=5.0)
+
+        hlp_yes = rev.get('totalPositiveFeedbackCount')
+        if hlp_yes and hlp_yes > 0:
+            review.add_property(type='helpful_votes', value=hlp_yes)
+
+        hlp_no = rev.get('totalNegativeFeedbackCount')
+        if hlp_no and hlp_no > 0:
+            review.add_property(type='not_helpful_votes', value=hlp_no)
+
+        title = rev.get('title')
+        excerpt = rev.get('reviewText')
+        if excerpt:
+            review.title = title
+        else:
+            excerpt = title
+
+        if excerpt:
+            review.add_property(type='excerpt', value=excerpt)
+
+            review.ssid = rev.get('id')
+            if not review.ssid:
+                review.ssid = review.digest() if author else review.digest(excerpt)
+
+            product.reviews.append(review)
+
+    offset = context.get('offset', 0) + 10
+    revs_cnt = revs_json.get('TotalResults')
+    if offset < revs_cnt:
+        next_page = context.get('page', 1) + 1
+        next_url = 'https://www.douglas.de/jsapi/v2/products/bazaarvoice/reviews?baseProduct={ssid}&page={next_page}'.format(ssid=product.ssid, page=next_page)
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product, offset=offset, page=next_page))
+    elif product.reviews:
+        session.emit(product)
