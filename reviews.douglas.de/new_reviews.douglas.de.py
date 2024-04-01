@@ -2,15 +2,22 @@ from agent import *
 from models.products import *
 
 
+XCAT = ['MARKEN', 'SALE', 'Nachhaltigkeit', 'LUXUS', 'NEU']
+
+
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.douglas.de/de', use='curl'), process_fronpage, dict())
+    session.queue(Request('https://www.douglas.de/de', use='curl', force_charset='utf-8'), process_fronpage, dict())
 
 
 def process_fronpage(data, context, session):
-    cats = data.xpath('')
+    cats = data.xpath('//li[@class="navigation-main-entry" and .//a[normalize-space()]]')
     for cat in cats:
-        name = cat.xpath('').string()
+        name = cat.xpath('.//a[contains(@class, "navigation-main-entry__link")]/text()').string()
+        sub_cats_id = cat.xpath('@data-uid').string()
+
+        if name not in XCAT:
+            url = 'https://www.douglas.de/api/v2/navigation/nodes/{sub_cats_id}/children'.format(sub_cats_id=sub_cats_id)
 
 
 
