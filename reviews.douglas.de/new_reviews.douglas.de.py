@@ -1,6 +1,9 @@
 from agent import *
 from models.products import *
 import simplejson
+import httplib
+
+httplib._MAXHEADERS = 1000
 
 
 XCAT = ['MARKEN', 'OSTERN', 'SALE', 'Nachhaltigkeit', 'LUXUS', 'NEU', 'Beauty-Storys', 'Douglas Beauty Tester', '']
@@ -8,7 +11,7 @@ XCAT = ['MARKEN', 'OSTERN', 'SALE', 'Nachhaltigkeit', 'LUXUS', 'NEU', 'Beauty-St
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.douglas.de/de', use='curl', options=options, force_charset='utf-8'), process_frontpage, dict())
+    session.queue(Request('https://www.douglas.de/de', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -19,7 +22,7 @@ def process_frontpage(data, context, session):
 
         if name not in XCAT:
             url = 'https://www.douglas.de/api/v2/navigation/nodes/{sub_cats_id}/children'.format(sub_cats_id=sub_cats_id)
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_catlist, dict(cat=name))
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_catlist, dict(cat=name))
 
 
 def process_catlist(data, context, session):
@@ -33,17 +36,22 @@ def process_catlist(data, context, session):
         if sub_cats1 and sub_name not in XCAT:
             for sub_cat1 in sub_cats1:
                 sub_name1 = sub_cat1.get('title')
-                url = 'https://www.douglas.de' + sub_cat1.get('entries', [{}])[0].get('component', {}).get('otherProperties', {}).get('url')
+                url_data = sub_cat.get('entries')
 
-                if 'Alle' not in sub_name1:
-                    session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + sub_name + '|' + sub_name1))
-                else:
-                    url = 'https://www.douglas.de' + sub_cat.get('entries', [{}])[0].get('component', {}).get('otherProperties', {}).get('url')
-                    session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + sub_name))
+                if url_data and len(url_data) > 0:
+                    url = 'https://www.douglas.de' + url_data[0].get('component', {}).get('otherProperties', {}).get('url')
+
+                    if 'Alle' not in sub_name1:
+                        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat=context['cat'] + '|' + sub_name + '|' + sub_name1))
+                    else:
+                        url = 'https://www.douglas.de' + sub_cat.get('entries', [{}])[0].get('component', {}).get('otherProperties', {}).get('url')
+                        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat=context['cat'] + '|' + sub_name))
 
         elif sub_name not in XCAT:
-            url = 'https://www.douglas.de' + sub_cat.get('entries', [{}])[0].get('component', {}).get('otherProperties', {}).get('url')
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + sub_name))
+            url_data = sub_cat.get('entries')
+            if url_data and len(url_data) > 0:
+                url = 'https://www.douglas.de' + url_data[0].get('component', {}).get('otherProperties', {}).get('url')
+                session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat=context['cat'] + '|' + sub_name))
 
 
 def process_prodlist(data, context, session):
@@ -55,7 +63,7 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.xpath('.//span[@data-testid="ratings-info"]')
         if revs_cnt:
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, manufacturer=manufacturer, url=url))
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_product, dict(context, name=name, manufacturer=manufacturer, url=url))
 
 
 def process_product(data, context, session):
@@ -67,7 +75,7 @@ def process_product(data, context, session):
     product.sku = data.xpath('//div[contains(., "Art-Nr.")]/span[@class="classification__item"]/text()').string()
 
     revs_url = 'https://www.douglas.de/jsapi/v2/products/bazaarvoice/reviews?baseProduct=' + product.ssid
-    session.queue(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
+    session.queue(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -93,7 +101,7 @@ def process_reviews(data, context, session):
 
         grade_overall = rev.get('rating')
         if grade_overall:
-            review.grades.append(type='overall', value=float(grade_overall), best=5.0)
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
         hlp_yes = rev.get('totalPositiveFeedbackCount')
         if hlp_yes and hlp_yes > 0:
@@ -123,7 +131,8 @@ def process_reviews(data, context, session):
     revs_cnt = revs_json.get('TotalResults')
     if offset < revs_cnt:
         next_page = context.get('page', 1) + 1
-        next_url = 'https://www.douglas.de/jsapi/v2/products/bazaarvoice/reviews?baseProduct={ssid}&page={next_page}'.format(ssid=product.ssid, page=next_page)
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product, offset=offset, page=next_page))
+        next_url = 'https://www.douglas.de/jsapi/v2/products/bazaarvoice/reviews?baseProduct={ssid}&page={page}'.format(ssid=product.ssid, page=next_page)
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product, offset=offset, page=next_page))
+
     elif product.reviews:
         session.emit(product)
