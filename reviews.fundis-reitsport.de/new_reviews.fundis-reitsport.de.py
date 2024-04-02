@@ -55,7 +55,7 @@ def process_product(data, context, session):
     product.url = context['url']
     product.ssid = data.xpath('//meta[@itemprop="productID"]/@content').string()
     product.category = context['cat']
-    product.manufacturer = data.xapth('//div[@class="product--supplier"]//img/@alt').string()
+    product.manufacturer = data.xpath('//div[@class="product--supplier"]//img/@alt').string()
     product.sku = data.xpath('//span[@itemprop="sku"]/text()').string()
 
     mpn = data.xpath('//meta[@itemprop="mpn"]/@content').string()
