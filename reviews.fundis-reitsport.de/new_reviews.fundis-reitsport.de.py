@@ -8,10 +8,10 @@ XCAT = ['Easter Deals', 'SALE %', 'Marken', 'Geschenke', 'Blog']
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.fundis-reitsport.de/'), process_fronpage, dict())
+    session.queue(Request('https://www.fundis-reitsport.de/'), process_frontpage, dict())
 
 
-def process_fronpage(data, context, session):
+def process_frontpage(data, context, session):
     cats = data.xpath('//ul[contains(@class, "is--level0") and li/ul]/li')
     for cat in cats:
         name = cat.xpath('a/span[@class="navigation--link-label"]//text()').string(multiple=True)
@@ -62,7 +62,7 @@ def process_product(data, context, session):
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
 
-    ean = data.xpath('//tr[contains(., "EAN")]/td[@class="product--properties-value"]/text()').string()
+    ean = data.xpath('//meta[@itemprop="gtin13"]/@content').string()
     if ean and ean.isdigit() and len(ean) > 12:
         product.add_property(type='id.ean', value=ean)
 
@@ -70,7 +70,7 @@ def process_product(data, context, session):
     if revs_cnt and int(revs_cnt) > 0:
         revs_url = 'https://apps.fundis-reitsport.de/api/trusted-shops/ratings'
         options = '''-X POST -H 'Content-Type: application/json' --data-raw '{"id":"''' + product.sku + '","shopId":1}\''
-        session.do(Request(revs_url, use='curl', options=options), process_reviews, dict(product=product))
+        session.do(Request(revs_url, use='curl', options=options, max_age=0), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -99,8 +99,10 @@ def process_reviews(data, context, session):
         if excerpt and len(excerpt) > 1:
             review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = rev.get('id')
-            if not review.ssid:
+            ssid = rev.get('id')
+            if review.ssid:
+                review.ssid = ssid.replace('rev-', '')
+            else:
                 review.ssid = review.digest() if author else review.digest(excerpt)
 
             product.reviews.append(review)
@@ -108,4 +110,4 @@ def process_reviews(data, context, session):
     if product.reviews:
         session.emit(product)
 
-#no next page
+# no next page
