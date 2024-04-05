@@ -26,10 +26,10 @@ def process_frontpage(data, context, session):
 
                     if sub_name1 not in XCAT:
                         url = sub_cat.xpath('@href').string()
-                        session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                        session.queue(Request(url + '?listenlimit=0,50'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
                 else:
                     url = sub_cat.xpath('a[@class="nav_desktop_level_2 navi"]/@href').string()
-                    session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
+                    session.queue(Request(url + '?listenlimit=0,50'), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
 def process_prodlist(data, context, session):
@@ -41,3 +41,39 @@ def process_prodlist(data, context, session):
         revs_cnt = prod.xpath('.//div[@class="_c"]//span[not(@class)]/text()').string()
         if revs_cnt and int(revs_cnt.strip('()')) > 0:
             session.queue(Request(url), process_product, dict(context, name=name, url=url))
+
+    next_url = data.xpath('//a[@rel="next"]/@href').string()
+    if next_url:
+        session.queue(Request(next_url), process_prodlist, dict(context))
+
+
+def process_product(data, context, session):
+    product = Product()
+    product.name = context['name']
+    product.url = context['url']
+    product.category = context['cat']
+    product.manufacturer = data.xpath('//head[meta[@itemprop="sku"]]/meta[@itemprop="name"]/@content').string()
+    product.ssid = data.xpath('//meta[@itemprop="sku"]/@content').string()
+    product.sku = product.ssid
+
+    mpn = data.xpath('//meta[@itemprop="mpn"]/@content').string()
+    if mpn:
+        product.add_property(type='id.manufacturer', value=mpn)
+
+    ean = data.xpath('//div[contains(., "EAN")]/following-sibling::div[@class="_td last"]//span/text()').string()
+    if ean and ean.isdigit() and len(ean) == 13:
+        product.add_property(type='id.ean')
+
+    context['product'] = product
+
+    process_reviews(data, context, session)
+
+
+def process_reviews(data, context, session):
+    product = context['product']
+
+    revs = data.xpath('')
+    for rev in revs:
+        review = Review()
+        review.type = 'user'
+        review.url = product.url
