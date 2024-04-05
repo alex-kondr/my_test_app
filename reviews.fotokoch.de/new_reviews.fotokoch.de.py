@@ -2,11 +2,11 @@ from agent import  *
 from models.products import *
 
 
-XCAT = ['Second Hand', 'AREA', 'Aktionen %', 'Workshops', 'Blog', 'alle', '+ weitere']
+XCAT = ['Second Hand', 'AREA', 'Aktionen %', 'Workshops', 'Blog', 'alle', '+ weitere', 'Geschenkgutscheine']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.fotokoch.de/index.html'), process_frontpage, dict())
 
 
@@ -20,21 +20,17 @@ def process_frontpage(data, context, session):
             for sub_cat in sub_cats:
                 sub_name = sub_cat.xpath('span[@class="nav_backward"]/span/text()').string()
 
-                sub_cats1 = sub_cat.xpath('a[@class="navi"]')
-                for sub_cat1 in sub_cats1:
-                    sub_name1 = sub_cat1.xpath('text()').string()
-                    url = sub_cat1.xpath('@href').string()
+                if sub_name not in XCAT:
+                    sub_cats1 = sub_cat.xpath('a[@class="navi"]')
+                    for sub_cat1 in sub_cats1:
+                        sub_name1 = sub_cat1.xpath('text()').string()
+                        url = sub_cat1.xpath('@href').string()
 
-                    if sub_name1 not in XCAT:
-                        
-                        print('url', url)
-                        print('name', name)
-                        print('name1', sub_name)
-                        print('name2', sub_name1)
-                        session.queue(Request(url + '?listenlimit=0,50'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
-                else:
-                    url = sub_cat.xpath('a[@class="nav_desktop_level_2 navi"]/@href').string()
-                    session.queue(Request(url + '?listenlimit=0,50'), process_prodlist, dict(cat=name + '|' + sub_name))
+                        if sub_name1 not in XCAT:
+                            if sub_name:
+                                session.queue(Request(url + '?listenlimit=0,50'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                            else:
+                                session.queue(Request(url + '?listenlimit=0,50'), process_prodlist, dict(cat=name + '|' + sub_name1))
 
 
 def process_prodlist(data, context, session):
@@ -43,7 +39,7 @@ def process_prodlist(data, context, session):
         name = prod.xpath('.//div[@class="_b"]//a/@title').string()
         url = prod.xpath('.//div[@class="_b"]//a/@href').string()
 
-        revs_cnt = prod.xpath('.//div[@class="_c"]//span[not(@class)]/text()').string()
+        revs_cnt = prod.xpath('.//div[@class="_c"]//text()[regexp:test(., "^\(\d+\)$")]').string()
         if revs_cnt and int(revs_cnt.strip('()')) > 0:
             session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
@@ -58,7 +54,12 @@ def process_product(data, context, session):
     product.url = context['url']
     product.category = context['cat']
     product.manufacturer = data.xpath('//head[meta[@itemprop="sku"]]/meta[@itemprop="name"]/@content').string()
-    product.ssid = data.xpath('//meta[@itemprop="sku"]/@content').string()
+
+    ssid = data.xpath('//meta[@itemprop="sku"]/@content').string()
+    if not ssid:
+        ssid = product.url.split('_')[-1].replace('.html', '')
+
+    product.ssid = ssid
     product.sku = product.ssid
 
     mpn = data.xpath('//meta[@itemprop="mpn"]/@content').string()
