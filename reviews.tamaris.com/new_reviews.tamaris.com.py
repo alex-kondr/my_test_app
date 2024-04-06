@@ -7,7 +7,7 @@ XCAT = ['New arrivals', 'Collections', 'Sale']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://tamaris.com/en-ES/'), process_frontpage, dict())
 
 
@@ -79,7 +79,7 @@ def process_reviews(data, context, session):
         author = rev.get('user', {}).get('firstName', '') + ' ' + rev.get('user', {}).get('lastName', '')
         author_ssid = rev.get('user', {}).get('id')
         if author and author_ssid:
-            review.authors.append(Person(name=author.strip(), ssid=author_ssid))
+            review.authors.append(Person(name=author.strip(), ssid=str(author_ssid)))
         elif author:
             review.authors.append(Person(name=author.strip(), ssid=author))
 
@@ -113,15 +113,15 @@ def process_reviews(data, context, session):
         if excerpt and len(excerpt) > 1:
             review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = rev.get('id')
-            if not review.ssid:
+            ssid = rev.get('id')
+            if review.ssid:
+                review.ssid = str(ssid)
+            else:
                 review.ssid = review.digest() if author else review.digest(excerpt)
 
             product.reviews.append(review)
 
-    revs_cnt = revs_json.get('total')
-    if int(revs_cnt) > len(revs):
-        raise ValueError('!!!!!!!!', product.url)
-
     if product.reviews:
         session.emit(product)
+
+# no next page
