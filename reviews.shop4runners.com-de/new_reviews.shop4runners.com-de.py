@@ -6,7 +6,7 @@ XCAT = ['Laufen', 'WEITERE', 'NEUHEITEN', 'BESTSELLER', 'Sale', 'Bestseller']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://shop4runners.com/'), process_frontpage, dict())
 
 
@@ -36,10 +36,6 @@ def process_frontpage(data, context, session):
                             url = sub_cat1.xpath('@href').string()
                             session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
 
-                else:
-                    url = sub_cat.xpath('div/div/a[@class="nav-item__title uppercase no-underline"]/@href').string()
-                    session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
-
 
 def process_prodlist(data, context, session):
     prods = data.xpath('//div[contains(@class, "product-info")]')
@@ -61,7 +57,7 @@ def process_product(data, context, session):
     product.name = context['name']
     product.url = context['url']
     product.ssid = product.url.split('-')[-1]
-    product.sku = data.xpath('//meta[@itemprop="sku"]/@coontent').string()
+    product.sku = data.xpath('//meta[@itemprop="sku"]/@content').string()
     product.category = context['cat']
     product.manufacturer = data.xpath('//meta[@itemprop="sku"]/preceding-sibling::meta[@itemprop="name"]/@content').string()
 
@@ -69,8 +65,8 @@ def process_product(data, context, session):
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
 
-    ean = data.xpath('//section/@data-loadbee-gtin').striing()
-    if ean and ean.isdigit() and len(ean) > 12:
+    ean = data.xpath('//section/@data-loadbee-gtin').string()
+    if ean:
         product.add_property(type='id.ean', value=ean)
 
     context['product'] = product
@@ -80,12 +76,6 @@ def process_product(data, context, session):
 
 def process_reviews(data, context, session):
     product = context['product']
-    
-    revs_cnt = int(data.xpath('//span[@class="reviews text-base-v2 relative -top-px"]/text()').string().strip('()').split()[0])
-    if revs_cnt > data.xpath('count(//div[@itemprop="review"])'):
-        raise ValueError(">>>>>>>>>>>>>>>")
-    elif revs_cnt == data.xpath('count(//div[@itemprop="review"])'):
-        print("Good")
 
     revs = data.xpath('//div[@itemprop="review"]')
     for rev in revs:
@@ -100,7 +90,7 @@ def process_reviews(data, context, session):
 
         grade_overall = rev.xpath('count(.//div[@class="rating-summary__star"])')
         if grade_overall:
-            review.grades(Grade(type='overall', value=grade_overall, best=5.0))
+            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
         title = rev.xpath('div[@itemprop="name"]//text()').string(multiple=True)
         excerpt = rev.xpath('.//div[@itemprop="description"]//text()').string(multiple=True)
