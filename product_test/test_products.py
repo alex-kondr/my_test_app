@@ -119,8 +119,8 @@ class TestProduct:
         self.xproduct_names_category = ["review", "test", "\uFEFF", "\ufeff", "...", "•", "cable", "análise", u"U000", u"&amp"]
         self.xproduct_names_category_start_end = ["-", "+"]
         self.xreview_title = ["\uFEFF", "\ufeff", u"U000", u"&amp"]
-        self.xreview_excerpt = ["Conclusion", "Verdict", "\uFEFF", "\ufeff", "Summary", "•", "Fazit", "href=", u"U000", u"&amp"]
-        self.xreview_pros_cons = ["-", "+", "•", "none found", "null", 'n/a', 'n\\a', u"U000", u"&amp"]# 'na', 'no',]
+        self.xreview_excerpt = ["Conclusion", "Verdict", "\uFEFF", "\ufeff", "Summary", "•", "Fazit", "href=", u"U000", u"&amp", "Les plus", "Les moins", "Résumé", "►"]
+        self.xreview_pros_cons = ["-", "+", "•", "►", "none found", "null", 'n/a', 'n\\a', u"U000", u"&amp"]# 'na', 'no',]
         self.path = Path(f"product_test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
         self.product = None
