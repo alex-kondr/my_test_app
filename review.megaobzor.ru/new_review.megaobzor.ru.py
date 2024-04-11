@@ -38,7 +38,7 @@ def process_review(data, context, session):
 
     rev_json = data.xpath('//script[@type="application/ld+json"]/text()').string()
     if rev_json:
-        rev_json = simplejson.loads(rev_json.replace('17,3"', "17,3'"))
+        rev_json = simplejson.loads(rev_json.replace('17,3" ', "17,3' ").replace('11" ', "11' "))
 
         date = rev_json.get('datePublished')
         if date:
