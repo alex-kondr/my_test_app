@@ -33,12 +33,13 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
+    review.title = context['title']
     review.url = product.url
     review.ssid = product.ssid
 
     rev_json = data.xpath('//script[@type="application/ld+json"]/text()').string()
     if rev_json:
-        rev_json = simplejson.loads(rev_json.replace('17,3" ', "17,3' ").replace('11" ', "11' "))
+        rev_json = simplejson.loads(rev_json.replace(context['title'], ''))
 
         date = rev_json.get('datePublished')
         if date:
@@ -67,7 +68,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[@id="bodytext"]/text()[not(contains(., "Реклама"))]').string(multiple=True)
     if excerpt:
         if summary:
-            excerpt = excerpt.replace(summary, '')
+            excerpt = excerpt.replace(summary, '').strip()
 
         review.add_property(type='excerpt', value=excerpt)
 
