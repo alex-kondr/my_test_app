@@ -116,7 +116,7 @@ class TestProduct:
         Path("product_test/error").mkdir(exist_ok=True)
         self.products = product.file.get("products")
         self.agent_name = product.agent_name
-        self.xproduct_names_category = ["review", "test", "\uFEFF", "\ufeff", "...", "•", "cable", "análise", u"U000", u"&amp"]
+        self.xproduct_names_category = ["review", "test", "\uFEFF", "\ufeff", "...", "•", "cable", "análise", u"U000", u"&amp", "обзор"]
         self.xproduct_names_category_start_end = ["-", "+"]
         self.xreview_title = ["\uFEFF", "\ufeff", u"U000", u"&amp"]
         self.xreview_excerpt = ["Conclusion", "Verdict", "\uFEFF", "\ufeff", "Summary", "•", "Fazit", "href=", u"U000", u"&amp", "Les plus", "Les moins", "Résumé", "►"]
