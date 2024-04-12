@@ -5,7 +5,7 @@ import simplejson
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('http://megaobzor.com/news-topic-15-page-1.html'), process_revlist, dict())
 
 
