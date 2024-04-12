@@ -25,9 +25,7 @@ def process_review(data, context, session):
     product.category = "Технологии"
 
     title = data.xpath('//meta[@name="title"]/@content').string()
-    product.name = data.xpath('//meta[@property="article:tag"]/@content').string()
-    if not product.name:
-        product.name = title.replace('Предварительный обзор:', '').replace('Предварительный обзор', '').replace('Обзор наушников', '').replace('Обзор', '').split(':')[0]
+    product.name = title.replace('Предварительный обзор:', '').replace('Предварительный обзор', '').replace('Stuff-обзор:', '').replace('Взгляд от Stuff:', '').replace('WHF-обзор:', '').replace('Взгляд журнала Stuff:', '').replace('Обзор наушников', '').replace('Мини-обзор:', '').replace('Блиц-обзор', '').replace('Обзор:', '').replace('Обзор', '').split(':')[0].split(' - ')[0].split(' — ')[0].strip()
 
     review = Review()
     review.type = 'pro'
@@ -49,18 +47,25 @@ def process_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
+    grades = data.xpath('//div[@class="article-part"]//tr[td[@colspan="1"] and not(@style)]')
+    for grade in grades:
+        grade_name = grade.xpath('td/strong/text()').string()
+        grade_val = grade.xpath('count(.//i[@class="td-icon-star"])')
+        if grade_name and grade_val:
+            review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
+
     pros = data.xpath('//div[@class="verdict-info-top plus"]/following-sibling::ul/li')
     if not pros:
         pros = data.xpath('(//h3[contains(., "Плюсы")]/following-sibling::ul)[1]/li')
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
+        pro = pro.xpath('.//text()').string(multiple=True).replace('•', '').strip()
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[@class="verdict-info-top minus"]/following-sibling::ul/li')
     if not cons:
         cons = data.xpath('(//h3[contains(., "Минусы")]/following-sibling::ul)[1]/li')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
+        con = con.xpath('.//text()').string(multiple=True).replace('•', '').strip()
         review.add_property(type='cons', value=con)
 
     summary = data.xpath('//meta[@name="description"]/@content').string()
@@ -78,7 +83,13 @@ def process_review(data, context, session):
         excerpt = data.xpath('//h1[contains(., "Часто задаваемые вопросы")]/preceding-sibling::p[not(script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="article-part"]/p[not(script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+
     if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
