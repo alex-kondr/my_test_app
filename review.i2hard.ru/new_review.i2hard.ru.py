@@ -23,7 +23,7 @@ def process_review(data, context, session):
     product = Product()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    product.name = context['title'].replace('Обзор и тестирование', '').replace('Сравнительный обзор', '').replace('Обзор и тест', '').replace('Видеообзор', '').replace('Обзор', '').replace('Тест', '')
+    product.name = context['title'].replace('Обзор и тестирование', '').replace('Сравнительный обзор', '').replace('Сводный обзор', '').replace('Сравнительный тест', '').replace('Обзор и тест', '').replace('Видеообзор', '').replace('Обзор', '').replace('Тест', '')
 
     product.category = data.xpath('//div[@class="info__subcategories-item"]/a/text()').string()
     if not product.category:
@@ -41,11 +41,15 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     pros = data.xpath('(//h4[contains(., "Плюсы:")]|//p[strong[contains(., "Достоинства:")]])/following-sibling::div[@class="sp-lists"][1]/ul/li')
+    if not pros:
+        pros = data.xpath('//span[contains(., "Плюсы:")]/following-sibling::ul[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('(//h4[contains(., "Минусы:")]|//p[strong[contains(., "Недостатки:")]])/following-sibling::div[@class="sp-lists"][1]/ul/li')
+    if not cons:
+        cons = data.xpath('//span[contains(., "Минусы:")]/following-sibling::ul[1]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
@@ -54,11 +58,11 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Итоги") or contains(., "Заключение")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2[contains(., "Итоги") or contains(., "Заключение") or contains(., "Вывод")]/following-sibling::p//text()|//h2[contains(., "Итоги") or contains(., "Заключение") or contains(., "Вывод")]/following-sibling::text())[not(contains(., "Автор статьи") or contains(., "Средняя цена"))]').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Итоги") or contains(., "Заключение")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Итоги") or contains(., "Заключение") or contains(., "Вывод")]/preceding-sibling::p//text()|//h2[contains(., "Итоги") or contains(., "Заключение") or contains(., "Вывод")]/preceding-sibling::text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="article__text"]/p//text()').string(multiple=True)
     if excerpt:
