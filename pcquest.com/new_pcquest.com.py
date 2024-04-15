@@ -3,7 +3,6 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.pcquest.com/reviews'), process_revlist, dict())
 
 
@@ -25,10 +24,10 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace(' Review', '').strip()
+    product.name = context['title'].replace('Gaming- Review', '').replace('Review:', '').replace(':Review', '').replace(' Review', '').replace('Review of', '').replace('review: ', '').replace('review-', '').replace(' review', '').replace(' REVIEW', '').strip()
     product.url = context['url']
 
-    product.ssid = product.url.split('-')[-1].replace('/')
+    product.ssid = product.url.split('-')[-1].replace('/', '')
     if not product.ssid.isdigit():
         product.ssid = product.url.split('/')[-2].replace('-review', '')
 
@@ -76,36 +75,27 @@ def process_review(data, context, session):
     for grade in grades:
         grade_name = grade.xpath('h4/span/text()').string()
         grade_val = grade.xpath('p//@src').string().split('/')[-1].replace('.png', '')
-        if '_h' in grade_val:
-            grade_val = float(grade_val.replace('_h', '')) + 0.5
+        if 'Please+Choose+Rating' not in grade_val:
+            if '_h' in grade_val:
+                grade_val = float(grade_val.replace('_h', '')) + 0.5
 
-        review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
+            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
 
-    pros = data.xpath('//p[@class="pros"]/span')
+    pros = data.xpath('//p[@class="pros"]/span/text()').strings()
+    if not pros:
+        pros = data.xpath('//p[contains(., "Pros")]/following-sibling::p[1]//text()[not(contains(., "None"))]').strings()
     for pro in pros:
-        pro = pro.xpath('text()').string().replace('None', '').strip()
+        pro = pro.replace('None', '').strip()
         if pro and len(pro) > 1:
             review.add_property(type='pros', value=pro)
 
-    if not pros:
-        pros = data.xpath('//p[contains(., "Pros")]/following-sibling::p[1]//text()[not(contains(., "None"))]').strings()
-        for pro in pros:
-            pro = pro.replace('None', '').strip()
-            if pro and len(pro) > 1:
-                review.add_property(type='pros', value=pro)
-
-    cons = data.xpath('//p[@class="cons"]/span')
-    for con in cons:
-        con = con.xpath('text()').string().replace('None', '').strip()
-        if con and len(con) > 1:
-            review.add_property(type='cons', value=con)
-
+    cons = data.xpath('//p[@class="cons"]/span/text()').strings()
     if not cons:
         cons = data.xpath('//p[contains(., "Cons")]/following-sibling::p[1]//text()[not(contains(., "None"))]').strings()
-        for con in cons:
-            con = con.replace('None', '').strip()
-            if con and len(con) > 1:
-                review.add_property(type='cons', value=con)
+    for con in cons:
+        con = con.replace('None', '').strip()
+        if con and len(con) > 1:
+            review.add_property(type='cons', value=con)
 
     summary = data.xpath('//h2[@class="secondary_font"]//text()').string(multiple=True)
     if summary:
@@ -121,8 +111,10 @@ def process_review(data, context, session):
     if excerpt:
         if summary:
             excerpt = excerpt.replace(summary, '')
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '')
 
-        review.add_property(type='excerpt', value=excerpt)
+        review.add_property(type='excerpt', value=excerpt.strip())
 
         product.reviews.append(review)
 
