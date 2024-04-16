@@ -1,14 +1,39 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
 
 
-XCAT = ['New arrivals', 'Collections', 'Sale']
+XCAT = ['Neuheiten', 'Kollektionen', 'Sale']
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://tamaris.com/en-ES/'), process_frontpage, dict())
+    session.queue(Request('https://tamaris.com/de-CH/'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -55,14 +80,14 @@ def process_product(data, context, session):
     product.manufacturer = 'Tamaris'
     product.category = context['cat']
 
-    if context['mpn']:
-        product.add_property(type='id.manufacturer', value=context['mpn'])
-
     if context['ean']:
         product.add_property(type='id.ean', value=context['ean'])
 
-    revs_url = 'https://cdn-ws.turnto.eu/v5/sitedata/7ow2UbXsJQJAP18site/{mpn}/r/relatedReview/en_IE/0/9999/RECENT?'.format(mpn=context['mpn'])
-    session.queue(Request(revs_url), process_reviews, dict(product=product))
+    if context['mpn']:
+        product.add_property(type='id.manufacturer', value=context['mpn'])
+
+        revs_url = 'https://cdn-ws.turnto.eu/v5/sitedata/7ow2UbXsJQJAP18site/{mpn}/r/relatedReview/en_IE/0/9999/RECENT?'.format(mpn=context['mpn'])
+        session.queue(Request(revs_url), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -76,12 +101,12 @@ def process_reviews(data, context, session):
         review.url = product.url
         review.date = rev.get('dateCreatedFormatted')
 
-        author = rev.get('user', {}).get('firstName', '') + ' ' + rev.get('user', {}).get('lastName', '')
+        author = (rev.get('user', {}).get('firstName', '') + ' ' + rev.get('user', {}).get('lastName', '')).strip()
         author_ssid = rev.get('user', {}).get('id')
         if author and author_ssid:
-            review.authors.append(Person(name=author.strip(), ssid=str(author_ssid)))
+            review.authors.append(Person(name=author, ssid=str(author_ssid)))
         elif author:
-            review.authors.append(Person(name=author.strip(), ssid=author))
+            review.authors.append(Person(name=author, ssid=author))
 
         grade_overall = rev.get('rating')
         if grade_overall:
@@ -110,16 +135,19 @@ def process_reviews(data, context, session):
         else:
             excerpt = title
 
-        if excerpt and len(excerpt) > 1:
-            review.add_property(type='excerpt', value=excerpt)
+        if excerpt:
+            excerpt = remove_emoji(excerpt.replace('<br />', ''))
 
-            ssid = rev.get('id')
-            if review.ssid:
-                review.ssid = str(ssid)
-            else:
-                review.ssid = review.digest() if author else review.digest(excerpt)
+            if len(excerpt) > 1:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                ssid = rev.get('id')
+                if review.ssid:
+                    review.ssid = str(ssid)
+                else:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
+
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)

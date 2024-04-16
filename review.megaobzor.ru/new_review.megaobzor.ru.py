@@ -55,10 +55,6 @@ def process_review(data, context, session):
             author = author.split('Автор -')[-1].split('Размещено')[0].strip('.').strip()
             review.authors.append(Person(name=author, ssid=author))
 
-    summary = data.xpath('//p[@class="cent"][1]/preceding-sibling::text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
     conclusion = data.xpath('//h3[contains(., "Итоги")]/following-sibling::text()[not(contains(., "Реклама"))]').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
@@ -67,9 +63,6 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//div[@id="bodytext"]/text()[not(contains(., "Реклама"))]').string(multiple=True)
     if excerpt:
-        if summary:
-            excerpt = excerpt.replace(summary, '').strip()
-
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

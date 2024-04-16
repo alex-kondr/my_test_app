@@ -81,12 +81,25 @@ def process_review(data, context, session):
 
             review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
 
+    grades = data.xpath('//h3[contains(., "Rating")]/following-sibling::p[span[strong] and contains(., "/")]/span')
+    for grade in grades:
+        grade = grade.xpath('.//text()').string(multiple=True)
+        grade_name = grade.split(':')[0].strip()
+        grade_val = float(grade.split(':')[-1].split('/')[0])
+        review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
+
     pros = data.xpath('//p[@class="pros"]/span/text()').strings()
     if not pros:
         pros = data.xpath('//p[contains(., "Pros")]/following-sibling::p[1]//text()[not(contains(., "None"))]').strings()
     for pro in pros:
         pro = pro.replace('None', '').strip()
         if pro and len(pro) > 1:
+            review.add_property(type='pros', value=pro)
+
+    if not pros:
+        pros = data.xpath('//h3[contains(., "Pros")]/following-sibling::ul[1]/li')
+        for pro in pros:
+            pro = pro.xpath('.//text()').string(multiple=True)
             review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//p[@class="cons"]/span/text()').strings()
@@ -97,6 +110,12 @@ def process_review(data, context, session):
         if con and len(con) > 1:
             review.add_property(type='cons', value=con)
 
+    if not cons:
+        cons = data.xpath('//h3[contains(., "Cons")]/following-sibling::ul[1]/li')
+        for con in cons:
+            con = con.xpath('.//text()').string(multiple=True)
+            review.add_property(type='cons', value=con)
+
     summary = data.xpath('//h2[@class="secondary_font"]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
@@ -104,10 +123,21 @@ def process_review(data, context, session):
     conclusion = data.xpath('//p[@class="bottomline"]/span/text()').string()
     if not conclusion:
         conclusion = data.xpath('//p[contains(., "Bottom Line")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@id="postContent"]/p//text()').string(multiple=True)
+    excerpt = data.xpath('//h3[contains(., "Pros")]/preceding-sibling::p[not(span[strong])]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h3[contains(., "Cons")]/preceding-sibling::p[not(span[strong])]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h3[contains(., "Rating")]/preceding-sibling::p[not(span[strong])]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p[not(span[strong])]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@id="postContent"]/p[not(span[strong])]//text()').string(multiple=True)
     if excerpt:
         if summary:
             excerpt = excerpt.replace(summary, '')

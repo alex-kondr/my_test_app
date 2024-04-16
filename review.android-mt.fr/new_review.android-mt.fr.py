@@ -27,7 +27,9 @@ def process_review(data, context, session):
     if not product.name:
         product.name = context['title'].replace('Promo et test de', '').replace('Test Express :', '').replace('Test EXCLUSIF du', '').replace('Test de', '').replace('Test du', '').replace('[Test ]', '').replace('Test :', '').replace('Test :', '').replace('Test', '').split(':')[0]
 
-    product.url = data.xpath('//a[contains(., "Découvrir l’offre")]/@href').string()
+    product.url = data.xpath('//div[@class="boutonblanc"]/a/@href').string()
+    if not product.url:
+        product.url = data.xpath('//a[contains(., "Découvrir l’offre")]/@href').string()
     if not product.url:
         product.url = data.xpath('//p[strong[contains(., "Site")]]/a/@href').string()
     if not product.url:
@@ -70,10 +72,6 @@ def process_review(data, context, session):
         grade_val = float(grade_val.replace(',', '.').strip('.'))
         review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
 
-    summary = data.xpath('//div[@class="excerpt"]/p//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
     pros = data.xpath('//div[@class="plus"]//li|//h5[contains(., "Les plus")]/following-sibling::ul[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -86,7 +84,7 @@ def process_review(data, context, session):
 
     cons = data.xpath('//div[@class="moins"]//li|//h5[contains(., "Les moins")]/following-sibling::ul[1]/li')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True).replace('…', '')
+        con = con.xpath('.//text()').string(multiple=True).replace('…', '').strip()
         if con and len(con) > 1:
             review.add_property(type='cons', value=con)
 
@@ -95,31 +93,38 @@ def process_review(data, context, session):
         con = con.string(multiple=True).replace('►', '').strip()
         review.add_property(type='cons', value=con)
 
+    summary = data.xpath('//div[@class="excerpt"]/p//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
     techniques = data.xpath('//h3[contains(., "techniques")]/following-sibling::p//text()|//p[strong[contains(., "Dimensions")]]//text()').string(multiple=True)
 
-    conclusion = data.xpath('//p[strong[contains(., "verdict")]]/text()').string(multiple=True)
+    conclusion = data.xpath('//p[strong[contains(., "verdict")]]/text()[not(contains(., "[youtube"))]').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('(//h2[contains(., "verdict")]|//h2[contains(., "Verdict")])/following-sibling::p//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "verdict") or contains(., "Verdict") or contains(., "Notre avis")]/following-sibling::p[not(a[@title="Forum Android MT"] or @class)]//text()[not(contains(., "[youtube"))]').string(multiple=True)
 
     if conclusion:
         if techniques:
             conclusion = conclusion.replace(techniques, '')
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h2[contains(., "verdict")]|//h2[contains(., "Verdict")])/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "verdict") or contains(., "Verdict") or contains(., "Notre avis")]/preceding::p[not(a[@title="Forum Android MT"] or @class)]//text()[not(contains(., "[youtube"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h3[contains(., "techniques")]/preceding-sibling::p[not(strong[contains(., "verdict")])]//text()|//h3[contains(., "techniques")]/preceding-sibling::text()').string(multiple=True)
+        excerpt = data.xpath('//h3[contains(., "techniques")]/preceding::p[not(strong[contains(., "verdict")] or a[@title="Forum Android MT"] or @class)]//text()|//h3[contains(., "techniques")]/preceding-sibling::text()[not(contains(., "[youtube"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h5[contains(., "Les plus")]/preceding-sibling::p[not(strong[contains(., "verdict")])]//text()|//h5[contains(., "Les plus")]/preceding-sibling::text()').string(multiple=True)
+        excerpt = data.xpath('//h5[contains(., "Les plus")]/preceding-sibling::p[not(strong[contains(., "verdict")])]//text()|//h5[contains(., "Les plus")]/preceding-sibling::text()[not(contains(., "[youtube"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h5[contains(., "Les moins")]/preceding-sibling::p[not(strong[contains(., "verdict")])]//text()|//h5[contains(., "Les plus")]/preceding-sibling::text()').string(multiple=True)
+        excerpt = data.xpath('//h5[contains(., "Les moins")]/preceding-sibling::p[not(strong[contains(., "verdict")])]//text()|//h5[contains(., "Les plus")]/preceding-sibling::text()[not(contains(., "[youtube"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="pub_pave_article2"]/following-sibling::p[not(strong[contains(., "verdict")])]//text()|//div[@id="pub_pave_article2"]/following-sibling::text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="pub_pave_article2"]/following-sibling::p[not(strong[contains(., "verdict")])]//text()|//div[@id="pub_pave_article2"]/following-sibling::text()[not(contains(., "[youtube"))]').string(multiple=True)
+
     if excerpt:
         if techniques:
             excerpt = excerpt.replace(techniques, '')
+        if summary:
+            excerpt = excerpt.replace(summary, '')
 
-        review.add_property(type='excerpt', value=excerpt)
+        review.add_property(type='excerpt', value=excerpt.strip())
 
         product.reviews.append(review)
 

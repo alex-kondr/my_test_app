@@ -3,7 +3,7 @@ from models.products import *
 import simplejson
 
 
-XCAT = ['Easter Deals', 'SALE %', 'Marken', 'Geschenke', 'Blog']
+XCAT = ['Easter Deals', 'SALE %', 'Marken', 'Geschenke', 'Blog', 'Neuheiten', 'Kollektionen']
 
 
 def run(context, session):
@@ -41,7 +41,7 @@ def process_prodlist(data, context, session):
     prods = data.xpath('//div[@class="fundis-product-box-name"]/a[@class="product--title"]')
     for prod in prods:
         name = prod.xpath('text()[normalize-space()]').string()
-        url = prod.xpath('@href').string()
+        url = prod.xpath('@href').string().split('?')[0]
         session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()

@@ -2,7 +2,7 @@ from agent import  *
 from models.products import *
 
 
-XCAT = ['Second Hand', 'AREA', 'Aktionen %', 'Workshops', 'Blog', 'alle', '+ weitere', 'Geschenkgutscheine']
+XCAT = ['Second Hand', 'AREA', 'Aktionen %', 'Workshops', 'Blog', 'Geschenkgutscheine', 'alle']
 
 
 def run(context, session):
@@ -19,18 +19,23 @@ def process_frontpage(data, context, session):
             sub_cats = cat.xpath('div[contains(@class, "checkboxhack_nav_more")]')
             for sub_cat in sub_cats:
                 sub_name = sub_cat.xpath('span[@class="nav_backward"]/span/text()').string()
+                url = sub_cat.xpath('a[@class="nav_desktop_level_2 navi"]/@href').string()
 
                 if sub_name not in XCAT:
-                    sub_cats1 = sub_cat.xpath('a[@class="navi"]')
-                    for sub_cat1 in sub_cats1:
-                        sub_name1 = sub_cat1.xpath('text()').string()
-                        url = sub_cat1.xpath('@href').string()
+                    if sub_name:
+                        session.queue(Request(url), process_catlist, dict(cat=name + '|' + sub_name))
+                    else:
+                        session.queue(Request(url), process_catlist, dict(cat=name))
 
-                        if sub_name1 not in XCAT:
-                            if sub_name:
-                                session.queue(Request(url + '?listenlimit=0,50'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
-                            else:
-                                session.queue(Request(url + '?listenlimit=0,50'), process_prodlist, dict(cat=name + '|' + sub_name1))
+
+def process_catlist(data, context, session):
+    cats = data.xpath('//div[@id="level_seitenmenu"]/a')
+    for cat in cats:
+        name = cat.xpath('text()').string().replace('von ', '').replace('für ', '').strip()
+        url = cat.xpath('@href').string()
+
+        if name not in XCAT:
+            session.queue(Request(url + '?listenlimit=0,50'), process_prodlist, dict(cat=context['cat'] + '|' + name))
 
 
 def process_prodlist(data, context, session):
@@ -67,8 +72,8 @@ def process_product(data, context, session):
         product.add_property(type='id.manufacturer', value=mpn)
 
     ean = data.xpath('//div[contains(., "EAN")]/following-sibling::div[@class="_td last"]//span/text()').string()
-    if ean and ean.isdigit() and len(ean) == 13:
-        product.add_property(type='id.ean')
+    if ean and ean.isdigit() and len(ean) > 11:
+        product.add_property(type='id.ean', value=ean)
 
     session.queue(Request(product.url.replace('.html', '_bewertungen.html')), process_reviews, dict(product=product))
 
