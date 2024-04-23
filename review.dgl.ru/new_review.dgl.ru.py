@@ -20,12 +20,15 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.url = context['url']
-    product.ssid = product.url.split('/')[-1].replace('obzor-', '').replace('.html', '')
+    product.ssid = context['url'].split('/')[-1].replace('obzor-', '').replace('.html', '')
     product.category = "Технологии"
 
+    product.url = data.xpath('//a[contains(., "здесь")]/@href').string()
+    if not product.url:
+        product.url = context['url']
+
     title = data.xpath('//meta[@name="title"]/@content').string()
-    product.name = title.replace('Предварительный обзор:', '').replace('Предварительный обзор', '').replace('Stuff-обзор:', '').replace('Взгляд от Stuff:', '').replace('WHF-обзор:', '').replace('Взгляд журнала Stuff:', '').replace('Обзор наушников', '').replace('Мини-обзор:', '').replace('Блиц-обзор', '').replace('Обзор:', '').replace('Обзор', '').split(':')[0].split(' - ')[0].split(' — ')[0].strip()
+    product.name = title.replace('Предварительный обзор:', '').replace('Предварительный обзор', '').replace('Обзор смартфона', '').replace('Stuff-обзор:', '').replace('Взгляд от Stuff:', '').replace('WHF-обзор:', '').replace('Взгляд журнала Stuff:', '').replace('Обзор наушников', '').replace('Мини-обзор:', '').replace('Блиц-обзор', '').replace('Обзор:', '').split(':')[0].split(' - ')[0].split(' — ')[0].strip()
 
     review = Review()
     review.type = 'pro'
@@ -58,24 +61,26 @@ def process_review(data, context, session):
     if not pros:
         pros = data.xpath('(//h3[contains(., "Плюсы")]/following-sibling::ul)[1]/li')
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True).replace('•', '').strip()
+        pro = pro.xpath('.//text()').string(multiple=True).replace('•', '').replace(u'\uFEFF', '').strip()
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[@class="verdict-info-top minus"]/following-sibling::ul/li')
     if not cons:
         cons = data.xpath('(//h3[contains(., "Минусы")]/following-sibling::ul)[1]/li')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True).replace('•', '').strip()
+        con = con.xpath('.//text()').string(multiple=True).replace('•', '').replace(u'\uFEFF', '').strip()
         review.add_property(type='cons', value=con)
 
     summary = data.xpath('//meta[@name="description"]/@content').string()
     if summary:
+        summary = summary.replace(u'\uFEFF', '')
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//div[@class="verdict-text"]//text()').string(multiple=True)
+    conclusion = data.xpath('(//h1[contains(., "Выводы") or contains(., "Вердикт")]|//h2[contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")])/following-sibling::p[not(.//script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h1[contains(., "Выводы")]/following-sibling::p[not(script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+        conclusion = data.xpath('//div[@class="verdict-text"]//text()').string(multiple=True)
     if conclusion:
+        conclusion.replace(u'\uFEFF', '')
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h1[contains(., "Выводы")]/preceding-sibling::p[not(script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
@@ -90,6 +95,7 @@ def process_review(data, context, session):
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 
+        excerpt = excerpt.replace(u'\uFEFF', '')
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
