@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.dgl.ru/reviews'), process_revlist, dict())
 
 
@@ -33,7 +33,7 @@ def process_review(data, context, session):
     review = Review()
     review.type = 'pro'
     review.title = title
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
@@ -59,14 +59,14 @@ def process_review(data, context, session):
 
     pros = data.xpath('//div[@class="verdict-info-top plus"]/following-sibling::ul/li')
     if not pros:
-        pros = data.xpath('(//h3[contains(., "Плюсы")]/following-sibling::ul)[1]/li')
+        pros = data.xpath('((//h3[contains(., "Плюсы")]|//p[contains(., "Плюсы")])/following-sibling::ul)[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True).replace('•', '').replace(u'\uFEFF', '').strip()
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[@class="verdict-info-top minus"]/following-sibling::ul/li')
     if not cons:
-        cons = data.xpath('(//h3[contains(., "Минусы")]/following-sibling::ul)[1]/li')
+        cons = data.xpath('((//h3[contains(., "Минусы")]|//p[contains(., "Минусы")])/following-sibling::ul)[1]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True).replace('•', '').replace(u'\uFEFF', '').strip()
         review.add_property(type='cons', value=con)
@@ -83,11 +83,11 @@ def process_review(data, context, session):
         conclusion.replace(u'\uFEFF', '')
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h1[contains(., "Выводы")]/preceding-sibling::p[not(script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+    excerpt = data.xpath('//h1[contains(., "Выводы")]/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h1[contains(., "Часто задаваемые вопросы")]/preceding-sibling::p[not(script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+        excerpt = data.xpath('//h1[contains(., "Часто задаваемые вопросы")]/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="article-part"]/p[not(script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="article-part"]/p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
 
     if excerpt:
         if summary:
