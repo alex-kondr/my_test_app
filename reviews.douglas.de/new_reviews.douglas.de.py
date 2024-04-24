@@ -6,14 +6,12 @@ import httplib
 httplib._MAXHEADERS = 1000
 
 
-XCAT = ['MARKEN', 'OSTERN', 'SALE', 'Nachhaltigkeit', 'LUXUS', 'NEU', 'Beauty-Storys', 'Douglas Beauty Tester', '']
+XCAT = ['MARKEN', 'OSTERN', 'SALE', 'Nachhaltigkeit', 'LUXUS', 'NEU', 'Beauty-Storys', 'Douglas Beauty Tester', 'NEU Parfum', 'SALE Parfum']
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    url_test = 'https://www.douglas.de/de/c/parfum/damenduefte/parfum/010106'
-    session.queue(Request(url_test, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat='cat_test'))
-    # session.queue(Request('https://www.douglas.de/de', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
+    session.queue(Request('https://www.douglas.de/de', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -43,17 +41,17 @@ def process_catlist(data, context, session):
                 if url_data and len(url_data) > 0:
                     url = 'https://www.douglas.de' + url_data[0].get('component', {}).get('otherProperties', {}).get('url')
 
-                    if 'Alle' not in sub_name1:
-                        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat=context['cat'] + '|' + sub_name + '|' + sub_name1))
+                    if sub_name1 and ('All' not in sub_name1 or 'ALL' not in sub_name1 or 'Tutorial' not in sub_name1):
+                        session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + sub_name + '|' + sub_name1))
                     else:
                         url = 'https://www.douglas.de' + sub_cat.get('entries', [{}])[0].get('component', {}).get('otherProperties', {}).get('url')
-                        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat=context['cat'] + '|' + sub_name))
+                        session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + sub_name))
 
         elif sub_name not in XCAT:
             url_data = sub_cat.get('entries')
             if url_data and len(url_data) > 0:
                 url = 'https://www.douglas.de' + url_data[0].get('component', {}).get('otherProperties', {}).get('url')
-                session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat=context['cat'] + '|' + sub_name))
+                session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + sub_name))
 
 
 def process_prodlist(data, context, session):
@@ -65,7 +63,7 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.xpath('.//span[@data-testid="ratings-info"]')
         if revs_cnt:
-            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_product, dict(context, name=name, manufacturer=manufacturer, url=url))
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, manufacturer=manufacturer, url=url))
 
 
 def process_product(data, context, session):
@@ -78,7 +76,7 @@ def process_product(data, context, session):
     product.sku = data.xpath('//div[contains(., "Art-Nr.")]/span[@class="classification__item"]/text()').string()
 
     revs_url = 'https://www.douglas.de/jsapi/v2/products/bazaarvoice/reviews?baseProduct=' + product.ssid
-    session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+    session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -136,7 +134,7 @@ def process_reviews(data, context, session):
     if offset < revs_cnt:
         next_page = context.get('page', 1) + 1
         next_url = 'https://www.douglas.de/jsapi/v2/products/bazaarvoice/reviews?baseProduct={ssid}&page={page}'.format(ssid=product.ssid, page=next_page)
-        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product, offset=offset, page=next_page))
+        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product, offset=offset, page=next_page))
 
     elif product.reviews:
         session.emit(product)

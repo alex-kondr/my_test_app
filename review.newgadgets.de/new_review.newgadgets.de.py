@@ -11,11 +11,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(title=title, ur=url))
+        session.queue(Request(url), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//a[contains(text(), "Ältere Beiträge")]/@href').string()
     if next_url:
-        session.queue(Request(url), process_revlist, dict())
+        session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data, context, session):
@@ -24,7 +24,7 @@ def process_review(data, context, session):
     product.ssid = context['url'].split('/')[-2]
     product.category = 'Technik'
 
-    product.url = data.xpath('//a[contains(., "Klick")]/@href').string()
+    product.url = data.xpath('//a[contains(., "Klick") or contains(., "Amazon") or contains(., "Mediamarkt")]/@href').string()
     if not product.url:
         product.url = context['url']
 
@@ -56,6 +56,16 @@ def process_review(data, context, session):
         con = con.string().replace('•', '').strip()
         review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(.,"Fazit")]/following-sibling::p[not(contains(., "Positiv") or contains(., "•") or contains(., "Negativ") or contains( ., "Klick"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(.,"Fazit")]/following-sibling::p[not(contains(., "Positiv") or contains(., "•") or contains(., "Negativ") or contains( ., "Klick") or contains(., "Amazon *") or .//input)]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//h2[contains(.,"Fazit")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="entry-content"]//p[not(contains(., "Positiv") or contains(., "•") or contains(., "Negativ") or contains( ., "Klick") or contains(., "Amazon") or .//input)]//text()').string(multiple=True)
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
