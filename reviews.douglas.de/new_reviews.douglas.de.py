@@ -11,7 +11,9 @@ XCAT = ['MARKEN', 'OSTERN', 'SALE', 'Nachhaltigkeit', 'LUXUS', 'NEU', 'Beauty-St
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.douglas.de/de', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
+    url_test = 'https://www.douglas.de/de/c/parfum/damenduefte/parfum/010106'
+    session.queue(Request(url_test, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat='cat_test'))
+    # session.queue(Request('https://www.douglas.de/de', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -120,6 +122,7 @@ def process_reviews(data, context, session):
             excerpt = title
 
         if excerpt:
+            excerpt = excerpt.replace('\n', ' ')
             review.add_property(type='excerpt', value=excerpt)
 
             review.ssid = rev.get('id')
