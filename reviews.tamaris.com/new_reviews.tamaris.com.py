@@ -59,35 +59,28 @@ def process_frontpage(data, context, session):
 def process_prodlist(data, context, session):
     prods = data.xpath('//div[@data-ean]')
     for prod in prods:
-        name = prod.xpath('.//div[contains(@class, "product-name")]/text()').string()
+        product = Product()
+        product.name = prod.xpath('.//div[contains(@class, "product-name")]/text()').string()
+        product.ssid = prod.xpath('@data-uuid').string()
+        product.sku = product.ssid
+        product.url = prod.xpath('.//a[@class="tile-link"]/@href').string()
+        product.manufacturer = 'Tamaris'
+        product.category = context['cat']
+
         ean = prod.xpath('@data-ean').string()
-        ssid = prod.xpath('@data-uuid').string()
+        if ean:
+            product.add_property(type='id.ean', value=context['ean'])
+
         mpn = prod.xpath('@data-product-id').string()
-        url = prod.xpath('.//a[@class="tile-link"]/@href').string()
-        session.queue(Request(url), process_product, dict(context, name=name, ean=ean, ssid=ssid, mpn=mpn, url=url))
+        if mpn:
+            product.add_property(type='id.manufacturer', value=context['mpn'])
+
+            revs_url = 'https://cdn-ws.turnto.eu/v5/sitedata/7ow2UbXsJQJAP18site/{mpn}/r/relatedReview/en_IE/0/9999/RECENT?'.format(mpn=context['mpn'])
+            session.queue(Request(revs_url), process_reviews, dict(product=product))
 
     next_url = data.xpath('//a[contains(@class, "load-more-results")]/@href').string()
     if next_url:
         session.queue(Request(next_url), process_prodlist, dict(context))
-
-
-def process_product(data, context, session):
-    product = Product()
-    product.name = context['name']
-    product.url = context['url']
-    product.ssid = context['ssid']
-    product.sku = product.ssid
-    product.manufacturer = 'Tamaris'
-    product.category = context['cat']
-
-    if context['ean']:
-        product.add_property(type='id.ean', value=context['ean'])
-
-    if context['mpn']:
-        product.add_property(type='id.manufacturer', value=context['mpn'])
-
-        revs_url = 'https://cdn-ws.turnto.eu/v5/sitedata/7ow2UbXsJQJAP18site/{mpn}/r/relatedReview/en_IE/0/9999/RECENT?'.format(mpn=context['mpn'])
-        session.queue(Request(revs_url), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
