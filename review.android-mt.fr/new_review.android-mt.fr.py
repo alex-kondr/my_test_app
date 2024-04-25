@@ -62,8 +62,8 @@ def process_review(data, context, session):
     if not grades:
         grades = data.xpath('//ul[@class="review-list"]/li')
     for grade in grades:
-        grade_name = grade.xpath('(div[@class="per"]/h4|strong)/text()').string()
-        grade_val = grade.xpath('div[@class="number"]/text()').string()
+        grade_name = grade.xpath('(div[@class="per"]/h4|strong)//text()[normalize-space()]').string()
+        grade_val = grade.xpath('div[@class="number"]//text()[normalize-space()]').string()
         if not grade_name:
             grade_name, grade_val = grade.xpath('(.//span)[1]//text()').string(multiple=True).split('-')
             grade_name = grade_name.strip()

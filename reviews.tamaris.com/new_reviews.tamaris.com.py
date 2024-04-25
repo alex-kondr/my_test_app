@@ -69,14 +69,14 @@ def process_prodlist(data, context, session):
 
         ean = prod.xpath('@data-ean').string()
         if ean:
-            product.add_property(type='id.ean', value=context['ean'])
+            product.add_property(type='id.ean', value=ean)
 
         mpn = prod.xpath('@data-product-id').string()
         if mpn:
-            product.add_property(type='id.manufacturer', value=context['mpn'])
+            product.add_property(type='id.manufacturer', value=mpn)
 
-            revs_url = 'https://cdn-ws.turnto.eu/v5/sitedata/7ow2UbXsJQJAP18site/{mpn}/r/relatedReview/en_IE/0/9999/RECENT?'.format(mpn=context['mpn'])
-            session.queue(Request(revs_url), process_reviews, dict(product=product))
+            revs_url = 'https://cdn-ws.turnto.eu/v5/sitedata/7ow2UbXsJQJAP18site/{mpn}/r/relatedReview/de_CH/0/9999/RECENT?'.format(mpn=mpn)
+            session.queue(Request(revs_url), process_reviews, dict(product=product, mpn=mpn))
 
     next_url = data.xpath('//a[contains(@class, "load-more-results")]/@href').string()
     if next_url:
@@ -89,6 +89,9 @@ def process_reviews(data, context, session):
     revs_json = simplejson.loads(data.content)
     revs = revs_json.get('reviews')
     for rev in revs:
+        if rev.get('locale') != 'de_CH' and rev.get('locale') != 'de_DE':
+            continue
+
         review = Review()
         review.type = 'user'
         review.url = product.url

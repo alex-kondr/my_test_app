@@ -2,7 +2,7 @@ from agent import  *
 from models.products import *
 
 
-XCAT = ['Second Hand', 'AREA', 'Aktionen %', 'Workshops', 'Blog', 'Geschenkgutscheine', 'alle']
+XCAT = ['Second Hand', 'AREA', 'Aktionen %', 'Workshops', 'Blog', 'Geschenkgutscheine', 'alle', 'Angebote']
 
 
 def run(context, session):
@@ -16,26 +16,24 @@ def process_frontpage(data, context, session):
         name = cat.xpath('span[@class="nav_backward"]/span/text()').string()
 
         if name not in XCAT:
-            sub_cats = cat.xpath('div[contains(@class, "checkboxhack_nav_more")]')
-            for sub_cat in sub_cats:
-                sub_name = sub_cat.xpath('span[@class="nav_backward"]/span/text()').string()
-                url = sub_cat.xpath('a[@class="nav_desktop_level_2 navi"]/@href').string()
+            cats1 = cat.xpath('div[contains(@class, "checkboxhack_nav_more")]')
+            for cat1 in cats1:
+                cat1_name = cat1.xpath('span[@class="nav_backward"]/span/text()').string()
+                url = cat1.xpath('a[@class="nav_desktop_level_2 navi"]/@href').string()
 
-                if sub_name not in XCAT:
-                    if sub_name:
-                        session.queue(Request(url), process_catlist, dict(cat=name + '|' + sub_name))
-                    else:
-                        session.queue(Request(url), process_catlist, dict(cat=name))
+                if cat1_name and cat1_name not in XCAT:
+                    cat1_name = cat1_name.replace('Weitere ', '').title()
+                    session.queue(Request(url), process_catlist, dict(cat=name + '|' + cat1_name))
 
 
 def process_catlist(data, context, session):
-    cats = data.xpath('//div[@id="level_seitenmenu"]/a')
-    for cat in cats:
-        name = cat.xpath('text()').string().replace('von ', '').replace('für ', '').strip()
-        url = cat.xpath('@href').string()
+    subcats = data.xpath('//div[@id="level_seitenmenu"]/a')
+    for subcat in subcats:
+        subcat_name = subcat.xpath('text()').string().replace('von ', '').replace('für ', '').strip()
+        url = subcat.xpath('@href').string()
 
-        if name not in XCAT:
-            session.queue(Request(url + '?listenlimit=0,50'), process_prodlist, dict(cat=context['cat'] + '|' + name))
+        if subcat_name not in XCAT:
+            session.queue(Request(url + '?listenlimit=0,50'), process_prodlist, dict(cat=context['cat'] + '|' + subcat_name))
 
 
 def process_prodlist(data, context, session):
@@ -57,7 +55,7 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.category = context['cat']
+    product.category = context['cat'].replace('nach Marke|', '|').replace('Nach Marke|', '|').replace('||', '|')
     product.manufacturer = data.xpath('//head[meta[@itemprop="sku"]]/meta[@itemprop="name"]/@content').string()
 
     ssid = data.xpath('//meta[@itemprop="sku"]/@content').string()
