@@ -11,7 +11,7 @@ XCAT = ['MARKEN', 'OSTERN', 'SALE', 'Nachhaltigkeit', 'LUXUS', 'NEU', 'Beauty-St
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.douglas.de/de', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
+    session.queue(Request('https://www.douglas.de/de', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -22,7 +22,7 @@ def process_frontpage(data, context, session):
 
         if name not in XCAT:
             url = 'https://www.douglas.de/api/v2/navigation/nodes/{sub_cats_id}/children'.format(sub_cats_id=sub_cats_id)
-            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_catlist, dict(cat=name))
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_catlist, dict(cat=name))
 
 
 def process_catlist(data, context, session):
@@ -41,7 +41,7 @@ def process_catlist(data, context, session):
                 if url_data and len(url_data) > 0:
                     url = 'https://www.douglas.de' + url_data[0].get('component', {}).get('otherProperties', {}).get('url')
 
-                    if sub_name1 and ('All' not in sub_name1 or 'ALL' not in sub_name1 or 'Tutorial' not in sub_name1):
+                    if sub_name1 and 'All' not in sub_name1 and 'ALL' not in sub_name1 and 'Tutorial' not in sub_name1:
                         session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + sub_name + '|' + sub_name1))
                     else:
                         url = 'https://www.douglas.de' + sub_cat.get('entries', [{}])[0].get('component', {}).get('otherProperties', {}).get('url')

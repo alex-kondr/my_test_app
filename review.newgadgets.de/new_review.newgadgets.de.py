@@ -46,31 +46,35 @@ def process_review(data, context, session):
     if author:
         review.authors.append(Person(name=author, ssid=author))
 
-    pros = data.xpath('//p[strong[contains(., "Positiv")]]//text()[contains(., "+")][normalize-space()]')
+    pros = data.xpath('//p[.//strong[contains(., "Positiv")]]//text()[starts-with(., "+")][normalize-space()]')
     if not pros:
-        pros = data.xpath('//p[strong[contains(., "Positiv")]]/following-sibling::p[1]//text()[normalize-space()]')
+        pros = data.xpath('//p[.//strong[contains(., "Positiv")]]/following-sibling::p[starts-with(., "+")]/text()[normalize-space()]')
+    if not pros:
+        pros = data.xpath('//p[.//strong[contains(., "Positiv")]]/following-sibling::p[1]//text()[normalize-space()]')
     for pro in pros:
-        pro = pro.string().strip(' -+•')
+        pro = pro.string().strip(' -+•–')
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//p[strong[contains(., "Negativ")]]//text()[contains(., "-")][normalize-space()]')
+    cons = data.xpath('//p[.//strong[contains(., "Negativ")]]//text()[starts-with(., "-")][normalize-space()]')
     if not cons:
-        cons = data.xpath('//p[strong[contains(., "Negativ")]]/following-sibling::p[1]//text()[normalize-space()]')
+        cons = data.xpath('//p[.//strong[contains(., "Negativ")]]/following-sibling::p[starts-with(., "-") or starts-with(., "–")]/text()[normalize-space()]')
+    if not cons:
+        cons = data.xpath('//p[.//strong[contains(., "Negativ")]]/following-sibling::p[1]//text()[normalize-space()]')
     for con in cons:
-        con = con.string().strip(' -+•')
+        con = con.string().strip(' -+•–')
         review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(.,"| Fazit") and not(@class)]/following-sibling::p[not(contains(., "Positiv") or contains(., "•") or contains(., "Negativ") or contains( ., "Klick") or contains(., "Amazon *") or contains(., ">>") or .//input)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(.,"| Fazit") and not(@class)]/following-sibling::p[not(contains(., "Positiv") or starts-with(., "•") or starts-with(., "+") or starts-with(., "-") or starts-with(., "–") or contains(., "Negativ") or contains( ., "Klick") or contains(., "Amazon *") or contains(., ">>") or contains(., "hier bestellt werden") or .//strong[contains(., "kaufen")] or .//strong[contains(., "Kaufen")] or .//input)]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('(//h2[contains(.,"Fazit") and not(@class)]|//p[.//strong[contains(., "Fazit")]])/following-sibling::p[not(contains(., "Positiv") or contains(., "•") or contains(., "Negativ") or contains( ., "Klick") or contains(., "Amazon *") or contains(., ">>") or .//input)]//text()').string(multiple=True)
+        conclusion = data.xpath('(//h2[contains(.,"Fazit") and not(@class)]|//h3[contains(.,"Fazit") and not(@class)]|//p[.//strong[contains(., "Fazit")]])/following-sibling::p[not(contains(., "Positiv") or starts-with(., "•") or starts-with(., "+") or starts-with(., "-") or starts-with(., "–") or contains(., "Negativ") or contains( ., "Klick") or contains(., "Amazon *") or contains(., ">>") or contains(., "hier bestellt werden") or .//strong[contains(., "kaufen")] or .//strong[contains(., "Kaufen")] or .//input)]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(.,"| Fazit") and not(@class)]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(.,"| Fazit") and not(@class)]/preceding-sibling::p[not(contains(., "Positiv") or starts-with(., "•") or starts-with(., "+") or starts-with(., "-") or starts-with(., "–") or contains(., "Negativ") or contains( ., "Klick") or contains(., "Amazon *") or contains(., ">>") or contains(., "hier bestellt werden") or .//strong[contains(., "kaufen")] or .//strong[contains(., "Kaufen")] or .//input)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//h2[contains(.,"Fazit") and not(@class or contains(., "|"))]|//p[.//strong[contains(., "Fazit")]])/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('(//h2[contains(.,"Fazit") and not(@class)]|//h3[contains(.,"Fazit") and not(@class)]|//p[.//strong[contains(., "Fazit")]])/preceding-sibling::p[not(contains(., "Positiv") or starts-with(., "•") or starts-with(., "+") or starts-with(., "-") or starts-with(., "–") or contains(., "Negativ") or contains( ., "Klick") or contains(., "Amazon *") or contains(., ">>") or contains(., "hier bestellt werden") or .//strong[contains(., "kaufen")] or .//strong[contains(., "Kaufen")] or .//input)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="entry-content"]//p[not(contains(., "Positiv") or contains(., "•") or contains(., "Negativ") or contains( ., "Klick") or contains(., "Amazon") or .//input)]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="entry-content"]//p[not(contains(., "Positiv") or starts-with(., "•") or starts-with(., "+") or starts-with(., "-") or starts-with(., "–") or contains(., "Negativ") or contains( ., "Klick") or contains(., "Amazon *") or contains(., ">>") or contains(., "hier bestellt werden") or .//strong[contains(., "kaufen")] or .//strong[contains(., "Kaufen")] or .//input)]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

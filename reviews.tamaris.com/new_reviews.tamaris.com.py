@@ -4,7 +4,7 @@ import simplejson
 import re
 
 
-XCAT = ['Neuheiten', 'Kollektionen', 'Sale']
+XCAT = ['Neuheiten', 'Kollektionen', 'Sale', 'Aus unserer Werbung', 'Exklusiv bei uns']
 
 
 def remove_emoji(string):
@@ -52,7 +52,7 @@ def process_frontpage(data, context, session):
                         sub_name1 = sub_cat1.xpath('a/span/text()').string()
                         url = sub_cat1.xpath('a/@href').string()
 
-                        if 'All' not in sub_name1:
+                        if sub_name1 not in XCAT and 'All' not in sub_name1:
                             session.queue(Request(url + '?sz=48'), process_prodlist, dict(cat=name + '|' + sub_name1))
 
 
@@ -126,8 +126,8 @@ def process_reviews(data, context, session):
 
         title = rev.get('title')
         excerpt = rev.get('text')
-        if excerpt and len(excerpt) > 1:
-            review.title = title
+        if excerpt and len(excerpt) > 1 and title:
+            review.title = remove_emoji(title.replace('<br />', ''))
         else:
             excerpt = title
 

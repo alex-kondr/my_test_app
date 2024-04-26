@@ -83,11 +83,11 @@ def process_review(data, context, session):
         conclusion.replace(u'\uFEFF', '')
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h1[contains(., "Выводы")]/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h1[contains(., "Выводы") or contains(., "Вердикт")]|//h2[contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")])/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or .//b[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//h1[contains(., "Часто задаваемые вопросы")]/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="article-part"]/p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="article-part"]/p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or .//b[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
 
     if excerpt:
         if summary:
