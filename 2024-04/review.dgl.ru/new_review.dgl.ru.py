@@ -96,6 +96,7 @@ def process_review(data, context, session):
             excerpt = excerpt.replace(conclusion, '').strip()
 
         excerpt = excerpt.replace(u'\uFEFF', '')
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

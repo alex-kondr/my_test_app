@@ -1,6 +1,7 @@
 from agent import *
 from models.products import *
 
+
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
@@ -69,6 +70,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[@class="article__text"]/p//text()').string(multiple=True)
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').replace(summary, '')
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
