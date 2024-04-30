@@ -81,11 +81,11 @@ def process_reviews(data, context, session):
         if date:
             review.date = date.split()[-1]
 
-        author = data.xpath('.//span[@class="review-by"]/b/text()').string()
+        author = rev.xpath('.//span[@class="review-by"]/b/text()').string()
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-        grades = data.xpath('.//div[@class="review_rating"]//tr')
+        grades = rev.xpath('.//div[@class="review_rating"]//tr')
         for grade in grades:
             grade_name = grade.xpath('.//span[@class="label"]/text()').string()
             grade_val = grade.xpath('.//div[@class="rating"]/@style').string()
@@ -100,12 +100,12 @@ def process_reviews(data, context, session):
                     else:
                         review.grades.append(Grade(type='overall', value=grade_val, best=5.0))
 
-        is_verified_buyer = data.xpath('.//img[contains(@src, "avisverifies")]')
+        is_verified_buyer = rev.xpath('.//img[contains(@src, "avisverifies")]')
         if is_verified_buyer:
             review.add_property(type='is_verified_buyer', value=True)
 
-        title = data.xpath('.//span[@class="review-title"]//text()').string(multiple=True)
-        excerpt = data.xpath('.//div[@class="review_comment"]//text()').string(multiple=True)
+        title = rev.xpath('.//span[@class="review-title"]//text()').string(multiple=True)
+        excerpt = rev.xpath('.//div[@class="review_comment"]//text()').string(multiple=True)
         if excerpt:
             review.title = title
         else:
