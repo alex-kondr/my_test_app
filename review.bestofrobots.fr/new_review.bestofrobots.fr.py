@@ -2,15 +2,21 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['Marques', 'Fonctionnalités', 'Accessoires', 'Guide', 'Guides', 'Comparatifs', 'Marques / Gammes']
+XCAT = ['Marques', 'Fonctionnalités', 'Guide', 'Guides', 'Comparatifs', 'Marques / Gammes']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.bestofrobots.fr/'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
+    cats = data.xpath('//li[@class="menu-full-width"]/a')
+    for cat in cats:
+        url = cat.xpath('@href').string()
+        session.queue(Request(url), process_catlist, dict())
+
+
+def process_catlist(data, context, session):
     cats = data.xpath('//li[@class="menu-full-width"]')
     for cat in cats:
         name = cat.xpath('a/text()').string()
@@ -26,12 +32,14 @@ def process_frontpage(data, context, session):
                     url = sub_cat1.xpath('@href').string()
 
                     if sub_name1:
-                        session.queue(Request(url), process_prodlist, dict(cat = name + '|' + sub_name + '|' + sub_name1))
+                        session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
                 else:
                     url = sub_cat.xpath('a/@href').string()
-
                     if url:
-                        session.queue(Request(url), process_prodlist, dict(cat = name + '|' + sub_name))
+                        session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
+        else:
+            url = cat.xpath('a/@href').string()
+            session.queue(Request(url), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
@@ -122,7 +130,7 @@ def process_reviews(data, context, session):
     next_page = context.get('page', 1) + 1
     if offset < context['revs_cnt']:
         next_url = 'https://www.bestofrobots.fr/reviews?review_page={page}&pid={ssid}'.format(page=next_page, ssid=product.ssid)
-        session.queue(Request(next_url), process_reviews, dict(context, product=product, page=next_page))
+        session.queue(Request(next_url), process_reviews, dict(context, product=product, page=next_page, offset=offset))
 
     elif product.reviews:
         session.emit(product)
