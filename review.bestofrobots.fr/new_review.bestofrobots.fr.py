@@ -6,6 +6,7 @@ XCAT = ['Marques', 'Fonctionnalités', 'Guide', 'Guides', 'Comparatifs', 'Marque
 
 
 def run(context, session):
+    session.sessionbreakers=[SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.bestofrobots.fr/'), process_frontpage, dict())
 
 
