@@ -88,19 +88,22 @@ def process_reviews(data, context, session):
 
         title = rev.get('title')
         excerpt = rev.get('content')
-        if excerpt and len(excerpt) > 1:
+        if excerpt and len(excerpt.strip()) > 1:
             review.title = title
         else:
             excerpt = title
 
-        if excerpt and len(excerpt) > 1:
-            review.add_property(type='excerpt', value=excerpt)
+        if excerpt:
+            excerpt = excerpt.replace('???', '').replace('??', '').strip()
 
-            review.ssid = rev.get('reviewID')
-            if not review.ssid:
-                review.ssid = review.digest() if author else review.digest(excerpt)
+            if len(excerpt) > 1:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                review.ssid = rev.get('reviewID')
+                if not review.ssid:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
+
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)

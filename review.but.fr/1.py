@@ -1,9 +1,14 @@
 from agent import *
 from models.products import *
 import simplejson
+import httplib
+
+
+httplib._MAXHEADERS = 1000
 
 
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.but.fr/Api/Rest/V1/CMS/Menu'), process_catlist, dict())
 
 
@@ -40,9 +45,9 @@ def process_subcatlist(data, context, session):
             url = sub_cat.xpath('@href').string().split('.html')[0] + '/NW-6272-avis-clients~1~etoile(s)/NW-6272-avis-clients~2~etoile(s)/NW-6272-avis-clients~3~etoile(s)/NW-6272-avis-clients~4~etoile(s)/NW-6272-avis-clients~5~etoile(s)'
 
             if sub_name not in context['cat']:
-                cat = context['cat'] + '|' + sub_name
+                context['cat'] = context['cat'] + '|' + sub_name
 
-            session.queue(Request(url), process_prodlist, dict(cat=cat))
+            session.queue(Request(url), process_prodlist, dict(cat=context['cat']))
 
 
 def process_prodlist(data, context, session):
@@ -71,8 +76,8 @@ def process_product(data, context, session):
     if ean and ean.isdigit() and len(ean) > 11:
         product.add_property(type='id.ean', value=ean)
 
-    url = 'https://www.but.fr/Api/Rest/Catalog/Products/{ean}/Reviews.json?PageSize=All'.format(ean=ean)
-    session.queue(Request(url), process_reviews, dict(product=product))
+        url = 'https://www.but.fr/Api/Rest/Catalog/Products/{ean}/Reviews.json?PageSize=All'.format(ean=ean)
+        session.queue(Request(url), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -99,19 +104,22 @@ def process_reviews(data, context, session):
 
         title = rev.get('title')
         excerpt = rev.get('content')
-        if excerpt and len(excerpt) > 1:
+        if excerpt and len(excerpt.strip()) > 1:
             review.title = title
         else:
             excerpt = title
 
-        if excerpt and len(excerpt) > 1:
-            review.add_property(type='excerpt', value=excerpt)
+        if excerpt:
+            excerpt = excerpt.replace('???', '').replace('??', '').strip()
 
-            review.ssid = rev.get('reviewID')
-            if not review.ssid:
-                review.ssid = review.digest() if author else review.digest(excerpt)
+            if len(excerpt) > 1:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                review.ssid = rev.get('reviewID')
+                if not review.ssid:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
+
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)

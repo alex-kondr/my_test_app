@@ -116,10 +116,10 @@ class TestProduct:
         Path("product_test/error").mkdir(exist_ok=True)
         self.products = product.file.get("products")
         self.agent_name = product.agent_name
-        self.xproduct_names_category = ["review", "test", u"\uFEFF", u"\ufeff", "...", "•", "cable", "análise", u"U000", u"&amp", "обзор", "тест", "all"]
+        self.xproduct_names_category = ["review", "test", u"\uFEFF", u"\ufeff", "...", "•", "cable", "análise", "u000", u"&amp", "обзор", "тест", "all"]
         self.xproduct_names_category_start_end = ["-", "+"]
         self.xreview_title = ["\uFEFF", "\ufeff", u"U000", u"&amp"]
-        self.xreview_excerpt = ["Conclusion", "Verdict", u"\uFEFF", u"\ufeff", "Summary", "•", "Fazit", "href=", u"U000", u"&amp", "Les plus", "Les moins", "Résumé", "►", "Выводы"]
+        self.xreview_excerpt = ["Conclusion", "Verdict", u"\uFEFF", u"\ufeff", "Summary", "•", "Fazit", "href=", "U000", u"&amp", "Les plus", "Les moins", "Résumé", "►", "Выводы"]
         self.xreview_pros_cons = ["-", "+", "•", "►", "none found", "null", 'n/a', 'n\\a', u"U000", u"&amp", "etc."]# 'na', 'no',]
         self.path = Path(f"product_test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
