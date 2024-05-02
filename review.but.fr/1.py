@@ -77,7 +77,7 @@ def process_product(data, context, session):
         product.add_property(type='id.ean', value=ean)
 
         url = 'https://www.but.fr/Api/Rest/Catalog/Products/{ean}/Reviews.json?PageSize=All'.format(ean=ean)
-        session.queue(Request(url), process_reviews, dict(product=product))
+        session.do(Request(url, use='curl', max_age=0), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
