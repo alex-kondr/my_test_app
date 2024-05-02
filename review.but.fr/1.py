@@ -4,32 +4,43 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.but.fr/'), process_frontpage, dict())
-
-
-def process_frontpage(data, context, session):
-    cats = data.xpath('//div[@class="niv1 closed"]//a')
-    for cat in cats:
-        name = cat.xpath('text()').string()
-        url = cat.xpath('@href').string()
-        session.queue(Request(url), process_catlist, dict(cat=name))
+    session.queue(Request('https://www.but.fr/Api/Rest/V1/CMS/Menu'), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
+    cats_json = simplejson.loads(data.content)
+    cats = cats_json.get('menuItems', {}).get('values', [])
+    for cat in cats:
+        name = cat[1]
+
+        sub_cats = cat[7]
+        for sub_cat in sub_cats:
+            sub_name = sub_cat[0]
+            url = 'https://www.but.fr' + sub_cat[3]
+
+            if sub_name != name:
+                cat = name +'|' + sub_name
+            else:
+                cat = name
+
+            session.queue(Request(url), process_subcatlist, dict(cat=cat))
+
+
+def process_subcatlist(data, context, session):
     cats = data.xpath('//div[@class="category-carousel"]')
     for cat in cats:
         name = cat.xpath('.//h3//text()').string(multiple=True)
+
+        if name not in context['cat']:
+            context['cat'] = context['cat'] + '|' + name
 
         sub_cats = cat.xpath('.//li[@class="splide__slide"]//a')
         for sub_cat in sub_cats:
             sub_name = sub_cat.xpath('text()').string()
             url = sub_cat.xpath('@href').string().split('.html')[0] + '/NW-6272-avis-clients~1~etoile(s)/NW-6272-avis-clients~2~etoile(s)/NW-6272-avis-clients~3~etoile(s)/NW-6272-avis-clients~4~etoile(s)/NW-6272-avis-clients~5~etoile(s)'
 
-            if sub_name not in [context['cat'], name]:
-                cat = context['cat'] + '|' + name + '|' + sub_name
-            else:
-                cat = (context['cat'] + '|' + name)
+            if sub_name not in context['cat']:
+                cat = context['cat'] + '|' + sub_name
 
             session.queue(Request(url), process_prodlist, dict(cat=cat))
 
