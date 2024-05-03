@@ -61,6 +61,10 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
+    if data.xpath('//div[@class="product"]'):
+        session.queue(Request(data.response_url.split('.html')[0] + '/NW-6272-avis-clients~1~etoile(s)/NW-6272-avis-clients~2~etoile(s)/NW-6272-avis-clients~3~etoile(s)/NW-6272-avis-clients~4~etoile(s)/NW-6272-avis-clients~5~etoile(s)'), process_prodlist, dict(context))
+        return
+
     product = Product()
     product.name = data.xpath('//meta[@property="og:title"]/@content').string().replace('[...]', '').strip(' -')
     product.url = context['url']
