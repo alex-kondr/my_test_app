@@ -152,13 +152,14 @@ def process_reviews(data, context, session):
             excerpt = remove_emoji(excerpt)
             excerpt = excerpt.replace('[Diese Bewertung wurde nach Erhalt eines Anreizes (Gutschein, Rabatt, kostenlose Probe, Gewinnspiel, Wettbewerb mit Verlosung, etc.) eingereicht.]', '').replace('\n', ' ').strip()
 
-            review.add_property(type='excerpt', value=excerpt)
+            if excerpt and len(excerpt) > 1:
+                review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = rev.get('id')
-            if not review.ssid:
-                review.ssid = review.digest() if author else review.digest(excerpt)
+                review.ssid = rev.get('id')
+                if not review.ssid:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     offset = context.get('offset', 0) + 10
     revs_cnt = revs_json.get('TotalResults')
