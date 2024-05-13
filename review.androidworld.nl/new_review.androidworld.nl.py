@@ -29,7 +29,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Mini-review:', '').replace('Mini-review ', '').split('review:')[0].split(': mid-ranger doet veel')[0].split(': meer klasse')[0].split(': tweede toptoestel')[0].split(': flinke accu')[0].split(': smartphone met')[0].split(': smartwatch voor')[0].split(': minder sprekend')[0].split(': terugkeer van')[0].split(': 24 uur met')[0].split(': herkenbare smartphone')[0].split(': wie niet')[0].split(': sterke comeback')[0].split(': verfijning van')[0].split(': en de laatste')[0].split(': met stip op')[0].split(': stijlvolle metalen')[0].split(': topsmartphones')[0].split(': de nieuwe ')[0].split(': verrassende ')[0].split(': (g)een grote')[0].split(': nieuwe LG')[0].split(': budget en')[0].split(': chique uitstraling')[0].split(': waar voor')[0].replace('reviews op Androidworld', '').replace(' videoreview', '').replace('Review:', '').replace('Preview nieuwe ', '').replace('Preview ', '').replace('Cameratest:', '').replace('(videoreview)', '').replace(' getest', '').replace('[video]', '').replace('Review ', '').replace(' review', '').split('PureView eerste')[0].split('preview van de')[0].split(": 'laatste kans'")[0].replace('Videoreview ', '').strip()
+    product.name = context['title'].replace('Mini-review:', '').replace('Mini-review ', '').split('-review:')[0].split('review:')[0].split(': mid-ranger doet veel')[0].split(': meer klasse')[0].split(': tweede toptoestel')[0].split(': flinke accu')[0].split(': smartphone met')[0].split(': smartwatch voor')[0].split(': minder sprekend')[0].split(': terugkeer van')[0].split(': 24 uur met')[0].split(': herkenbare smartphone')[0].split(': wie niet')[0].split(': sterke comeback')[0].split(': verfijning van')[0].split(': en de laatste')[0].split(': met stip op')[0].split(': stijlvolle metalen')[0].split(': topsmartphones')[0].split(': de nieuwe ')[0].split(': verrassende ')[0].split(': (g)een grote')[0].split(': nieuwe LG')[0].split(': budget en')[0].split(': chique uitstraling')[0].split(': waar voor')[0].replace('reviews op Androidworld', '').replace(' videoreview', '').replace('Review:', '').replace('Preview nieuwe ', '').replace('Preview ', '').replace('Cameratest:', '').replace('(videoreview)', '').replace(' getest', '').replace('[video]', '').replace('Review ', '').replace(' review', '').split('PureView eerste')[0].split('preview van de')[0].split(": 'laatste kans'")[0].replace('Videoreview ', '').strip()
     product.url = context['url']
     product.ssid = str(context['ssid'])
     product.category = 'Technik'
@@ -52,8 +52,11 @@ def process_review(data, context, session):
     if not pros:
         pros = data.xpath('//p[starts-with(normalize-space(.), "+ ")]')
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True).strip(' +-→')
-        review.add_property(type='pros', value=pro)
+        pro = pro.xpath('.//text()').string(multiple=True)
+        pros_ = pro.split('+')
+        for pro in pros_:
+            pro = pro.strip(' +-→')
+            review.add_property(type='pros', value=pro)
 
     if not pros:
         pros = data.xpath('//h3[contains(., "Pluspunten")]/following-sibling::p[1]/text()[normalize-space()]')
@@ -67,8 +70,11 @@ def process_review(data, context, session):
     if not cons:
         cons = data.xpath('//p[starts-with(normalize-space(.), "- ") and not(.//a)]')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True).strip(' +-→')
-        review.add_property(type='cons', value=con)
+        con = con.xpath('.//text()').string(multiple=True)
+        cons_ = con.split('-')
+        for con in cons_:
+            con = con.strip(' +-→')
+            review.add_property(type='cons', value=con)
 
     if not cons:
         cons = data.xpath('//h3[contains(., "Minpunten")]/following-sibling::p[1]/text()[normalize-space()]')
@@ -82,13 +88,13 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('(//h2[contains(., "Conclusie")]|//h3[contains(., "Conclusie")])/following-sibling::p[not(@id or starts-with(normalize-space(.), "+ ") or starts-with(normalize-space(.), "- ") or starts-with(normalize-space(.), "→ "))]//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2[contains(., "Conclusie")]|//h3[contains(., "Conclusie")])/following-sibling::p[not(@id or starts-with(normalize-space(.), "+ ") or starts-with(normalize-space(.), "- ") or starts-with(normalize-space(.), "→ ") or preceding-sibling::h2[contains(., "Alternatieven") or contains(., "kopen")])]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h2[contains(., "Conclusie")]|//h3[contains(., "Conclusie")])/preceding::p[not(@id or .//@datetime or starts-with(normalize-space(.), "+ ") or starts-with(normalize-space(.), "- ") or starts-with(normalize-space(.), "→ "))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//section[@id="article-content"]/following::p[@class="editor-paragraph mb-4 text-base text-secondary dark:text-zinc-50" and not(@id or starts-with(normalize-space(.), "+ ") or starts-with(normalize-space(.), "- ") or starts-with(normalize-space(.), "→ "))]//text()').string(multiple=True)
+        excerpt = data.xpath('//section[@id="article-content"]/following::p[@class="editor-paragraph mb-4 text-base text-secondary dark:text-zinc-50" and not(@id or starts-with(normalize-space(.), "+ ") or starts-with(normalize-space(.), "- ") or starts-with(normalize-space(.), "→ ") or preceding-sibling::h2[contains(., "Alternatieven") or contains(., "kopen")])]//text()').string(multiple=True)
     if excerpt:
         if summary:
             excerpt = excerpt.replace(summary, '').strip()

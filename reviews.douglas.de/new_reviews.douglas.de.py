@@ -102,7 +102,7 @@ def process_product(data, context, session):
     product.sku = data.xpath('//div[contains(., "Art-Nr.")]/span[@class="classification__item"]/text()').string()
 
     revs_url = 'https://www.douglas.de/jsapi/v2/products/bazaarvoice/reviews?baseProduct=' + product.ssid
-    session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
+    session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -166,7 +166,7 @@ def process_reviews(data, context, session):
     if offset < revs_cnt:
         next_page = context.get('page', 1) + 1
         next_url = 'https://www.douglas.de/jsapi/v2/products/bazaarvoice/reviews?baseProduct={ssid}&page={page}'.format(ssid=product.ssid, page=next_page)
-        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product, offset=offset, page=next_page))
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product, offset=offset, page=next_page))
 
     elif product.reviews:
         session.emit(product)

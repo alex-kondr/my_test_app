@@ -6,6 +6,7 @@ XCAT = ['Marques', 'Fonctionnalités', 'Guide', 'Guides', 'Comparatifs', 'Marque
 
 
 def run(context, session):
+    session.browser.use_new_parser = True
     session.sessionbreakers=[SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.bestofrobots.fr/'), process_frontpage, dict())
 
@@ -67,6 +68,10 @@ def process_product(data, context, session):
     product.sku = data.xpath('//meta[@itemprop="sku"]/@content').string()
     product.manufacturer = data.xpath('//meta[@itemprop="name"]/@content').string()
 
+    cats = data.xpath('//div[@class="col-sm-12 a-left"]//a//text()[normalize-space() and not(contains(., "Best of Robots"))]').strings()
+    if len(cats) > product.category.count('|') + 1:
+        product.category = '|'.join([cat.strip() for cat in cats])
+
     ean = data.xpath('//meta[@itemprop="gtin13"]/@content').string()
     if ean and ean.isdigit() and len(ean) > 10:
         product.add_property(type='id.ean', value=ean)
@@ -114,7 +119,7 @@ def process_reviews(data, context, session):
             review.add_property(type='is_verified_buyer', value=True)
 
         title = rev.xpath('.//span[@class="review-title"]//text()').string(multiple=True)
-        excerpt = rev.xpath('.//div[@class="review_comment"]//text()').string(multiple=True)
+        excerpt = rev.xpath('.//div[@class="review_comment"]//div[not(@class)]//text()').string(multiple=True)
         if excerpt:
             review.title = title
         else:
