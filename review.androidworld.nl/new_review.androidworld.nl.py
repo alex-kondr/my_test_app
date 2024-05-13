@@ -56,7 +56,8 @@ def process_review(data, context, session):
         pros_ = pro.split('+')
         for pro in pros_:
             pro = pro.strip(' +-→')
-            review.add_property(type='pros', value=pro)
+            if pro and len(pro) > 1:
+                review.add_property(type='pros', value=pro)
 
     if not pros:
         pros = data.xpath('//h3[contains(., "Pluspunten")]/following-sibling::p[1]/text()[normalize-space()]')
@@ -64,7 +65,8 @@ def process_review(data, context, session):
             pros = data.xpath('//h3[contains(., "Minpunten")]/preceding-sibling::p[starts-with(normalize-space(.), "→")]//text()[normalize-space()]')
         for pro in pros:
             pro = pro.string(multiple=True).strip(' +-→')
-            review.add_property(type='pros', value=pro)
+            if pro and len(pro) > 1:
+                review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//li[i[contains(@class, "a-minus-circle")]]')
     if not cons:
@@ -74,7 +76,8 @@ def process_review(data, context, session):
         cons_ = con.split('-')
         for con in cons_:
             con = con.strip(' +-→')
-            review.add_property(type='cons', value=con)
+            if con and len(con) > 1:
+                review.add_property(type='cons', value=con)
 
     if not cons:
         cons = data.xpath('//h3[contains(., "Minpunten")]/following-sibling::p[1]/text()[normalize-space()]')
@@ -82,7 +85,8 @@ def process_review(data, context, session):
             cons = data.xpath('//h3[contains(., "Minpunten")]/following-sibling::p[starts-with(normalize-space(.), "→")]//text()[normalize-space()]')
         for con in cons:
             con = con.string(multiple=True).strip(' +-→')
-            review.add_property(type='cons', value=con)
+            if con and len(con) > 1:
+                review.add_property(type='cons', value=con)
 
     summary = data.xpath('//section[@id="article-content"]/following-sibling::p[not(preceding-sibling::h2 or preceding-sibling::h1)]//text()').string(multiple=True)
     if summary:
