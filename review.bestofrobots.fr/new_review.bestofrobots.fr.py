@@ -1,8 +1,21 @@
 from agent import *
 from models.products import *
+import os
 
 
 XCAT = ['Marques', 'Fonctionnalités', 'Guide', 'Guides', 'Comparatifs', 'Marques / Gammes']
+
+
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
 
 
 def run(context, session):
@@ -19,6 +32,8 @@ def process_frontpage(data, context, session):
 
 
 def process_catlist(data, context, session):
+    strip_namespace(data)
+
     cats = data.xpath('//li[@class="menu-full-width"]')
     for cat in cats:
         name = cat.xpath('a/text()').string()
@@ -39,12 +54,11 @@ def process_catlist(data, context, session):
                     url = sub_cat.xpath('a/@href').string()
                     if url:
                         session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
-        else:
-            url = cat.xpath('a/@href').string()
-            session.queue(Request(url), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
+    strip_namespace(data)
+
     prods = data.xpath('//ol[@id="products-list"]/li')
     for prod in prods:
         name = prod.xpath('.//h2[@class="product-name"]/a/text()').string()
@@ -60,6 +74,8 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
+    strip_namespace(data)
+
     product = Product()
     product.name = context['name']
     product.url = context['url']
@@ -67,10 +83,6 @@ def process_product(data, context, session):
     product.category = context['cat']
     product.sku = data.xpath('//meta[@itemprop="sku"]/@content').string()
     product.manufacturer = data.xpath('//meta[@itemprop="name"]/@content').string()
-
-    cats = data.xpath('//div[@class="col-sm-12 a-left"]//a//text()[normalize-space() and not(contains(., "Best of Robots"))]').strings()
-    if len(cats) > product.category.count('|') + 1:
-        product.category = '|'.join([cat.strip() for cat in cats])
 
     ean = data.xpath('//meta[@itemprop="gtin13"]/@content').string()
     if ean and ean.isdigit() and len(ean) > 10:
@@ -83,6 +95,8 @@ def process_product(data, context, session):
 
 
 def process_reviews(data, context, session):
+    strip_namespace(data)
+
     product = context['product']
 
     revs = data.xpath('//li[@class="reviews__customers"]')
