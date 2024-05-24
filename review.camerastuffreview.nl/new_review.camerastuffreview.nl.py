@@ -4,7 +4,6 @@ from models.products import *
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers=[SessionBreak(max_requests=10000)]
     session.queue(Request('https://camerastuffreview.com/lenzen/'), process_revlist, dict())
 
 
@@ -25,7 +24,7 @@ def process_review(data, context, session):
     product.category = 'Tech'
 
     title = data.xpath('//meta[@property="og:title"]/@content').string()
-    product.name = title.replace('Full review: ', '').replace('Preview: ', '').replace('(P)review: ', '').replace('Review: ', '').split(' – ')[0].split(':')[0].replace('Review ', '').replace('Test ', '').strip()
+    product.name = title.replace('Full review: ', '').replace('Preview: ', '').replace('(P)review: ', '').replace('(P)review ', '').replace('Review: ', '').replace('REVIEW: ', '').replace('Full Review ', '').replace('Full review ', '').replace('Review ', '').replace(u'Review\u00a0', '').replace(' review', '').replace('Test: ', '').replace('TEST: ', '').replace('Test ', '').replace('TEST ', '').replace('test ', '').split(' – ')[0].split(' - ')[0].split(':')[0].strip()
 
     product.url = data.xpath('//a[@class="elementor-button elementor-button-link elementor-size-sm"]/@href').string()
     if not product.url:
@@ -70,7 +69,7 @@ def process_review(data, context, session):
 
     pros = data.xpath('//tr[contains(., "VOORDELEN")]/following-sibling::tr/td[1]//li')
     if not pros:
-        pros = data.xpath('//h4[contains(., "Voordelen")]/following-sibling::ul/li')
+        pros = data.xpath('//h4[contains(., "Voordelen")]/following-sibling::ul[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True).strip(' –')
         if pro and len(pro) > 1:
@@ -78,7 +77,7 @@ def process_review(data, context, session):
 
     cons = data.xpath('//tr[contains(., "NADELEN") or contains(., "Nadelen")]/following-sibling::tr/td[2]//li')
     if not cons:
-        cons = data.xpath('//h4[contains(., "Nadelen")]/following-sibling::ul/li')
+        cons = data.xpath('//h4[contains(., "Nadelen")]/following-sibling::ul[1]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True).strip(' –')
         if con and len(con) > 1:
@@ -88,21 +87,25 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//div[@data-id="12946e9" or @data-id="97121bd"]//p//text()').string(multiple=True)
-    if not conclusion:
-        conclusion = data.xpath('//tr[contains(., "Conclusie")]/following-sibling::tr/td/p[not(contains(., "insertgrid") or .//span[@class])]//text()')
-    if conclusion:
+    conclusions = data.xpath('//div[@data-id="12946e9" or @data-id="97121bd"]//p//text()[normalize-space()]').strings()
+    if not conclusions:
+        conclusions = data.xpath('//tr[contains(., "Conclusie")]/following-sibling::tr/td/p[not(contains(., "insertgrid") or .//span[@class])]//text()[normalize-space()]').strings()
+    if conclusions:
+        conclusion = "".join(conclusions).strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h2|//h3)/following-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//table[@class="responsive" and (.//h1 or .//h3)]//td[not(.//h1 or .//h3 or .//h4 or contains(., "insertgrid") or .//span[@class])]//text()[not(contains(., "insertgrid"))]')
+        excerpt = data.xpath('//table[@class="responsive" and (.//h1 or .//h3)]//td[not(.//h1 or .//h3 or .//h4 or contains(., "insertgrid") or .//span[@class])]//text()[not(contains(., "insertgrid") or contains(., "{arimagnify"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="elementor-widget-container"]//p//text()').string(multiple=True)
+
     if excerpt:
         if summary:
-            excerpt = excerpt.replace(summary, '')
+            excerpt = excerpt.replace(summary, '').strip()
 
-        if conclusion:
-            excerpt = excerpt.replace(conclusion, '')
+        for conclusion in conclusions:
+            excerpt = excerpt.replace(conclusion.strip(), '').strip()
 
         review.add_property(type='excerpt', value=excerpt)
 
