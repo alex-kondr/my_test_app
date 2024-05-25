@@ -1,6 +1,31 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def run(context, session):
@@ -42,7 +67,7 @@ def process_prodlist(data, context, session):
             mpn = prod.get('_6')
             revs_cnt = prod.get('_5')
             if mpn and revs_cnt and int(revs_cnt) > 0:
-                product.add_property(type='id_manufacturer', value=mpn)
+                product.add_property(type='id.manufacturer', value=mpn)
 
                 url = 'https://api.bazaarvoice.com/data/batch.json?passkey=lwlek4awxjzijgl7q77uroukt&apiversion=5.5&displaycode=13336-sv_se&resource.q0=reviews&filter.q0=isratingsonly%3Aeq%3Afalse&filter.q0=productid%3Aeq%3A{}&filter.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&sort.q0=relevancy%3Aa1&stats.q0=reviews&filteredstats.q0=reviews&include.q0=authors%2Cproducts%2Ccomments&filter_reviews.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&filter_reviewcomments.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&filter_comments.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&limit.q0=100&offset.q0=0&limit_comments.q0=1'.format(mpn)
                 session.queue(Request(url), process_reviews, dict(product=product, mpn=mpn))
@@ -74,31 +99,41 @@ def process_reviews(data, context, session):
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
+        grades = rev.get('SecondaryRatings', {})
+        for grade in grades.values():
+            grade_name = grade.get('Id')
+            grade_value = grade.get('Value')
+            if grade_name and grade_value and grade_value.is_digit() and float(grade_value) > 0:
+                review.grades.append(Grade(name=grade_name, value=float(grade_value), best=5.0))
+
         is_recommended = rev.get('IsRecommended')
         if is_recommended and is_recommended == True:
             review.add_property(type='is_recommended', value=True)
 
         title = rev.get('Title')
         excerpt = rev.get('ReviewText')
-        if excerpt:
-            review.title = title
+        if excerpt and title:
+            review.title = remove_emoji(title)
         else:
             excerpt = title
 
         if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = remove_emoji(excerpt).replace('[Denna recension hämtades som en del av en kampanj.]', '').strip()
 
-            review.ssid = rev.get('Id')
-            if not review.ssid:
-                review.ssid = review.digest() if author else review.digest(excerpt)
+            if len(excerpt) > 1:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                review.ssid = rev.get('Id')
+                if not review.ssid:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
+
+                product.reviews.append(review)
 
     revs_cnt = revs_json.get('TotalResults', 0)
     offset = context.get('offset', 0) + 100
     if offset < revs_cnt:
         url = 'https://api.bazaarvoice.com/data/batch.json?passkey=lwlek4awxjzijgl7q77uroukt&apiversion=5.5&displaycode=13336-sv_se&resource.q0=reviews&filter.q0=isratingsonly%3Aeq%3Afalse&filter.q0=productid%3Aeq%3A{mpn}&filter.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&sort.q0=relevancy%3Aa1&stats.q0=reviews&filteredstats.q0=reviews&include.q0=authors%2Cproducts%2Ccomments&filter_reviews.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&filter_reviewcomments.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&filter_comments.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&limit.q0=100&offset.q0={offset}&limit_comments.q0=1'.format(mpn=context['mpn'], offset=offset)
-        session.queue(Request(url), process_reviews, dict(product=product, offset=offset))
+        session.queue(Request(url), process_reviews, dict(context, product=product, offset=offset))
 
     elif product.reviews:
         session.emit(product)
