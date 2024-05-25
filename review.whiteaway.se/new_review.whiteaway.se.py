@@ -29,7 +29,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('http://www.whiteaway.se/'), process_fronpage, dict())
 
 
@@ -103,7 +103,7 @@ def process_reviews(data, context, session):
         for grade in grades.values():
             grade_name = grade.get('Id')
             grade_value = grade.get('Value')
-            if grade_name and grade_value and grade_value.is_digit() and float(grade_value) > 0:
+            if grade_name and grade_value and grade_value > 0:
                 review.grades.append(Grade(name=grade_name, value=float(grade_value), best=5.0))
 
         is_recommended = rev.get('IsRecommended')
