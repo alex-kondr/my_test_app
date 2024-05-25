@@ -86,7 +86,7 @@ def process_reviews(data, context, session):
             excerpt = title
 
         if excerpt:
-            review.add_prperty(type='excerpt', value=excerpt)
+            review.add_property(type='excerpt', value=excerpt)
 
             review.ssid = rev.get('Id')
             if not review.ssid:
@@ -100,5 +100,5 @@ def process_reviews(data, context, session):
         url = 'https://api.bazaarvoice.com/data/batch.json?passkey=lwlek4awxjzijgl7q77uroukt&apiversion=5.5&displaycode=13336-sv_se&resource.q0=reviews&filter.q0=isratingsonly%3Aeq%3Afalse&filter.q0=productid%3Aeq%3A{mpn}&filter.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&sort.q0=relevancy%3Aa1&stats.q0=reviews&filteredstats.q0=reviews&include.q0=authors%2Cproducts%2Ccomments&filter_reviews.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&filter_reviewcomments.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&filter_comments.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&limit.q0=100&offset.q0={offset}&limit_comments.q0=1'.format(mpn=context['mpn'], offset=offset)
         session.queue(Request(url), process_reviews, dict(product=product, offset=offset))
 
-    elif product.review:
+    elif product.reviews:
         session.emit(product)
