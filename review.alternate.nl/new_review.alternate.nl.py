@@ -56,7 +56,7 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.xpath('.//span[contains(@class, "ratingCoun")]/text()').string()
         if revs_cnt and revs_cnt.strip('()').isdigit() and int(revs_cnt.strip('()')) > 0:
-            session.queue(Request(url), process_product, dict(name=name, url=url, revs_cnt=int(revs_cnt.strip('()'))))
+            session.queue(Request(url), process_product, dict(context, name=name, url=url, revs_cnt=int(revs_cnt.strip('()'))))
         else:
             return
 
