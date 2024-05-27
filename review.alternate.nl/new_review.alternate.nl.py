@@ -1,14 +1,39 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
 
 
 XCAT = ['Acties', 'Tweedekans', 'Merchandise']
 
 
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
+
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
     session.queue(Request('https://www.alternate.nl/'), process_frontpage, dict())
 
 
@@ -107,12 +132,12 @@ def process_reviews(data, context, session):
         review.url = product.url
 
         author = ''
-        date_author = rev.xpath('.//div[contains(., "review door") and not(@class)]//text()').string(multiple=True)
+        date_author = rev.xpath('.//div[(contains(., "review door") or contains(., "klant is niet meer geregistreerd")) and not(@class)]//text()').string(multiple=True)
         if date_author:
-            date_author = date_author.replace('review door ', '').split()
-            if len(date_author) > 1:
-                review.date = date_author[-1].strip()
+            date_author = date_author.replace('review door ', '').replace('klant is niet meer geregistreerd ', '').strip().split()
+            review.date = date_author[-1].strip()
 
+            if len(date_author) > 1:
                 author = " ".join(date_author[:-1])
                 review.authors.append(Person(name=author, ssid=author))
 
@@ -134,11 +159,13 @@ def process_reviews(data, context, session):
 
         excerpt = rev.xpath('.//span[@class="d-block py-2"]//text()').string(multiple=True)
         if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = remove_emoji(excerpt).replace('•', '').strip()
+            if len(excerpt) > 1:
+                review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = review.digest() if author else review.digest(excerpt)
+                review.ssid = review.digest() if author else review.digest(excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
