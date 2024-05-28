@@ -33,7 +33,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('https://www.alternate.nl/'), process_frontpage, dict())
 
 
@@ -91,7 +91,6 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
-
     product = Product()
     product.name = context['name']
     product.url = context['url']
@@ -118,9 +117,9 @@ def process_product(data, context, session):
         options = "--compressed -X POST -H 'Referer: {}'".format(product.url)
     else:
         revs_url = 'https://www.alternate.nl/part/ratings_detail.xhtml'
-        options = "--compressed -X POST -H 'Referer: {prod_url}' -H 'Cookie: JSESSIONID=nmu4f1Mg_5Yi6wFTY-jJF4sUiaasMLcXZ2fOpxt3.21; permanent=c8398e164d8385b249a2eae5f895a8166ce129f47f3716d8c7e12d14fb3a4; lastVisited=%5B%7B%22kid%22%3A1327511%2C%22lastAdded%22%3A1716814145844%7D%2C%7B%22kid%22%3A1845414%2C%22lastAdded%22%3A1716796721710%7D%5D; __cf_bm=X26b8lwSF8zNlnBkrLO38k4rp5jq6CUF8n1xytPWXwo-1716814137-1.0.1.1-_vPd6ZhAm_9PLpx027awyrq0E0Ww2XaOd5WLmmg4frQxolR162CtFVJZr1IIZSBY3D9NcOcbFUNzhImD1rZbIw' --data-raw 'ratings-section%3Aratings-list=ratings-section%3Aratings-list&ratings-section%3Aratings-list%3Aj_idt93%3A0%3Aj_idt94%3Aj_idt96=f126ac019dc221a6da73add2a048dae1&ratings-section%3Aratings-list%3Aj_idt93%3A1%3Aj_idt94%3Aj_idt96=d59b9ac31f3705ac0d272e87706b5b53&ratings-section%3Aratings-list%3Aj_idt93%3A2%3Aj_idt94%3Aj_idt96=ef8766014f2f7f9dac7d3fdf1da9e8c5&ratings-section%3Aratings-list%3Aj_idt93%3A3%3Aj_idt94%3Aj_idt96=d25eecbc7468896cf7a7e2d455e28071&ratings-section%3Aratings-list%3Aj_idt93%3A4%3Aj_idt94%3Aj_idt96=040b3df2ee99f8613f053651bd748cf5&p={ssid}&jakarta.faces.ViewState=1445424041924757489%3A-1323237574770768540&jakarta.faces.source=ratings-section%3Aratings-list%3Aj_idt130&jakarta.faces.partial.event=click&jakarta.faces.partial.execute=ratings-section%3Aratings-list%3Aj_idt130%20ratings-section%3Aratings-list%3Aj_idt130&jakarta.faces.partial.render=ratings-section%3Aratings-list&jakarta.faces.behavior.event=action&jakarta.faces.partial.ajax=true'".format(prod_url=product.url, ssid=product.ssid)
+        options = "--compressed -X POST -H 'Referer: {prod_url}' -H 'Cookie: permanent=c8398e164d8385b249a2eae5f895a8166ce129f47f3716d8c7e12d14fb3a4; lastVisited=%5B%7B%22kid%22%3A1697733%2C%22lastAdded%22%3A1716902476305%7D%2C%7B%22kid%22%3A1898270%2C%22lastAdded%22%3A1716901831706%7D%2C%7B%22kid%22%3A1898892%2C%22lastAdded%22%3A1716816136644%7D%2C%7B%22kid%22%3A1925081%2C%22lastAdded%22%3A1716815985076%7D%2C%7B%22kid%22%3A1864205%2C%22lastAdded%22%3A1716815966358%7D%2C%7B%22kid%22%3A1600205%2C%22lastAdded%22%3A1716814678406%7D%2C%7B%22kid%22%3A1327511%2C%22lastAdded%22%3A1716814145844%7D%2C%7B%22kid%22%3A1845414%2C%22lastAdded%22%3A1716796721710%7D%5D; JSESSIONID=qVhB3-T9P9wzrQiR3K4T7ev9tJuFaRbV2h_3NVSU.21; CONFSESSIONID=aea4216a-a77b-4d8f-a675-0686169da760; __cf_bm=DC9AO8BXC.ZQ6SOiKF0gKxNAMytZg39gt8bsLts7ee8-1716901831-1.0.1.1-qfRwpbkYmOSa7xgxL5as5y.gQLWdvrEevptPnKxs9iBd4Q7_h_9X08h7ESYrRtU1LAe81RSNc6lhx7Tbe2vP6A' --data-raw 'ratings-section%3Aratings-list=ratings-section%3Aratings-list&ratings-section%3Aratings-list%3Aj_idt93%3A0%3Aj_idt94%3Aj_idt96=656b6d166ece48fc84cf976cf33a01e1&ratings-section%3Aratings-list%3Aj_idt93%3A1%3Aj_idt94%3Aj_idt96=ec669cfc0e08fe9becda08bf16ae50fd&ratings-section%3Aratings-list%3Aj_idt93%3A2%3Aj_idt94%3Aj_idt96=57d813d650b399e4931c1a551828c13e&ratings-section%3Aratings-list%3Aj_idt93%3A3%3Aj_idt94%3Aj_idt96=6bea3b87b53f7aa4037bc007bb07c37a&ratings-section%3Aratings-list%3Aj_idt93%3A4%3Aj_idt94%3Aj_idt96=ce6fe4f1030064836fa68a0b280b97de&p={ssid}&jakarta.faces.ViewState=-2804370384737691200%3A-4152291505745804544&jakarta.faces.source=ratings-section%3Aratings-list%3Aj_idt130&jakarta.faces.partial.event=click&jakarta.faces.partial.execute=ratings-section%3Aratings-list%3Aj_idt130%20ratings-section%3Aratings-list%3Aj_idt130&jakarta.faces.partial.render=ratings-section%3Aratings-list&jakarta.faces.behavior.event=action&jakarta.faces.partial.ajax=true'".format(prod_url=product.url, ssid=product.ssid)
 
-    session.queue(Request(revs_url, use='curl', options=options), process_reviews, dict(product=product))
+    session.do(Request(revs_url, use='curl', options=options), process_reviews, dict(product=product))
 
 def process_reviews(data, context, session):
     product = context['product']

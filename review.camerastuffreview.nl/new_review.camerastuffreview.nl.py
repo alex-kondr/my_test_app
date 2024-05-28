@@ -1,5 +1,30 @@
 from agent import *
 from models.products import *
+import re
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def run(context, session):
@@ -71,7 +96,7 @@ def process_review(data, context, session):
     if not pros:
         pros = data.xpath('//h4[contains(., "Voordelen")]/following-sibling::ul[1]/li')
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True).strip(' –')
+        pro = remove_emoji(pro.xpath('.//text()').string(multiple=True).strip(' –'))
         if pro and len(pro) > 1:
             review.add_property(type='pros', value=pro)
 
@@ -79,33 +104,28 @@ def process_review(data, context, session):
     if not cons:
         cons = data.xpath('//h4[contains(., "Nadelen")]/following-sibling::ul[1]/li')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True).strip(' –')
+        con = remove_emoji(con.xpath('.//text()').string(multiple=True).strip(' –'))
         if con and len(con) > 1:
             review.add_property(type='cons', value=con)
 
-    summary = data.xpath('((//div[@class="elementor-widget-container"]/p)[1]|//table[@class="responsive" and not(.//h1 or .//h3)]//p)//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
     conclusions = data.xpath('//div[@data-id="12946e9" or @data-id="97121bd"]//p//text()[normalize-space()]').strings()
     if not conclusions:
-        conclusions = data.xpath('//tr[contains(., "Conclusie")]/following-sibling::tr/td/p[not(contains(., "insertgrid") or .//span[@class])]//text()[normalize-space()]').strings()
+        conclusions = data.xpath('(//tr[contains(., "Conclusie")]/following-sibling::tr/td/p[not(contains(., "insertgrid") or .//span[@class])]|//h3[contains(., "Conclusie")]/following::p[not(contains(., "insertgrid") or .//span[@class] or @class or contains(., "LAATSTE BERICHTEN FOCUS MAGAZINE"))])//text()[normalize-space()]').strings()
     if conclusions:
-        conclusion = "".join(conclusions).strip()
+        conclusion = remove_emoji("".join(conclusions).strip())
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h2|//h3)/following-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//table[@class="responsive" and (.//h1 or .//h3)]//td[not(.//h1 or .//h3 or .//h4 or contains(., "insertgrid") or .//span[@class])]//text()[not(contains(., "insertgrid") or contains(., "{arimagnify"))]').string(multiple=True)
+        excerpt = data.xpath('//table[@class="responsive"]//td[not(.//h1 or .//h3 or .//h4 or .//span[@class="titlereview"])]//text()[not(contains(., "insertgrid") or contains(., "{arimagnify"))]').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="elementor-widget-container"]//p//text()').string(multiple=True)
 
     if excerpt:
-        if summary:
-            excerpt = excerpt.replace(summary, '').strip()
-
         for conclusion in conclusions:
             excerpt = excerpt.replace(conclusion.strip(), '').strip()
+
+        excerpt = remove_emoji((excerpt))
 
         review.add_property(type='excerpt', value=excerpt)
 
