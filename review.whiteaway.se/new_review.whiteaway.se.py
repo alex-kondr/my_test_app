@@ -69,7 +69,7 @@ def process_prodlist(data, context, session):
             if mpn and revs_cnt and int(revs_cnt) > 0:
                 product.add_property(type='id.manufacturer', value=mpn)
 
-                url = 'https://api.bazaarvoice.com/data/batch.json?passkey=lwlek4awxjzijgl7q77uroukt&apiversion=5.5&displaycode=13336-sv_se&resource.q0=reviews&filter.q0=isratingsonly%3Aeq%3Afalse&filter.q0=productid%3Aeq%3A{}&filter.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&sort.q0=relevancy%3Aa1&stats.q0=reviews&filteredstats.q0=reviews&include.q0=authors%2Cproducts%2Ccomments&filter_reviews.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&filter_reviewcomments.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&filter_comments.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&limit.q0=10&offset.q0=0&limit_comments.q0=1'.format(mpn)
+                url = 'https://api.bazaarvoice.com/data/batch.json?passkey=lwlek4awxjzijgl7q77uroukt&apiversion=5.5&displaycode=13336-sv_se&resource.q0=reviews&filter.q0=isratingsonly%3Aeq%3Afalse&filter.q0=productid%3Aeq%3A{}&filter.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&sort.q0=relevancy%3Aa1&stats.q0=reviews&filteredstats.q0=reviews&include.q0=authors%2Cproducts%2Ccomments&filter_reviews.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&filter_reviewcomments.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&filter_comments.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&limit.q0=10&offset.q0=0&limit_comments.q0=1'.format(mpn)
                 session.queue(Request(url), process_reviews, dict(product=product, mpn=mpn))
 
 
@@ -80,6 +80,9 @@ def process_reviews(data, context, session):
 
     revs = revs_json.get('Results', [])
     for rev in revs:
+        if rev.get('ProductId').lower() != context['mpn'].lower() or rev.get('IsSyndicated') == True or rev.get('ContentLocale', '') != 'sv_SE':
+            continue
+
         review = Review()
         review.type = 'user'
         review.url = product.url
@@ -114,15 +117,13 @@ def process_reviews(data, context, session):
         if "verifiedPurchaser" in badges:
             review.add_property(type='is_verified_buyer', value=True)
 
-        hlp_yes = rev.get('Helpfulness')
-        if hlp_yes:
+        hlp_yes = rev.get('TotalPositiveFeedbackCount')
+        if hlp_yes and int(hlp_yes) > 0:
             review.add_property(type='helpful_votes', value=int(hlp_yes))
 
-        hlp_total = rev.get('TotalFeedbackCount')
-        if hlp_total and hlp_total > 0 and hlp_yes:
-            review.add_property(type='not_helpful_votes', value=int(hlp_total) - int(hlp_yes))
-        elif hlp_total and hlp_total > 0:
-            review.add_property(type='not_helpful_votes', value=int(hlp_total))
+        hlp_no = rev.get('TotalNegativeFeedbackCount')
+        if hlp_no and int(hlp_no) > 0:
+            review.add_property(type='not_helpful_votes', value=int(hlp_no))
 
         title = rev.get('Title')
         excerpt = rev.get('ReviewText')
@@ -131,22 +132,20 @@ def process_reviews(data, context, session):
         else:
             excerpt = title
 
-        if excerpt and rev.get('ProductId').lower() == context['mpn'].lower() and rev.get('IsSyndicated') != True and rev.get('ContentLocale', '') == 'sv_SE':
+        if excerpt:
             excerpt = remove_emoji(excerpt).replace('[Denna recension hämtades som en del av en kampanj.]', '').replace('[Denne anmeldelsen ble samlet inn som en del av en kampanje.]', '').strip()
 
             if len(excerpt) > 1:
                 review.add_property(type='excerpt', value=excerpt)
 
                 review.ssid = rev.get('Id')
-                if not review.ssid:
-                    review.ssid = review.digest() if author else review.digest(excerpt)
 
                 product.reviews.append(review)
 
     revs_cnt = revs_json.get('TotalResults', 0)
     offset = context.get('offset', 0) + 10
     if offset < revs_cnt:
-        url = 'https://api.bazaarvoice.com/data/batch.json?passkey=lwlek4awxjzijgl7q77uroukt&apiversion=5.5&displaycode=13336-sv_se&resource.q0=reviews&filter.q0=isratingsonly%3Aeq%3Afalse&filter.q0=productid%3Aeq%3A{mpn}&filter.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&sort.q0=relevancy%3Aa1&stats.q0=reviews&filteredstats.q0=reviews&include.q0=authors%2Cproducts%2Ccomments&filter_reviews.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&filter_reviewcomments.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&filter_comments.q0=contentlocale%3Aeq%3Ada_DK%2Cno_NO%2Csv_SE&limit.q0=10&offset.q0={offset}&limit_comments.q0=1'.format(mpn=context['mpn'], offset=offset)
+        url = 'https://api.bazaarvoice.com/data/batch.json?passkey=lwlek4awxjzijgl7q77uroukt&apiversion=5.5&displaycode=13336-sv_se&resource.q0=reviews&filter.q0=isratingsonly%3Aeq%3Afalse&filter.q0=productid%3Aeq%3A{mpn}&filter.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&sort.q0=relevancy%3Aa1&stats.q0=reviews&filteredstats.q0=reviews&include.q0=authors%2Cproducts%2Ccomments&filter_reviews.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&filter_reviewcomments.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&filter_comments.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&limit.q0=10&offset.q0={offset}&limit_comments.q0=1'.format(mpn=context['mpn'], offset=offset)
         session.queue(Request(url), process_reviews, dict(context, product=product, offset=offset))
 
     elif product.reviews:
