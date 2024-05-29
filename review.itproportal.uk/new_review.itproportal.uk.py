@@ -8,4 +8,11 @@ def run(context, session):
 
 
 def process_revlist(data, context, session):
-    pass
+    revs = data.xpath('//a[@class="article-link"]')
+    for rev in revs:
+        title = rev.xpath('@aria-label').string()
+        url = rev.xpath('@href').string()
+        session.queue(Request(url), process_review, dict(title=title, url=url))
+
+
+def process
