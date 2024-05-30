@@ -15,4 +15,5 @@ def process_revlist(data, context, session):
         session.queue(Request(url), process_review, dict(title=title, url=url))
 
 
-def process
+def process_review(data, context, session):
+    pass
