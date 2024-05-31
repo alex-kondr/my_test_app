@@ -42,7 +42,7 @@ def process_fronpage(data, context, session):
         for sub_cat in sub_cats:
             sub_name = sub_cat.xpath('.//span[@class="sc-75c11d93-0 ivNzjP"]/text()').string()
 
-            sub_cats1 = sub_cat.xpath('a[@class="sc-1f701fb5-0 dPJNaz"]')
+            sub_cats1 = sub_cat.xpath('a[@class="sc-84f54009-0 iDKLcZ"]')
             for sub_cat1 in sub_cats1:
                 sub_name1 = sub_cat1.xpath('span/text()').string()
                 url = sub_cat1.xpath('@href').string()
@@ -69,7 +69,7 @@ def process_prodlist(data, context, session):
             if mpn and revs_cnt and int(revs_cnt) > 0:
                 product.add_property(type='id.manufacturer', value=mpn)
 
-                url = 'https://api.bazaarvoice.com/data/batch.json?passkey=lwlek4awxjzijgl7q77uroukt&apiversion=5.5&displaycode=13336-sv_se&resource.q0=reviews&filter.q0=isratingsonly%3Aeq%3Afalse&filter.q0=productid%3Aeq%3A{}&filter.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&sort.q0=relevancy%3Aa1&stats.q0=reviews&filteredstats.q0=reviews&include.q0=authors%2Cproducts%2Ccomments&filter_reviews.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&filter_reviewcomments.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&filter_comments.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&limit.q0=10&offset.q0=0&limit_comments.q0=1'.format(mpn)
+                url = 'https://api.bazaarvoice.com/data/batch.json?passkey=lwlek4awxjzijgl7q77uroukt&apiversion=5.5&displaycode=13336-sv_se&resource.q0=reviews&filter.q0=isratingsonly%3Aeq%3Afalse&filter.q0=productid%3Aeq%3A{}&filter.q0=contentlocale%3Aeq%3Asv_SE&sort.q0=relevancy%3Aa1&stats.q0=reviews&filteredstats.q0=reviews&include.q0=authors%2Cproducts%2Ccomments&filter_reviews.q0=contentlocale%3Aeq%3Asv_SE&filter_reviewcomments.q0=contentlocale%3Aeq%3Asv_SE&filter_comments.q0=contentlocale%3Aeq%3Asv_SE&limit.q0=10&offset.q0=0&limit_comments.q0=1'.format(mpn)
                 session.queue(Request(url), process_reviews, dict(product=product, mpn=mpn))
 
 
@@ -86,6 +86,7 @@ def process_reviews(data, context, session):
         review = Review()
         review.type = 'user'
         review.url = product.url
+        review.ssid = rev.get('Id')
 
         date = rev.get('SubmissionTime')
         if date:
@@ -138,14 +139,12 @@ def process_reviews(data, context, session):
             if len(excerpt) > 1:
                 review.add_property(type='excerpt', value=excerpt)
 
-                review.ssid = rev.get('Id')
-
                 product.reviews.append(review)
 
     revs_cnt = revs_json.get('TotalResults', 0)
     offset = context.get('offset', 0) + 10
     if offset < revs_cnt:
-        url = 'https://api.bazaarvoice.com/data/batch.json?passkey=lwlek4awxjzijgl7q77uroukt&apiversion=5.5&displaycode=13336-sv_se&resource.q0=reviews&filter.q0=isratingsonly%3Aeq%3Afalse&filter.q0=productid%3Aeq%3A{mpn}&filter.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&sort.q0=relevancy%3Aa1&stats.q0=reviews&filteredstats.q0=reviews&include.q0=authors%2Cproducts%2Ccomments&filter_reviews.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&filter_reviewcomments.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&filter_comments.q0=contentlocale%3Aeq%3Asv_SE%2Cno_NO%2Csv_SE&limit.q0=10&offset.q0={offset}&limit_comments.q0=1'.format(mpn=context['mpn'], offset=offset)
+        url = 'https://api.bazaarvoice.com/data/batch.json?passkey=lwlek4awxjzijgl7q77uroukt&apiversion=5.5&displaycode=13336-sv_se&resource.q0=reviews&filter.q0=isratingsonly%3Aeq%3Afalse&filter.q0=productid%3Aeq%3A{mpn}&filter.q0=contentlocale%3Aeq%3Asv_SE&sort.q0=relevancy%3Aa1&stats.q0=reviews&filteredstats.q0=reviews&include.q0=authors%2Cproducts%2Ccomments&filter_reviews.q0=contentlocale%3Aeq%3Asv_SE&filter_reviewcomments.q0=contentlocale%3Aeq%3Asv_SE&filter_comments.q0=contentlocale%3Aeq%3Asv_SE&limit.q0=10&offset.q0={offset}&limit_comments.q0=1'.format(mpn=context['mpn'], offset=offset)
         session.queue(Request(url), process_reviews, dict(context, product=product, offset=offset))
 
     elif product.reviews:
