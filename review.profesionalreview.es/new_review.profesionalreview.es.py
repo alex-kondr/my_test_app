@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://www.profesionalreview.com/category/reviews/'), process_revlist, dict())
 
 
@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split('Review en Español')[0].split('Review en español')[0].strip()
+    product.name = context['title'].split('Review en Español')[0].split('Review en español')[0].split('Review del')[0].split(' review: ')[0].split('Review con')[0].split('Review técnico')[0].replace('Review:', '').replace('Test de rendimiento de ', '').strip(' ,')
     product.ssid = context['url'].split('/')[-2]
     product.category = 'Tecnica'
 
@@ -47,12 +47,30 @@ def process_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
-    grades = data.xpath('//div[@class="review-item"]/h5/span')
+    if not grade_overall:
+        grade_overall = data.xpath('//div[@class="review-final-score"]//span/@style[contains(., "width")]').string()
+        if grade_overall:
+            grade_overall = float(grade_overall.strip('width: %')) / 20
+            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+
+    if not grade_overall:
+        grade_overall = data.xpath('//div[@class="review-final-score"]//span/@title').string()
+        if grade_overall:
+            grade_overall = grade_overall.split()[0]
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
+    grades = data.xpath('//div[@class="review-item"]')
     for grade in grades:
-        name, grade = grade.xpath('text()').string().split(' - ')
-        name = name.strip()
-        grade = grade.strip(' %')
-        review.grades.append(Grade(name=name, value=float(grade), best=100.0))
+        grade_name = grade.xpath('h5//text()[normalize-space()]').string()
+
+        if ' - ' in grade_name:
+            grade_name, grade_val = grade_name.split(' - ')
+            grade_name = grade_name.strip()
+            grade_val = grade_val.strip(' %')
+        else:
+            grade_val = float(grade.xpath('.//span[contains(@style, "width")]/@style').string().strip('width: %')) / 20
+
+        review.grades.append(Grade(name=grade_name, value=float(grade_val), best=100.0))
 
     conclusion = data.xpath('//h2[contains(., "conclusión") or contains(., "conclusiones")]/following-sibling::p[not(@style or contains(., "El equipo de Profesional Review le otorga") or contains(., "Última actualización"))]//text()').string(multiple=True)
     if not conclusion:
@@ -66,6 +84,9 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[@class="entry-content entry clearfix"]/p[not(@style or contains(., "El equipo de Profesional Review le otorga"))]//text()').string(multiple=True)
 
     if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '')
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
