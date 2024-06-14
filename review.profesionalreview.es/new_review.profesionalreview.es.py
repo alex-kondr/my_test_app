@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split('Review en Español')[0].split('Review en español')[0].split('review en Español')[0].split('Review Español')[0].split('Review del')[0].split('– Review')[0].split(' review: ')[0].split('Review con')[0].split('Review técnico')[0].replace('Preview y primeras impresiones', '').replace('Review:', '').replace('Test de rendimiento de ', '').replace('¿El siguiente nivel? Review', '').replace('Unboxing y primeras impresiones (Preview)', '').replace('review en español (Análisis completo)', '').replace('(Análisis completo)', '').replace(' Preview', '').replace(' Review', '').replace('Review ', '').replace(' review', '').strip(' ,')
+    product.name = context['title'].split('Review en Español')[0].split('Review en español')[0].split('review en Español')[0].split('Review Español')[0].split('Review del')[0].split('– Review')[0].split(' review: ')[0].split('Review con')[0].split('Review técnico')[0].replace('Preview y primeras impresiones', '').replace('Review:', '').replace('Test de rendimiento de ', '').replace('¿El siguiente nivel? Review', '').replace('Unboxing y primeras impresiones (Preview)', '').replace('review en español (Análisis completo)', '').replace('(Análisis completo)', '').replace('[VIDEO REVIEW]', '').replace(' Preview', '').replace(' Review', '').replace('Review ', '').replace(' review', '').strip(' ,')
     product.ssid = context['url'].split('/')[-2]
     product.category = 'Tecnica'
 
