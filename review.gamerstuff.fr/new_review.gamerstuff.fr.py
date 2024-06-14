@@ -13,7 +13,7 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
         session.queue(Request(url), process_review, dict(title=title, url=url))
 
-    next_url = data.xpath('//link[@rel="next"]/@href').string()
+    next_url = data.xpath('//a[@class="next page-numbers"]/@href').string()
     if next_url:
         session.queue(Request(next_url), process_revlist, dict())
 
@@ -93,21 +93,14 @@ def process_review(data, context, session):
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//div[@class="entry-content rbct clearfix"]//p//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
     conclusion = data.xpath('//div[@class="summary-content"]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2[contains(@id, "conclusion")]/following-sibling::p[not(contains(., "Les plus") or contains(., "Les moins"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//body[not(.//div[@class="entry-content rbct clearfix"])]//p[not(@class or contains(., "Caractéristiques générales") or contains(., "Poids et dimensions") or contains(., "Données techniques") or contains(., "Matériaux utilisés") or contains(., "Les plus") or contains(., "Les moins") or contains(., "•") or contains(., "A l’intérieur de cette même boite, on retrouve"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//body//p[not(@class or contains(., "Caractéristiques générales") or contains(., "Poids et dimensions") or contains(., "Données techniques") or contains(., "Matériaux utilisés") or contains(., "Les plus") or contains(., "Les moins") or contains(., "•") or contains(., "A l’intérieur de cette même boite, on retrouve"))]//text()').string(multiple=True)
     if excerpt:
-        if summary:
-            excerpt = excerpt.replace(summary, '')
-
         if conclusion:
             excerpt = excerpt.replace(conclusion, '')
 
