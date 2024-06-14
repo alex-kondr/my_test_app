@@ -81,7 +81,8 @@ def process_review(data, context, session):
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
-        review.add_property(type='pros', value=pro)
+        if pro and len(pro) > 1:
+            review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//span[i[@class="rbi rbi-dislike"]]/following-sibling::span')
     if not cons:
@@ -91,7 +92,8 @@ def process_review(data, context, session):
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
-        review.add_property(type='cons', value=con)
+        if con and len(con) > 1:
+            review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//div[@class="summary-content"]//text()').string(multiple=True)
     if not conclusion:
@@ -99,7 +101,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//body//p[not(@class or contains(., "Caractéristiques générales") or contains(., "Poids et dimensions") or contains(., "Données techniques") or contains(., "Matériaux utilisés") or contains(., "Les plus") or contains(., "Les moins") or contains(., "•") or contains(., "A l’intérieur de cette même boite, on retrouve"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//body//p[not(contains(@class, "comment") or contains(., "Caractéristiques générales") or contains(., "Poids et dimensions") or contains(., "Données techniques") or contains(., "Matériaux utilisés") or contains(., "Les plus") or contains(., "Les moins") or contains(., "•") or contains(., "A l’intérieur de cette même boite, on retrouve"))]//text()').string(multiple=True)
     if excerpt:
         if conclusion:
             excerpt = excerpt.replace(conclusion, '')
