@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://falkor-cda.bastian.globo.com/tenants/techtudo/instances/694b2dee-93a8-4065-ac90-41bca2dc88ce/posts/page/1'), process_revlist, {})
 
 
