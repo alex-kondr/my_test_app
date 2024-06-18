@@ -63,7 +63,7 @@ def process_review(data, context, session):
         pros = data.xpath('//p[contains(., "Prós")]/following::ul[@class="content-unordered-list"][1]/li')
 
     for pro in pros:
-        pro = pro.xpath('.//text()').string().strip('+-;')
+        pro = pro.xpath('.//text()').string().strip('+-;*.')
         if len(pro) > 1:
             review.add_property(type='pros', value=pro)
 
@@ -72,7 +72,7 @@ def process_review(data, context, session):
         cons = data.xpath('//p[contains(., "Contras")]/following::ul[@class="content-unordered-list"][1]/li')
 
     for con in cons:
-        con = con.xpath('.//text()').string().strip('+-;')
+        con = con.xpath('.//text()').string().strip('+-;*.')
         if len(con) > 1:
             review.add_property(type='cons', value=con)
 
