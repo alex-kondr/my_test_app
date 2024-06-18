@@ -49,7 +49,11 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//span[animate[@id="score-animate"]]/text()').string(multiple=True)
     if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+        grade_overall = float(grade_overall)
+        if grade_overall > 10:
+            review.grades.append(Grade(type='overall', value=grade_overall, best=100.0))
+        else:
+            review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
 
     grades = data.xpath('//div[@class="review__attribute"]')
     for grade in grades:
