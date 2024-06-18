@@ -26,7 +26,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Review:', '').split(':')[0].replace('Review', '').replace('em review', '').replace('em Review', '').replace('; veja review', '').replace('; confira review', '').strip()
+    product.name = context['title'].replace('Review:', '').split(':')[0].split('vale a pena?')[0].replace('Confira a análise de', '').replace('Review', '').replace('em review', '').replace('em Review', '').replace('em análise', '').replace('; veja review', '').replace('; veja teste', '').replace('; confira review', '').replace('; testamos', '').replace('; review', '').replace('Testei o ', '').replace('Análise do ', '').replace('PureView', '').replace('Test ', '').strip()
     product.url = context['url']
     product.ssid = context['prod_id']
     product.category = 'Tecnologia'
@@ -40,11 +40,15 @@ def process_review(data, context, session):
     if context['date']:
         review.date = context['date'].split('T')[0]
 
-    author = data.xpath('//div[@class="content-publication-data__from"]//span/text()').string()
     author_url = data.xpath('//div[@class="content-publication-data__from"]//a/@href').string()
+    author = data.xpath('//div[@class="content-publication-data__from"]//span/text()').string()
+    if not author:
+        author = data.xpath('//p[@class="content-publication-data__from"]/text()').string()
+
     if author and author_url:
         review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
     elif author:
+        author = author.replace('; Por TechTudo ', '').replace('Por ', '').strip()
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//span[animate[@id="score-animate"]]/text()').string(multiple=True)
@@ -64,19 +68,19 @@ def process_review(data, context, session):
 
     pros = data.xpath('//h2[contains(., "Prós")]/following::ul[@class="content-unordered-list"][1]/li')
     if not pros:
-        pros = data.xpath('//p[contains(., "Prós")]/following::ul[@class="content-unordered-list"][1]/li')
+        pros = data.xpath('//p[.//span[@itemprop="itemReviewed" and contains(., "Prós")]]/following::ul[@class="content-unordered-list"][1]/li')
 
     for pro in pros:
-        pro = pro.xpath('.//text()').string().strip('+-;*.')
+        pro = pro.xpath('.//text()').string(multiple=True).strip('+-;*.')
         if len(pro) > 1:
             review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//h2[contains(., "Contras")]/following::ul[@class="content-unordered-list"][1]/li')
     if not cons:
-        cons = data.xpath('//p[contains(., "Contras")]/following::ul[@class="content-unordered-list"][1]/li')
+        cons = data.xpath('//p[.//span[@itemprop="itemReviewed" and contains(., "Contras")]]/following::ul[@class="content-unordered-list"][1]/li')
 
     for con in cons:
-        con = con.xpath('.//text()').string().strip('+-;*.')
+        con = con.xpath('.//text()').string(multiple=True).strip('+-;*.')
         if len(con) > 1:
             review.add_property(type='cons', value=con)
 
