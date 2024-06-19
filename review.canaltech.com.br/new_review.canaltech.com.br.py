@@ -50,4 +50,21 @@ def process_review(data, context, session):
     author_url = data.xpath('//a[@rel="author"]/@href').string()
     if author and author_url:
         review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
-    elif:
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    contents_json = data.xpath('//script[@type="application/json"]/text()')
+    if contents_json:
+        contents = simplejson.loads(contents_json).get('props', {}).get('pageProps', {}).get('homeData', {}).get('conteudo', {}).get('conteudo', [])
+
+        for content in contents:
+            pros_cons
+            pros = [content.get('pros', []) for content in contents if content.get('tipo', '') == 'pros-e-contras'][0]
+            for pro in pros:
+                review.add_property(type='pros', value=pro)
+
+            cons = [content.get('contras', []) for content in contents if content.get('tipo', '') == 'pros-e-contras'][0]
+            for con in cons:
+                review.add_property(type='cons', value=con)
+
+
