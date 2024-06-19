@@ -106,6 +106,10 @@ def process_review(data, context, session):
 
     if excerpt:
         excerpt = excerpt.replace('/&amp;', '').replace('&amp;', '').replace('amp;', '').replace('lt;', '').replace('gt;', '').strip()
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
