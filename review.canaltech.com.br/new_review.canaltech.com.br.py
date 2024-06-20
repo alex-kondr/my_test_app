@@ -1,5 +1,4 @@
 from agent import *
-from importlib import simple
 from models.products import *
 import simplejson
 
@@ -22,7 +21,7 @@ def process_revlist(data, context, session):
     for rev in revs:
         ssid = rev.get('id')
         title = rev.get('titulo')
-        date = rev.get('idade')
+        date = rev.get('data')
         url = rev.get('url')
         session.queue(Request(url), process_review, dict(ssid=ssid, title=title, date=date, url=url))
 
@@ -44,7 +43,9 @@ def process_review(data, context, session):
     review.title = context['title']
     review.url = product.url
     review.ssid = product.ssid
-    review.date = context['date']
+
+    if context['date']:
+        review.date = context['date'].split()[0]
 
     author = data.xpath('//a[@rel="author"]/text()').string()
     author_url = data.xpath('//a[@rel="author"]/@href').string()
@@ -53,18 +54,36 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    contents_json = data.xpath('//script[@type="application/json"]/text()')
+    contents_json = data.xpath('//script[@type="application/json"]/text()').string()
     if contents_json:
         contents = simplejson.loads(contents_json).get('props', {}).get('pageProps', {}).get('homeData', {}).get('conteudo', {}).get('conteudo', [])
 
         for content in contents:
-            pros_cons
-            pros = [content.get('pros', []) for content in contents if content.get('tipo', '') == 'pros-e-contras'][0]
-            for pro in pros:
-                review.add_property(type='pros', value=pro)
+            if content.get('tipo', '') == 'pros-e-contras':
+                pros = content.get('pros', [])
+                for pro in pros:
+                    review.add_property(type='pros', value=pro)
 
-            cons = [content.get('contras', []) for content in contents if content.get('tipo', '') == 'pros-e-contras'][0]
-            for con in cons:
-                review.add_property(type='cons', value=con)
+                cons = content.get('contras', [])
+                for con in cons:
+                    review.add_property(type='cons', value=con)
 
+                break
 
+    summary = data.xpath('//div[@id="content-news"]/p[not(preceding-sibling::div[contains(@class, "flex")])]//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    conclusion = data.xpath('//h2[contains(., "Vale a pena") or contains(., "vale a pena")]/following-sibling::p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//h2[contains(., "Vale a pena") or contains(., "vale a pena")]/preceding-sibling::p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@id="content-news"]/p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
