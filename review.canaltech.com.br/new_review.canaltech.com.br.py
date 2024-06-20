@@ -73,17 +73,13 @@ def process_review(data, context, session):
 
                 break
 
-    summary = data.xpath('//div[@id="content-news"]/p[not(preceding-sibling::div[contains(@class, "flex")])]//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
     conclusion = data.xpath('//h2[contains(., "Vale a pena") or contains(., "vale a pena")]/following-sibling::p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Vale a pena") or contains(., "vale a pena")]/preceding-sibling::p[preceding-sibling::div[contains(@class, "flex")] and not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Vale a pena") or contains(., "vale a pena")]/preceding-sibling::p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="content-news"]/p[preceding-sibling::div[contains(@class, "flex")] and not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="content-news"]/p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
