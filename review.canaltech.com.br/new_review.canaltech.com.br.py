@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers=[SessionBreak(max_requests=10000)]
+    session.sessionbreakers=[SessionBreak(max_requests=4000)]
     session.queue(Request('http://canaltech.com.br/analises/'), process_revlist, dict())
 
 
@@ -33,7 +33,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split('|')[0].replace('Review ', '').strip()
+    product.name = context['title'].split('|')[0].replace('Review ', '').replace('Análise ', '').replace('Preview ', '').strip()
     product.url = context['url']
     product.ssid = context['ssid']
     product.category = 'Tecnologia'
@@ -81,7 +81,11 @@ def process_review(data, context, session):
     excerpt = data.xpath('//h2[contains(., "Vale a pena") or contains(., "vale a pena")]/preceding-sibling::p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@id="content-news"]/p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
+
     if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
