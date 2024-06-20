@@ -37,7 +37,7 @@ def process_review(data, context, session):
     product.ssid = context['ssid']
     product.category = 'Tecnologia'
 
-    product.name = context['title'].split('|')[0].replace('Review ', '').replace('Análise ', '').replace('Preview ', '').strip()
+    product.name = context['title'].split('|')[0].replace('Review: ', '').replace('Review ', '').replace('Análise: ', '').replace('Análise ', '').replace('Preview ', '').split(': ')[0].strip()
     if not product.name:
         product.name = context['title'].split('|')[-1]
 
@@ -81,14 +81,11 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Vale a pena") or contains(., "vale a pena")]/preceding-sibling::p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Vale a pena") or contains(., "vale a pena")]/preceding-sibling::p[preceding-sibling::div[contains(@class, "flex")] and not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="content-news"]/p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="content-news"]/p[preceding-sibling::div[contains(@class, "flex")] and not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
 
     if excerpt:
-        if summary:
-            excerpt = excerpt.replace(summary, '').strip()
-
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

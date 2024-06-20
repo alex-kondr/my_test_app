@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
     next_page = data_json.get('nextPage')
     if next_page:
-        session.queue(Request('https://falkor-cda.bastian.globo.com/tenants/techtudo/instances/694b2dee-93a8-4065-ac90-41bca2dc88ce/posts/page/' + str(next_page)), process_revlist, dict())
+        session.queue(Request('https://falkor-cda.bastian.globo.com/tenants/techtudo/instances/694b2dee-93a8-4065-ac90-41bca2dc88ce/posts/page/' + str(next_page), max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
