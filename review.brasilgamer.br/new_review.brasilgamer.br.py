@@ -41,6 +41,16 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
+    pros = data.xpath('//td[font[@color="#169600"]]//li')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//td[font[@color="#E10000"]]//li')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        review.add_property(type='cons', value=con)
+
     summary = data.xpath('//p[@class="strapline"]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
