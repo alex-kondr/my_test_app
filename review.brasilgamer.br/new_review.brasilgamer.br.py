@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('http://www.brasilgamer.com.br/archive/reviews'), process_revlist, dict())
 
 
@@ -21,10 +21,13 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' - ')[0]
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
     product.manufacturer = data.xpath('//li[contains(., "Editora:")]/text()').string()
+
+    product.name = context['title'].split(' - ')[0].split(' | ')[0].split(' análise ')[0].replace('pré-review','').replace(' review', '').replace(' Review', '').replace('Análise ao', '').replace('Análise à ','').replace('Análise do ', '').replace('- Análise', '').strip()
+    if len(product.name.rsplit(":", 1)[0]) > 3:
+        product.name = product.name.rsplit(":", 1)[0].strip()
 
     category = data.xpath('//li[contains(., "Disponível para")]/text()').string()
     if category:
@@ -55,6 +58,8 @@ def process_review(data, context, session):
 
     if not grade_overall:
         grade_overall = data.xpath('//span[@class="review_rating_value"]/text()').string()
+        if not grade_overall:
+            grade_overall = data.xpatj('//p[contains(., "/10")]/strong/text()').string()
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
@@ -80,8 +85,12 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('(//p[strong[contains(., "Conclusão")]]|//h2[contains(., "Conclusão")])/preceding-sibling::p[not(contains(., "Especificações técnicas:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="article_body"]//p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="article_body"]//p[not(contains(., "/10"))]//text()').string(multiple=True)
+
     if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

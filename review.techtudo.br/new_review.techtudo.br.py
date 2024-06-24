@@ -88,7 +88,7 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusions = data.xpath('//h2[contains(., "vale a pena") or contains(., "Vale a pena") or contains(., "Conclusão")]/following::p[contains(@class, "content-text__container") and not(contains(., "Canal do TechTudo") or contains(., "Fórum TechTudo") or contains(., "Com informações de") or contains(., "Prós") or contains(., "Contras") or contains(., "Nota de transparência:") or contains(., "fórum TechTudo"))]//text()').strings()
+    conclusions = data.xpath('//h2[not(@class) and (contains(., "vale a pena") or contains(., "Vale a pena") or contains(., "Conclusão"))]/following::p[contains(@class, "content-text__container") and not(contains(., "Canal do TechTudo") or contains(., "Fórum TechTudo") or contains(., "Com informações de") or contains(., "Prós") or contains(., "Contras") or contains(., "Nota de transparência:") or contains(., "fórum TechTudo"))]//text()').strings()
     if not conclusions:
         conclusions = data.xpath('//p[contains(., "Conclusão")]/following::p[contains(@class, "content-text__container") and not(contains(., "Canal do TechTudo") or contains(., "Fórum TechTudo") or contains(., "Com informações de") or contains(., "Prós") or contains(., "Contras") or contains(., "Nota de transparência:") or contains(., "fórum TechTudo"))]//text()').strings()
     if not conclusions:
