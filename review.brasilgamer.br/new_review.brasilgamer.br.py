@@ -3,7 +3,8 @@ from models.products import *
 
 
 def run(context, session):
-   session.queue(Request('http://www.brasilgamer.com.br/archive/reviews'), process_revlist, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.queue(Request('http://www.brasilgamer.com.br/archive/reviews'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -23,7 +24,13 @@ def process_review(data, context, session):
     product.name = context['title'].split(' - ')[0]
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
-    product.category = 'Tecnologia'
+    product.manufacturer = data.xpath('//li[contains(., "Editora:")]/text()').string()
+
+    category = data.xpath('//li[contains(., "Disponível para")]/text()').string()
+    if category:
+        product.category = '|'.join(category.replace('|', '/').split(', '))
+    else:
+        product.category = 'Tecnologia'
 
     review = Review()
     review.type = 'pro'
@@ -42,6 +49,15 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
+    grade_overall = data.xpath('count(//div[@class="review_rating"][1]/span[@class="star"])')
+    if grade_overall and grade_overall > 0:
+        review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+
+    if not grade_overall:
+        grade_overall = data.xpath('//span[@class="review_rating_value"]/text()').string()
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+
     pros = data.xpath('//td[font[@color="#169600"]]//li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -56,11 +72,15 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//p[strong[contains(., "Conclusão")]]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('(//p[strong[contains(., "Conclusão")]]|//h2[contains(., "Conclusão")])/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//section[@class="synopsis"]/following-sibling::div[not(@class)]/p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//p[strong[contains(., "Conclusão")]]/preceding-sibling::p[not(contains(., "Especificações técnicas:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//p[strong[contains(., "Conclusão")]]|//h2[contains(., "Conclusão")])/preceding-sibling::p[not(contains(., "Especificações técnicas:"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="article_body"]//p//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
