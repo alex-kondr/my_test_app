@@ -61,6 +61,7 @@ def process_review(data, context, session):
         if not grade_overall:
             grade_overall = data.xpath('//p[contains(., "/10")]/strong/text()').string()
         if grade_overall:
+            grade_overall = grade_overall.split('/')[0]
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     pros = data.xpath('//td[font[@color="#169600"]]//li')
