@@ -119,7 +119,7 @@ def process_review_next(data, context, session):
             if conclusion:
                 excerpt = excerpt.replace(conclusion, '').strip()
 
-            context['excerpt'] = " " + excerpt
+            context['excerpt'] += " " + excerpt
 
     next_url = data.xpath('//div[@class="next"]/a/@href').string()
     if next_url:
