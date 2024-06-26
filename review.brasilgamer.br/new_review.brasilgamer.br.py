@@ -59,7 +59,7 @@ def process_review(data, context, session):
     if not grade_overall:
         grade_overall = data.xpath('//span[@class="review_rating_value"]/text()').string()
         if not grade_overall:
-            grade_overall = data.xpatj('//p[contains(., "/10")]/strong/text()').string()
+            grade_overall = data.xpath('//p[contains(., "/10")]/strong/text()').string()
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
@@ -77,22 +77,57 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
+    excerpt = data.xpath('(//p[strong[contains(., "Conclusão")]]|//h2[contains(., "Conclusão")])/preceding-sibling::p[not(contains(., "Especificações técnicas:"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="article_body"]//p[not(contains(., "/10"))]//text()').string(multiple=True)
+
+    next_url = data.xpath('//div[@class="next"]/a/@href').string()
+    if next_url:
+        page = 1
+        title = review.title + " - Pagina " + str(page)
+        review.add_property(type='pages', value=dict(title=title, url=review.url))
+
+        session.do(Request(next_url), process_review_next, dict(excerpt=excerpt, review=review, product=product, page=page+1))
+
+    else:
+        context['excerpt'] = excerpt
+        context['review'] = review
+        context['product'] = product
+
+        process_review_next(data, context, session)
+
+
+def process_review_next(data, context, session):
+    review = context['review']
+
     conclusion = data.xpath('(//p[strong[contains(., "Conclusão")]]|//h2[contains(., "Conclusão")])/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//section[@class="synopsis"]/following-sibling::div[not(@class)]/p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//p[strong[contains(., "Conclusão")]]|//h2[contains(., "Conclusão")])/preceding-sibling::p[not(contains(., "Especificações técnicas:"))]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//div[@class="article_body"]//p[not(contains(., "/10"))]//text()').string(multiple=True)
+    page = context.get('page', 1)
+    if page > 1:
+        title = review.title + " - Pagina " + str(page)
+        review.add_property(type='pages', value=dict(title=title, url=data.response_url))
 
-    if excerpt:
-        if conclusion:
-            excerpt = excerpt.replace(conclusion, '').strip()
+        excerpt = data.xpath('(//p[strong[contains(., "Conclusão")]]|//h2[contains(., "Conclusão")])/preceding-sibling::p[not(contains(., "Especificações técnicas:"))]//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = data.xpath('//div[@class="article_body"]//p[not(contains(., "/10"))]//text()').string(multiple=True)
+        if excerpt:
+            if conclusion:
+                excerpt = excerpt.replace(conclusion, '').strip()
 
-        review.add_property(type='excerpt', value=excerpt)
+            context['excerpt'] = " " + excerpt
 
+    next_url = data.xpath('//div[@class="next"]/a/@href').string()
+    if next_url:
+        session.do(Request(next_url), process_review_next, dict(context, page=page + 1))
+
+    elif context['excerpt']:
+        review.add_property(type="excerpt", value=context['excerpt'])
+
+        product = context['product']
         product.reviews.append(review)
 
         session.emit(product)
