@@ -86,27 +86,32 @@ def process_review(data, context, session):
 
     summary = data.xpath('//h2[@class="content-head__subtitle"]/text()').string()
     if summary:
+        summary = summary.replace('...', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusions = data.xpath('//h2[not(@class) and (contains(., "vale a pena") or contains(., "Vale a pena") or contains(., "Conclusão"))]/following::p[contains(@class, "content-text__container") and not(contains(., "Canal do TechTudo") or contains(., "Fórum TechTudo") or contains(., "Com informações de") or contains(., "Prós") or contains(., "Contras") or contains(., "Nota de transparência:") or contains(., "fórum TechTudo"))]//text()').strings()
-    if not conclusions:
-        conclusions = data.xpath('//p[contains(., "Conclusão")]/following::p[contains(@class, "content-text__container") and not(contains(., "Canal do TechTudo") or contains(., "Fórum TechTudo") or contains(., "Com informações de") or contains(., "Prós") or contains(., "Contras") or contains(., "Nota de transparência:") or contains(., "fórum TechTudo"))]//text()').strings()
-    if not conclusions:
-        conclusions = data.xpath('//span[@class="review__comment"]//text()').strings()
+    conclusion = data.xpath('//h2[not(@class) and (contains(., "vale a pena") or contains(., "Vale a pena") or contains(., "Conclusão"))]/following::p[contains(@class, "content-text__container") and not(contains(., "Canal do TechTudo") or contains(., "Fórum TechTudo") or contains(., "Com informações de") or contains(., "Prós") or contains(., "Contras") or contains(., "Nota de transparência:") or contains(., "fórum TechTudo") or contains(., "Preço sugerido"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[contains(., "Conclusão")]/following::p[contains(@class, "content-text__container") and not(contains(., "Canal do TechTudo") or contains(., "Fórum TechTudo") or contains(., "Com informações de") or contains(., "Prós") or contains(., "Contras") or contains(., "Nota de transparência:") or contains(., "fórum TechTudo") or contains(., "Preço sugerido"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//span[@class="review__comment"]//text()').string(multiple=True)
 
-    if conclusions:
-        conclusion = ''.join(conclusions).replace('/&amp;', '').replace('&amp;', '').replace('amp;', '').replace('lt;', '').replace('gt;', '').strip()
+    if conclusion:
+        conclusion = conclusion.replace('/&amp;', '').replace('&amp;', '').replace('amp;', '').replace('lt;', '').replace('gt;', '').replace('•', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h2[contains(., "vale a pena") or contains(., "Vale a pena") or contains(., "Conclusão")]|//p[contains(., "Conclusão")])[1]/preceding::p[contains(@class, "content-text__container") and not(contains(., "Canal do TechTudo") or contains(., "Fórum TechTudo") or contains(., "Com informações de") or contains(., "Prós") or contains(., "Contras") or contains(., "Nota de transparência:") or contains(., "fórum TechTudo"))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2[contains(., "vale a pena") or contains(., "Vale a pena") or contains(., "Conclusão")]|//p[contains(., "Conclusão")])[1]/preceding::p[contains(@class, "content-text__container") and not(contains(., "Canal do TechTudo") or contains(., "Fórum TechTudo") or contains(., "Com informações de") or contains(., "Prós") or contains(., "Contras") or contains(., "Nota de transparência:") or contains(., "fórum TechTudo") or contains(., "Preço sugerido"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[contains(@class, "content-text__container") and not(contains(., "Canal do TechTudo") or contains(., "Fórum TechTudo") or contains(., "Com informações de") or contains(., "Prós") or contains(., "Contras") or contains(., "Nota de transparência:") or contains(., "fórum TechTudo"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//p[contains(@class, "content-text__container") and not(contains(., "Canal do TechTudo") or contains(., "Fórum TechTudo") or contains(., "Com informações de") or contains(., "Prós") or contains(., "Contras") or contains(., "Nota de transparência:") or contains(., "fórum TechTudo") or contains(., "Preço sugerido"))]//text()').string(multiple=True)
 
     if excerpt:
-        for conclusion in conclusions:
-            excerpt = excerpt.replace(conclusion.strip(), '').strip()
+        excerpt = excerpt.replace('/&amp;', '').replace('&amp;', '').replace('amp;', '').replace('lt;', '').replace('gt;', '').replace('•', '').strip()
 
-        excerpt = excerpt.replace('/&amp;', '').replace('&amp;', '').replace('amp;', '').replace('lt;', '').replace('gt;', '').strip()
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
