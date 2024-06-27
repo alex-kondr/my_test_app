@@ -99,10 +99,13 @@ def process_review(data, context, session):
     if not conclusion:
         conclusion = data.xpath('//h2[contains(@id, "conclusion")]/following-sibling::p[not(contains(., "Les plus") or contains(., "Les moins"))]//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//body//p[not(contains(@class, "comment") or contains(., "Caractéristiques générales") or contains(., "Poids et dimensions") or contains(., "Données techniques") or contains(., "Matériaux utilisés") or contains(., "Les plus") or contains(., "Les moins") or contains(., "•") or contains(., "A l’intérieur de cette même boite, on retrouve"))]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
+
         if conclusion:
             excerpt = excerpt.replace(conclusion, '')
 

@@ -72,14 +72,30 @@ def process_review(data, context, session):
 
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=100.0))
 
-    conclusion = data.xpath('//h2[contains(., "conclusión") or contains(., "conclusiones")]/following-sibling::p[not(@style or contains(., "El equipo de Profesional Review le otorga") or contains(., "Última actualización"))]//text()').string(multiple=True)
+    pros = data.xpath('//p[contains(., "Ventajas:")]/following-sibling::ul[1]//h6[normalize-space(.)]')
+    if not pros:
+        pros = data.xpath('//tr[contains(., "VENTAJAS")]/following-sibling::tr/td[1][normalize-space(.)]')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True).strip(' -+*•')
+        if len(pro) > 1:
+            review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//p[contains(., "Inconvenientes:")]/following-sibling::ul[1]//h6[normalize-space(.)]')
+    if not cons:
+        cons = data.xpath('//tr[contains(., "INCONVENIENTES")]/following-sibling::tr/td[2][normalize-space(.)]')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True).strip(' -+*•')
+        if len(con) > 1:
+            review.add_property(type='cons', value=con)
+
+    conclusion = data.xpath('(//h2[contains(., "conclusión") or contains(., "conclusiones")]|//p[contains(., "Conclusión")])/following-sibling::p[not(@style or contains(., "El equipo de Profesional Review le otorga") or contains(., "Última actualización") or contains(., "Ventajas:") or contains(., "Inconvenientes:"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="review-short-summary"]//p//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "conclusión")]/preceding-sibling::p[not(@style)]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2[contains(., "conclusión") or contains(., "conclusiones")]|//p[contains(., "Conclusión")])/preceding-sibling::p[not(@style)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="entry-content entry clearfix"]/p[not(@style or contains(., "El equipo de Profesional Review le otorga"))]//text()').string(multiple=True)
 
