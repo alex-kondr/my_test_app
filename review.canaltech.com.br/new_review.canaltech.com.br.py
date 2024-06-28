@@ -33,18 +33,29 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.url = context['url']
     product.ssid = context['ssid']
     product.category = 'Tecnologia'
+    product.manufacturer = data.xpath('//td[contains(., "Desenvolvedor:")]/text()').string()
 
-    product.name = context['title'].split('|')[0].replace('Review: ', '').replace('Review ', '').replace('Análise: ', '').replace('Análise ', '').replace('Preview ', '').split(': ')[0].strip()
+    platformes = data.xpath('//td[contains(., "Plataforma:")]/text()').string()
+    genres = data.xpath('//td[contains(., "Gênero:")]/text()')
+    if platformes and genres:
+        product.category = 'Games|' + platformes.replace(', ', '/') + '|' + genres.replace(', ', '/')
+    elif platformes:
+        product.category = 'Games|' + platformes.replace(', ', '/')
+
+    product.name = context['title'].split('|')[0].replace('Review: ', '').replace('Review ', '').replace('Análise: ', '').replace('Análise do Jogo: ', '').replace('Análise do ', '').replace('Análise ', '').replace('Preview ', '').strip()
     if not product.name:
         product.name = context['title'].split('|')[-1]
+
+    product.url = data.xpath('//a[@rel="sponsored" or @rel="nofollow sponsored"]/@href').string()
+    if not product.url:
+        product.url = context['url']
 
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     if context['date']:
