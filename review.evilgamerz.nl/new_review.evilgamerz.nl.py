@@ -65,10 +65,24 @@ def process_review(data, context, session):
         grades = grades.split('|')
         for grade in grades:
             grade_name, grade_val = grade.split(':')
-            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
+            review.grades.append(Grade(name=grade_name.strip(), value=float(grade_val), best=10.0))
 
     pros = data.xpath('//div[@class="plus_veld"]')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True).strip(' .+-*')
+        if len(pro) > 1:
+            review.add_property(type='pros', value=pro)
 
+    cons = data.xpath('//div[@class="min_veld"]')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True).strip(' .+-*')
+        if len(con) > 1:
+            review.add_property(type='cons', value=con)
 
+    excerpt = data.xpath('//div[@class="entry-content"]//p//text()').string(multiple=True)
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
