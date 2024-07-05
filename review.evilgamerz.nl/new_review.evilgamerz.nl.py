@@ -59,7 +59,7 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//span[@itemprop="ratingValue"]/text()').string()
     if grade_overall:
-        grade_overall = float(grade_overall.replace(',', '.'))
+        grade_overall = float(grade_overall.replace(',', '.').replace('..', '.'))
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     grades = data.xpath('//div[@class="artikel_veld" and not(contains(., "Auteur:") or contains(., "Genre:") or contains(., "Ontwikkelaar:"))]//text()').string(multiple=True)
@@ -68,7 +68,7 @@ def process_review(data, context, session):
         for grade in grades:
             grade_name, grade_val = grade.split(':')
             if grade_val.strip():
-                grade_val = float(grade_val.replace(',', '.'))
+                grade_val = float(grade_val.replace(',', '.').replace('..', '.'))
                 review.grades.append(Grade(name=grade_name.strip(), value=grade_val, best=10.0))
 
     pros = data.xpath('//div[@class="plus_veld"]')
