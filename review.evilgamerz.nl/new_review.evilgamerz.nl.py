@@ -84,9 +84,18 @@ def process_review(data, context, session):
         if len(con) > 1:
             review.add_property(type='cons', value=con)
 
-    excerpt = data.xpath('//div[@class="entry-content"]//p//text()').string(multiple=True)
+    conclusion = data.xpath('//div[@class="entry-content"]//p[contains(., "Verdict")]/following-sibling::p[not(.//b)]//text()')
+    if conclusion:
+        conclusion = conclusion.replace(u'\ufeff', ' ')
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//div[@class="entry-content"]//p[not(.//b)]//text()').string(multiple=True)
     if excerpt:
         excerpt = excerpt.replace(u'\ufeff', ' ')
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
