@@ -55,7 +55,8 @@ def process_review(data, context, session):
         author = [info for info in prod_info.split('|') if "Auteur" in info]
         if author:
             author = author[0].replace('Auteur:', '').strip()
-            review.authors.append(Person(name=author, ssid=author))
+            if author and len(author) > 1:
+                review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//span[@itemprop="ratingValue"]/text()').string()
     if grade_overall:
@@ -67,7 +68,7 @@ def process_review(data, context, session):
         grades = grades.split('|')
         for grade in grades:
             grade_name, grade_val = grade.split(':')
-            if grade_val.strip():
+            if grade_val.strip(' -X.'):
                 grade_val = float(grade_val.replace(',', '.').replace('..', '.'))
                 review.grades.append(Grade(name=grade_name.strip(), value=grade_val, best=10.0))
 
@@ -85,6 +86,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[@class="entry-content"]//p//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'\ufeff', ' ')
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
