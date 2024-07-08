@@ -84,7 +84,7 @@ def process_review(data, context, session):
         if len(con) > 1:
             review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//div[@class="entry-content"]//p[contains(., "Verdict")]/following-sibling::p[not(.//b)]//text()')
+    conclusion = data.xpath('//div[@class="entry-content"]//p[contains(., "Verdict")]/following-sibling::p[not(.//b)]//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace(u'\ufeff', ' ')
         review.add_property(type='conclusion', value=conclusion)
