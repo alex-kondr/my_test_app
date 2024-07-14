@@ -49,12 +49,12 @@ def process_review(data, context, session):
 
     pros = data.xpath('//span[b[contains(., "Pros")]]')
     for pro in pros:
-        pro = pro.xpath('text()').string().strip(' -,')
+        pro = pro.xpath('.//text()[not(contains(., "Pros"))]').string(multiple=True).strip(' -,')
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//span[b[contains(., "Cons")]]')
     for con in cons:
-        con = con.xpath('text()').string().strip(' -,')
+        con = con.xpath('.//text()[not(contains(., "Cons"))]').string(multiple=True).strip(' -,')
         review.add_property(type='cons', value=con)
 
     summary = data.xpath('//b/span[@style="font-family: helvetica;"]//text()').string(multiple=True)
