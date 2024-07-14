@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.gizguide.com/search/label/reviews'), process_revlist, dict())
 
 
@@ -47,31 +47,42 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
+    grade_overall = data.xpath('//span[contains(., "Average - ")]//text()').string(multiple=True)
+    if grade_overall:
+        grade_overall = grade_overall.split('-')[-1].split('/')[0]
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
+    grades = data.xpath('//span[@style and regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$")]')
+    for grade in grades:
+        print(grade.xpath('.//text()').string(multiple=True).split(' - '))
+        grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).split('-')
+        review.grades.append(Grade(name=grade_name.strip(), value=float(grade_val), best=5.0))
+
     pros = data.xpath('//span[b[contains(., "Pros")]]')
     for pro in pros:
-        pro = pro.xpath('.//text()[not(contains(., "Pros"))]').string(multiple=True).strip(' -,')
+        pro = pro.xpath('.//text()').string(multiple=True).strip(' -,Pros')
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//span[b[contains(., "Cons")]]')
     for con in cons:
-        con = con.xpath('.//text()[not(contains(., "Cons"))]').string(multiple=True).strip(' -,')
+        con = con.xpath('.//text()').string(multiple=True).strip(' -,Cons')
         review.add_property(type='cons', value=con)
 
     summary = data.xpath('//b/span[@style="font-family: helvetica;"]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Quick thoughts")]/following-sibling::div/span[not(.//i or contains(., "Update:"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Quick thoughts")]/following-sibling::div/span[not(.//i or contains(., "Update:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Verdict")]/following-sibling::div/span[not(.//i or contains(., "Update:"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Verdict")]/following-sibling::div/span[not(.//i or contains(., "Update:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Quick thoughts")]/preceding-sibling::div[not(b/span)]/span[not(contains(., "See also:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Quick thoughts")]/preceding-sibling::div[not(b/span)]/span[not(contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[contains(., "Verdict")]/preceding::div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Verdict")]/preceding::div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:")  or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
