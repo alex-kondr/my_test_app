@@ -21,14 +21,14 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' - ')[0].split(', First ')[0].replace('REVIEW:', '').replace('Review', '').replace('Unboxing', '').replace('See our review here!', '').replace('review', '').strip(' ,')
+    product.name = context['title'].split(' - ')[0].split(', First ')[0].split('Review -')[0].replace('REVIEW:', '').replace('Review', '').replace('Unboxing', '').replace('See our review here!', '').replace('review', '').strip(' ,')
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('.html' , '')
     product.category = 'Tecno'
 
-    cats = data.xpath('//a[@rel="tag"]/text()[not(contains(., "reviews") or contains(., "tecno"))]').strings()
+    cats = data.xpath('//a[@rel="tag"]/text()[not(contains(., "reviews") or contains(., "Review") or contains(., "tecno") or contains(., "news") or contains(., "News"))]').strings()
     if cats:
-        product.category = '|'.join([cat.strip().title() for cat in cats])
+        product.category = '|'.join([cat.replace('review', '').strip().title() for cat in cats])
 
     review = Review()
     review.type = 'pro'
@@ -58,12 +58,12 @@ def process_review(data, context, session):
         grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).split('-')
         review.grades.append(Grade(name=grade_name.strip(), value=float(grade_val), best=5.0))
 
-    pros = data.xpath('//span[b[contains(., "Pros")]]')
+    pros = data.xpath('//div[span/b[contains(., "Pros")]]')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True).strip(' -,Pros')
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//span[b[contains(., "Cons")]]')
+    cons = data.xpath('//div[span/b[contains(., "Cons")]]')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True).strip(' -,Cons')
         review.add_property(type='cons', value=con)
@@ -78,7 +78,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Quick thoughts")]/preceding-sibling::div[not(b/span)]/span[not(contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Quick thoughts")]/preceding::div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//h2[contains(., "Verdict")]/preceding::div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:")  or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
     if not excerpt:
