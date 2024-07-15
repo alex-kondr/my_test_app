@@ -58,12 +58,16 @@ def process_review(data, context, session):
         grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).split('-')
         review.grades.append(Grade(name=grade_name.strip(), value=float(grade_val), best=5.0))
 
-    pros = data.xpath('//div[span/b[contains(., "Pros")]]')
+    pros = data.xpath('//span[b[contains(., "Pros")]]')
+    if not pros:
+        pros = data.xpath('//div[span/b[contains(., "Pros")]]')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True).strip(' -,Pros')
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[span/b[contains(., "Cons")]]')
+    cons = data.xpath('//span[b[contains(., "Cons")]]')
+    if not cons:
+        cons = data.xpath('//div[span/b[contains(., "Cons")]]')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True).strip(' -,Cons')
         review.add_property(type='cons', value=con)
@@ -84,8 +88,13 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
     if excerpt:
-        review.add_property(type='excerpt', value=excerpt)
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
 
-        product.reviews.append(review)
+        if excerpt and len(excerpt) > 2:
 
-        session.emit(product)
+            review.add_property(type='excerpt', value=excerpt)
+
+            product.reviews.append(review)
+
+            session.emit(product)
