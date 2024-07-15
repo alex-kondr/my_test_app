@@ -54,31 +54,30 @@ def process_review(data, context, session):
 
     grades = data.xpath('//span[@style and regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$")]')
     for grade in grades:
-        print(grade.xpath('.//text()').string(multiple=True).split(' - '))
         grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).split('-')
         review.grades.append(Grade(name=grade_name.strip(), value=float(grade_val), best=5.0))
 
     pros = data.xpath('//span[b[contains(., "Pros")]]')
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True).strip(' -,Pros')
+        pro = pro.xpath('.//text()').string(multiple=True).split('Pros')[-1].split('Cons')[0].strip(' -,')
         if len(pro) > 1:
             review.add_property(type='pros', value=pro)
         else:
             pros = data.xpath('//div[span/b[contains(., "Pros")]]')
             for pro in pros:
-                pro = pro.xpath('.//text()').string(multiple=True).strip(' -,Pros')
+                pro = pro.xpath('.//text()').string(multiple=True).split('Pros')[-1].split('Cons')[0].strip(' -,')
                 if len(pro) > 1:
                     review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//span[b[contains(., "Cons")]]')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True).strip(' -,Cons')
+        con = con.xpath('.//text()').string(multiple=True).split('Cons')[-1].strip(' -,')
         if len(con) > 1:
             review.add_property(type='cons', value=con)
         else:
             cons = data.xpath('//div[span/b[contains(., "Cons")]]')
             for con in cons:
-                con = con.xpath('.//text()').string(multiple=True).strip(' -,Cons')
+                con = con.xpath('.//text()').string(multiple=True).split('Cons')[-1].strip(' -,')
                 if len(con) > 1:
                     review.add_property(type='cons', value=con)
 
@@ -86,20 +85,24 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Quick thoughts")]/following-sibling::div/span[not(.//i or contains(., "Update:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Quick thoughts")]/following-sibling::div[@style and not(@class) and not(.//span[@style and regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$")] or .//span[contains(., "Average - ")])]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Verdict")]/following-sibling::div/span[not(.//i or contains(., "Update:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
+        conclusion = data.xpath('(//h2[contains(., "Verdict")]|//div[contains(., "Verdict")])/following-sibling::div[@style and not(@class) and not(.//span[@style and regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$")] or .//span[contains(., "Average - ")])]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[span[contains(., "Verdict")]]/following-sibling::span[not(.//i or regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$") or @typeof or contains(., "Average - ") or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
     if conclusion:
         if summary:
             conclusion = conclusion.replace(summary, '').strip()
 
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Quick thoughts")]/preceding::div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Quick thoughts")]/preceding::div[@style and not(@class) and not(.//span[@style and regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$")] or .//span[contains(., "Average - ")])]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[contains(., "Verdict")]/preceding::div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:")  or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
+        excerpt = data.xpath('(//h2[contains(., "Verdict")]|//div[contains(., "Verdict")])/preceding::div[@style and not(@class) and not(.//span[@style and regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$")] or .//span[contains(., "Average - ")])]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[span[contains(., "Verdict")]]/preceding-sibling::span[not(.//i or regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$") or @typeof or contains(., "Average - ") or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@style and not(@class) and not(.//span[@style and regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$")] or .//span[contains(., "Average - ")])]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
 
     if excerpt:
         if summary:
