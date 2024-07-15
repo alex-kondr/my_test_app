@@ -59,18 +59,28 @@ def process_review(data, context, session):
         review.grades.append(Grade(name=grade_name.strip(), value=float(grade_val), best=5.0))
 
     pros = data.xpath('//span[b[contains(., "Pros")]]')
-    if not pros:
-        pros = data.xpath('//div[span/b[contains(., "Pros")]]')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True).strip(' -,Pros')
-        review.add_property(type='pros', value=pro)
+        if len(pro) > 1:
+            review.add_property(type='pros', value=pro)
+        else:
+            pros = data.xpath('//div[span/b[contains(., "Pros")]]')
+            for pro in pros:
+                pro = pro.xpath('.//text()').string(multiple=True).strip(' -,Pros')
+                if len(pro) > 1:
+                    review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//span[b[contains(., "Cons")]]')
-    if not cons:
-        cons = data.xpath('//div[span/b[contains(., "Cons")]]')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True).strip(' -,Cons')
-        review.add_property(type='cons', value=con)
+        if len(con) > 1:
+            review.add_property(type='cons', value=con)
+        else:
+            cons = data.xpath('//div[span/b[contains(., "Cons")]]')
+            for con in cons:
+                con = con.xpath('.//text()').string(multiple=True).strip(' -,Cons')
+                if len(con) > 1:
+                    review.add_property(type='cons', value=con)
 
     summary = data.xpath('//b/span[@style="font-family: helvetica;"]//text()').string(multiple=True)
     if summary:
@@ -80,6 +90,9 @@ def process_review(data, context, session):
     if not conclusion:
         conclusion = data.xpath('//h2[contains(., "Verdict")]/following-sibling::div/span[not(.//i or contains(., "Update:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
     if conclusion:
+        if summary:
+            conclusion = conclusion.replace(summary, '').strip()
+
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Quick thoughts")]/preceding::div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
@@ -87,7 +100,11 @@ def process_review(data, context, session):
         excerpt = data.xpath('//h2[contains(., "Verdict")]/preceding::div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:")  or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@style and not(@class)]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:"))]//text()').string(multiple=True)
+
     if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 
