@@ -3,7 +3,6 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.stereonet.com/uk/page_templates/article_list_ajax/reviews/'), process_revlist, dict())
 
 
@@ -22,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace(' Review', '').strip()
+    product.name = context['title'].replace('Review of ', '').replace('Review: ', '').replace(' Review', '').replace(' review', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('-review', '')
     product.category = 'Tech'

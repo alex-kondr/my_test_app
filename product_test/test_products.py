@@ -138,9 +138,9 @@ class TestProduct:
         self.error_conclusion = []
         self.error_excerpt = []
 
-    def run(self, xproduct_names=[], len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[]):
+    def run(self, xproduct_names=[], not_xproduct_name=None, len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[]):
         for self.product in self.products:
-            self.test_product_name(xproduct_names=xproduct_names, len_name=len_name, not_xproduct_name=None)
+            self.test_product_name(xproduct_names=xproduct_names, len_name=len_name, not_xproduct_name=not_xproduct_name)
             self.test_product_category(xproduct_names)
             self.test_product_sku()
             self.test_product_id_manufacturer()
