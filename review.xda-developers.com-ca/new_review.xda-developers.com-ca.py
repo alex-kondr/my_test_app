@@ -1,9 +1,8 @@
 from agent import *
-from products.models import *
+from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.xda-developers.com/reviews/', use='curl'), process_revlist, dict())
 
 
@@ -21,15 +20,19 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].split('review:')[0].split('Review:')[0].split('test:')[0].split('hands-on:')[0].replace('Mobox hands-on:', '').replace('Hands-on:', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = 'Tech'
 
+    cats = data.xpath('//div[@class="article-tags-name"]/text()[not(contains(., "review") or contains(., "Review"))]').strings()
+    if cats:
+        product.category = "|".join(cats)
+
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.utl = product.url
+    review.url = product.url
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
@@ -56,3 +59,19 @@ def process_review(data, context, session):
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
+
+    conclusion = data.xpath('//h2[contains(., "Should you buy")]/following-sibling::p[not(@class or contains(., "if:"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[@class="display-card-description"]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//h2[contains(., "Should you buy")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="content-block-regular"]/p[not(@class or contains(., "if:"))]//text()').string(multiple=True)
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
