@@ -44,20 +44,23 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//meta[@name="author"]/@content').string()
-    if author:
+    author = data.xpath('//div[@class="post-author__content"]/a/text()').string()
+    author_url = data.xpath('//div[@class="post-author__content"]/a/@href').string()
+    if author and author_url:
+        review.authors.append(Person(name=author, ssid=author_url.split('/')[-2], profile_url=author_url))
+    elif author:
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//div[@class="section--module--review__score"]/text()').string()
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    pros = data.xpath('//div[@class="col-sm pros"]//li')
+    pros = data.xpath('//div[contains(@class, "pros") and not(contains(@class, "section"))]//li')
     for pro in pros:
         pro = pro.xpath('text()').string()
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[@class="col-sm mt-20 mt-sm-0 cons"]//li')
+    cons = data.xpath('//div[contains(@class, "cons") and not(contains(@class, "section"))]//li')
     for con in cons:
         con = con.xpath('text()').string()
         review.add_property(type='cons', value=con)
@@ -66,7 +69,7 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Conclusie")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2[contains(., "Conclusie") or contains(., "conclusie")]|//h3[contains(., "Conclusie") or contains(., "conclusie")])/following-sibling::p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 

@@ -25,6 +25,7 @@ def process_review(data, context, session):
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('-review', '')
     product.category = 'Tech'
+    product.manufacturer = data.xpath('//h4[@class="zone-title"]/following-sibling::ul//@alt').string()
 
     review = Review()
     review.type = 'pro'
@@ -36,17 +37,24 @@ def process_review(data, context, session):
     if date:
         review.date = date.replace('Posted on', '').strip()
 
-    summary = data.xpath('//div[@class="summary"]/p/em//text()').string(multiple=True)
+    author =data.xpath('//div[@class="textholder"]/h3/a/text()').string()
+    author_url = data.xpath('//div[@class="textholder"]/h3/a/@href').string()
+    if author and author_url:
+        review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    summary = data.xpath('//div[@class="summary"]/p[not(contains(., "Posted in") or contains(., "£"))]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('(//h2[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")]|//h3[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")])/following-sibling::p[not(contains(., "For more information"))]//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")]|//h3[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")])/following-sibling::p[not(contains(., "For more information") or contains(., "£"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h2[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")]|//h3[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")])/preceding-sibling::p[not(contains(., "For more information"))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")]|//h3[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")])/preceding-sibling::p[not(contains(., "For more information") or contains(., "£"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="thumbnails"]/p[not(contains(., "For more information"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="thumbnails"]/p[not(contains(., "For more information") or contains(., "£"))]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

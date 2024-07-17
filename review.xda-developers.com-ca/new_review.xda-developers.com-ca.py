@@ -25,9 +25,9 @@ def process_review(data, context, session):
     product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = 'Tech'
 
-    cats = data.xpath('//div[@class="article-tags-name"]/text()[not(contains(., "review") or contains(., "Review"))]').strings()
-    if cats:
-        product.category = "|".join(cats)
+    cat = data.xpath('//div[@class="article-tags-name"]/text()[not(contains(., "review") or contains(., "Review"))]').string()
+    if cat:
+        product.category = cat.replace('Other', '').strip()
 
     review = Review()
     review.type = 'pro'
