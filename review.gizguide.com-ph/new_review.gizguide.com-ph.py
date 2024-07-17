@@ -83,6 +83,7 @@ def process_review(data, context, session):
 
     summary = data.xpath('//b/span[@style="font-family: helvetica;"]//text()').string(multiple=True)
     if summary:
+        summary = summary.replace(u'\x7F', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[contains(., "Quick thoughts")]/following-sibling::div[@style and not(@class) and not(.//span[@style and regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$")] or .//span[contains(., "Average - ")])]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
@@ -94,6 +95,7 @@ def process_review(data, context, session):
         if summary:
             conclusion = conclusion.replace(summary, '').strip()
 
+        conclusion = conclusion.replace(u'\x7F', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Quick thoughts")]/preceding::div[@style and not(@class) and not(.//span[@style and regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$")] or .//span[contains(., "Average - ")])]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
@@ -102,16 +104,17 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//div[span[contains(., "Verdict")]]/preceding-sibling::span[not(.//i or regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$") or @typeof or contains(., "Average - ") or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@style and not(@class) and not(.//span[@style and regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$")] or .//span[contains(., "Average - ")])]/span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//span[not(.//i or @itemprop="name" or @class or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:"))]//text()').string(multiple=True)
 
     if excerpt:
         if summary:
-            excerpt = excerpt.replace(summary, '').strip()
+            excerpt = excerpt.replace(summary, '')
 
         if conclusion:
-            excerpt = excerpt.replace(conclusion, '').strip()
+            excerpt = excerpt.replace(conclusion, '')
 
         if excerpt and len(excerpt) > 2:
+            excerpt = excerpt.replace(u'\x7F', '').strip()
 
             review.add_property(type='excerpt', value=excerpt)
 
