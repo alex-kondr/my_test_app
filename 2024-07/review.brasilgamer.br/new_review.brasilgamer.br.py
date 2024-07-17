@@ -148,6 +148,7 @@ def process_review_next(data, context, session):
         review.add_property(type="excerpt", value=context['excerpt'])
 
         product = context['product']
+
         product.reviews.append(review)
 
         session.emit(product)

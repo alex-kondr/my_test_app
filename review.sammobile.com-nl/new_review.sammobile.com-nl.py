@@ -8,7 +8,7 @@ httplib._MAXHEADERS = 1000
 
 def run(context, session):
     options = "--compressed -X POST --data-raw 'action=loadmore&page=0&category=723'"
-    session.do(Request('https://www.sammobile.com/wp-admin/admin-ajax.php', use='curl', options=options, max_age=0), process_revlist, dict())
+    session.do(Request('https://www.sammobile.com/wp-admin/admin-ajax.php', use='curl', options=options), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -21,15 +21,18 @@ def process_revlist(data, context, session):
     if revs:
         page = context.get('page', 0) + 1
         options = "--compressed -X POST --data-raw 'action=loadmore&page={page}&category=723'".format(page=page)
-        session.do(Request('https://www.sammobile.com/wp-admin/admin-ajax.php', use='curl', options=options, max_age=0), process_revlist, dict(page=page))
+        session.do(Request('https://www.sammobile.com/wp-admin/admin-ajax.php', use='curl', options=options), process_revlist, dict(page=page))
 
 
 def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split('review:')[0].split('hands-on:')[0].strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-3]
     product.category = 'Tech'
+
+    product.ssid = product.url.split('/')[-3]
+    if not product.ssid:
+        product.ssid = product.url.split('/')[-1]
 
     review = Review()
     review.type = 'pro'
