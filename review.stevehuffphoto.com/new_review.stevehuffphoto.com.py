@@ -2,7 +2,7 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['IN USE', 'News', 'User Reports', 'Guest Post', 'essay']
+XCAT = ['IN USE', 'News', 'User Reports', 'Guest Post', 'essay', 'Tests', 'Quick Test', 'follow ups', 'Must See', 'First Looks']
 
 
 def run(context, session):
@@ -25,9 +25,15 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
+    title = data.xpath('//h1[@class="entry-title"]//text()').string(multiple=True)
+
     product = Product()
-    product.name = context['title'].replace('Review', '').replace('review','').strip()
     product.ssid = context['url'].split('/')[-2]
+
+    product.name = context['title'].replace('REVIEW:', '').replace('Reviews', '').replace('Review', '').replace(' REVIEW', '').replace('reviews', '').replace('review','').strip()
+    if len(product.name) < 3:
+        context['title'] = title
+        product.name = title.replace('REVIEW:', '').replace('Reviews', '').replace('Review', '').replace(' REVIEW', '').replace('reviews', '').replace('review','').strip()
 
     product.url = data.xpath('//a[contains(@href, "bhpho.to") and (contains(., "You can buy") or contains(., "you can see that offer"))]/@href').string()
     if not product.url:
@@ -35,7 +41,7 @@ def process_review(data, context, session):
 
     cats = data.xpath('(//span[@class="entry-meta-categories"])[1]/a/text()').strings()
     if cats:
-        product.category = '|'.join([cat.replace('Review', '').replace('review', '').strip() for cat in cats if cat.strip() not in XCAT])
+        product.category = '|'.join([cat.replace('Reviews', '').replace('Review', '').replace('reviews', '').replace('review','').strip() for cat in cats if cat.strip() not in XCAT])
     if not product.category:
         product.category = 'Tech'
 
