@@ -26,7 +26,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].replace('Review', '').replace('review','').strip()
     product.ssid = context['url'].split('/')[-2]
 
     product.url = data.xpath('//a[contains(@href, "bhpho.to") and (contains(., "You can buy") or contains(., "you can see that offer"))]/@href').string()
@@ -35,7 +35,7 @@ def process_review(data, context, session):
 
     cats = data.xpath('(//span[@class="entry-meta-categories"])[1]/a/text()').strings()
     if cats:
-        product.category = '|'.join([cat.strip() for cat in cats if cat.strip() not in XCAT])
+        product.category = '|'.join([cat.replace('Review', '').replace('review', '').strip() for cat in cats if cat.strip() not in XCAT])
     if not product.category:
         product.category = 'Tech'
 
@@ -51,24 +51,29 @@ def process_review(data, context, session):
 
     review.authors.append(Person(name='Steve Huff', ssid='stevehuff'))
 
-    pros = data.xpath('//p[regexp:test(., "^PROS$")]/following-sibling::ol[1]/li')
+    pros = data.xpath('(//p[regexp:test(., "^PROS$")]/following-sibling::ol|//p[regexp:test(., "^PROS$")]/following-sibling::ul)[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//p[regexp:test(., "^CONS$")]/following-sibling::ol[1]/li')
+    cons = data.xpath('(//p[regexp:test(., "^CONS$")]/following-sibling::ol|//p[regexp:test(., "^CONS$")]/following-sibling::ul)[1]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//p[.//strong[contains(., "Conclusion")]]/following-sibling::p[not(contains(., "Where to Buy") or contains(.//@href, "bhpho.to") or contains(., "You can also follow me"))]//text()').string(multiple=True)
-    if conclusion:
+    conclusions = data.xpath('//p[.//strong[contains(., "Conclusion")]]/following-sibling::p[not(contains(., "Where to Buy") or contains(.//@href, "bhpho.to") or contains(., "You can also follow me"))]//text()').strings()
+    if conclusions:
+        conclusion = ' '.join([concl.strip() for concl in conclusions])
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//p[.//strong[contains(., "Conclusion")]]/preceding-sibling::p[not(.//span[@style="font-size: 14pt;"] or contains(., "By Steve Huff") or contains(., "specs:"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(contains(., "Where to Buy") or contains(.//@href, "bhpho.to") or contains(., "You can also follow me") or .//span[@style="font-size: 14pt;"] or contains(., "By Steve Huff") or contains(., "specs:") or .//span[contains(., "PROS") or contains(., "CONS")])]//text()').string(multiple=True)
+
     if excerpt:
+        for concl in conclusions:
+            excerpt = excerpt.replace(concl.strip(), '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
