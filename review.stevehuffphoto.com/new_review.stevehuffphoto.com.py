@@ -2,7 +2,7 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['IN USE', 'News']
+XCAT = ['IN USE', 'News', 'User Reports', 'Guest Post', 'essay']
 
 
 def run(context, session):
