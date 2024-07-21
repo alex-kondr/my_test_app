@@ -23,9 +23,8 @@ def process_frontpage(data, context, session):
 def process_revlist(data, context, session):
     revs = data.xpath('//h3[@itemprop="headline"]/a')
     for rev in revs:
-        title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url), process_review, dict(context, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -33,14 +32,17 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
+    title = data.xpath('//div[@class="title-subtitle"]/h1//text()').string(multiple=True)
+
     product = Product()
-    product.name = context['title']
-    product.url = context['url']
+    product.name = title
+    product.url = context['url'].replace('Review:', '').strip()
     product.ssid = product.url.split('/')[-2].replace('review-', '')
     product.category = context['cat']
 
     review = Review()
-    review.title = context['title']
+    review.type = 'pro'
+    review.title = title
     review.url = product.url
     review.ssid = product.ssid
 
