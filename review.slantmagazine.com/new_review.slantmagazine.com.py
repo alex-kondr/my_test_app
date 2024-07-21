@@ -35,8 +35,8 @@ def process_review(data, context, session):
     title = data.xpath('//div[@class="title-subtitle"]/h1//text()').string(multiple=True)
 
     product = Product()
-    product.name = title
-    product.url = context['url'].replace('Review:', '').strip()
+    product.name = title.replace('Review:', '').strip()
+    product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('review-', '')
     product.category = context['cat']
 
@@ -59,9 +59,10 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('count(//i[@class="fa fa-star"])')
     grade_overall_half = data.xpath('count(//i[@class="fa fa-star-half-o"])')
+    grade_best = data.xpath('count(//i[contains(@class, "fa fa-star")])')
     if grade_overall and grade_overall > 0:
         grade_overall += grade_overall_half / 2 if grade_overall_half else 0
-        review.grades.append(Grade(type='overall', value=grade_overall, best=4.0))
+        review.grades.append(Grade(type='overall', value=grade_overall, best=grade_best))
 
     summary = data.xpath('//div[contains(@class, "post-item-subtitle")]/p//text()').string(multiple=True)
     if summary:
