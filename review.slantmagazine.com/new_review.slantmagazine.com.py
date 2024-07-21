@@ -32,12 +32,12 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
-    title = data.xpath('//title').string(multiple=True)
+    title = data.xpath('//title//text()').string(multiple=True)
 
     product = Product()
     product.name = title.replace('Review:', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2].replace('review-', '')
+    product.ssid = product.url.split('/')[-2].replace('review-', '').replace('-review', '')
     product.category = context['cat']
 
     review = Review()
