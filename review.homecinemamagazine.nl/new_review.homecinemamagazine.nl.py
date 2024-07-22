@@ -29,7 +29,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Preview & unboxing', '').replace('Eerste reviews', '').replace('Hands-on review', '').replace('Review:', '').replace('Video:', '').replace('(video)', '').strip()
+    product.name = context['title'].replace('De eerste reviews van de', '').replace('(Deel 2, uitgebreide review)', '').replace('Review en weggeef actie:', '').replace('Preview & unboxing', '').replace('Preview video:', '').replace('Eerste reviews', '').replace('Eerste review', '').replace('Review + Vlog:', '').replace('Hands-on review', '').replace('hands-on review', '').replace('Step-up review:', '').replace('Gadgettest:', '').replace('App review:', '').replace('App-review:', '').replace('Testpanel', '').replace('producten getest', '').replace('Preview:', '').replace('Review:', '').replace('Video:', '').replace('(video)', '').replace('(Magic Pen)', '').replace('Zomertest:', '').replace('Test:', '').replace('Review', '').replace('Nieuw:', '').replace('Update:', '').replace('reviews', '').replace('review', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = context['cat']
@@ -73,7 +73,11 @@ def process_review(data, context, session):
     excerpt = data.xpath('//h2[contains(., "Samenvattend") or contains(., "Conclusie")]/preceding::div[@class="section__body"]/p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="section__body"]/p[not(contains(., "Prijzen & Info"))]//text()').string(multiple=True)
+
     if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
