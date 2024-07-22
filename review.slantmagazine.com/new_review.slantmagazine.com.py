@@ -35,7 +35,7 @@ def process_review(data, context, session):
     title = data.xpath('//title//text()').string(multiple=True)
 
     product = Product()
-    product.name = title.replace('Final Preview', '').replace('Preview: ', '').replace('Review:', '').replace(' Review', '').split('...')[0].strip()
+    product.name = title.replace('Final Preview', '').replace('Previewing', '').replace('Previews', '').replace(' Preview -', '').replace('Preview: ', '').replace('Review:', '').replace('REview: ', '').replace(' Review', '').split('...')[0].strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('review-', '').replace('-review', '')
     product.category = context['cat']

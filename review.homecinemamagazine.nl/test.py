@@ -12,7 +12,7 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.MICHELIN_CA
+agent = agents.HOMECINEMA_MAGAZINE_NL
 # agent = agents.TEST
 reload = 1
 
@@ -21,7 +21,7 @@ if __name__ == "__main__":
     product = Product(agent, reload=reload)
     print(product.result)
     test = TestProduct(product)
-    test.run(xproduct_names=[], not_xproduct_name='cable', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
+    test.run(xproduct_names=[], not_xproduct_name='test', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
 
     log = LogProduct(agent, reload=reload)
     test_log = TestLogProduct(log)

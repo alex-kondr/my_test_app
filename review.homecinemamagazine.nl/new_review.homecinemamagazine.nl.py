@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://fwd.nl/'), process_frontpage, dict())
 
 
@@ -29,7 +29,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].replace('Preview & unboxing', '').replace('Eerste reviews', '').replace('Hands-on review', '').replace('Review:', '').replace('Video:', '').replace('(video)', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = context['cat']
@@ -46,7 +46,7 @@ def process_review(data, context, session):
 
     author = data.xpath('//meta[@name="author"]/@content').string()
     if author:
-        review.authors.append(name=author, ssid=author)
+        review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//div[@class="section--module--review__score"]/text()').string()
     if grade_overall:
