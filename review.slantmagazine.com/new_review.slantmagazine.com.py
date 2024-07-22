@@ -35,7 +35,7 @@ def process_review(data, context, session):
     title = data.xpath('//title//text()').string(multiple=True)
 
     product = Product()
-    product.name = title.replace('Review:', '').strip()
+    product.name = title.replace('Final Preview', '').replace('Preview: ', '').replace('Review:', '').replace(' Review', '').split('...')[0].strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('review-', '').replace('-review', '')
     product.category = context['cat']
@@ -75,7 +75,11 @@ def process_review(data, context, session):
     excerpt = data.xpath('//h3[contains(., "Overall")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="content-main"]/div/p//text()').string(multiple=True)
+
     if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
