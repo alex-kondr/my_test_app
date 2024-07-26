@@ -55,6 +55,7 @@ def process_review(data, context, session):
     excerpt = data.xpath('(//h2[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")]|//h3[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")])/preceding-sibling::p[not(contains(., "For more information") or contains(., "£"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@id="thumbnails"]/p[not(contains(., "For more information") or contains(., "£"))]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

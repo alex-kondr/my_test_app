@@ -63,12 +63,14 @@ def process_review(data, context, session):
     conclusion = data.xpath('//h2[contains(., "Should you buy")]/following-sibling::p[not(@class or contains(., "if:"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[@class="display-card-description"]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Should you buy")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="content-block-regular"]/p[not(@class or contains(., "if:"))]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
