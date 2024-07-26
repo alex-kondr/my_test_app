@@ -111,9 +111,11 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//div[span[contains(., "Verdict")]]/preceding-sibling::span[not(.//i or regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$") or @typeof or contains(., "Average - ") or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:") or contains(., "What do you guys think") or contains(., "Others:") or contains(., "Dimensions:") or contains(., "Weight:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//span[not(.//i or @itemprop="name" or @class or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:") or contains(., "What do you guys think")  or parent::div[@class="breadcrumbs"])]//text()').string(multiple=True)
+        excerpt = data.xpath('//span[not(.//i or @itemprop="name" or @class or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:") or contains(., "What do you guys think")  or parent::div[@class="breadcrumbs"] or .//a[@href="http://www.gizguide.com/search/label/audio"] or text()="GIZGUIDE" or text()="Satchmi" or contains(., "leading brand"))]//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(u'\x7F', '').replace('  ', ' ').replace(' ,', ',').strip()
+
         if summary:
             excerpt = excerpt.replace(summary, '')
 
@@ -121,8 +123,6 @@ def process_review(data, context, session):
             excerpt = excerpt.replace(conclusion, '')
 
         if excerpt and len(excerpt) > 2:
-            excerpt = excerpt.replace(u'\x7F', '').strip()
-
             review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
