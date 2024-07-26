@@ -84,7 +84,10 @@ def process_review(data, context, session):
                 if len(con) > 1:
                     review.add_property(type='cons', value=con)
 
-    summary = data.xpath('(//head[meta[@name="twitter:description"] and not(.//script)]/following-sibling::body/div//b)[1]//text()').string(multiple=True)
+    summary = data.xpath('//meta[@name="og:description"]/@content').string(multiple=True)
+    if not summary:
+        summary = data.xpath('(//head[meta[@name="twitter:description"] and not(.//script)]/following-sibling::body/div//b)[1]//text()').string(multiple=True)
+
     if summary:
         summary = summary.replace(u'\x7F', '').strip()
         review.add_property(type='summary', value=summary)
@@ -94,6 +97,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('(//h2[contains(., "Verdict")]|//div[contains(., "Verdict")])/following-sibling::div[not(@class or .//span[@style and regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$")] or .//span[contains(., "Average - ")])]//span[not(.//i or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:") or contains(., "What do you guys think") or contains(., "Others:") or contains(., "Dimensions:") or contains(., "Weight:"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[span[contains(., "Verdict")]]/following-sibling::span[not(.//i or regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$") or @typeof or contains(., "Average - ") or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:") or contains(., "What do you guys think") or contains(., "Others:") or contains(., "Dimensions:") or contains(., "Weight:"))]//text()').string(multiple=True)
+
     if conclusion:
         if summary:
             conclusion = conclusion.replace(summary, '').strip()
@@ -107,7 +111,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//div[span[contains(., "Verdict")]]/preceding-sibling::span[not(.//i or regexp:test(., "^[\w/\s]+[\s]?- [\d\.]+$") or @typeof or contains(., "Average - ") or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:") or contains(., "What do you guys think") or contains(., "Others:") or contains(., "Dimensions:") or contains(., "Weight:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//span[not(.//i or @itemprop="name" or @class or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:") or contains(., "What do you guys think"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//span[not(.//i or @itemprop="name" or @class or @typeof or b[contains(., "Cons") or contains(., "Pros")] or contains(., "Update:") or contains(., "See also:") or contains(., "Cons:") or contains(., "Pros:") or contains(., "Display:") or contains(., "CPU:") or contains(., "GPU:") or contains(., "RAM:") or contains(., "ROM:") or contains(., "Back Camera:") or contains(., "Selfie Camera:") or contains(., "OS:") or contains(., "Connectivity:") or contains(., "Sensors:") or contains(., "Price:") or contains(., "Battery:") or contains(., "Disclaimer:") or contains(., "What do you guys think")  or parent::div[@class="breadcrumbs"])]//text()').string(multiple=True)
 
     if excerpt:
         if summary:
