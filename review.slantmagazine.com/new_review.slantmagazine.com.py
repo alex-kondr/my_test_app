@@ -36,14 +36,17 @@ def process_review(data, context, session):
 
     product = Product()
     product.name = title.replace('Final Preview', '').replace('Previewing', '').replace('Previews', '').replace(' Preview -', '').replace('Preview: ', '').replace('Review:', '').replace('REview: ', '').replace(' Review', '').split('...')[0].strip()
-    product.url = context['url']
-    product.ssid = product.url.split('/')[-2].replace('review-', '').replace('-review', '')
+    product.ssid = context['url'].split('/')[-2].replace('review-', '').replace('-review', '')
     product.category = context['cat']
+
+    product.url = data.xpath('//a[@rel="sponsored"]/@href').string()
+    if not product.url:
+        product.url = context['url']
 
     review = Review()
     review.type = 'pro'
     review.title = title
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()

@@ -2,18 +2,14 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['IN USE', 'News', 'User Reports', 'Guest Post', 'essay', 'Tests', 'Quick Test', 'follow ups', 'Must See', 'First Looks']
+XCAT = ['IN USE', 'News', 'User Reports', 'Guest Post', 'essay', 'Tests', 'Quick Test', 'follow ups', 'Must See', 'First Looks', 'Featured', 'AMAZING', 'Exclusive']
 
 
 def run(context, session):
-    session.queue(Request('https://www.stevehuffphoto.com/all-reviews/'), process_catlist, dict())
-
-
-def process_catlist(data, context, session):
-    cats = data.xpath('//span[@style="font-size: 14pt;"]//a')
-    for cat in cats:
-        url = cat.xpath('@href').string()
-        session.queue(Request(url), process_revlist, dict())
+    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/mirrorless-central/'), process_revlist, dict())
+    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/leica-reviews/'), process_revlist, dict())
+    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/hi-fi-reviews/'), process_revlist, dict())
+    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/user-reports-your-views-on-camera-gear/'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -72,14 +68,15 @@ def process_review(data, context, session):
         conclusion = ' '.join([concl.strip() for concl in conclusions])
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//p[.//strong[contains(., "Conclusion")]]/preceding-sibling::p[not(.//span[@style="font-size: 14pt;"] or contains(., "By Steve Huff") or contains(., "specs:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//p[.//strong[contains(., "Conclusion")]]/preceding-sibling::p[not(.//span[@style="font-size: 14pt;"] or contains(., "By Steve Huff") or contains(., "specs:") or .//span[contains(., "PROS") or contains(., "CONS")] or .//em[regexp:test(., "^by ")] or contains(., "Thanks for reading") or contains(., "Warm regards,") or contains(., "Blog:") or contains(., "Nominated Top") or contains(., "WPJA-Wedding Photojournalist") or .//span[@style="color: #000080;"])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(contains(., "Where to Buy") or contains(.//@href, "bhpho.to") or contains(., "You can also follow me") or .//span[@style="font-size: 14pt;"] or contains(., "By Steve Huff") or contains(., "specs:") or .//span[contains(., "PROS") or contains(., "CONS")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(contains(., "Where to Buy") or contains(.//@href, "bhpho.to") or contains(., "You can also follow me") or .//span[@style="font-size: 14pt;"] or contains(., "By Steve Huff") or contains(., "specs:") or .//span[contains(., "PROS") or contains(., "CONS")] or .//em[regexp:test(., "^by ")] or contains(., "Thanks for reading") or contains(., "Warm regards,") or contains(., "Blog:") or contains(., "Nominated Top") or contains(., "WPJA-Wedding Photojournalist") or .//span[@style="color: #000080;"])]//text()').string(multiple=True)
 
     if excerpt:
         for concl in conclusions:
             excerpt = excerpt.replace(concl.strip(), '').strip()
 
+        excerpt = excerpt.strip('+-—– ')
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

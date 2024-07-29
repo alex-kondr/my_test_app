@@ -45,19 +45,22 @@ def process_review(data, context, session):
         review.date = date.split('T')[0]
 
     author = data.xpath('//meta[@name="author"]/@content').string()
-    if author:
+    author_url = data.xpath('//a[@rel="author"]/@href').string()
+    if author and author_url:
+        review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
+    elif author:
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//div[@class="section--module--review__score"]/text()').string()
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    pros = data.xpath('//div[@class="section--module--review__pros-cons"]//div[contains(@class, " pros")]//li')
+    pros = data.xpath('//div[@class="section--module--review__pros-cons"]//div[contains(@class, " pros") or contains(@class, "pros ")]//li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[@class="section--module--review__pros-cons"]//div[contains(@class, " cons")]//li')
+    cons = data.xpath('//div[@class="section--module--review__pros-cons"]//div[contains(@class, " cons") or contains(@class, "cons ")]//li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
@@ -66,11 +69,11 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Samenvattend") or contains(., "Conclusie")]/following-sibling::p[not(contains(., "Prijzen & Info"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Samenvattend") or contains(., "Conclusie") or contains(., "conclusie")]/following-sibling::p[not(contains(., "Prijzen & Info"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Samenvattend") or contains(., "Conclusie")]/preceding::div[@class="section__body"]/p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Samenvattend") or contains(., "Conclusie") or contains(., "conclusie")]/preceding::div[@class="section__body"]/p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="section__body"]/p[not(contains(., "Prijzen & Info"))]//text()').string(multiple=True)
 

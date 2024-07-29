@@ -27,14 +27,17 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split('review:')[0].split('hands-on:')[0].split('review roundup:')[0].replace('Review:', '').strip(' review')
-    product.url = context['url']
     product.ssid = product.name.lower().replace(' ', '-')
     product.category = 'Tech'
+
+    product.url = data.xpath('//a[contains(., "Buy") and contains(@class, "buy")]/@href').string()
+    if not product.url:
+        product.url = context['url']
 
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
@@ -48,31 +51,46 @@ def process_review(data, context, session):
     grade_overall = data.xpath('//p[contains(., "Overall score")]//text()').string(multiple=True)
     if grade_overall:
         grade_overall = grade_overall.split()[-1]
-        review.grades.append(Grade(type='overall', value=float(grade_overall)))
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     pros = data.xpath('//span[i[@class="fas fa-check"]]')
     if not pros:
         pros = data.xpath('//p[regexp:test(., "^Con\'s$")]/preceding-sibling::p[contains(., "•")]')
+    if not pros:
+        pros = data.xpath('//tr[.//strong[contains(., "Pros")]]/following-sibling::tr/td[1]')
+    if not pros:
+        pros = data.xpath('//p[.//*[regexp:test(., "^Pro\'s:$")] or .//*[regexp:test(., "^Pros:$")]]//text()[not(contains(., "Pro\'s") or contains(., "Pros"))]')
+
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True).strip('•+- ')
-        review.add_property(type='pros', value=pro)
+        pro = pro.xpath('.//text()').string(multiple=True) or pro.string()
+        pro = pro.strip('•+-– ')
+        if pro and len(pro) > 1:
+            review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//span[i[@class="fas fa-times"]]')
     if not cons:
         cons = data.xpath('//p[regexp:test(., "^Con\'s$")]/following-sibling::p[contains(., "•")]')
-    for con in cons:
-        con = con.xpath('.//text()').string(multiple=True).strip('•+- ')
-        review.add_property(type='cons', value=con)
+    if not cons:
+        cons = data.xpath('//tr[.//strong[contains(., "Cons")]]/following-sibling::tr/td[2]')
+    if not cons:
+        cons = data.xpath('//p[.//*[regexp:test(., "^Con\'s:$")] or .//*[regexp:test(., "^Cons:$")]]//text()[not(contains(., "Con\'s") or contains(., "Cons"))]')
 
-    conclusion = data.xpath('(//h3[contains(., "Verdict")]|//p[contains(., "Conclusion")])/following-sibling::p//text()').string(multiple=True)
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True) or con.string()
+        con = con.strip('•+-– ')
+        if con and len(con) > 1 and '(element)' not in con:
+            review.add_property(type='cons', value=con)
+
+    conclusion = data.xpath('(//h3[contains(., "Verdict") or contains(., "Conclusion")]|//p[contains(., "Conclusion")])/following-sibling::p[not(contains(., "Device firmware:") or contains(., "Pro\'s:") or contains(., "Pro’s:") or contains(., "Cons:"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//strong[contains(., "Conclusion")]/following-sibling::text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[.//strong[contains(., "Conclusion")]]/following-sibling::p//text()')
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Verdict")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('(//h3[contains(., "Verdict") or contains(., "Conclusion")]|//p[contains(., "Conclusion")])/preceding-sibling::p[not(contains(., "Review:"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//p[.//strong[contains(., "Conclusion")]]/preceding-sibling::p[not(contains(., "Conclusion"))]//text()').string(multiple=True)
     if not excerpt:
@@ -81,6 +99,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//p[regexp:test(., "^Pro\'s$")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="content"]/p//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
