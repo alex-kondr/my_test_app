@@ -68,6 +68,8 @@ class AgentForm:
         prod_rev = input("product/review: ")
         next_url_xpath = input("next_url_xpath: ")
 
+        text = "\n\ndef process_prodlist"
+
         text = (
             "\n\ndef process_revlist(data, context, session):\n"
             f"    revs = data.xpath('{revs_xpath}')\n"
