@@ -10,6 +10,7 @@ class AgentForm:
         self.funcs = {
             "frontpage": self.create_frontpage,
             "revlist": self.create_revlist,
+            # "prodlist": self.create_prodlist,
             "product": self.create_product,
             "review": self.create_review,
             "reviews": self.create_reviews,
