@@ -14,7 +14,12 @@ class AgentForm:
             "reviews": self.create_reviews,
         }
 
-    def create_run(self, url: str, next_func: str, breakers: str|None = None, new_parser: bool = False, curl: bool = False):
+    def create_run(self):
+        url = input("url: ")
+        next_func = input("Next func: ")
+        new_parser = bool(input("New parser?: "))
+        breakers = input("Breakers?: ")
+        curl = bool(input("curl?: "))
 
         text = (
             "from agent import *\n"
@@ -32,6 +37,8 @@ class AgentForm:
         with open(self.file_path, "w", encoding="utf-8") as file:
             file.write(text)
 
+        self.funcs.get(next_func)()
+
     def create_frontpage(self):
         cats_xpath = input("cats_xpath: ")
         name_xpath = input("name_xpath: ")
@@ -48,6 +55,8 @@ class AgentForm:
 
         with open(self.file_path, "a", encoding="utf-8") as file:
             file.write(text)
+
+        self.create_revlist()
 
     def create_revlist(self):
         revs_xpath = input("revs_xpath: ")
