@@ -47,7 +47,8 @@ def process_review(data, context, session):
     author = data.xpath('//meta[@name="author"]/@content').string()
     author_url = data.xpath('//a[@rel="author"]/@href').string()
     if author and author_url:
-        review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
+        author_ssid = author_url.split('/')[-2]
+        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
@@ -78,6 +79,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[@class="section__body"]/p[not(contains(., "Prijzen & Info"))]//text()').string(multiple=True)
 
     if excerpt:
+
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 

@@ -2,14 +2,11 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['IN USE', 'News', 'User Reports', 'Guest Post', 'essay', 'Tests', 'Quick Test', 'follow ups', 'Must See', 'First Looks', 'Featured', 'AMAZING', 'Exclusive']
-
-
 def run(context, session):
-    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/mirrorless-central/'), process_revlist, dict())
-    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/leica-reviews/'), process_revlist, dict())
-    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/hi-fi-reviews/'), process_revlist, dict())
-    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/user-reports-your-views-on-camera-gear/'), process_revlist, dict())
+    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/mirrorless-central/'), process_revlist, dict(cat='Mirrorless Cameras'))
+    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/leica-reviews/'), process_revlist, dict(cat='Leica Cameras'))
+    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/hi-fi-reviews/'), process_revlist, dict(cat='Hi-Fi'))
+    session.queue(Request('http://www.stevehuffphoto.com/all-reviews/user-reports-your-views-on-camera-gear/'), process_revlist, dict(cat='Cameras'))
 
 
 def process_revlist(data, context, session):
@@ -17,7 +14,7 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('.//text()').string(multiple=True)
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(title=title, url=url))
+        session.queue(Request(url), process_review, dict(context, title=title, url=url))
 
 
 def process_review(data, context, session):
@@ -25,6 +22,7 @@ def process_review(data, context, session):
 
     product = Product()
     product.ssid = context['url'].split('/')[-2]
+    product.category = context['cat']
 
     product.name = context['title'].replace('REVIEW:', '').replace('Reviews', '').replace('Review', '').replace(' REVIEW', '').replace('reviews', '').replace('review','').strip()
     if len(product.name) < 3:
@@ -35,15 +33,9 @@ def process_review(data, context, session):
     if not product.url:
         product.url = context['url']
 
-    cats = data.xpath('(//span[@class="entry-meta-categories"])[1]/a/text()').strings()
-    if cats:
-        product.category = '|'.join([cat.replace('Reviews', '').replace('Review', '').replace('reviews', '').replace('review','').strip() for cat in cats if cat.strip() not in XCAT])
-    if not product.category:
-        product.category = 'Tech'
-
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = title
     review.url = context['url']
     review.ssid = product.ssid
 

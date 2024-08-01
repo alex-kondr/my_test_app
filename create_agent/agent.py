@@ -39,6 +39,8 @@ class AgentForm:
         with open(self.file_path, "w", encoding="utf-8") as file:
             file.write(text)
 
+        with open(self.file_path.replace("new_", "old_"), "w", encoding="utf-8"): pass
+
         self.funcs.get(next_func)()
 
     def create_frontpage(self):

@@ -44,7 +44,7 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//meta[@name="author"]/@content').string()
+    author = data.xpath('//meta[@name="author"]/@content[not(contains(., "SamMobile"))]').string()
     if author:
         review.authors.append(Person(name=author, ssid=author))
 
