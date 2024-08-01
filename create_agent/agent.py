@@ -39,7 +39,7 @@ class AgentForm:
         with open(self.file_path, "w", encoding="utf-8") as file:
             file.write(text)
 
-        with open(self.file_path.replace("new_", "old_"), "w", encoding="utf-8"): pass
+        with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8"): pass
 
         self.funcs.get(next_func)()
 
@@ -77,7 +77,7 @@ class AgentForm:
             f"    revs = data.xpath('{revs_xpath}')\n"
             "    for rev in revs:\n"
             f"        {name_title} = rev.xpath('{name_title_xpath}').string()\n"
-            f"        url = rev.xpath('{url_xpath}.string()')\n"
+            f"        url = rev.xpath('{url_xpath}').string()\n"
             f"        session.queue(Request(url), process_{prod_rev}, dict({name_title}={name_title}, url=url))\n"
             f"\n    next_url = data.xpath('{next_url_xpath}').string()\n"
             "    if next_url:\n"
@@ -139,6 +139,7 @@ class AgentForm:
         cons_xpath = input("cons_xpath: ")
         summary_xpath = input("summary_xpath: ")
         conclusion_xpath = input("conclusion_xpath: ")
+        excerpt_with_concl_xpath = input("excerpt_with_concl_xpath: ")
         excerpt_xpath = input("excerpt_xpath: ")
 
         text = (
@@ -177,7 +178,7 @@ class AgentForm:
             "        review.add_property(type='pros', value=pro)\n"
             f"\n    cons = data.xpath('{cons_xpath}')\n"
             "    for con in cons:\n"
-            "        con = con.path('.//text()').string(multiple=True)\n"
+            "        con = con.xpath('.//text()').string(multiple=True)\n"
             "        review.add_property(type='cons', value=con)\n"
         ) if pros_xpath else ""
 
@@ -194,8 +195,10 @@ class AgentForm:
         ) if conclusion_xpath else ""
 
         text += (
-            f"\n    excerpt = data.xpath('{excerpt_xpath}').string(multiple=True)\n"
-            "    if excerpt:\n"
+            f"\n    excerpt = data.xpath('{excerpt_with_concl_xpath}').string(multiple=True)\n"
+            "    if not excerpt:\n"
+            f"        excerpt = data.xpath('{excerpt_xpath}').string(multiple=True)\n"
+            "\n    if excerpt:\n"
             "        review.add_property(type='excerpt', value=excerpt)\n"
             "\n        product.reviews.append(review)\n"
             "\n        session.emit(product)"
