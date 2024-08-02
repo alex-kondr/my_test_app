@@ -2,11 +2,12 @@ from pathlib import Path
 
 
 class AgentForm:
-    def __init__(self, name: str):
+    def __init__(self, name: str, name_agent_for_test: str, agent_id: str):
         self.name = name
         self.agent_dir = Path(self.name)
         self.agent_dir.mkdir(exist_ok=True)
         self.file_path = self.agent_dir / Path("new_" + self.name + ".py")
+        self.create_test_file(name_agent_for_test, agent_id)
         self.funcs = {
             "frontpage": self.create_frontpage,
             "revlist": self.create_revlist,
@@ -290,3 +291,15 @@ class AgentForm:
 
         with open(self.file_path, "a", encoding="utf-8") as file:
             file.write(text)
+
+    def create_test_file(self, name_agent_for_test: str, agent_id: str):
+        name_agent_for_test = name_agent_for_test.upper().replace(" [", "_").replace("[", "_").replace("]", "")
+
+        with open("create_agent/test_template.txt", "r", encoding="utf-8") as file:
+            test_template = file.read()
+
+        with open(self.agent_dir / Path("test.py"), "w", encoding="utf-8") as file:
+            file.write(test_template.format(name_agent_for_test=name_agent_for_test))
+
+        with open("product_test/list_of_agents.py", "a", encoding="utf-8") as file:
+            file.write(f"{name_agent_for_test} = {agent_id}\n")

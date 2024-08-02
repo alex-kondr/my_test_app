@@ -11,6 +11,8 @@ from create_agent.agent import AgentForm
 
 
 name_agent = input("Name agent: ")
+name_agent_for_test = input("Name agent for test: ")
+agent_id = input("agent_id: ")
 
-agent = AgentForm(name_agent)
+agent = AgentForm(name=name_agent, name_agent_for_test=name_agent_for_test, agent_id=agent_id)
 agent.create_run()
