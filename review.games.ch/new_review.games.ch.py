@@ -120,10 +120,10 @@ def process_review_next(data, context, session):
         session.do(Request(next_url), process_review_next, dict(context, review=review, url=next_url, page=page + 1))
 
     elif context['excerpt']:
-        if conclusion:
-            excerpt = context['excerpt'].replace(context['conclusion'], '').strip()
+        if context.get('conclusion'):
+            context['excerpt'] = context['excerpt'].replace(context['conclusion'], '').strip()
 
-        review.add_property(type="excerpt", value=excerpt)
+        review.add_property(type="excerpt", value=context['excerpt'])
 
         product = context['product']
         product.reviews.append(review)
