@@ -55,7 +55,7 @@ class AgentForm:
             "    for cat in cats:\n"
             f"        name = cat.xpath('{name_xpath}').string()\n"
             f"        url = cat.xpath('{url_xpath}').string()\n"
-            "        session.queue(Request(url), process_revlist, dict(cat=name))"
+            "        session.queue(Request(url), process_revlist, dict(cat=name))\n"
         )
 
         with open(self.file_path, "a", encoding="utf-8") as file:
@@ -293,7 +293,7 @@ class AgentForm:
             file.write(text)
 
     def create_test_file(self, name_agent_for_test: str, agent_id: str):
-        name_agent_for_test = name_agent_for_test.upper().replace(" [", "_").replace("[", "_").replace("]", "")
+        name_agent_for_test = name_agent_for_test.upper().replace(" [", "_").replace("[", "_").replace("]", "").replace(".", "_")
 
         with open("create_agent/test_template.txt", "r", encoding="utf-8") as file:
             test_template = file.read()
