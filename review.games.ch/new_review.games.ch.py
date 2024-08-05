@@ -4,7 +4,7 @@ from models.products import *
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request("https://www.games.ch"), process_frontpage, dict())
+    session.queue(Request('https://www.games.ch'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -32,7 +32,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = context['title'].split(' - ')[0].strip()
+    product.name = context['title'].split(' - ')[0].split(' – ')[0].split('- ')[0].split(' -')[0].replace('im Test', '').strip()
     product.url = context['url']
     product.ssid = data.xpath('//a[@itemprop="articleSection"]/@href').string().split('/')[-2]
     product.category = context['cat']
@@ -45,11 +45,11 @@ def process_review(data, context, session):
 
     date = data.xpath('//div[not(@class="meta")]/time/@datetime').string()
     if date:
-        review.date = date.split('T')[0]
+        review.date = date.split()[0]
 
-    author = data.xpath('//meta[@property="v:reviewer"]/@content').string()
-    if author:
-        author = author.split('/')[-1].strip()
+    authors = data.xpath('//div[not(@class="meta")]/time/following-sibling::span/a')
+    for author in authors:
+        author = author.xpath('text()').string()
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//h3[contains(., "Bewertung")]/span/@content').string()
@@ -64,12 +64,16 @@ def process_review(data, context, session):
     pros = data.xpath('//ul[@class="pro"]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
-        review.add_property(type='pros', value=pro)
+        if pro and len(pro) > 1:
+            pro = pro.strip('+- ')
+            review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//ul[@class="con"]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
-        review.add_property(type='cons', value=con)
+        if con and len(con) > 1:
+            con = con.strip('+- ')
+            review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
@@ -85,7 +89,7 @@ def process_review(data, context, session):
     next_url = data.xpath('//div[@id="pagination"]//li[span]/following-sibling::li/a/@href').string()
     if next_url:
         page = 1
-        title = review.title + " - Pagina " + str(page)
+        title = review.title + ' - Pagina ' + str(page)
         review.add_property(type='pages', value=dict(title=title, url=review.url))
 
         session.do(Request(next_url), process_review_next, dict(context, product=product, review=review, url=next_url, page=page + 1))
@@ -101,7 +105,7 @@ def process_review_next(data, context, session):
 
     page = context.get('page', 1)
     if page > 1:
-        title = review.title + " - Pagina " + str(page)
+        title = review.title + ' - Pagina ' + str(page)
         review.add_property(type='pages', value=dict(title=title, url=context['url']))
 
         conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p//text()').string(multiple=True)
