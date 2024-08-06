@@ -32,7 +32,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = context['title'].split(' - ')[0].split(' – ')[0].split('- ')[0].split(' -')[0].replace('im Test', '').strip()
+    product.name = context['title'].split(' - ')[0].split(' – ')[0].split('- ')[0].split(' -')[0].replace('im Test', '').replace('im RePlay-Test', '').strip()
     product.url = context['url']
     product.ssid = data.xpath('//a[@itemprop="articleSection"]/@href').string().split('/')[-2]
     product.category = context['cat']
