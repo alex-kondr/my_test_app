@@ -2,12 +2,11 @@ from pathlib import Path
 
 
 class AgentForm:
-    def __init__(self, name: str, name_agent_for_test: str, agent_id: str):
+    def __init__(self, name: str):
         self.name = name
         self.agent_dir = Path(self.name)
         self.agent_dir.mkdir(exist_ok=True)
         self.file_path = self.agent_dir / Path("new_" + self.name + ".py")
-        self.create_test_file(name_agent_for_test, agent_id)
         self.funcs = {
             "frontpage": self.create_frontpage,
             "revlist": self.create_revlist,
@@ -17,12 +16,18 @@ class AgentForm:
             "reviews": self.create_reviews,
         }
 
-    def create_run(self):
-        url = input("url: ")
-        next_func = input("Next func: ")
-        new_parser = bool(input("New parser?: "))
-        breakers = input("Breakers?: ")
-        curl = bool(input("curl?: "))
+    def create_run(
+        self,
+        name_agent_for_test: str,
+        agent_id: str,
+        url: str,
+        next_func:str,
+        new_parser: bool,
+        breakers: str,
+        curl: bool
+        ):
+
+        self.create_test_file(name_agent_for_test, agent_id)
 
         text = (
             "from agent import *\n"
@@ -30,19 +35,15 @@ class AgentForm:
             "def run(context, session):\n"
         )
 
-        if new_parser:
-            text += "    session.browser.use_new_parser = True\n"
-        if breakers:
-            text += f"    session.sessionbreakers = [SessionBreak(max_requests={breakers})]\n"
+        text += "    session.browser.use_new_parser = True\n" if new_parser else ""
+        text += f"    session.sessionbreakers = [SessionBreak(max_requests={breakers})]\n" if breakers else ""
+        text += """    session.queue(Request('{url}'{curl}), process_{next_func}, dict())\n""".format(url=url, next_func=next_func, curl=", use='curl'" if curl else "")
 
-        text += """    session.queue(Request("{url}"{curl}), process_{next_func}, dict())\n""".format(url=url, next_func=next_func, curl=", use='curl'" if curl else "")
-
+        with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8"): pass
         with open(self.file_path, "w", encoding="utf-8") as file:
             file.write(text)
 
-        with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8"): pass
-
-        self.funcs.get(next_func)()
+        # self.funcs.get(next_func)()
 
     def create_frontpage(self):
         cats_xpath = input("cats_xpath: ")
@@ -63,15 +64,17 @@ class AgentForm:
 
         self.create_revlist()
 
-    def create_revlist(self):
-        revs_xpath = input("revs_xpath: ")
-        name_title = input("name_title: ")
-        name_title_xpath = input("name_title_xpath: ")
-        url_xpath = input("url_xpath: ")
-        prod_rev = input("product/review: ")
-        next_url_xpath = input("next_url_xpath: ")
+    def create_revlist(
+        self,
+        revs_xpath: str,
+        name_title: str,
+        name_title_xpath: str,
+        url_xpath: str,
+        prod_rev: str,
+        next_url_xpath: str
+        ):
 
-        text = "\n\ndef process_prodlist"
+        # text = "\n\ndef process_prodlist"
 
         text = (
             "\n\ndef process_revlist(data, context, session):\n"
@@ -88,7 +91,7 @@ class AgentForm:
         with open(self.file_path, "a", encoding="utf-8") as file:
             file.write(text)
 
-        self.funcs.get(prod_rev)()
+        # self.funcs.get(prod_rev)()
 
     def create_product(self):
         manufacturer_xpath = input("manufacturer_xpath?: ")
@@ -132,16 +135,18 @@ class AgentForm:
 
         self.create_reviews()
 
-    def create_review(self):
-        date_xpath = input("date_xpath: ")
-        author_xpath = input("author_xpath: ")
-        grade_overall_xpath = input("grade_overall_xpath: ")
-        pros_xpath = input("pros_xpath: ")
-        cons_xpath = input("cons_xpath: ")
-        summary_xpath = input("summary_xpath: ")
-        conclusion_xpath = input("conclusion_xpath: ")
-        excerpt_with_concl_xpath = input("excerpt_with_concl_xpath: ")
-        excerpt_xpath = input("excerpt_xpath: ")
+    def create_review(
+        self,
+        date_xpath: str,
+        author_xpath: str,
+        grade_overall_xpath: str,
+        pros_xpath: str,
+        cons_xpath: str,
+        summary_xpath: str,
+        conclusion_xpath: str,
+        excerpt_with_concl_xpath: str,
+        excerpt_xpath: str,
+        ):
 
         text = (
             "\n\ndef process_review(data, context, session):\n"
