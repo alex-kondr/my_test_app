@@ -48,6 +48,16 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
+    pros = data.xpath('(//h3[contains(., "Vorteile")]|//h2[contains(., "Pros")])/following-sibling::ul[1]/li')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('(//h3[contains(., "Nachteile")]|//h2[contains(., "Contras")])/following-sibling::ul[1]/li')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        review.add_property(type='cons', value=con)
+
     excerpt = data.xpath('').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('').string(multiple=True)
