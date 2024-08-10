@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.inside-digital.de/thema/test'), process_revlist, dict())
 
 
@@ -11,7 +11,7 @@ def process_revlist(data, context, session):
     revs = data.xpath('//div[contains(@class, "td_module_11")]')
     for rev in revs:
         title = rev.xpath('div[contains(@class, "td-module-title")]//a/text()').string()
-        cats = rev.xpath('.//a[@class="td-post-category"]/text()').string()
+        cats = rev.xpath('.//a[@class="td-post-category"]/text()[not(contains(., "TEST") or contains(., "1&amp;1") or contains(., "REVIEWS"))]').string()
         url = rev.xpath('div[contains(@class, "td-module-title")]//a/@href').string()
         session.queue(Request(url), process_review, dict(title=title, cats=cats, url=url))
 
@@ -22,18 +22,21 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' im Test:')[0].split(' Test:')[0].replace(' im Test', '').strip()
-    product.url = context['url'].replace('/test', '')
-    product.ssid = product.url.split('/')[-1].replace('-im-test', '')
+    product.name = context['title'].split('im ersten Test:')[0].split(' im Test:')[0].split(' Test: ')[0].split('im Langzeit-Test:')[0].replace('Netztest:', '').replace('Im Test: ', '').replace(u'im\u00a0Test', '').replace('im Test', '').replace('Testsieger:', '').replace('Test: ', '').replace('PureView', '').strip()
+    product.ssid = context['url'].replace('/test', '').replace('/hands-on-test', '').split('/')[-1].replace('-im-test', '')
     product.category = 'Tech'
 
+    product.url = data.xpath('//a[contains(@rel, "sponsored")]/@href').string()
+    if not product.url:
+        product.url = context['url'].replace('/test', '').replace('/hands-on-test', '')
+
     if context['cats']:
-        product.category = '|'.join([cat.capitalize() for cat in context['cats'].split(', ')])
+        product.category = '|'.join([cat.capitalize() for cat in context['cats'].split(', ')]).replace('&amp;', '&').strip()
 
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@itemprop="datePublished"]/@content').string()
@@ -48,15 +51,25 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    pros = data.xpath('(//h3[contains(., "Vorteile")]|//h2[contains(., "Pros")])/following-sibling::ul[1]/li')
+    pros = data.xpath('(//h3[contains(., "Vorteile")]|//h2[contains(., "Pros") and not(contains(., "Contras"))])/following-sibling::ul[1]/li')
+    if not pros:
+        pros = data.xpath('//p[.//strong[contains(., "Pros")]]/following-sibling::ul[1]/li')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('(//h3[contains(., "Nachteile")]|//h2[contains(., "Contras")])/following-sibling::ul[1]/li')
+    cons = data.xpath('(//h3[contains(., "Nachteile")]|//h2[contains(., "Contras") and not(contains(., "Pros"))])/following-sibling::ul[1]/li')
+    if not cons:
+        cons = data.xpath('//p[.//strong[contains(., "Contras")]]/following-sibling::ul[1]/li')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
+
+    summary = data.xpath('//div[@class="post-excerpt"]//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[contains(@id, "fazit")]/following-sibling::p[not(contains(., "Contras") or contains(., "Was für das") or contains(., "in Deutschland erhältlich") or preceding-sibling::ul)]//text()').string(multiple=True)
     if conclusion:
@@ -64,9 +77,12 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h2[contains(@id, "fazit")]/preceding-sibling::p[not(contains(., "Contras") or contains(., "Was für das") or contains(., "in Deutschland erhältlich") or preceding-sibling::ul)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('').string(multiple=True)
+        excerpt = data.xpath('//p[not(@class or .//span[@class] or contains(., "Contras") or contains(., "Was für das") or contains(., "in Deutschland erhältlich") or preceding-sibling::ul)]//text()').string(multiple=True)
 
     if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
