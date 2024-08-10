@@ -23,8 +23,8 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split(' im Test:')[0].split(' Test:')[0].replace(' im Test', '').strip()
-    product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.url = context['url'].replace('/test', '')
+    product.ssid = product.url.split('/')[-1].replace('-im-test', '')
     product.category = 'Tech'
 
     if context['cats']:
@@ -58,7 +58,11 @@ def process_review(data, context, session):
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
 
-    excerpt = data.xpath('').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(@id, "fazit")]/following-sibling::p[not(contains(., "Contras") or contains(., "Was für das") or contains(., "in Deutschland erhältlich") or preceding-sibling::ul)]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//h2[contains(@id, "fazit")]/preceding-sibling::p[not(contains(., "Contras") or contains(., "Was für das") or contains(., "in Deutschland erhältlich") or preceding-sibling::ul)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('').string(multiple=True)
 
