@@ -22,7 +22,7 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(title=title, url=url))
+        session.queue(Request(url), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -42,9 +42,9 @@ def process_review(data, context, session):
     review.url = product.url
     review.ssid = product.ssid
 
-    rev_json = data.xpath('''//script[contains(., '"@type":"Product"')]/text()''').string()
+    rev_json = data.xpath('''//script[contains(., "datePublished")]/text()''').string()
     if rev_json:
-        rev_json = simplejson.load(rev_json)
+        rev_json = simplejson.loads(rev_json)
 
         date = rev_json.get('datePublished')
         if date:
@@ -96,27 +96,40 @@ def process_review(data, context, session):
         context['review'] = review
         process_review_next(data, context, session)
 
-############
+
 def process_review_next(data, context, session):
     review = context['review']
 
     page = context.get('page', 1)
     if page > 1:
-        title = review.title + ' - Pagina ' + str(page)
+        title = data.xpath('//a[contains(@class, "post-chapters__item--active")]/text()').string() + ' - Pagina ' + str(page)
         review.add_property(type='pages', value=dict(title=title, url=context['url']))
 
-        conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p//text()').string(multiple=True)
+        grade_overall = data.xpath('//div[@class="review-box__rating"]//div/@data-rating').string()
+        if grade_overall:
+            grade_overall = float(grade_overall) / 10
+            review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
+
+        pros = data.xpath('//div[contains(@class, "proscons-pros")]//span[@class="un-list-item__text-secondary"]')
+        for pro in pros:
+            pro = pro.xpath('.//text()').string(multiple=True)
+            review.add_property(type='pros', value=pro)
+
+        cons = data.xpath('//div[contains(@class, "proscons-cons")]//span[@class="un-list-item__text-secondary"]')
+        for con in cons:
+            con = con.xpath('.//text()').string(multiple=True)
+            review.add_property(type='cons', value=con)
+
+        conclusion = data.xpath('//div[@class="review-box__verdict"]/p//text()').string(multiple=True)
         if conclusion:
             context['conclusion'] = conclusion
             review.add_property(type='conclusion', value=conclusion)
 
-        excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p//text()').string(multiple=True)
-        if not excerpt:
-            excerpt = data.xpath('//div[@class="col8"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//body/p//text()').string(multiple=True)
         if excerpt:
             context['excerpt'] += " " + excerpt
 
-    next_url = data.xpath('//div[@id="pagination"]//li[span]/following-sibling::li/a/@href').string()
+    next_url = data.xpath('//a[span[contains(., "Další")] and not(@disabled)]/@href').string()
     if next_url:
         session.do(Request(next_url), process_review_next, dict(context, review=review, url=next_url, page=page + 1))
 
