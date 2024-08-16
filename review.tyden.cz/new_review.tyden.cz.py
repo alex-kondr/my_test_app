@@ -31,10 +31,10 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].replace('Test ', '').replace(' v testu', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
-    product.category = context['cat']
+    product.category = context['cat'].replace(', ', '/')
 
     review = Review()
     review.type = 'pro'
