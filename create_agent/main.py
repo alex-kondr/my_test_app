@@ -11,17 +11,17 @@ from create_agent.agent import AgentForm
 
 
 agent = AgentForm(
-    name="review.hifitest.de",
+    name="review.grosbil.fr",
     )
-# agent.create_run(
-#     name_agent_for_test="hifitest.de [DE]",
-#     agent_id="16814",
-#     url="https://www.hifitest.de/testberichte",
-#     next_func="revlist",
-#     new_parser=False,
-#     breakers="10000",
-#     curl=False
-# )
+agent.create_run(
+    name_agent_for_test="Grosbill.com [FR]",
+    agent_id="17189",
+    url="http://www.grosbill.com/",
+    next_func="frontpage",
+    new_parser=False,
+    breakers="10000",
+    curl=False
+)
 # agent.create_revlist(
 #     revs_xpath='//div[contains(@class, "testOverviewPart")]',
 #     name_title="title",
@@ -30,14 +30,14 @@ agent = AgentForm(
 #     prod_rev="review",
 #     next_url_xpath='//a[img[@alt="eine Seite vor"]]/@href',
 # )
-agent.create_review(
-    date_xpath='//tr[contains(., "Datum")]/td[not(contains(., "Datum"))]/text()',
-    author_xpath='//tr[contains(., "Autor")]//a/text()',
-    grade_overall_xpath='//div[@class="testreviewContent"]//@alt',
-    pros_xpath="",
-    cons_xpath="",
-    summary_xpath='//p[@class="introduction"]//text()',
-    conclusion_xpath='//h3[contains(., "Fazit")]/following-sibling::text()',
-    excerpt_with_concl_xpath='//h3[contains(., "Fazit")]/preceding-sibling::p[not(@class)]//text()|//h3[contains(., "Fazit")]/preceding-sibling::text()',
-    excerpt_xpath='//div[@id="block-testbericht"]/p[not(@class)]|//div[@id="block-testbericht"]/text()'
-)
+# agent.create_review(
+#     date_xpath='//tr[contains(., "Datum")]/td[not(contains(., "Datum"))]/text()',
+#     author_xpath='//tr[contains(., "Autor")]//a/text()',
+#     grade_overall_xpath='//div[@class="testreviewContent"]//@alt',
+#     pros_xpath="",
+#     cons_xpath="",
+#     summary_xpath='//p[@class="introduction"]//text()',
+#     conclusion_xpath='//h3[contains(., "Fazit")]/following-sibling::text()',
+#     excerpt_with_concl_xpath='//h3[contains(., "Fazit")]/preceding-sibling::p[not(@class)]//text()|//h3[contains(., "Fazit")]/preceding-sibling::text()',
+#     excerpt_xpath='//div[@id="block-testbericht"]/p[not(@class)]|//div[@id="block-testbericht"]/text()'
+# )

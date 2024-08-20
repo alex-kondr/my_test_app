@@ -28,13 +28,16 @@ def process_review(data, context, session):
     product.category = 'Tech'
 
     if context.get('cats'):
-        cats = context['cats'].split()
+        cats = context['cats'].replace(',', '').split()
         cats_ = []
         for i, cat in enumerate(cats):
             if cat[0].isupper():
                 cats_.append(cat)
-            else:
+            elif i > 0:
                 cats_[i-1] += ' ' + ' '.join(cats[i:])
+                break
+            else:
+                cats_ = cats
                 break
 
         product.category = '|'.join(cats_)
