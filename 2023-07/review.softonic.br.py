@@ -16,9 +16,9 @@ def process_frontpage(data, context, session):
 
         subcats = cat.xpath('.//li[not(div)]/a[contains(@class, "js-menu-categories-item")]')
         for subcat in subcats:
-            subcat_name = subcat.xpath("text()").string()
+            subcat_name = subcat.xpath('text()').string()
             url = subcat.xpath('@href').string() + ':data'
-            session.queue(Request(url), process_category, dict(cat=name+"|"+subcat_name))
+            session.queue(Request(url), process_category, dict(cat=name + "|" + subcat_name))
 
 
 def process_category(data, context, session):
@@ -46,16 +46,16 @@ def process_product(data, context, session):
     product.category = context['cat']
     product.manufacturer = prod_json.get('author', {}).get('name')
     product.ssid = data.xpath('//meta[@name="appId"]/@content').string()
-    
+
     review = Review()
     review.type = "pro"
     review.url = product.url
     review.date = prod_json.get('dateModified')
-    
+
     author = prod_json.get('review', {}).get('author', {}).get('name')
     if author:
         review.authors.append(Person(name=author, ssid=author))
-        
+
     pros = prod_json.get('review', {}).get('positiveNotes', {}).get('itemListElement', {})
     for pro in pros:
         pro = pro.get('name')
@@ -67,11 +67,11 @@ def process_product(data, context, session):
         con = con.get('name')
         if con:
             review.add_property(type='cons', value=con)
-            
+
     grade_overall = data.xpath('//li[@class="app-header__item app-header__item--double"]//p/text()').string()
     if grade_overall and float(grade_overall) > 0:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
-            
+
     excerpt = prod_json.get('review', {}).get('reviewBody')
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
