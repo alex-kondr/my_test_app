@@ -22,7 +22,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].replace('Chassistest:', '').replace(' im Dreiertest', '').replace(' im Doppeltest', '').replace(' im Test', '').replace('Test ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
     product.category = 'Tech'
@@ -64,8 +64,10 @@ def process_review(data, context, session):
     grades = data.xpath('//table[@class="fontSite18"]/tr')
     for grade in grades:
         grade_name = grade.xpath('td[1]/text()').string()
-        grade_val = float(grade.xpath('.//@src').string().split('-')[-1].replace('.png', '')) / 2
-        review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
+        grade_val = grade.xpath('.//@src').string().split('-')[-1].replace('.png', '')
+        if grade_val.isdigit():
+            grade_val = float(grade_val) / 2
+            review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
 
     summary = data.xpath('//p[@class="introduction"]//text()').string(multiple=True)
     if summary:
@@ -73,6 +75,7 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//h3[contains(., "Fazit")]/following-sibling::text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace('Fazit:', '').lstrip('Fazit ')
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h3[contains(., "Fazit")]/preceding-sibling::p[not(@class)]//text()|//h3[contains(., "Fazit")]/preceding-sibling::text()').string(multiple=True)
