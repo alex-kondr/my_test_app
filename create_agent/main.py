@@ -11,12 +11,12 @@ from create_agent.agent import AgentForm
 
 
 agent = AgentForm(
-    name="review.grosbil.fr",
+    name="reviews.awservice.gmbh-de",
     )
 agent.create_run(
-    name_agent_for_test="Grosbill.com [FR]",
-    agent_id="17189",
-    url="http://www.grosbill.com/",
+    name_agent_for_test="Awservice.gmbh [DE]",
+    agent_id="20200",
+    url="https://awservice.gmbh",
     next_func="frontpage",
     new_parser=False,
     breakers="10000",
