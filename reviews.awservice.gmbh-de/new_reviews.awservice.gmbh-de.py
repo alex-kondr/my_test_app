@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://awservice.gmbh'), process_frontpage, dict())
 
 
@@ -34,7 +34,7 @@ def process_prodlist(data, context, session):
         product.url = prod.xpath('a/@href').string()
         product.category = context['cat']
 
-        prod_id = ''.join(['3' + numb for numb in product.sku])
+        prod_id = ''.join(['3' + numb for numb in product.sku]).replace('3 ', '20').replace('3-', '2d')
         url = 'https://integrations.etrusted.com/feeds/product-reviews/v1/channels/chl-37a24b53-a99a-4844-8ca3-e01f8c350e84/sku/{prod_id}/default/all/feed.json'.format(prod_id=prod_id)
 
         session.queue(Request(url), process_reviews, dict(product=product))
