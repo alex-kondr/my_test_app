@@ -29,7 +29,7 @@ def process_prodlist(data, context, session):
     for prod in prods:
         product = Product()
         product.name = prod.xpath('h2/text()').string()
-        product.ssid = prod.xpath('.//@data-sku').string()
+        product.ssid = prod.xpath('.//@data-sku').string().replace(u'\u2011', '-')
         product.sku = product.ssid
         product.url = prod.xpath('a/@href').string()
         product.category = context['cat']
