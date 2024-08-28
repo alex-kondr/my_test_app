@@ -21,8 +21,12 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
+    title = data.xpath('//*[@class="singleTestHeadline"]//text()').string(multiple=True)
+    if not title:
+        title = context['title']
+
     product = Product()
-    product.name = context['title'].replace('Chassistest:', '').replace(' im Dreiertest', '').replace(' im Doppeltest', '').replace(' im Test', '').replace('Test ', '').strip()
+    product.name = title.replace('Chassistest:', '').replace('Vergleichstest:', '').replace('Filmrezension:', '').replace('Einzeltest:', '').replace(' im Dreiertest', '').replace(' im Doppeltest', '').replace('(Prokino)', '').replace('im Vergleich', '').replace(' im Test', '').replace('Test ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
     product.category = 'Tech'
@@ -44,7 +48,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = title
     review.url = product.url
     review.ssid = product.ssid
 
@@ -70,17 +74,20 @@ def process_review(data, context, session):
             review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
 
     summary = data.xpath('//p[@class="introduction"]//text()').string(multiple=True)
+    if not summary:
+        summary = data.xpath('//h2[@class="deviceHeadline"]//text()').string(multiple=True)
+
     if summary:
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h3[contains(., "Fazit")]/following-sibling::text()').string(multiple=True)
     if conclusion:
-        conclusion = conclusion.replace('Fazit:', '').lstrip('Fazit ')
+        conclusion = conclusion.replace('Fazit:', '').replace('Fazit ', '')
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h3[contains(., "Fazit")]/preceding-sibling::p[not(@class)]//text()|//h3[contains(., "Fazit")]/preceding-sibling::text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="block-testbericht"]/p[not(@class)]|//div[@id="block-testbericht"]/text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="block-testbericht"]/p[not(@class)]//text()|//div[@id="block-testbericht"]/text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

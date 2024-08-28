@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.jardins-loisirs.com/'), process_frontpage, dict())
 
 
@@ -64,12 +64,14 @@ def process_product(data, context, session):
 def process_reviews(data, context, session):
     product = context['product']
 
-    revs = simplejson.loads(data.content)
+    revs_json = simplejson.loads(data.content)
+
+    revs = revs_json.get('comments')
     for rev in revs:
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review.ssid = rev.get('id_product_comment')
+        review.ssid = str(rev.get('id_product_comment'))
 
         date = rev.get('date_add')
         if date:
@@ -77,6 +79,7 @@ def process_reviews(data, context, session):
 
         author = rev.get('customer_name')
         if author:
+            author = author.replace('&egrave;', 'è').replace('&eacute;', 'é').replace('&ecirc;', 'ê').replace('&ccedil;', 'ç').replace('&ccedil;', 'ç').replace('&agrave;', 'à').replace('&acirc;', 'â').replace('&ocirc;', 'ô').replace('&times;', '').replace('&quot;', '"').replace('&#039;', "'").replace('&amp;', '&').replace('&rsquo;', '’').replace('&sup2;', '²').replace('\r\n', ' ').replace("''", "'").replace('  ', ' ').replace('&icirc;', 'î').replace('&Ccedil;', 'Ç').replace('&ucirc;', 'û').replace('&ugrave;', 'ù').replace('&hellip;', '').strip()
             review.authors.append(Person(name=author, ssid=author))
 
         grade_overall = rev.get('grade')
@@ -93,22 +96,23 @@ def process_reviews(data, context, session):
 
         title = rev.get('title')
         excerpt = rev.get('content')
-        if excerpt:
-            review.title = title
+        if excerpt and title:
+            review.title = title.replace('&egrave;', 'è').replace('&eacute;', 'é').replace('&ecirc;', 'ê').replace('&ccedil;', 'ç').replace('&ccedil;', 'ç').replace('&agrave;', 'à').replace('&acirc;', 'â').replace('&ocirc;', 'ô').replace('&times;', '').replace('&quot;', '"').replace('&#039;', "'").replace('&amp;', '&').replace('&rsquo;', '’').replace('&sup2;', '²').replace('\r\n', ' ').replace("''", "'").replace('  ', ' ').replace('&icirc;', 'î').replace('&Ccedil;', 'Ç').replace('&ucirc;', 'û').replace('&ugrave;', 'ù').replace('&hellip;', '').strip()
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = excerpt.replace('&egrave;', 'è').replace('&eacute;', 'é')
-            review.add_property(type='exceprt', value=excerpt)
+            excerpt = excerpt.replace('&egrave;', 'è').replace('&eacute;', 'é').replace('&ecirc;', 'ê').replace('&ccedil;', 'ç').replace('&ccedil;', 'ç').replace('&agrave;', 'à').replace('&acirc;', 'â').replace('&ocirc;', 'ô').replace('&times;', '').replace('&quot;', '"').replace('&#039;', "'").replace('&amp;', '&').replace('&rsquo;', '’').replace('&sup2;', '²').replace('\r\n', ' ').replace("''", "'").replace('  ', ' ').replace('&icirc;', 'î').replace('&Ccedil;', 'Ç').replace('&ucirc;', 'û').replace('&ugrave;', 'ù').replace('&hellip;', '').strip()
+            review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
 
-    offset = context.get('offset', revs.get('comments_nb')) - 5
-    if offset > 0:
-        page = context.get('page', 1) + 1
-        next_url = 'https://www.jardins-loisirs.com/module/productcomments/ListComments?id_product={sku}&page={page}'.format(sku=product.sku, page=page)
-        session.do(Request(next_url), process_reviews, dict(product=product, offset=offset))
+    revs_cnt = revs_json.get('comments_nb')
+    offset = context.get('offset', 0) + 5
+    if offset < revs_cnt:
+        next_page = context.get('page', 1) + 1
+        next_url = 'https://www.jardins-loisirs.com/module/productcomments/ListComments?id_product={sku}&page={next_page}'.format(sku=product.sku, next_page=next_page)
+        session.do(Request(next_url), process_reviews, dict(product=product, offset=offset, page=next_page))
 
     elif product.reviews:
         session.emit(product)

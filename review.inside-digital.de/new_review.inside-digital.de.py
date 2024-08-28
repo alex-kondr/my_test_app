@@ -43,6 +43,21 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
+    grade_overall = data.xpath('//p[.//strong[contains(., "Gesamtwertung:")]]//text()').string(multiple=True)
+    if not grade_overall:
+        grade_overall = data.xpath('p[.//strong[contains(., "Teilwertung:")]]//text()').string()
+
+    if grade_overall:
+        grade_overall = grade_overall.split(':')[-1].split('von')[0].replace(',', '.').replace('Sterne', '').strip()
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
+    grades = data.xpath('//h3[contains(., "Bewertung")]/following-sibling::ul[1]/li[contains(., ":")]')
+    for grade in grades:
+        grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).split(':')
+        grade_name = grade_name.strip()
+        grade_val = grade_val.split('von')[0].replace(',', '.').replace('Sterne', '').strip()
+        review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
+
     author = data.xpath('//span[@class="fn"]/a/text()').string()
     author_url = data.xpath('//span[@class="fn"]/a/@href').string()
     if author and author_url:
@@ -51,7 +66,7 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    pros = data.xpath('(//h3[contains(., "Vorteile")]|//h2[contains(., "Pros") and not(contains(., "Contras"))])/following-sibling::ul[1]/li')
+    pros = data.xpath('(//h3[contains(., "Vorteile") or contains(., "Pro")]|//h2[contains(., "Pro") and not(contains(., "Contra"))])/following-sibling::ul[1]/li')
     if not pros:
         pros = data.xpath('//p[.//strong[contains(., "Pros")]]/following-sibling::ul[1]/li')
 
@@ -59,9 +74,9 @@ def process_review(data, context, session):
         pro = pro.xpath('.//text()').string(multiple=True)
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('(//h3[contains(., "Nachteile")]|//h2[contains(., "Contras") and not(contains(., "Pros"))])/following-sibling::ul[1]/li')
+    cons = data.xpath('(//h3[contains(., "Nachteile") or contains(., "Contra")]|//h2[contains(., "Contra") and not(contains(., "Pro"))])/following-sibling::ul[1]/li')
     if not cons:
-        cons = data.xpath('//p[.//strong[contains(., "Contras")]]/following-sibling::ul[1]/li')
+        cons = data.xpath('//p[.//strong[contains(., "Contras") or contains(., "Cons")]]/following-sibling::ul[1]/li')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
@@ -71,17 +86,20 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(@id, "fazit")]/following-sibling::p[not(contains(., "Contras") or contains(., "Was für das") or contains(., "in Deutschland erhältlich") or preceding-sibling::ul)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(@id, "fazit") or contains(., "Fazit")]/following-sibling::p[not(contains(., "Contras") or contains(., "Was für das") or contains(., "in Deutschland erhältlich") or contains(., "Gesamtwertung:") or contains(., "Teilwertung:") or contains(., "Pros ") or contains(., "Cons"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(@id, "fazit")]/preceding-sibling::p[not(contains(., "Contras") or contains(., "Was für das") or contains(., "in Deutschland erhältlich") or preceding-sibling::ul)]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(@id, "fazit")]/preceding-sibling::p[not(contains(., "Contras") or contains(., "Was für das") or contains(., "in Deutschland erhältlich") or contains(., "Gesamtwertung:") or contains(., "Teilwertung:") or contains(., "Pros ") or contains(., "Cons"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[not(@class or .//span[@class] or contains(., "Contras") or contains(., "Was für das") or contains(., "in Deutschland erhältlich") or preceding-sibling::ul)]//text()').string(multiple=True)
+        excerpt = data.xpath('//p[not(@class or .//span[@class] or contains(., "Contras") or contains(., "Was für das") or contains(., "in Deutschland erhältlich") or contains(., "Gesamtwertung:") or contains(., "Teilwertung:") or contains(., "Pros ") or contains(., "Cons"))]//text()').string(multiple=True)
 
     if excerpt:
         if summary:
             excerpt = excerpt.replace(summary, '').strip()
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
 
         review.add_property(type='excerpt', value=excerpt)
 

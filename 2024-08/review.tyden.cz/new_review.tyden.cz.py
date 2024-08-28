@@ -120,14 +120,18 @@ def process_review_next(data, context, session):
             con = con.xpath('.//text()').string(multiple=True)
             review.add_property(type='cons', value=con)
 
-        conclusion = data.xpath('//div[@class="review-box__verdict"]/p//text()').string(multiple=True)
+        if 'verdikt' in title:
+            conclusion = data.xpath('//body/p//text()').string(multiple=True)
+        else:
+            conclusion = data.xpath('//div[@class="review-box__verdict"]/p//text()').string(multiple=True)
+
+            excerpt = data.xpath('//body/p//text()').string(multiple=True)
+            if excerpt:
+                context['excerpt'] += " " + excerpt
+
         if conclusion:
             context['conclusion'] = conclusion
             review.add_property(type='conclusion', value=conclusion)
-
-        excerpt = data.xpath('//body/p//text()').string(multiple=True)
-        if excerpt:
-            context['excerpt'] += " " + excerpt
 
     next_url = data.xpath('//a[span[contains(., "Další")] and not(@disabled)]/@href').string()
     if next_url:

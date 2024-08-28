@@ -45,11 +45,12 @@ class AgentForm:
 
         # self.funcs.get(next_func)()
 
-    def create_frontpage(self):
-        cats_xpath = input("cats_xpath: ")
-        name_xpath = input("name_xpath: ")
-        url_xpath = input("url_xpath: ")
-
+    def create_frontpage(
+        self,
+        cats_xpath: str,
+        name_xpath: str,
+        url_xpath: str
+        ):
         text = (
             "\n\ndef process_frontpage(data, context, session):\n"
             f"    cats = data.xpath('{cats_xpath}')\n"
@@ -62,7 +63,7 @@ class AgentForm:
         with open(self.file_path, "a", encoding="utf-8") as file:
             file.write(text)
 
-        self.create_revlist()
+        # self.create_revlist()
 
     def create_revlist(
         self,
@@ -291,7 +292,7 @@ class AgentForm:
             "                review.ssid = review.digest() if author else review.digest(excerpt)"
             "\n              product.reviews.append(review)\n"
             "\n        if product.reviews:"
-            "            session.emit(product)"
+            "            session.emit(product)\n"
         )
 
         with open(self.file_path, "a", encoding="utf-8") as file:

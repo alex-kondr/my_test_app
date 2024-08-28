@@ -20,7 +20,7 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url, use='curl', max_age=0), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -32,9 +32,9 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = context['title'].split(' - ')[0].split(' – ')[0].split('- ')[0].split(' -')[0].replace('im Test', '').replace('im RePlay-Test', '').strip()
+    product.name = context['title'].split(' - ')[0].split(' – ')[0].split('- ')[0].split(' -')[0].replace('im Test', '').strip()
     product.url = context['url']
-    product.ssid = data.xpath('//a[@itemprop="articleSection"]/@href').string().split('/')[-2]
+    product.ssid = product.name.lower().replace(': ', '-').replace(' :', '-').replace(':', '-').replace(' ', '-')
     product.category = context['cat']
 
     review = Review()

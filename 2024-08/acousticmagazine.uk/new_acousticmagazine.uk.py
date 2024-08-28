@@ -70,18 +70,19 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//h3[contains(., "review: Verdict")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(contains(., "Sound On Sound"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="pretty-verdict__verdict"]/p//text()').string(multiple=True)
 
     if conclusion:
+        conclusion = conclusion.replace('MuscRadar verdict:', '').replace('MusicRadar verdict:', '')
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "review: Verdict")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h3[contains(., "review: Verdict")]/preceding-sibling::p[not(contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="article-body"]/p[not(contains(., "MuscRadar verdict:"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="article-body"]/p[not(contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a))]//text()').string(multiple=True)
 
     if excerpt:
 
