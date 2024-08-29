@@ -63,7 +63,7 @@ def process_review(data, context, session):
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//p[contains(., "Résumé")]/following-sibling::p/text()').string()
+    summary = data.xpath('//p[contains(., "Résumé")]/following-sibling::p[not(@align)]//text()').string(multiple=True)
 
     conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
     if conclusion and summary:

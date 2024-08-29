@@ -152,7 +152,7 @@ class AgentForm:
         text = (
             "\n\ndef process_review(data, context, session):\n"
             "    product = Product()\n"
-            "    product.name = context['title'].replace('').strip()\n"
+            "    product.name = context['title'].replace('', '').strip()\n"
             "    product.url = context['url']\n"
             "    product.ssid = product.url.split('/')[-2]\n"
             "    product.category = 'Tech'\n"
