@@ -3,20 +3,20 @@ from models.products import *
 
 
 def run(context, session):
-    session.queue(Request('https://www.meilleur-robot-tondeuse.fr/'), process_frontpage, dict())
+    session.queue(Request('https://www.meilleur-robot-tondeuse.fr/avis'), process_revlist, dict())
 
 
-def process_frontpage(data, context, session):
-    prods = data.xpath('(//ul[@class="sub-menu"])[1]//a')
+def process_revlist(data, context, session):
+    prods = data.xpath('//h2[@class="elementor-post__title"]/a')
     for prod in prods:
-        name = prod.xpath('.//text()').string(multiple=True)
+        title = prod.xpath('.//text()').string(multiple=True)
         url = prod.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(name=name, url=url))
+        session.queue(Request(url), process_review, dict(title=title, url=url))
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['name']
+    product.name = data.xpath('//h5[@class="review-title"]/text()').string()
     product.ssid = context['url'].split('/')[-2].replace('-avis', '')
     product.category = 'Tech'
 
@@ -63,9 +63,14 @@ def process_review(data, context, session):
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
 
+    summary = data.xpath('//p[contains(., "Résumé")]/following-sibling::p/text()').string()
+
     conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
-    if not conclusion:
-        conclusion = data.xpath('//p[contains(., "Résumé")]/following-sibling::p/text()').string()
+    if conclusion and summary:
+            review.add_property(type='summary', value=summary)
+
+    elif not conclusion:
+        conclusion = summary
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
