@@ -58,7 +58,7 @@ def process_product(data, context, session):
         product.add_property(type='id.ean', value=ean)
 
     revs_url = 'https://www.jardins-loisirs.com/module/productcomments/ListComments?id_product={sku}'.format(sku=product.sku)
-    session.queue(Request(revs_url), process_reviews, dict(product=product))
+    session.do(Request(revs_url), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -109,7 +109,7 @@ def process_reviews(data, context, session):
 
     revs_cnt = revs_json.get('comments_nb')
     offset = context.get('offset', 0) + 5
-    if offset < revs_cnt:
+    if revs_cnt and int(revs_cnt) > offset:
         next_page = context.get('page', 1) + 1
         next_url = 'https://www.jardins-loisirs.com/module/productcomments/ListComments?id_product={sku}&page={next_page}'.format(sku=product.sku, next_page=next_page)
         session.do(Request(next_url), process_reviews, dict(product=product, offset=offset, page=next_page))
