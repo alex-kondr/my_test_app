@@ -208,7 +208,7 @@ class AgentForm:
             "\n    if excerpt:\n"
             "        review.add_property(type='excerpt', value=excerpt)\n"
             "\n        product.reviews.append(review)\n"
-            "\n        session.emit(product)"
+            "\n        session.emit(product)\n"
         )
 
         with open(self.file_path, "a", encoding="utf-8") as file:

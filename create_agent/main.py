@@ -11,12 +11,12 @@ from create_agent.agent import AgentForm
 
 
 agent = AgentForm(
-    name="reviews.drohnen.de",
+    name="reviews.campgarden.de",
     )
 agent.create_run(
-    name_agent_for_test="Drohnen [DE]",
-    agent_id="20203",
-    url="https://www.drohnen.de/category/testberichte/",
+    name_agent_for_test="Campgarden [DE]",
+    agent_id="20204",
+    url="https://www.campgarden.de/cg/pages/69092/geraete",
     next_func="revlist",
     new_parser=False,
     breakers=False,
@@ -28,21 +28,21 @@ agent.create_run(
 #     url_xpath='@href'
 # )
 agent.create_revlist(
-    revs_xpath='//h2[@class="entry-title"]/a',
+    revs_xpath='//div[@class="Internal-block"]/div[@class="Internal-Name"]/a',
     name_title="title",
-    name_title_xpath='text()',
+    name_title_xpath='',
     url_xpath='@href',
     prod_rev="review",
-    next_url_xpath='//a[@class="next page-numbers"]/@href',
+    next_url_xpath='',
 )
 agent.create_review(
-    date_xpath='//span[@itemprop="datePublished"]/@datetime',
-    author_xpath='//span[@itemprop="author"]//text()',
-    grade_overall_xpath='//div[@class="final-score"]/text()',
-    pros_xpath='//div[@class="pros-gardena"]//li',
-    cons_xpath='//div[@class="cons-gardena"]//li',
-    summary_xpath='//div[@class="review-long-summary"]/p/text()',
-    conclusion_xpath='(//h2|//h3)[.//text()="Fazit"]/following-sibling::p//text()',
-    excerpt_with_concl_xpath='(//h2|//h3)[.//text()="Fazit"]/preceding-sibling::p//text()',
-    excerpt_xpath=''
+    date_xpath='//div[@class="Template-ARTIKEL-DATUM"]/text()',
+    author_xpath='//meta[@name="author"]/@content',
+    grade_overall_xpath='',
+    pros_xpath='',
+    cons_xpath='',
+    summary_xpath='//p[@class="Template-INTRO"]//text()',
+    conclusion_xpath='//h3[contains(., "Fazit")]/following-sibling::p[not(preceding-sibling::h4)]//text()',
+    excerpt_with_concl_xpath='//h3[contains(., "Fazit")]/preceding-sibling::p[not(@class)]//text()',
+    excerpt_xpath='//div[@class="COL-3-INNER Artikel"]/p[not(@class or preceding-sibling::h4)]//text()'
 )
