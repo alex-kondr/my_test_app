@@ -11,11 +11,11 @@ from create_agent.agent import AgentForm
 
 
 agent = AgentForm(
-    name="reviews.campgarden.de",
+    name="reviews.haus.de",
     )
 agent.create_run(
-    name_agent_for_test="Campgarden [DE]",
-    agent_id="20204",
+    name_agent_for_test="Haus [DE]",
+    agent_id="20205",
     url="https://www.campgarden.de/cg/pages/69092/geraete",
     next_func="revlist",
     new_parser=False,
