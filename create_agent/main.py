@@ -11,30 +11,30 @@ from create_agent.agent import AgentForm
 
 
 agent = AgentForm(
-    name="reviews.haus.de",
+    name="reviews.mein-gartenexperte.de",
     )
 # agent.create_run(
-#     name_agent_for_test="Haus [DE]",
-#     agent_id="20205",
-#     url="https://www.haus.de/test",
-#     next_func="catlist",
+#     name_agent_for_test="Mein-gartenexperte [DE]",
+#     agent_id="20206",
+#     url="https://www.mein-gartenexperte.de/",
+#     next_func="frontpage",
 #     new_parser=False,
-#     breakers=10000,
+#     breakers=False,
 #     curl=False
 # )
 # agent.create_frontpage(
-#     cats_xpath='//div[@class="css-1pip4vl"]',
-#     name_xpath='div[@class="css-60z25j"]/text()',
-#     url_xpath='@href'
+#     cats_xpath='//li[contains(@class, "submenu index category")]',
+#     name_xpath='a/text()',
+#     url_xpath=''
 # )
-agent.create_revlist(
-    revs_xpath='//div[@class="Internal-block"]/div[@class="Internal-Name"]/a',
-    name_title="title",
-    name_title_xpath='',
-    url_xpath='@href',
-    prod_rev="review",
-    next_url_xpath='//a[@class="chakra-button css-yuhplx" and polyline]/@href',
-)
+# agent.create_revlist(
+#     revs_xpath='//li[@class="day-article"]//a',
+#     name_title="title",
+#     name_title_xpath='text()',
+#     url_xpath='@href',
+#     prod_rev="review",
+#     next_url_xpath='',
+# )
 # agent.create_review(
 #     date_xpath='//div[@class="Template-ARTIKEL-DATUM"]/text()',
 #     author_xpath='//meta[@name="author"]/@content',
