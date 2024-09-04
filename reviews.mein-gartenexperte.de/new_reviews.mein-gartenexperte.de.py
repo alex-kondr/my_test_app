@@ -30,7 +30,10 @@ def process_frontpage(data, context, session):
 def process_revlist(data, context, session):
     revs_json = data.xpath('//script[contains(., "window.products")]/text()').string()
     if revs_json:
-        revs = simplejson.loads(revs_json.replace('window.products=', '').replace('="', '=\\"').replace('"\'', '\\""').replace('\'<', '"<').replace('" ', '\\" ').replace('">', '\\">').replace("'", '"').replace(',}', '}').replace(',]', ']'))
+        
+        print(revs_json.replace('window.products=', '').replace('="', '=\\"').replace('"\'', '\\""').replace('\'<', '"<').replace('" ', '\\" ').replace('">', '\\">').replace("'", '"').replace(',}', '}').replace(',]', ']').replace('G 3/4\\"",', '').replace('"<b', '\\"<b'))
+        
+        revs = simplejson.loads(revs_json.replace('window.products=', '').replace('="', '=\\"').replace('"\'', '\\""').replace('\'<', '"<').replace('" ', '\\" ').replace('">', '\\">').replace("'", '"').replace(',}', '}').replace(',]', ']').replace('G 3/4\\"",', '').replace('"<b', '\\"<b'))
         for rev in revs:
             product = Product()
             product.name = rev.get('titel')
