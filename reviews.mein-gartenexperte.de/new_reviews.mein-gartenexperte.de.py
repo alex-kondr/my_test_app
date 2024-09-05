@@ -31,9 +31,9 @@ def process_revlist(data, context, session):
     revs_json = data.xpath('//script[contains(., "window.products")]/text()').string()
     if revs_json:
         
-        print(revs_json.replace('window.products=', '').replace('="', '=\\"').replace('"\'', '\\""').replace('\'<', '"<').replace('" ', '\\" ').replace('">', '\\">').replace("'", '"').replace(',}', '}').replace(',]', ']').replace('G 3/4\\"",', '').replace('"<b', '\\"<b').replace('/\2"', '/2\"').replace('/4"', '/4\"'))
+        print(revs_json.replace('window.products=', '').replace('="', '=\\"').replace('"\'', '\\""').replace('\'<', '"<').replace('" ', '\\" ').replace('">', '\\">').replace("'", '"').replace(',}', '}').replace(',]', ']').replace('G 3/4\\"",', '').replace('"<b', '\\"<b').replace('/2":', '/2\\":').replace('/4":', '/4\\":').replace(' "', ' \\"').replace('"-', '\\"-'))
         
-        revs = simplejson.loads(revs_json.replace('window.products=', '').replace('="', '=\\"').replace('"\'', '\\""').replace('\'<', '"<').replace('" ', '\\" ').replace('">', '\\">').replace("'", '"').replace(',}', '}').replace(',]', ']').replace('G 3/4\\"",', '').replace('"<b', '\\"<b').replace('/\2"', '/2\"').replace('/4"', '/4\"'))
+        revs = simplejson.loads(revs_json.replace('window.products=', ''))#.replace('="', '=\\"').replace('"\'', '\\""').replace('\'<', '"<').replace('" ', '\\" ').replace('">', '\\">').replace("'", '"').replace(',}', '}').replace(',]', ']').replace('G 3/4\\"",', '').replace('"<b', '\\"<b').replace('/2":', '/2\\":').replace('/4":', '/4\\":').replace(' "', ' \\"').replace('"-', '\\"-'))
         for rev in revs:
             product = Product()
             product.name = rev.get('titel')
