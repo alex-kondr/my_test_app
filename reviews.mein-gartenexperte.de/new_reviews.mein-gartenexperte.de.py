@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-import simplejson
 
 
 def run(context, session):
@@ -30,26 +29,25 @@ def process_frontpage(data, context, session):
 def process_revlist(data, context, session):
     revs_json = data.xpath('//script[contains(., "window.products")]/text()').string()
     if revs_json:
-        
-        print(revs_json.replace('window.products=', '').replace('="', '=\\"').replace('"\'', '\\""').replace('\'<', '"<').replace('" ', '\\" ').replace('">', '\\">').replace("'", '"').replace(',}', '}').replace(',]', ']').replace('G 3/4\\"",', '').replace('"<b', '\\"<b').replace('/2":', '/2\\":').replace('/4":', '/4\\":').replace(' "', ' \\"').replace('"-', '\\"-'))
-        
-        revs = simplejson.loads(revs_json.replace('window.products=', ''))#.replace('="', '=\\"').replace('"\'', '\\""').replace('\'<', '"<').replace('" ', '\\" ').replace('">', '\\">').replace("'", '"').replace(',}', '}').replace(',]', ']').replace('G 3/4\\"",', '').replace('"<b', '\\"<b').replace('/2":', '/2\\":').replace('/4":', '/4\\":').replace(' "', ' \\"').replace('"-', '\\"-'))
+        revs = revs_json.split('},{')
         for rev in revs:
-            product = Product()
-            product.name = rev.get('titel')
-            product.ssid = rev.get('id')
-            product.sku = product.ssid
-            product.category = context['cat']
-            product.manufacturer = rev.get('hersteller')
+            name = rev.split('"titel":"')[-1].split('",')[0]
+            ssid = rev.split('id":')[-1].split(',"')[0]
+            manufacturer = rev.split('hersteller":"')[-1].split('","')[0]
 
-            url = rev.get('berichtButton')
+            url = rev.split('berichtButton":')[-1].split(',"')[0].strip(' \'"')
             if url:
                 url = 'https://www.mein-gartenexperte.de/' + url
-                session.queue(Request(url), process_review, dict(product=product, url=url))
+                session.queue(Request(url), process_review, dict(context, name=name, ssid=ssid, manufacturer=manufacturer, url=url))
 
 
 def process_review(data, context, session):
-    product = context['product']
+    product = Product()
+    product.name = context['name']
+    product.ssid = context['ssid']
+    product.sku = product.ssid
+    product.category = context['cat']
+    product.manufacturer = context['manufacturer']
 
     product.url = data.xpath('//a[contains(., "Zu Amazon")]/@href').string()
     if not product.url:

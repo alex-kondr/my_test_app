@@ -2,6 +2,14 @@ my_string = """[{"titel":"WOLF LYCOS 40/400 M","hersteller":"WOLF","typ":"Akku-R
 revs = my_string.split('},{')
 print(len(revs))
 
-for rev in revs:
+for i, rev in enumerate(revs):
+    print(i)
+    print("title")
     print(rev.split('"titel":"')[-1].split('",')[0])
+    print("id")
+    print(rev.split('id":')[-1].split(',"')[0])
+    print("manufacturer")
+    print(rev.split('hersteller":"')[-1].split('","')[0])
+    print("url")
+    print(rev.split('berichtButton":')[-1].split(',"')[0].strip(' \'"'))
     print()
