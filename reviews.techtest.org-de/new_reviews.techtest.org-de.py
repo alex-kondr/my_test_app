@@ -25,7 +25,7 @@ def process_review(data, context, session):
 
     product.name = data.xpath('//div[regexp:test(@class, "^lets-review-block__title")]//text()').string(multiple=True)
     if not product.name:
-        product.name = context['title'].split('Ladegerät Test 2024:')[0].split('im Test:')[0].replace('Test:', '').split(':')[0].split(' – ')[0].strip()
+        product.name = context['title'].split('Ladegerät Test 2024:')[0].split('im Test')[0].replace('Test:', '').split(':')[0].split(' – ')[0].replace('von Techtest', '').replace('und getestet', '').replace('getestet', '').strip()
 
     product.url = data.xpath('//a[contains(., "Link zum Hersteller")]/@href').string()
     if not product.url:
@@ -35,8 +35,8 @@ def process_review(data, context, session):
     if not category:
         category = data.xpath('//li[@class="entry-category"]/a[not(text()="Tests")]/text()').string()
     if category:
-        product.category = category.replace('Tests', '').replace('Reviews', '').strip()
-    else:
+        product.category = category.replace('von Techtest', '').replace('Techtest intern', '').replace('Tests', '').replace('Reviews', '').strip()
+    if not product.category:
         product.category = 'Tech'
 
     review = Review()
@@ -82,10 +82,16 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p[preceding-sibling::div[@id="ez-toc-container"]]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[b[contains(., "Fazit")]]/preceding-sibling::p[not(b)]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
-    conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Fazit")][last()]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[b[contains(., "Fazit")]]/text()|//p[b[contains(., "Fazit")]]/following-sibling::p//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
