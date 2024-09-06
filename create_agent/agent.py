@@ -147,6 +147,7 @@ class AgentForm:
         self,
         date_xpath: str,
         author_xpath: str,
+        author_url_xpath: str,
         grade_overall_xpath: str,
         pros_xpath: str,
         cons_xpath: str,
@@ -175,7 +176,11 @@ class AgentForm:
 
         text += (
             f"\n    author = data.xpath('{author_xpath}').string()\n"
-            "    if author:\n"
+            f"    author_url = data.xpath('{author_url_xpath}').string()\n"
+            "    if author and author_url:\n"
+            "        author_ssid = author_url.split('/')[-2]\n"
+            "        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))\n"
+            "    elif author:\n"
             "        review.authors.append(Person(name=author, ssid=author))\n"
         ) if author_xpath else ""
 

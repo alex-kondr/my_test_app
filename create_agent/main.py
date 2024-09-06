@@ -35,14 +35,15 @@ agent.create_revlist(
     prod_rev="review",
     next_url_xpath='//link[@rel="next"]/@href',
 )
-# agent.create_review(
-#     date_xpath='//div[@class="Template-ARTIKEL-DATUM"]/text()',
-#     author_xpath='//meta[@name="author"]/@content',
-#     grade_overall_xpath='',
-#     pros_xpath='',
-#     cons_xpath='',
-#     summary_xpath='//p[@class="Template-INTRO"]//text()',
-#     conclusion_xpath='//h3[contains(., "Fazit")]/following-sibling::p[not(preceding-sibling::h4)]//text()',
-#     excerpt_with_concl_xpath='//h3[contains(., "Fazit")]/preceding-sibling::p[not(@class)]//text()',
-#     excerpt_xpath='//div[@class="COL-3-INNER Artikel"]/p[not(@class or preceding-sibling::h4)]//text()'
-# )
+agent.create_review(
+    date_xpath='//time/@datetime',
+    author_xpath='//a[@class="tdb-author-name"]/text()',
+    author_url_xpath='//a[@class="tdb-author-name"]/@href',
+    grade_overall_xpath='//div[@class="score"]/text()',
+    pros_xpath='//div[regexp:test(@class, "lets-review-block__pro$")]',
+    cons_xpath='//div[regexp:test(@class, "lets-review-block__con$")]',
+    summary_xpath='//div[@class="tdb-block-inner td-fix-index"]/p[not(preceding-sibling::div[@id="ez-toc-container"])]//text()',
+    conclusion_xpath='//h2[contains(., "Fazit")]/following-sibling::p//text()',
+    excerpt_with_concl_xpath='//h2[contains(., "Fazit")]/preceding-sibling::p[preceding-sibling::div[@id="ez-toc-container"]]//text()',
+    excerpt_xpath=''
+)
