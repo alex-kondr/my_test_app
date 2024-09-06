@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://techtest.org/category/reviews/'), process_revlist, dict())
 
 
@@ -21,17 +21,28 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = data.xpath('//div[regexp:test(@class, "^lets-review-block__title")]//text()').string(multiple=True)
     product.ssid = context['url'].split('/')[-2]
+
+    product.name = data.xpath('//div[regexp:test(@class, "^lets-review-block__title")]//text()').string(multiple=True)
+    if not product.name:
+        product.name = context['title'].split('Ladegerät Test 2024:')[0].split('im Test:')[0].replace('Test:', '').split(':')[0].split(' – ')[0].strip()
 
     product.url = data.xpath('//a[contains(., "Link zum Hersteller")]/@href').string()
     if not product.url:
         product.url = context['url']
 
+    category = data.xpath('(//div[contains(@class, "tdb-category")])[1]/a[not(text()="Tests")]/text()').string()
+    if not category:
+        category = data.xpath('//li[@class="entry-category"]/a[not(text()="Tests")]/text()').string()
+    if category:
+        product.category = category.replace('Tests', '').replace('Reviews', '').strip()
+    else:
+        product.category = 'Tech'
+
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//time/@datetime').string()
@@ -48,14 +59,20 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//div[@class="score"]/text()').string()
     if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
     pros = data.xpath('//div[regexp:test(@class, "lets-review-block__pro$")]')
+    if not pros:
+        pros = data.xpath('//div[@class="aawp-product__description"]//span[@style="color: #339966;"]')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[regexp:test(@class, "lets-review-block__con$")]')
+    if not cons:
+        cons = data.xpath('//div[@class="aawp-product__description"]//span[@style="color: #ff6600;"]')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
@@ -63,7 +80,6 @@ def process_review(data, context, session):
     summary = data.xpath('//div[@class="tdb-block-inner td-fix-index"]/p[not(preceding-sibling::div[@id="ez-toc-container"])]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
-
 
     excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p[preceding-sibling::div[@id="ez-toc-container"]]//text()').string(multiple=True)
     if excerpt:
