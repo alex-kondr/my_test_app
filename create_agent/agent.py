@@ -1,4 +1,11 @@
 from pathlib import Path
+from enum import Enum
+
+
+class ProcessRun(Enum):
+    frontpage = "frontpage"
+    revlist = "revlist"
+
 
 
 class AgentForm:
@@ -21,7 +28,7 @@ class AgentForm:
         name_agent_for_test: str,
         agent_id: str,
         url: str,
-        next_func:str,
+        next_func: ProcessRun,
         new_parser: bool,
         breakers: str,
         curl: bool

@@ -7,34 +7,34 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 
 
-from create_agent.agent import AgentForm
+from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="reviews.mein-gartenexperte.de",
+    name="reviews.techtest.org-de",
     )
-# agent.create_run(
-#     name_agent_for_test="Mein-gartenexperte [DE]",
-#     agent_id="20206",
-#     url="https://www.mein-gartenexperte.de/",
-#     next_func="frontpage",
-#     new_parser=False,
-#     breakers=False,
-#     curl=False
-# )
+agent.create_run(
+    name_agent_for_test="Techtest [DE]",
+    agent_id="20207",
+    url="https://techtest.org/category/reviews/",
+    next_func=ProcessRun.revlist,
+    new_parser=False,
+    breakers=3000,
+    curl=False
+)
 # agent.create_frontpage(
 #     cats_xpath='//li[contains(@class, "submenu index category")]',
 #     name_xpath='a/text()',
 #     url_xpath=''
 # )
-# agent.create_revlist(
-#     revs_xpath='//li[@class="day-article"]//a',
-#     name_title="title",
-#     name_title_xpath='text()',
-#     url_xpath='@href',
-#     prod_rev="review",
-#     next_url_xpath='',
-# )
+agent.create_revlist(
+    revs_xpath='//h3[contains(@class, "entry-title")]/a',
+    name_title="title",
+    name_title_xpath='text()',
+    url_xpath='@href',
+    prod_rev="review",
+    next_url_xpath='//link[@rel="next"]/@href',
+)
 # agent.create_review(
 #     date_xpath='//div[@class="Template-ARTIKEL-DATUM"]/text()',
 #     author_xpath='//meta[@name="author"]/@content',
