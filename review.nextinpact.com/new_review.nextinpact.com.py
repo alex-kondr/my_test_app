@@ -18,8 +18,7 @@ def process_revlist(data, context, session):
     end_date = data.xpath('//div[@data-ids and contains(., "Semaine Précédente")]/span[@id="previous"]/@data-date').string()
     if end_date:
         end_date_p = datetime.strptime(end_date, '%Y-%m-%d').date()
-        time_delta = timedelta(7)
-        begin_date = str(end_date_p - time_delta)
+        begin_date = str(end_date_p - timedelta(7))
 
         next_url = 'https://next.ink/?begin={begin_date}&end={end_date}'.format(begin_date=begin_date, end_date=end_date)
         session.queue(Request(next_url), process_revlist, dict())
@@ -30,7 +29,7 @@ def process_review(data, context, session):
     product.name = context['title']
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    product.category = 'Tech'
+    product.category = data.xpath('//div[@class="public_categories"]//span[@class="category-text"]/text()').string()
 
     review = Review()
     review.type = 'pro'
