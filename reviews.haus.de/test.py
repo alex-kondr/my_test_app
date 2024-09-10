@@ -26,13 +26,3 @@ if __name__ == "__main__":
     log = LogProduct(agent, reload=reload)
     test_log = TestLogProduct(log)
     test_log.test_log()
-
-
-
-revs = data.xpath('//div[contains(@class, "chakra-stack") and @style]')
-for rev in revs:
-    name = rev.xpath('.//div[@class="css-0"]/text()').string()
-    grade_overall = rev.xpath('.//div[@class="css-1r069ov"]/text()').string().split('/)[0]
-
-
-//div[@class="chakra-stack css-63nlbd"]//div[@class="css-y0n1xr" and not(contains(., "Modell") or contains(., "Gesamtergebnis"))]
