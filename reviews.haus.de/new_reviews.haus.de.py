@@ -30,9 +30,10 @@ def process_revlist(data, context, session):
 
 
 def process_reviews(data, context, session):
-    revs = data.xpath('//div[contains(@class, "paragraph-wrapper") and regexp:test(., "Platz \d+")]')
+    revs = data.xpath('//div[contains(@class, "paragraph-wrapper") and .//span[regexp:test(., "Platz \d+")]]')
     for i, rev in enumerate(revs, start=1):
-        prod_info = data.xpath('(//div[contains(@class, "chakra-stack") and contains(., "Platz {i}")])[1]'.format(i=i)).first()
+        prod_numb = rev.xpath('.//span[regexp:test(., "Platz \d+")]/text()').string()
+        prod_info = data.xpath('(//div[contains(@class, "chakra-stack") and contains(., "{prod_numb}")])[1]'.format(prod_numb=prod_numb)).first()
 
         if not prod_info:
             return
@@ -53,13 +54,26 @@ def process_reviews(data, context, session):
         if date:
             review.date = date.split()[0]
 
-        grade_overall = rev.xpath('count(.//div[contains(@class, "chakra-stack")]/svg[contains(@class, "chakra-icon")])')
+        grade_overall = prod_info.xpath('.//div[span[contains(., "Ø")]]/text()').string(multiple=True)
         if grade_overall:
-            grade_half = rev.xpath('count(.//div[contains(@class, "chakra-stack")]/div/div[not(@class="css-1udpgqb")])')
-            if grade_half:
-                grade_overall = grade_overall + .5
+            grade_overall = grade_overall.split('/')[0]
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+        if not grade_overall:
+            grade_overall = rev.xpath('count(.//div[contains(@class, "chakra-stack")]/svg[contains(@class, "chakra-icon")])')
+            if grade_overall:
+                grade_half = rev.xpath('count(.//div[contains(@class, "chakra-stack")]/div/div[not(@class="css-1udpgqb")])')
+                if grade_half:
+                    grade_overall = grade_overall + .5
+
+                review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+
+        grades = prod_info.xpath('.//div[@class="css-1s84675"]')
+        grade_names = ['Qualität', 'Bedienkomfort/Handhabung', 'Schneidleistung']
+        for grade, grade_name in zip(grades, grade_names):
+            grade = grade.xpath('.//text()').string(multiple=True)
+            review.grades.append(Grade(name=grade_name, value=float(grade), best=10.0))
+
 
         author = data.xpath('//a[contains(@href, "https://www.haus.de/autoren/") and text() and not(contains(., "Haus.de"))]/text()').string()
         author_url = data.xpath('//a[contains(@href, "https://www.haus.de/autoren/") and text() and not(contains(., "Haus.de"))]/@href').string()

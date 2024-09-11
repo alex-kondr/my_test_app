@@ -1,10 +1,11 @@
 from pathlib import Path
-from enum import Enum
+from enum import Enum, auto
 
 
 class ProcessRun(Enum):
-    frontpage = "frontpage"
-    revlist = "revlist"
+    frontpage = auto()
+    catlist = auto()
+    revlist = auto()
 
 
 
