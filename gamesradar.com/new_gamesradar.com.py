@@ -61,6 +61,9 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//div[contains(@class, "verdict")]//span/@aria-label').string()
+    if not grade_overall:
+        grade_overall = data.xpath('//span[@class="chunk rating"]/@aria-label').string()
+
     if grade_overall:
         grade_overall = grade_overall.split(':')[-1].split('out')[0]
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
