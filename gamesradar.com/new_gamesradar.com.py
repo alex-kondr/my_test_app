@@ -24,7 +24,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split('review:')[0].strip()
+    product.name = context['title'].split('review:')[0].replace(' review', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = 'Tech'
 
@@ -76,7 +76,7 @@ def process_review(data, context, session):
         review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="header-sub-container"]/h2//text()').string(multiple=True)
-    if summary:
+    if summary and len(summary) > 2:
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//h3[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")]|//h2[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")])/following-sibling::p//text()').string(multiple=True)
@@ -84,7 +84,7 @@ def process_review(data, context, session):
 
         if not summary:
             summary = data.xpath('//div[@class="pretty-verdict__verdict"]/p//text()').string(multiple=True)
-            if summary:
+            if summary and len(summary) > 2:
                 review.add_property(type='summary', value=summary)
 
         review.add_property(type='conclusion', value=conclusion)
@@ -92,7 +92,7 @@ def process_review(data, context, session):
     if not conclusion:
         conclusion = data.xpath('//div[@class="pretty-verdict__verdict"]/p//text()').string(multiple=True)
         if conclusion:
-            review.add_property(type='conclusion', value=summary)
+            review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h3[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")]|//h2[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")])/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
