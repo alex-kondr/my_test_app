@@ -24,7 +24,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split('review:')[0].split('Review:')[0].replace(' review', '').strip()
+    product.name = context['title'].split('review:')[0].split('Review:')[0].replace(' review', '').replace(' Review', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = 'Tech'
 
@@ -91,17 +91,19 @@ def process_review(data, context, session):
         conclusion = data.xpath('//p[.//strong[contains(., "Verdict")]]/following-sibling::p[not(contains(., "@"))]//text()').string(multiple=True)
 
     if conclusion:
+        conclusion = conclusion.replace('Verdict:', '').strip()
+        review.add_property(type='conclusion', value=conclusion)
 
         if not summary:
             summary = data.xpath('//div[@class="pretty-verdict__verdict"]/p//text()').string(multiple=True)
             if summary and len(summary) > 2:
                 review.add_property(type='summary', value=summary)
 
-        review.add_property(type='conclusion', value=conclusion)
 
     if not conclusion:
         conclusion = data.xpath('//div[@class="pretty-verdict__verdict"]/p//text()').string(multiple=True)
         if conclusion:
+            conclusion = conclusion.replace('Verdict:', '').strip()
             review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h3[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")]|//h2[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")])/preceding-sibling::p//text()').string(multiple=True)
