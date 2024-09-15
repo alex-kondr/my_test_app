@@ -43,7 +43,10 @@ def process_product(data, context, session):
     product.ssid = product.url.split('/')[-1]
     product.category = context['cat']
     product.manufacturer = context['manufacturer']
-    product.sku = data.xpath('//div[@id="videoly-product-id"]/text()').string()
+
+    mpn = data.xpath('//div[@id="videoly-product-id"]/text()').string()
+    if mpn:
+        product.add_property(type='id.manufacturer', value=mpn)
 
     review = Review()
     review.type = 'pro'
@@ -62,8 +65,8 @@ def process_product(data, context, session):
 
     grades = data.xpath('//p[contains(., "Betyg 1-10:")]/following-sibling::ul[1]/li')
     for grade in grades:
-        grade_name, grade_val = grade.xpath('.//text()').string().split()
-        grade_val = float(grade_val.replace(',', '.'))
+        grade_name = grade.xpath('.//text()').string().split()[:-1]
+        grade_val = float(grade.xpath('.//text()').string().split()[-1].replace(',', '.'))
         review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
 
     img_aw = data.xpath("//img[contains(@src,'120x120guld_SE.png')]/@src").string()
@@ -83,7 +86,7 @@ def process_product(data, context, session):
     conclusion = data.xpath('(//p[b[text()="Slutsats"]])[1]//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace('Slutsats', '').strip()
-        review.add_property(type='conclsuion', value=conclusion)
+        review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//p[b[text()="Plus"]])[1]/preceding-sibling::p[not(i)]//text()').string(multiple=True)
     if not excerpt:
@@ -96,7 +99,7 @@ def process_product(data, context, session):
         excerpt = data.xpath('//div[@class="editor-string text-md"]/p[not(contains(., "Plus") or contains(., "Minus") or contains(., "Slutsats") or contains(., "Testad av") or i)]//text()').string(multiple=True)
 
     if excerpt:
-        review.ad_property(type='excerpt', value=excerpt)
+        review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
 
