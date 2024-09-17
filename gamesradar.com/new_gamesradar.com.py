@@ -86,9 +86,9 @@ def process_review(data, context, session):
     if summary and len(summary) > 2:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('(//h3[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")]|//h2[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")])/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('(//h3[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")]|//h2[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")])/following-sibling::p[not(preceding-sibling::h2[contains(., "How we tested")])]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//p[.//strong[contains(., "Verdict")]]/following-sibling::p[not(contains(., "@"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//p[.//strong[contains(., "Verdict")]]/following-sibling::p[not(contains(., "@") or preceding-sibling::h2[contains(., "How we tested")])]//text()').string(multiple=True)
 
     if conclusion:
         conclusion = conclusion.replace('Verdict:', '').strip()
@@ -106,11 +106,11 @@ def process_review(data, context, session):
             conclusion = conclusion.replace('Verdict:', '').strip()
             review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h3[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")]|//h2[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")])/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('(//h3[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")]|//h2[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")])/preceding-sibling::p[not(preceding-sibling::h2[contains(., "How we tested")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[.//strong[contains(., "Verdict")]]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//p[.//strong[contains(., "Verdict")]]/preceding-sibling::p[not(preceding-sibling::h2[contains(., "How we tested")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="article-body"]/p[not(regexp:test(., "^For more"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="article-body"]/p[not(regexp:test(., "^For more") or preceding-sibling::h2[contains(., "How we tested")])]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

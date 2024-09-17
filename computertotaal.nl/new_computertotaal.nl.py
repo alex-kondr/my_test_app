@@ -4,7 +4,6 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://id.nl/'), process_catlist, {})
 
 
@@ -65,7 +64,7 @@ def process_revlist(data, context, session):
         return
 
     options = """--compressed -X POST -H 'Content-Type: text/plain;charset=UTF-8' --data-raw '{"first":100,"skip":""" + str(offset) + ""","filter":{"pageType":{"eq":"47700387"}, "OR":{"productGroup":{"in":[""" + product_group_[:-1] + """]}}}}'"""
-    session.queue(Request('https://id.nl/api/content/pages', use='curl', options=options), process_revlist, dict(context, offset=offset))
+    session.do(Request('https://id.nl/api/content/pages', use='curl', options=options), process_revlist, dict(context, offset=offset))
 
 
 def process_review(data, context, session):
@@ -108,26 +107,47 @@ def process_review(data, context, session):
     pros = data.xpath('//div[p[text()="Pluspunten"]]//p[@class="small"]')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
-        review.add_property(type='pros', value=pro)
+        if pro:
+            pro = pro.strip(' .+-')
+            review.add_property(type='pros', value=pro)
 
     pros = data.xpath('//li[p[text()="Minpunten"]]')
     for pros_ in pros:
         pros_ = pros_.xpath('preceding-sibling::li/p[not(text()="Pluspunten")]')
         for pro in pros_:
             pro = pro.xpath('.//text()').string(multiple=True)
-            review.add_property(type='pros', value=pro)
+            if pro:
+                pro = pro.strip(' .+-')
+                review.add_property(type='pros', value=pro)
+
+    if not pros:
+        pros_json = data.xpath('//script[@type="application/json"]/text()').string()
+        if pros_json:
+            pros_json = simplejson.loads(pros_json).get('props', {}).get('pageProps', {}).get('pageData', {}).get('articleContentBody', [{}])[0].get('content', {}).get('blocks', [])
+            pros = [pro.get('contentLeftColumn', {}).get('blocks', [{}])[0].get('richtextBox', '') for pro in pros_json if pro.get('typeName') == 'RichtextTwoColumnRecord' and pro.get('contentLeftColumn', {}).get('blocks')]
+            pros += [pro.get('contentRightColumn', {}).get('blocks', [{}])[0].get('richtextBox', '') for pro in pros_json if pro.get('typeName') == 'RichtextTwoColumnRecord' and pro.get('contentRightColumn', {}).get('blocks')]
+            if pros and ''.join(pros).strip():
+                pros = ' '.join(pros).split('* ')
+                for pro in pros:
+                    pro = pro.strip()
+                    if pro and len(pro) > 1:
+                        review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[p[text()="Minpunten"]]//p[@class="small"]')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
-        review.add_property(type='cons', value=con)
+        if con:
+            con = con.strip(' .+-')
+            review.add_property(type='cons', value=con)
 
     cons = data.xpath('//li[p[text()="Minpunten"]]')
     for cons_ in cons:
         cons_ = cons_.xpath('following-sibling::li/p')
         for con in cons_:
             con = con.xpath('.//text()').string(multiple=True)
-            review.add_property(type='cons', value=con)
+            if con:
+                con = con.strip(' .+-')
+                review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//h2[contains(text(), "Conclusie")]/following-sibling::p/text()').string(multiple=True)
     if not conclusion:
