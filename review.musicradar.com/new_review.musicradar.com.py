@@ -58,12 +58,16 @@ def process_review(data, context, session):
     pros = data.xpath('//div[@class="pretty-verdict__pros"]/ul//p')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
-        review.add_property(type='pros', value=pro)
+        if pro:
+            pro = pro.lstrip('…').strip(' +-')
+            review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[@class="pretty-verdict__cons"]/ul//p')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
-        review.add_property(type='cons', value=con)
+        if con:
+            con = con.lstrip('…').strip(' +-')
+            review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="header-sub-container"]/h2//text()').string(multiple=True)
     if summary:
@@ -83,7 +87,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="article-body"]/p[not(contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="article-body"]/p[not(contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a) or preceding-sibling::h3[contains(., "The web says")])]//text()').string(multiple=True)
 
     if excerpt:
 
