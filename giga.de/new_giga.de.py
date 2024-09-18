@@ -104,7 +104,7 @@ def process_review(data, context, session):
         grades = data.xpath('//div[@class="table-responsive"]/table[contains(., "Kategorie")]/tr[not(contains(., "Kategorie"))]')
         for grade in grades:
             grade_name, grade_val = grade.xpath('.//text()').strings()
-            if grade_name and grade_val:
+            if grade_name and grade_val and grade_val.strip().isdigit():
                 review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
     pros = data.xpath("(//p[contains(.,'Vorteile')]/following-sibling::ul)[1]//li")
@@ -245,6 +245,59 @@ def process_review_next(data, context, session):
     if page > 1:
         review.add_property(type="pages", value=dict(title=review.title+' - page '+str(page), url=context["url"]))
 
+        grade_overall = data.xpath("//div[@class='product-rating-rating']/strong//text()").string()
+        if grade_overall:
+            grade_overall = grade_overall.replace(',', '.')
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+
+        if not grade_overall:
+            grade_overall = data.xpath('//p[strong[contains(., "Gesamt:")]]//text()[contains(., "Gesamt")]').string(multiple=True)
+        if not grade_overall:
+            grade_overall = data.xpath('//strong[contains(., "Gesamt:")]//text()').string(multiple=True)
+        if not grade_overall:
+            grade_overall = data.xpath('//p[contains(., "Gesamt:")]//text()').string(multiple=True)
+        if not grade_overall:
+            grade_overall = data.xpath('//p[strong[contains(., "Wertung:") or contains(., "Gesamtwertung:")]]//text()').string(multiple=True)
+        if not grade_overall:
+            grade_overall = data.xpath('//strong[contains(., "Wertung:")]//text()').string(multiple=True)
+
+        if grade_overall and not review.grades:
+            grade_overall = grade_overall.split('Prozent')[0].split(':')[-1].replace('Gesamt:', '').replace('Gesamt :', '').replace('(gerundet)', '').replace('%', '').replace(',', '.').strip()
+            best = 100
+            if '/' in grade_overall:
+                grade_overall, best = grade_overall.split('/')
+                best = best.split()[0]
+            try:
+                grade_overall = float(grade_overall)
+                if grade_overall // 20 == grade_overall / 20:
+                    grade_overall /= 20
+                    best = 5
+                review.grades.append(Grade(type='overall', value=grade_overall, best=float(best)))
+            except ValueError:
+                pass
+
+        grades = data.xpath('//*[regexp:test(text(), ": \d/\d\d?$")][not(contains(., "@context") or contains(., "Gesamt:"))]')
+        for grade in grades:
+            name, grade = grade.xpath('text()').string().split(':')
+            grade, best = grade.split('/')
+            review.grades.append(Grade(name=name, value=float(grade), best=float(best)))
+
+        grades = data.xpath('(//*[regexp:test(text(), "^[^:]+: \d\d Prozent")][not(contains(., "@context") or contains(., "Gesamt"))]/parent::ul)[last()]/li//text()[not(contains(., "Gesamt:"))]').strings()
+        if not grades:
+            grades = data.xpath('//*[regexp:test(text(), "^[^:]+: \d\d Prozent")][not(contains(., "@context") or contains(., "Gesamt"))]/text()[not(contains(., "Gesamt:"))]').strings()
+        for grade in grades:
+            name, grade = grade.split(':')
+            name = name.strip()
+            grade = grade.split()[0]
+            review.grades.append(Grade(name=name, value=float(grade), best=100.0))
+
+        if not grades:
+            grades = data.xpath('//div[@class="table-responsive"]/table[contains(., "Kategorie")]/tr[not(contains(., "Kategorie"))]')
+            for grade in grades:
+                grade_name, grade_val = grade.xpath('.//text()').strings()
+                if grade_name and grade_val:
+                    review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
+
         pros = data.xpath("(//p[contains(.,'Vorteile')]/following-sibling::ul)[1]//li")
         if not pros:
             pros = data.xpath('//li[@class="arg-pro"]')
@@ -276,7 +329,7 @@ def process_review_next(data, context, session):
                     pro_ = pro_.replace('+', '').strip()
                 review.add_property(type='pros', value=pro_)
 
-        cons = data.xpath("(//p[contains(.,'Nachteile')]/following-sibling::ul)[1]//li")
+        cons = data.xpath('(//p[strong[contains(., "Nachteile")]]/following-sibling::ul)[1]//li')
         if not cons:
             cons = data.xpath('//li[@class="arg-con"]')
         if not cons:
