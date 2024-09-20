@@ -101,7 +101,7 @@ def process_reviews(data, context, session):
         if summary:
             review.add_property(type='summary', value=summary)
 
-        excerpt = rev.xpath('preceding-sibling::div[contains(@class, "paragraph-wrapper") and count(followin-sibling::div[regexp:test(., "Platz \d+")])={i}]//p//text()'.format(i=i)).string(multiple=True)
+        excerpt = rev.xpath('preceding-sibling::div[contains(@class, "paragraph-wrapper") and count(following-sibling::div[regexp:test(., "Platz \d+")])={i}]//p//text()'.format(i=i)).string(multiple=True)
         if excerpt:
             strings = []
             if 'Fazit:' in excerpt:
