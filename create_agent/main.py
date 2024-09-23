@@ -11,39 +11,39 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.all-nintendo.fr",
+    name="gadzetomania.pl",
     )
-agent.create_run(
-    name_agent_for_test="All-Nintendo [FR]",
-    agent_id="4902",
-    url="https://www.all-nintendo.com/category/tests/",
-    next_func=ProcessRun.revlist.name,
-    new_parser=True,
-    breakers=False,
-    curl=False
-)
+# agent.create_run(
+#     name_agent_for_test="gadzetomania [PL]",
+#     agent_id="6276",
+#     url="https://gadzetomania.pl/gadzety,temat,6008941124117121",
+#     next_func=ProcessRun.revlist.name,
+#     new_parser=False,
+#     breakers=10000,
+#     curl=False
+# )
 # agent.create_frontpage(
 #     cats_xpath='(//ul[@class="flex flex-col"])[1]//a',
 #     name_xpath='text()',
 #     url_xpath='@href'
 # )
-agent.create_revlist(
-    revs_xpath='//h2[@class="post-title"]/a',
-    name_title="title",
-    name_title_xpath='text()',
-    url_xpath='@href',
-    prod_rev="review",
-    next_url_xpath='//link[@rel="next"]/@href',
-)
+# agent.create_revlist(
+#     revs_xpath='//h2/a',
+#     name_title="title",
+#     name_title_xpath='text()',
+#     url_xpath='@href',
+#     prod_rev="review",
+#     next_url_xpath='//a[@rel="prev" and contains(@href, "strona=")]/@href',
+# )
 agent.create_review(
-    date_xpath='//meta[@property="article:published_time"]/@content',
-    author_xpath='//meta[@name="author"]/@content',
+    date_xpath='//meta[contains(@property, "published_time")]/@content',
+    author_xpath='//a[contains(@href, ",autor,")]',
     author_url_xpath='',
     grade_overall_xpath='',
-    pros_xpath='//p[contains(., "Les trucs cools du Jeu")]/following-sibling::ul[1]/li',
-    cons_xpath='//p[contains(., "Les petits bémols")]/following-sibling::ul[1]/li',
+    pros_xpath='',
+    cons_xpath='',
     summary_xpath='',
-    conclusion_xpath='//h2[regexp:test(., "conclusion", "i")]/following-sibling::p//text()',
-    excerpt_with_concl_xpath='//h2[regexp:test(., "conclusion", "i")]/preceding-sibling::p[not(contains(., "Les trucs cools du Jeu") or contains(., "Les petits bémols") or contains(., "Q :"))]//text()',
-    excerpt_xpath='//div[@itemprop="articleBody"]//p[not(contains(., "Les trucs cools du Jeu") or contains(., "Les petits bémols") or contains(., "Q :"))]//text()'
+    conclusion_xpath='',
+    excerpt_with_concl_xpath='',
+    excerpt_xpath='//div[@class="VXd-"]/p'
 )
