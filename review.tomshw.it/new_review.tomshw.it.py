@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=2000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.tomshw.it/cerca?keyword=Recensione'), process_revlist, dict())
 
 
@@ -58,6 +58,9 @@ def process_review(data, context, session):
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     pros = data.xpath('//h3[text()="Pro"]/following-sibling::ul[1]/li')
+    if not pros:
+        pros = data.xpath('//p[strong[contains(., "PRO")]]/following-sibling::ul[1]/li')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -66,6 +69,9 @@ def process_review(data, context, session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//h3[text()="Contro"]/following-sibling::ul[1]/li')
+    if not cons:
+        cons = data.xpath('//p[strong[contains(., "CONTRO")]]/following-sibling::ul[1]/li')
+
     for con in cons:
         con = con.xpath('.//text()'). string(multiple=True)
         if con:
@@ -77,18 +83,25 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(@id, "verdetto") or contains(@id, "conclusioni") or contains(., "Verdetto") or contains(., "Conclusioni")]/following-sibling::p[not(@style)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(@id, "verdetto") or contains(@id, "conclusioni") or contains(., "Verdetto") or contains(., "Conclusioni")]/following-sibling::p[not(@style or contains(@class, "text") or contains(@class, "font"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2[text()="Commento"]/following-sibling::div[1]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(@id, "verdetto") or contains(@id, "conclusioni") or contains(., "Verdetto") or contains(., "Conclusioni")]/preceding-sibling::p[not(@style)]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2[contains(@id, "verdetto") or contains(@id, "conclusioni") or contains(., "Verdetto") or contains(., "Conclusioni")])[1]/preceding-sibling::p[not(@style or strong[contains(., "PRO")] or strong[contains(., "CONTRO")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[not(@style)]//text()').string(multiple=True)
+        excerpt = data.xpath('//div/p[not(@style or contains(@class, "text") or contains(@class, "font") or strong[contains(., "PRO")] or strong[contains(., "CONTRO")])]//text()').string(multiple=True)
 
     if excerpt:
+
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
