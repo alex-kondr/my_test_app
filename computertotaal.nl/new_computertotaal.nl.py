@@ -32,7 +32,7 @@ def process_revlist(data, context, session):
     offset = context.get('offset')
     product_groups = set()
     if offset:
-        revs_json = simplejson.loads(data.raw)
+        revs_json = simplejson.loads(data.content)
         total_pages = revs_json.get('totalPages', {}).get('count')
         revs = revs_json.get('pages', {})
     else:

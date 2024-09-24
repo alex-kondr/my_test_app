@@ -6,6 +6,7 @@ class ProcessRun(Enum):
     frontpage = auto()
     catlist = auto()
     revlist = auto()
+    prodlist = auto()
 
 
 
