@@ -23,7 +23,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = context['title'].split('review')[0].strip()
+    product.name = context['title'].split('review')[0].replace(' Review', '').strip()
     product.ssid = context['url'].split('/')[-1].replace('-review', '')
     product.category = 'Tech'
 
@@ -97,14 +97,14 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath('//div[@class="mt-8"]/div[@class="prose"]/p[not(.//a[contains(., "Buy now from")])][not(contains(., "Read next:"))][not(preceding::text()[1][contains(., "Key specs")])][not(preceding::text()[1][contains(., "About Mumsnet Reviews")])][not(preceding::text()[contains(., "About the author")])][not(contains(., "Related:"))][not(contains(., "rating:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="mt-8"]/div[@class="prose"]/p[not(.//a[contains(., "Buy now from")] or contains(., "Read next:"))][not(preceding::text()[1][contains(., "Key specs")])][not(preceding::text()[1][contains(., "About Mumsnet Reviews")])][not(preceding::text()[contains(., "About the author")])][not(contains(., "Related:"))][not(contains(., "rating:") or preceding::h2[1][contains(., "Our verdict") or contains(., "Our final verdict")])]//text()').string(multiple=True)
     if excerpt:
-
-        if conclusion:
-            excerpt = excerpt.replace(conclusion, '').strip()
 
         if summary:
             excerpt = excerpt.replace(summary, '').strip()
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
 
         review.add_property(type="excerpt", value=excerpt)
 
@@ -117,7 +117,7 @@ def process_reviews(data, context, session):
     prods = data.xpath('//div[@class="mt-8" and div[contains(@class, "flex my-3")]]')
     for prod in prods:
         product = Product()
-        product.name = prod.xpath('.//h2/text()').string()
+        product.name = prod.xpath('.//h2/text()').string().replace(' Review', '').strip()
         product.ssid = context['url'].split('/')[-1].replace('-review', '')
         product.category = 'Tech'
 
@@ -173,7 +173,7 @@ def process_reviews(data, context, session):
         if summary:
             review.add_property(type='summary', value=summary)
 
-        excerpt = data.xpath('.//div[contains(., "Our verdict")]/following-sibling::p[not(contains(., "Read next:") or contains(., "Related:") or contains(., "Tested by"))]').string(multiple=True)
+        excerpt = prod.xpath('.//div[contains(., "Our verdict")]/following-sibling::p[not(contains(., "Read next:") or contains(., "Related:") or contains(., "Tested by"))]//text()').string(multiple=True)
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
