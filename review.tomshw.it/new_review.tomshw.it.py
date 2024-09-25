@@ -25,8 +25,8 @@ def process_review(data, context, session):
     product.name = context['title'].split('|')[0].split("– Recensione")[0].split("Recensione ")[-1].split("Test ")[-1].split(',')[0].strip()
     product.ssid = context['url'].split('/')[-1].replace('-test-recensione', '').replace('-recensione', '')
 
-    product.category = context['cat'].replace('Review', '').strip()
-    if not product.category:
+    product.category = context['cat'].replace('Review', '').replace('Recensione', '').replace('RECENSIONE', '').replace('recensione', '').strip()
+    if len(product.category) < 2:
         product.category = 'Tech'
 
     product.url = data.xpath('//a[@class="shortcode_button primary"]/@href').string()

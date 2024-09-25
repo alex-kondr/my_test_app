@@ -25,12 +25,21 @@ def process_product(data, context, session):
     product.ssid = context['url'].split('/')[-2]
     product.category = 'Equipment for gamers'
     product.manufacturer = 'dreamGEAR'
-    product.sku = data.xpath("//span[@data-product-sku='data-product-sku']/text()").string()
+
+    mpn = data.xpath("//span[@data-product-sku='data-product-sku']/text()").string()
+    if mpn:
+        product.add_property(type='id.manufacturer', value=mpn)
 
     ean = data.xpath('//p[contains(., "UPC:")]//text()').string(multiple=True)
     if ean:
         ean = ean.split('UPC')[-1].strip(' :').split()[0].strip()
         product.add_property(type='id.ean', value=ean)
+
+    if not ean:
+        ean = data.xpath('//div[contains(@class, "product-info-UPC")]/span[contains(@class, "value")]/text()').string()
+        if ean:
+            ean = ean.replace(' ', '')
+            product.add_property(type='id.ean', value=ean)
 
     review = Review()
     review.type = 'pro'
@@ -38,9 +47,12 @@ def process_product(data, context, session):
     review.url = context['url']
     review.ssid = product.ssid
 
-    pros = data.xpath('//p[regexp:test(., "Features|FEATURES")]/following-sibling::p[regexp:test(., "^•")]')
+    pros = data.xpath('//p[regexp:test(., "Features|FEATURES")]/following-sibling::p[regexp:test(., "^•")]/text()')
+    if not pros:
+        pros = data.xpath('//p[regexp:test(., "Features|FEATURES")]/text()[contains(., "•")]')
+
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True).replace('•', '').strip()
+        pro = pro.string(multiple=True).replace('•', '').strip()
         if len(pro) > 1:
             review.add_property(type='pros', value=pro)
 

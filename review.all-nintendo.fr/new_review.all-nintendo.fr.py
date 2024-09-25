@@ -3,6 +3,30 @@ from models.products import *
 import re
 
 
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
+
 def run(context, session):
     session.browser.use_new_parser = True
     session.queue(Request('https://www.all-nintendo.com/category/tests/'), process_revlist, dict())
@@ -114,7 +138,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('//p[regexp:test(., "Bilan|Conclusion")]//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = conclusion.replace('Bilan :', '').replace('Bilan:', '').replace('Conclusion :', '').replace('Conclusion:', '').replace('Bilan', '').replace('Conclusion','').strip()
+        conclusion = remove_emoji(conclusion).replace('Bilan :', '').replace('Bilan:', '').replace('Conclusion :', '').replace('Conclusion:', '').replace('Bilan', '').replace('Conclusion','').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h2[regexp:test(., "conclusion", "i")])[1]/preceding-sibling::p[not(contains(., "Les trucs cools du Jeu") or contains(., "Les petits bémols") or contains(., "Q :") or contains(., "Note") or .//strong[regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$")] or regexp:test(normalize-space(.), "^–|^-"))]//text()').string(multiple=True)
@@ -126,7 +150,7 @@ def process_review(data, context, session):
     if excerpt:
 
         if conclusion:
-            excerpt = excerpt.replace(conclusion, '').strip()
+            excerpt = remove_emoji(excerpt).replace(conclusion, '').strip()
 
         review.add_property(type='excerpt', value=excerpt)
 
