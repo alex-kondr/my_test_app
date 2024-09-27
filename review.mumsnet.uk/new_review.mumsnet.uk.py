@@ -1,3 +1,4 @@
+from tkinter.tix import Tree
 from agent import *
 from models.products import *
 import simplejson
@@ -11,7 +12,7 @@ def process_revlist(data, context, session):
     revs = data.xpath('//div[contains(@class, "flex pt-6")]/div[p]')
     for rev in revs:
         title = rev.xpath('p[contains(@class, "font-bold")]/text()').string()
-        cats = rev.xpath('div/a[not(regexp:test(., "review", "i"))]/text()').strings()
+        cats = rev.xpath('div/a[not(regexp:test(., "review", "i"))]/text()').strings().replace(' | ', '|')
         url = rev.xpath('a/@href').string()
         session.queue(Request(url), process_review, dict(title=title, cats=cats, url=url))
 
@@ -28,6 +29,8 @@ def process_review(data, context, session):
     product.category = 'Tech'
 
     product.url = data.xpath('//a[contains(., "Buy now from Amazon")]/@href').string()
+    if not product.url:
+        product.url = data.xpath('//a[contains(., "Buy now")]/@href').string()
     if not product.url:
         product.url = context["url"]
 
@@ -63,6 +66,12 @@ def process_review(data, context, session):
             grade_overall += grade_overall_half / 2
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
+    if not grade_overall:
+        grade_overall = data.xpath('//p[regexp:test(normalize-space(.), "\d+\.?\d? ?/ ?\d+") and contains(., "Overall")]//text()').string(multiple=True)
+        if grade_overall:
+            grade_overall = grade_overall.split(':')[-1].split('/')[0]
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
     grades = data.xpath('//div[div[contains(@id, "rating")] and not(contains(., "Our rating"))]')
     for grade in grades:
         grade_name = grade.xpath('div[contains(@class, "font-bold")]/text()').string().strip(' :')
@@ -73,6 +82,13 @@ def process_review(data, context, session):
 
         if grade_name and grade_val:
             review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
+
+    if not grades:
+        grades = data.xpath('//p[regexp:test(normalize-space(.), "\d+\.?\d? ?/ ?\d+") and not(contains(., "Overall"))]')
+        for grade in grades:
+            grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).split(':')
+            grade_val = grade_val.split('/')[0]
+            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
 
     pros = data.xpath('//*[contains(., "What we love") or contains(., "What we like") or contains(., "Pros")]/following-sibling::ul[1]/li')
     for pro in pros:
@@ -97,7 +113,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath('//div[@class="mt-8"]/div[@class="prose"]/p[not(.//a[contains(., "Buy now from")] or contains(., "Read next:"))][not(preceding::text()[1][contains(., "Key specs")])][not(preceding::text()[1][contains(., "About Mumsnet Reviews")])][not(preceding::text()[contains(., "About the author")])][not(contains(., "Related:"))][not(contains(., "rating:") or preceding::h2[1][contains(., "Our verdict") or contains(., "Our final verdict")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="mt-8"]/div[@class="prose"]/p[not(.//a[contains(., "Buy now from")] or contains(., "Read next:"))][not(preceding::text()[1][contains(., "Key specs")])][not(preceding::text()[1][contains(., "About Mumsnet Reviews")])][not(preceding::text()[contains(., "About the author")])][not(contains(., "Related:"))][not(contains(., "rating:") or preceding::h2[1][contains(., "Our verdict") or contains(., "Our final verdict") or contains(., "About")])]//text()').string(multiple=True)
     if excerpt:
 
         if summary:

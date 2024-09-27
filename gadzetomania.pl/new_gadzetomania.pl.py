@@ -51,7 +51,7 @@ def process_review(data, context, session):
     if author:
         review.authors.append(Person(name=author, ssid=author))
 
-    excerpt = data.xpath('//div[@class="VXd-"]/p//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class]/p[not(@class)]//text()').string(multiple=True)
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)

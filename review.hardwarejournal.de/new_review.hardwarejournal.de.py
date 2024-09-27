@@ -4,10 +4,10 @@ import simplejson
 
 
 def run(context, session):
-    session.queue(Request('https://www.hardwarejournal.de/', use='curl'), process_frontpage, dict())
-    session.queue(Request('https://www.hardwarejournal.de/kat/software/', use='curl'), process_revlist, dict(cat='Software & Apps'))
-    session.queue(Request('https://www.hardwarejournal.de/kat/wissen/', use='curl'), process_revlist, dict(cat='PC-Ratgeber|Tipps & Wissen'))
-    session.queue(Request('https://www.hardwarejournal.de/kat/news/', use='curl'), process_revlist, dict(cat='IT-News & Nachrichten'))
+    session.do(Request('https://www.hardwarejournal.de/', use='curl', max_age=0), process_frontpage, dict())
+    session.do(Request('https://www.hardwarejournal.de/kat/software/', use='curl', max_age=0), process_revlist, dict(cat='Software & Apps'))
+    session.do(Request('https://www.hardwarejournal.de/kat/wissen/', use='curl', max_age=0), process_revlist, dict(cat='PC-Ratgeber|Tipps & Wissen'))
+    session.do(Request('https://www.hardwarejournal.de/kat/news/', use='curl', max_age=0), process_revlist, dict(cat='IT-News & Nachrichten'))
 
 
 def process_frontpage(data, context, session):
@@ -15,7 +15,7 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('span[@class="menu-text"]/text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url, use='curl'), process_revlist, dict(cat=name))
+        session.do(Request(url, use='curl', max_age=0), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
@@ -23,11 +23,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('.//a[@rel="bookmark"]/text()').string()
         url = rev.xpath('.//a[@rel="bookmark"]/@href').string()
-        session.queue(Request(url, use='curl'), process_review, dict(context, title=title, url=url))
+        session.do(Request(url, use='curl', max_age=0), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl'), process_revlist, dict(context))
+        session.do(Request(next_url, use='curl', max_age=0), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
