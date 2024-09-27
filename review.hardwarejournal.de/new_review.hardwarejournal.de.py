@@ -4,10 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.do(Request('https://www.hardwarejournal.de/', use='curl', max_age=0), process_frontpage, dict())
-    session.do(Request('https://www.hardwarejournal.de/kat/software/', use='curl', max_age=0), process_revlist, dict(cat='Software & Apps'))
-    session.do(Request('https://www.hardwarejournal.de/kat/wissen/', use='curl', max_age=0), process_revlist, dict(cat='PC-Ratgeber|Tipps & Wissen'))
-    session.do(Request('https://www.hardwarejournal.de/kat/news/', use='curl', max_age=0), process_revlist, dict(cat='IT-News & Nachrichten'))
+    session.queue(Request('https://www.hardwarejournal.de/'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -15,7 +12,7 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('span[@class="menu-text"]/text()').string()
         url = cat.xpath('@href').string()
-        session.do(Request(url, use='curl', max_age=0), process_revlist, dict(cat=name))
+        session.queue(Request(url), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
@@ -23,15 +20,14 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('.//a[@rel="bookmark"]/text()').string()
         url = rev.xpath('.//a[@rel="bookmark"]/@href').string()
-        session.do(Request(url, use='curl', max_age=0), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url), process_review, dict(context, title=title, url=url))
 
-    next_url = data.xpath('//link[@rel="next"]/@href').string()
+    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
-        session.do(Request(next_url, use='curl', max_age=0), process_revlist, dict(context))
+        session.queue(Request(next_url), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
-
     product = Product()
     product.name = context['title'].split(': ')[0]
     product.url = context['url']
@@ -69,7 +65,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h3[contains(.,"Fazit")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "entry-content")]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(contains(., "Beschichtung:") or contains(., "Model:"))]//text()').string(multiple=True)
 
     if excerpt:
 

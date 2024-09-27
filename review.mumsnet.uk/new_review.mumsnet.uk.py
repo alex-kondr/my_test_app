@@ -1,4 +1,3 @@
-from tkinter.tix import Tree
 from agent import *
 from models.products import *
 import simplejson
@@ -12,7 +11,7 @@ def process_revlist(data, context, session):
     revs = data.xpath('//div[contains(@class, "flex pt-6")]/div[p]')
     for rev in revs:
         title = rev.xpath('p[contains(@class, "font-bold")]/text()').string()
-        cats = rev.xpath('div/a[not(regexp:test(., "review", "i"))]/text()').strings().replace(' | ', '|')
+        cats = rev.xpath('div/a[not(regexp:test(., "review", "i"))]/text()').strings()
         url = rev.xpath('a/@href').string()
         session.queue(Request(url), process_review, dict(title=title, cats=cats, url=url))
 
@@ -35,7 +34,7 @@ def process_review(data, context, session):
         product.url = context["url"]
 
     if context.get('cats'):
-        product.category = '|'.join(context['cats'])
+        product.category = '|'.join([cat.strip() for cat in context['cats']])
 
     review = Review()
     review.type = 'pro'
@@ -84,7 +83,7 @@ def process_review(data, context, session):
             review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
 
     if not grades:
-        grades = data.xpath('//p[regexp:test(normalize-space(.), "\d+\.?\d? ?/ ?\d+") and not(contains(., "Overall"))]')
+        grades = data.xpath('//p[regexp:test(normalize-space(.), "\d+\.?\d? ?/ ?\d+$") and not(contains(., "Overall"))]')
         for grade in grades:
             grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).split(':')
             grade_val = grade_val.split('/')[0]
@@ -189,7 +188,15 @@ def process_reviews(data, context, session):
         if summary:
             review.add_property(type='summary', value=summary)
 
-        excerpt = prod.xpath('.//div[contains(., "Our verdict")]/following-sibling::p[not(contains(., "Read next:") or contains(., "Related:") or contains(., "Tested by"))]//text()').string(multiple=True)
+        conclusion = prod.xpath('.//*[contains(., "Our verdict")]/following-sibling::p[not(preceding-sibling::h2 or contains(., "Read next"))]//text()').string(multiple=True)
+        excerpt = prod.xpath('.//div[contains(., "Our verdict")]/following-sibling::p[preceding-sibling::h2 and not(contains(., "Read next:") or contains(., "Related:") or contains(., "Tested by"))]//text()').string(multiple=True)
+        if excerpt and conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+            review.add_property(type='conclusion', value=conclusion)
+
+        if not excerpt:
+            excerpt = conclusion
+
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
