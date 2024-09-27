@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import simplejson
 
 
 def run(context, session):
@@ -32,16 +33,27 @@ def process_review(data, context, session):
     review.url = product.url
     review.ssid = product.ssid
 
+    rev_info_json = data.xpath('//script[contains(., "datePublished")]/text()').string()
+    if rev_info_json:
+        rev_info_json = simplejson.loads(rev_info_json)
+
     date = data.xpath('//meta[contains(@property, "published_time")]/@content').string()
+    if not date and rev_info_json:
+        date = rev_info_json.get('datePublished')
+
     if date:
         review.date = date.split('T')[0]
 
     author = data.xpath('//a[contains(@href, ",autor,")]/text()').string()
+    if not author and rev_info_json:
+        author = rev_info_json.get('author', [{}])[0].get('name')
+
     if author:
         review.authors.append(Person(name=author, ssid=author))
 
     excerpt = data.xpath('//div[@class="VXd-"]/p//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

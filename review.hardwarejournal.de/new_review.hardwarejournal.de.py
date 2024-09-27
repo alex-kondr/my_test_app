@@ -5,10 +5,13 @@ import simplejson
 
 def run(context, session):
     session.queue(Request('https://www.hardwarejournal.de/', use='curl'), process_frontpage, dict())
+    session.queue(Request('https://www.hardwarejournal.de/kat/software/', use='curl'), process_revlist, dict(cat='Software & Apps'))
+    session.queue(Request('https://www.hardwarejournal.de/kat/wissen/', use='curl'), process_revlist, dict(cat='PC-Ratgeber|Tipps & Wissen'))
+    session.queue(Request('https://www.hardwarejournal.de/kat/news/', use='curl'), process_revlist, dict(cat='IT-News & Nachrichten'))
 
 
 def process_frontpage(data, context, session):
-    cats = data.xpath('//ul[@class="sub-menu"]/li/a')
+    cats = data.xpath('//ul[@class="sub-menu"]/li/a[@class="menu-link"]')
     for cat in cats:
         name = cat.xpath('span[@class="menu-text"]/text()').string()
         url = cat.xpath('@href').string()
@@ -19,9 +22,8 @@ def process_revlist(data, context, session):
     revs = data.xpath('//div[contains(@class, "post-content")]')
     for rev in revs:
         title = rev.xpath('.//a[@rel="bookmark"]/text()').string()
-        summary = rev.xpath('.//p/text()').string()
         url = rev.xpath('.//a[@rel="bookmark"]/@href').string()
-        session.queue(Request(url, use='curl'), process_review, dict(context, title=title, summary=summary, url=url))
+        session.queue(Request(url, use='curl'), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -46,10 +48,6 @@ def process_review(data, context, session):
     if rev_json:
         rev_json = simplejson.loads(rev_json)[-1]
 
-        cats = rev_json.get('keywords')
-        if cats:
-            product.category += '|' + cats.replace(', ', '|').strip('|')
-
         date = rev_json.get('datePublished')
         if date:
             review.date = date.split('T')[0]
@@ -58,7 +56,10 @@ def process_review(data, context, session):
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-    summary = context.get('summary')
+    summary = data.xpath('//p[span[contains(@id, "more")]]/preceding-sibling::p//text()').string(multiple=True)
+    if not summary:
+        summary = data.xpath('//div[contains(@class, "entry-content")]/p[1]//text()').string(multiple=True)
+
     if summary:
         review.add_property(type='summary', value=summary)
 

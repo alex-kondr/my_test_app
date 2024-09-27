@@ -11,7 +11,7 @@ def process_revlist(data, context, session):
     revs = data.xpath('//div[@class="flex flex-col justify-center text-start space-y-1"]')
     for rev in revs:
         title = rev.xpath('a/text()').string()
-        cat = rev.xpath('.//a[@class="hover:underline text-red-500"]/text()').string()
+        cat = rev.xpath('.//a[@class="hover:underline text-red-500" and not(contains(., "Macbook"))]/text()').string()
         url = rev.xpath('a/@href').string()
         session.queue(Request(url, use='curl'), process_review, dict(title=title, cat=cat, url=url))
 
@@ -22,12 +22,14 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split('|')[0].split("– Recensione")[0].split("Recensione ")[-1].split("Test ")[-1].split(',')[0].strip()
+    product.name = context['title'].split('|')[0].split("– Recensione")[0].split("Recensione ")[-1].split("Test ")[-1].strip()
     product.ssid = context['url'].split('/')[-1].replace('-test-recensione', '').replace('-recensione', '')
+    product.category = 'Tech'
 
-    product.category = context['cat'].replace('Review', '').replace('Recensione', '').replace('RECENSIONE', '').replace('recensione', '').strip()
-    if len(product.category) < 2:
-        product.category = 'Tech'
+    if context['cat']:
+        category = context['cat'].replace('Review', '').replace('Recensione', '').replace('RECENSIONE', '').replace('recensione', '').strip()
+        if len(category) > 2:
+            product.category = category
 
     product.url = data.xpath('//a[@class="shortcode_button primary"]/@href').string()
     if not product.url:
