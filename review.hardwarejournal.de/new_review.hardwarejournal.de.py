@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.queue(Request('https://www.hardwarejournal.de/'), process_frontpage, dict())
+    session.queue(Request('https://www.hardwarejournal.de/', force_charset="utf-8"), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -12,7 +12,7 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('span[@class="menu-text"]/text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url), process_revlist, dict(cat=name))
+        session.queue(Request(url, force_charset="utf-8"), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
@@ -20,11 +20,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('.//a[@rel="bookmark"]/text()').string()
         url = rev.xpath('.//a[@rel="bookmark"]/@href').string()
-        session.queue(Request(url), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url, force_charset="utf-8"), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_revlist, dict(context))
+        session.queue(Request(next_url, force_charset="utf-8"), process_revlist, dict(context))
 
 
 def process_review(data, context, session):

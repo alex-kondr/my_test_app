@@ -18,7 +18,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     prods = data.xpath('//div[@class="mt-8" and div[contains(@class, "flex my-3")]]')
-    if prods:
+    if prods and len(prods) > 1:
         process_reviews(data, context, session)
         return
 
@@ -60,6 +60,10 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('count(//div[div[contains(@id, "rating")] and contains(., "Our rating")]//use[contains(@href, "#star-solid")])')
     grade_overall_half = data.xpath('count(//div[div[contains(@id, "rating")] and contains(., "Our rating")]//use[contains(@href, "#star-sharp-half-stroke")])')
+    if not grade_overall:
+        grade_overall = data.xpath('count((//div[contains(@id, "star-rating")])[1]/div[contains(@class, "bg-icon-star-solid")])')
+        grade_overall_half = data.xpath('count((//div[contains(@id, "star-rating")])[1]/div[contains(@class, "bg-icon-star-half-stroke")])')
+
     if grade_overall:
         if grade_overall_half:
             grade_overall += grade_overall_half / 2
@@ -73,13 +77,14 @@ def process_review(data, context, session):
 
     grades = data.xpath('//div[div[contains(@id, "rating")] and not(contains(., "Our rating"))]')
     for grade in grades:
-        grade_name = grade.xpath('div[contains(@class, "font-bold")]/text()').string().strip(' :')
+        grade_name = grade.xpath('div[contains(@class, "font-bold")]/text()').string()
         grade_val = grade.xpath('count(.//use[contains(@href, "#star-solid")])')
         grade_val_half = grade.xpath('count(.//use[contains(@href, "#star-sharp-half-stroke")])')
         if grade_val_half:
             grade_val += grade_val_half / 2
 
         if grade_name and grade_val:
+            grade_name = grade_name.strip(' :')
             review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
 
     if not grades:
@@ -106,6 +111,8 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[contains(., "Our verdict") or contains(., "Our final verdict")]/following-sibling::p[not(contains(., "rating:"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@class="h4" and contains(., "Our verdict")]/following-sibling::p[not(preceding-sibling::h2 or contains(., "Read next"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('(//div[@class="mt-8" and contains(., "Our verdict")]/following-sibling::div/div[@class="prose"])[1]/p//text()').string(multiple=True)
 

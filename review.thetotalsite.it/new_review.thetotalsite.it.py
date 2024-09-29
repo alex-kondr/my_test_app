@@ -58,6 +58,12 @@ def process_review(data, context, session):
         grade_overall = grade_overall.split(':')[-1].split('/')[0].strip()
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
+    if not grade_overall:
+        grade_overall = data.xpath('//div[regexp:test(normalize-space(.), "\d+ ?%$") and contains(., "Globale")]//text()').string()
+        if grade_overall:
+            grade_overall = float(grade_overall.split(':')[-1].replace('%', '').strip()) / 10
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+
     grades = data.xpath('//p[regexp:test(normalize-space(.), "\d+\.?\d? ?/ ?\d+") and not(contains(., "Globale"))]')
     for grade in grades:
         grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).split(':')
@@ -100,7 +106,7 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//p[contains(., "Conclusione")]/following-sibling::p[not(@class or @id or @align or regexp:test(normalize-space(.), "\d+\.?\d?\s?/\s?\d+") or regexp:test(normalize-space(text()), "^\+|^–|^-") or contains(., "Pro e contro"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//p[contains(., "Conclusione")]/following-sibling::p[not(@class or @id or @align or regexp:test(normalize-space(.), "\d+\.?\d?\s?/\s?\d+") or regexp:test(normalize-space(.), "^\+|^–|^-") or contains(., "Pro e contro"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
