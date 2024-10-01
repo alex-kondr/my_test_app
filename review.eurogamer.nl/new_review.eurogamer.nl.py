@@ -23,9 +23,9 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' review')[0]
+    product.name = context['title'].split(' review')[0].split(' Review – ')[0].split(' Review - ')[0].replace(' Review', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-1]
+    product.ssid = product.url.split('/')[-1].replace('-reviews', '').replace('-review', '')
     product.category = "Games"
 
     review = Review()
@@ -44,9 +44,15 @@ def process_review(data, context, session):
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
 
-    grade_overall = data.xpath('//div[@class="review_rating"]/@data-value').string()
+    grade_overall = data.xpath('//span[@class="review_rating_value"]/text()').string()
     if grade_overall:
-        review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
+        grade_overall_max = data.xpath('//span[@class="review_rating_max_value"]/text()').string()
+        review.grades.append(Grade(type="overall", value=float(grade_overall), best=float(grade_overall_max)))
+
+    if not grade_overall:
+        grade_overall = data.xpath('//div[@class="review_rating"]/@data-value').string()
+        if grade_overall:
+            review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
 
     summary = data.xpath('//p[@class="strapline"]//text()').string(multiple=True)
     if summary:

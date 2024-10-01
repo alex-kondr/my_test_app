@@ -32,39 +32,32 @@ def process_catlist(data, context, session):
                         sub_name1 = sub_cat1.xpath("text()").string()
                         url = sub_cat1.xpath("@href").string()
                         if url:
-                            session.queue(Request(url+'?pageNumber=1&orderBy=5', use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_prodlist, dict(cat=sub_name + '|' + sub_name1))
+                            url = url.replace('https://www.andertons.co.uk/browse/', 'https://ac.cnstrc.com/browse/group_id/browse/') + '?key=key_A2YIqKz8zkXkA26G&page=1&num_results_per_page=96'
+                            session.queue(Request(url), process_prodlist, dict(cat=sub_name + '|' + sub_name1, prods_url=url))
                 elif url:
-                    session.queue(Request(url+'?pageNumber=1&orderBy=5', use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_prodlist, dict(cat=sub_name))
+                    url = url.replace('https://www.andertons.co.uk/browse/', 'https://ac.cnstrc.com/browse/group_id/browse/') + '?key=key_A2YIqKz8zkXkA26G&page=1&num_results_per_page=96'
+                    session.queue(Request(url), process_prodlist, dict(cat=sub_name, prods_url=url))
 
 
 def process_prodlist(data, context, session):
-    prods_json = data.xpath('//script[contains(., "JSON.pars")]/text()').string()
+    prods_json = simplejson.loads(data.content)
     if prods_json:
-        prods_json = simplejson.loads(prods_json.split('JSON.parse("')[-1].split('");')[0].replace('\\"', '"'))
- 
- 
-    prods = data.xpath('//div[@class="c-product-grid"]//div[@class="o-tile"]')
-    for prod in prods:
-        name = prod.xpath('.//div[contains(@class, "o-tile__row o-tile__title")]/h4/text()').string()
-        url = prod.xpath('.//a[@class="o-tile__link"]/@href').string()
 
-        revs = prod.xpath('.//div[@class="o-tile__row o-tile__reviews"]')
-        if revs:
-            session.queue(Request(url), process_product, dict(context, name=name, url=url))
-        else:
-            return
+        prods = prods_json.get('response', {}).get('results', [])
+        for prod in prods:
+            name = prod.get('value')
+            url = 'https://www.andertons.co.uk' + prod.get('data', {}).get('url')
 
-    prods_cnt = data.xpath('//div[@class="flex-groww"]/p/text()').string()
-    if not prods_cnt:
-        return
+            revs_cnt = prod.get('data', {}).get('reviewCount')
+            if revs_cnt and int(revs_cnt) > 0:
+                session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
-    prods_cnt = int(prods_cnt.split(' - ')[1].split(' of ')[1])
-    offset = context.get('offset', 0) + 48
-    if offset < prods_cnt:
-        curent_page = context.get('page', 1)
-        next_page = curent_page + 1
-        next_url = data.response_url.replace('?pageNumber=' + str(curent_page), '?pageNumber=' + str(next_page))
-        session.queue(Request(next_url, use='curl', options="-H 'Cookie: userPageSizePreference=48'"), process_prodlist, dict(context, offset=offset, page=next_page))
+        prods_cnt = prods_json.get('response', {}).get('total_num_results', 0)
+        offset = context.get('offset', 0) + 96
+        if offset < prods_cnt:
+            page = context.get('page', 1)
+            next_url = context.get('prods_url').replace('&page=' + str(page), '&page=' + str(page+1))
+            session.queue(Request(next_url), process_prodlist, dict(context, offset=offset, page=page+1))
 
 
 def process_product(data, context, session):
@@ -79,12 +72,20 @@ def process_product(data, context, session):
         mpn = mpn.replace('SKU:', '').strip()
         product.add_property(type='id.manufacturer', value=mpn)
 
-    revs = data.xpath('//div[@class="o-customer-review"]')
+        revs_url = 'https://api.feefo.com/api/10/reviews/product?page=1&page_size=5&since_period=ALL&full_thread=include&unanswered_feedback=include&source=on_page_product_integration&sort=-updated_date&feefo_parameters=include&media=include&merchant_identifier=andertons-music&origin=www.andertons.co.uk&product_sku={mpn}&translate_attributes=exclude%20%20%20%20&empty_reviews=true'.format(mpn=mpn)
+        session.queue(Request(revs_url), process_reviews, dict(product=product))
+
+
+def process_reviews(data, context, session):
+    product = context['product']
+
+    revs = simplejson.loads(data.context).get('reviews', [])
     for rev in revs:
         review = Review()
-        review.url = product.url
         review.type = 'user'
-        review.date = rev.xpath('.//span[@class="o-customer-review__date"]/text()').string()
+        review.url = product.url
+        review.ssid = rev.get('products', [{}])[0].get('id')
+        review.date = rev.get('products', [{}])[0].get('created_at')
 
         author = rev.xpath('.//p[@class="o-customer-review__name"]/span/text()').string()
         if author:
@@ -106,8 +107,6 @@ def process_product(data, context, session):
         excerpt = rev.xpath('text()').string()
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
-
-            review.ssid = review.digest() if author else review.digest(excerpt)
 
             product.reviews.append(review)
 

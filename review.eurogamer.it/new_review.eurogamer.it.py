@@ -4,7 +4,7 @@ from models.products import *
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=8000)]
+    session.sessionbreakers = [SessionBreak(max_requests=9000)]
     session.queue(Request('https://www.eurogamer.it/reviews'), process_revlist, dict())
 
 
@@ -23,7 +23,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(': ')[0].split('Recensione')[0]
+    product.name = context['title'].split(': ')[0].split('Recensione')[0].split(' - ')[0].replace(' recensione', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
     product.category = "Games"
