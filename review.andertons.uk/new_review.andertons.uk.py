@@ -4,6 +4,7 @@ import simplejson
 
 
 XCAT = ["Offers", "Brands"]
+KEY = 'key_A2YIqKz8zkXkA26G'
 
 
 def run(context, session):
@@ -31,11 +32,12 @@ def process_catlist(data, context, session):
                     for sub_cat1 in sub_cats1:
                         sub_name1 = sub_cat1.xpath("text()").string()
                         url = sub_cat1.xpath("@href").string()
-                        if url:
-                            url = url.replace('https://www.andertons.co.uk/browse/', 'https://ac.cnstrc.com/browse/group_id/browse/') + '?key=key_A2YIqKz8zkXkA26G&page=1&num_results_per_page=96'
+                        if url and '/browse/' in url:
+                            url = url[:-1].replace('https://www.andertons.co.uk/browse/', 'https://ac.cnstrc.com/browse/group_id/browse/') + '?key={key}&page=1&num_results_per_page=96'.format(key=KEY)
                             session.queue(Request(url), process_prodlist, dict(cat=sub_name + '|' + sub_name1, prods_url=url))
-                elif url:
-                    url = url.replace('https://www.andertons.co.uk/browse/', 'https://ac.cnstrc.com/browse/group_id/browse/') + '?key=key_A2YIqKz8zkXkA26G&page=1&num_results_per_page=96'
+
+                elif url and '/browse/' in url:
+                    url = url[:-1].replace('https://www.andertons.co.uk/browse/', 'https://ac.cnstrc.com/browse/group_id/browse/') + '?key={key}&page=1&num_results_per_page=96'.format(key=KEY)
                     session.queue(Request(url), process_prodlist, dict(cat=sub_name, prods_url=url))
 
 
@@ -45,12 +47,21 @@ def process_prodlist(data, context, session):
 
         prods = prods_json.get('response', {}).get('results', [])
         for prod in prods:
-            name = prod.get('value')
-            url = 'https://www.andertons.co.uk' + prod.get('data', {}).get('url')
+            product = Product()
+            product.name = prod.get('value')
+            product.url = 'https://www.andertons.co.uk' + prod.get('data', {}).get('url')
+            product.ssid = prod.get('data', {}).get('url').replace('/', '')
+            product.category = context['cat']
+            product.manufacturer = prod.get('data', {}).get('brand')
+            product.sku = prod.get('data', {}).get('productId')
 
+            mpn = prod.get('data', {}).get('id')
             revs_cnt = prod.get('data', {}).get('reviewCount')
-            if revs_cnt and int(revs_cnt) > 0:
-                session.queue(Request(url), process_product, dict(context, name=name, url=url))
+            if mpn and revs_cnt and int(revs_cnt) > 0:
+                product.add_property(type='id.manufacturer', value=mpn)
+
+                revs_url = 'https://api.feefo.com/api/10/reviews/product?page=1&page_size=100&since_period=ALL&full_thread=include&unanswered_feedback=include&source=on_page_product_integration&sort=-updated_date&feefo_parameters=include&media=include&merchant_identifier=andertons-music&origin=www.andertons.co.uk&product_sku={mpn}&translate_attributes=exclude%20%20%20%20&empty_reviews=true'.format(mpn=mpn)
+                session.do(Request(revs_url), process_reviews, dict(product=product, mpn=mpn))
 
         prods_cnt = prods_json.get('response', {}).get('total_num_results', 0)
         offset = context.get('offset', 0) + 96
@@ -60,57 +71,48 @@ def process_prodlist(data, context, session):
             session.queue(Request(next_url), process_prodlist, dict(context, offset=offset, page=page+1))
 
 
-def process_product(data, context, session):
-    product = Product()
-    product.name = context['name']
-    product.url = context['url']
-    product.category = context['cat']
-    product.ssid = product.url.split('/')[-1]
-
-    mpn = data.xpath('//p[@class="o-part-number" and contains(text(), "SKU:")]/text()').string()
-    if mpn:
-        mpn = mpn.replace('SKU:', '').strip()
-        product.add_property(type='id.manufacturer', value=mpn)
-
-        revs_url = 'https://api.feefo.com/api/10/reviews/product?page=1&page_size=5&since_period=ALL&full_thread=include&unanswered_feedback=include&source=on_page_product_integration&sort=-updated_date&feefo_parameters=include&media=include&merchant_identifier=andertons-music&origin=www.andertons.co.uk&product_sku={mpn}&translate_attributes=exclude%20%20%20%20&empty_reviews=true'.format(mpn=mpn)
-        session.queue(Request(revs_url), process_reviews, dict(product=product))
-
-
 def process_reviews(data, context, session):
     product = context['product']
 
-    revs = simplejson.loads(data.context).get('reviews', [])
+    data_json = simplejson.loads(data.content)
+    revs = data_json.get('reviews', [])
     for rev in revs:
         review = Review()
         review.type = 'user'
         review.url = product.url
         review.ssid = rev.get('products', [{}])[0].get('id')
-        review.date = rev.get('products', [{}])[0].get('created_at')
 
-        author = rev.xpath('.//p[@class="o-customer-review__name"]/span/text()').string()
+        date = rev.get('products', [{}])[0].get('created_at')
+        if date:
+            review.date = date.split('T')[0]
+
+        author = rev.get('customer', {}).get('display_name')
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = rev.xpath('.//div[@class="o-review-stars"]/@title').string()
+        grade_overall = rev.get('products', [{}])[0].get('rating')
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        grades = rev.xpath('.//p[@class="o-customer-review__rating"]/span')
-        if grades:
-            for grade in grades:
-                name_value = grade.xpath("text()").string()
-                if name_value:
-                   name = name_value.split(" ")[0]
-                   value = float(name_value.split(" ")[1])
-                   review.grades.append(Grade(name=name, value=value, best=5.0))
+        grades = rev.get('products', [{}])[0].get('attributes')
+        for grade in grades:
+            grade_name = grade.get('name')
+            grade_val = grade.get('rating')
+            if grade_name and grade_val:
+                review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
 
-        excerpt = rev.xpath('text()').string()
+        excerpt = rev.get('products', [{}])[0].get('review')
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
 
-    if product.reviews:
-        session.emit(product)
+    revs_cnt = data_json.get('summary', {}).get('meta', {}).get('count', 0)
+    offset = context.get('offset', 0) + 100
+    if offset < revs_cnt:
+        mpn = context['mpn']
+        next_url = 'https://api.feefo.com/api/10/reviews/product?page=1&page_size=100&since_period=ALL&full_thread=include&unanswered_feedback=include&source=on_page_product_integration&sort=-updated_date&feefo_parameters=include&media=include&merchant_identifier=andertons-music&origin=www.andertons.co.uk&product_sku={mpn}&translate_attributes=exclude%20%20%20%20&empty_reviews=true'.format(mpn=mpn)
+        session.do(Request(next_url), process_reviews, dict(product=product, mpn=mpn, offset=offset))
 
-    # no next page, all revs loaded on prod's page
+    elif product.reviews:
+        session.emit(product)

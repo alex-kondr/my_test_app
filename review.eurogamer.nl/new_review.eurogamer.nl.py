@@ -23,7 +23,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' review')[0].split(' Review – ')[0].split(' Review - ')[0].replace(' Review', '').strip()
+    product.name = context['title'].split(' review')[0].split(' Review – ')[0].split(' Review - ')[0].replace(' Review', '').replace(' filmreview', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('-reviews', '').replace('-review', '')
     product.category = "Games"
@@ -107,4 +107,5 @@ def process_review_next(data, context, session):
 
         product = context['product']
         product.reviews.append(review)
+
         session.emit(product)
