@@ -110,9 +110,11 @@ def process_reviews(data, context, session):
 
         excerpt = rev.get('products', [{}])[0].get('review')
         if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = excerpt.replace(u'\ud83d', '').replace(u'\ude0d', '').replace(u'\udc4d', '').strip(' +-.,')
+            if len(excerpt) > 1:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     revs_cnt = data_json.get('summary', {}).get('meta', {}).get('count', 0)
     offset = context.get('offset', 0) + 100
