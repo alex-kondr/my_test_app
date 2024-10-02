@@ -28,9 +28,9 @@ def process_review(data, context, session):
     product.category = "Games"
 
     if '- recensione' in context['title'] or ' - review' in context['title']:
-        product.name = context['title'].split('- recensione')[0].split('Recensione')[0].split(' - ')[0].replace(' Rrecensione', '').replace('- recensione', '').replace(' recensione', '').replace('- review', '').strip()
+        product.name = context['title'].split('- recensione')[0].split('Recensione')[0].split(' - ')[0].split(': testati')[0].replace(' Rrecensione', '').replace('- recensione', '').replace(' recensione', '').replace('- review', '').strip()
     else:
-        product.name = context['title'].split(': ')[0].split('Recensione')[0].split(' - ')[0].replace(' Rrecensione', '').replace('- recensione', '').replace(' recensione', '').replace('- review', '').strip()
+        product.name = context['title'].split(': ')[0].split('Recensione')[0].split(' - ')[0].split(': testati')[0].replace(' Rrecensione', '').replace('- recensione', '').replace(' recensione', '').replace('- review', '').strip()
 
     review = Review()
     review.type = 'pro'

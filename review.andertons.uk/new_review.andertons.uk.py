@@ -53,7 +53,10 @@ def process_prodlist(data, context, session):
             product.ssid = prod.get('data', {}).get('url').replace('/', '')
             product.category = context['cat']
             product.manufacturer = prod.get('data', {}).get('brand')
-            product.sku = prod.get('data', {}).get('productId')
+
+            sku = prod.get('data', {}).get('productId')
+            if sku:
+                product.sku = str(sku)
 
             mpn = prod.get('data', {}).get('id')
             revs_cnt = prod.get('data', {}).get('reviewCount')
@@ -90,16 +93,20 @@ def process_reviews(data, context, session):
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = rev.get('products', [{}])[0].get('rating')
+        grade_overall = rev.get('products', [{}])[0].get('rating', {}).get('rating')
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        grades = rev.get('products', [{}])[0].get('attributes')
+        grades = rev.get('products', [{}])[0].get('attributes', [])
         for grade in grades:
             grade_name = grade.get('name')
             grade_val = grade.get('rating')
             if grade_name and grade_val:
                 review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
+
+        hlp_yes = rev.get('products', [{}])[0].get('helpful_votes')
+        if hlp_yes and int(hlp_yes) > 0:
+            review.add_property(type='helpful_votes', value=int(hlp_yes))
 
         excerpt = rev.get('products', [{}])[0].get('review')
         if excerpt:
