@@ -11,39 +11,39 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.eurogamer.it",
+    name="review.sirshanksalot.com",
     )
-agent.create_run(
-    name_agent_for_test="Eurogamer [IT]",
-    agent_id="17747",
-    url="https://www.eurogamer.it/reviews",
-    next_func=ProcessRun.revlist.name,
-    new_parser=True,
-    breakers=8000,
-    curl=False
-)
+# agent.create_run(
+#     name_agent_for_test="SirShanksAlot",
+#     agent_id="12676",
+#     url="https://sirshanksalot.com/",
+#     next_func=ProcessRun.frontpage.name,
+#     new_parser=True,
+#     breakers=False,
+#     curl=False
+# )
 # agent.create_frontpage(
-#     cats_xpath='(//ul[@class="flex flex-col"])[1]//a',
-#     name_xpath='text()',
+#     cats_xpath='//div[@id="primary-menu"]/ul/li',
+#     name_xpath='a/text()',
 #     url_xpath='@href'
 # )
-# agent.create_revlist(
-#     revs_xpath='//h2[@class="post-title entry-title"]/a',
-#     name_title="title",
-#     name_title_xpath='text()',
-#     url_xpath='@href',
-#     prod_rev="review",
-#     next_url_xpath='',
-# )
-# agent.create_review(
-#     date_xpath='//meta[@property="article:published_time"]/@content',
-#     author_xpath='//div[@class="post-inner group"]//a[@rel="author"]/text()',
-#     author_url_xpath='//div[@class="post-inner group"]//a[@rel="author"]/@href',
-#     grade_overall_xpath='//div[regexp:test(normalize-space(.), "\d+\.?\d? ?/ ?\d+$") and contains(., "Globale")]//text()',
-#     pros_xpath='//div[not(@class or @id) and contains(., "Pro e contro")]/following-sibling::div[not(@class or @id) and regexp:test(normalize-space(.), "^\+")]',
-#     cons_xpath='//div[not(@class or @id) and contains(., "Pro e contro")]/following-sibling::div[not(@class or @id) and regexp:test(normalize-space(.), "^–")]',
-#     summary_xpath='//div[@align="center"]//font[@size="3"]//text()',
-#     conclusion_xpath='',
-#     excerpt_with_concl_xpath='',
-#     excerpt_xpath='//div[not(@class or @id or @align or regexp:test(normalize-space(.), "\d+\.?\d? ?/ ?\d+$"))]/span[@style="color: black"]//text()'
-# )
+agent.create_revlist(
+    revs_xpath='//h2[contains(@class, "gb-headline-text")]/a',
+    name_title="title",
+    name_title_xpath='text()',
+    url_xpath='@href',
+    prod_rev="review",
+    next_url_xpath='//link[@rel="next"]/@href',
+)
+agent.create_review(
+    date_xpath='//meta[@property="article:published_time"]/@content',
+    author_xpath='//a[contains(@href, "/author/")]/text()',
+    author_url_xpath='//a[contains(@href, "/author/")]/@href',
+    grade_overall_xpath='',
+    pros_xpath='',
+    cons_xpath='',
+    summary_xpath='',
+    conclusion_xpath='',
+    excerpt_with_concl_xpath='',
+    excerpt_xpath='//div[@itemprop="text"]/p//text()'
+)
