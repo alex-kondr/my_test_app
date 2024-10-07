@@ -33,17 +33,16 @@ def process_reviews(data, context, session):
     revs = data.xpath('//div[contains(@class, "paragraph-wrapper") and .//span[regexp:test(., "Platz \d+")]]')
     for i, rev in enumerate(revs):
         name = rev.xpath('.//h3[contains(@class, "chakra-heading")]/text()').string()
-        
-        print('name=', name)
-
         if not name:
-            return
-        
+            continue
+
         name = "'{name}'".format(name=name) if '"' in name else '"{name}"'.format(name=name)
         prod_info = data.xpath('''//div[contains(@class, "chakra-stack") and .//div[@class="css-0" and (regexp:test(., {name}, "i") or contains(., {name}))]]'''.format(name=name)).first()
+        if not prod_info:
+            continue
 
         product = Product()
-        product.name = name
+        product.name = name.strip(' \'"')
         product.url = prod_info.xpath('.//a[contains(@class, "chakra-link")]/@href').string()
         product.ssid = product.name.lower().replace(' ', '-').replace('(', '-').replace(')', '-').strip(' -')
         product.category = context['cat']
@@ -106,6 +105,8 @@ def process_reviews(data, context, session):
             review.add_property(type='summary', value=summary)
 
         excerpt = rev.xpath('preceding-sibling::div[contains(@class, "paragraph-wrapper") and count(preceding-sibling::div[regexp:test(., "Platz \d+")])={i} and not(.//img)]//p//text()'.format(i=i)).string(multiple=True)
+        print('excerpt=', 'preceding-sibling::div[contains(@class, "paragraph-wrapper") and count(preceding-sibling::div[regexp:test(., "Platz \d+")])={i} and not(.//img)]//p//text()'.format(i=i))
+        
         if excerpt:
             strings = []
             if 'Fazit:' in excerpt:
@@ -114,9 +115,9 @@ def process_reviews(data, context, session):
                 strings = excerpt.split('Fazit :')
 
             if strings:
-                excerpt = strings[0].strip()
+                excerpt = strings[0].strip(' .')
 
-                conclusion = ' '.join(strings[1:]).strip()
+                conclusion = ' '.join(strings[1:]).strip(' .')
                 review.add_property(type='conclusion', value=conclusion)
 
             review.add_property(type='excerpt', value=excerpt)
