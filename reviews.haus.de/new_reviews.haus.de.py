@@ -22,7 +22,7 @@ def process_revlist(data, context, session):
     revs = data.xpath('//a[contains(@class, "teaserbox")]')
     for rev in revs:
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_reviews, dict(context, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_reviews, dict(context, url=url))
 
     next_url = data.xpath('//a[@rel="follow" and not(text())]/@href[contains(., "?page=")]').string()
     if next_url:
@@ -31,15 +31,19 @@ def process_revlist(data, context, session):
 
 def process_reviews(data, context, session):
     revs = data.xpath('//div[contains(@class, "paragraph-wrapper") and .//span[regexp:test(., "Platz \d+")]]')
-    for i, rev in enumerate(revs, start=1):
-        prod_numb = rev.xpath('.//span[regexp:test(., "Platz \d+")]/text()').string()
-        prod_info = data.xpath('(//div[contains(@class, "chakra-stack") and contains(., "{prod_numb}")])[1]'.format(prod_numb=prod_numb)).first()
+    for i, rev in enumerate(revs):
+        name = rev.xpath('.//h3[contains(@class, "chakra-heading")]/text()').string()
+        
+        print('name=', name)
 
-        if not prod_info:
+        if not name:
             return
+        
+        name = "'{name}'".format(name=name) if '"' in name else '"{name}"'.format(name=name)
+        prod_info = data.xpath('''//div[contains(@class, "chakra-stack") and .//div[@class="css-0" and (regexp:test(., {name}, "i") or contains(., {name}))]]'''.format(name=name)).first()
 
         product = Product()
-        product.name = prod_info.xpath('.//div[@class="css-0"]/text()').string()
+        product.name = name
         product.url = prod_info.xpath('.//a[contains(@class, "chakra-link")]/@href').string()
         product.ssid = product.name.lower().replace(' ', '-').replace('(', '-').replace(')', '-').strip(' -')
         product.category = context['cat']
@@ -101,7 +105,7 @@ def process_reviews(data, context, session):
         if summary:
             review.add_property(type='summary', value=summary)
 
-        excerpt = rev.xpath('preceding-sibling::div[contains(@class, "paragraph-wrapper") and count(following-sibling::div[regexp:test(., "Platz \d+")])={i}]//p//text()'.format(i=i)).string(multiple=True)
+        excerpt = rev.xpath('preceding-sibling::div[contains(@class, "paragraph-wrapper") and count(preceding-sibling::div[regexp:test(., "Platz \d+")])={i} and not(.//img)]//p//text()'.format(i=i)).string(multiple=True)
         if excerpt:
             strings = []
             if 'Fazit:' in excerpt:
