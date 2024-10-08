@@ -30,7 +30,7 @@ def process_revlist(data, context, session):
 
 
 def process_reviews(data, context, session):
-    revs = data.xpath('//div[contains(@class, "paragraph-wrapper") and .//span[regexp:test(., "Platz \d+")]]')
+    revs = data.xpath('//div[contains(@class, "paragraph-wrapper") and .//span[regexp:test(., "Platz \d+")] and following-sibling::div//p]')
     for i, rev in enumerate(revs):
         name = rev.xpath('.//h3[contains(@class, "chakra-heading")]/text()').string()
         if not name:
@@ -104,9 +104,7 @@ def process_reviews(data, context, session):
         if summary:
             review.add_property(type='summary', value=summary)
 
-        excerpt = rev.xpath('preceding-sibling::div[contains(@class, "paragraph-wrapper") and count(preceding-sibling::div[regexp:test(., "Platz \d+")])={i} and not(.//img)]//p//text()'.format(i=i)).string(multiple=True)
-        print('excerpt=', 'preceding-sibling::div[contains(@class, "paragraph-wrapper") and count(preceding-sibling::div[regexp:test(., "Platz \d+")])={i} and not(.//img)]//p//text()'.format(i=i))
-        
+        excerpt = rev.xpath('preceding-sibling::div[contains(@class, "paragraph-wrapper") and count(preceding-sibling::div[.//span[regexp:test(., "Platz \d+")]])={i} and not(.//img)]//p//text()'.format(i=i)).string(multiple=True)
         if excerpt:
             strings = []
             if 'Fazit:' in excerpt:
