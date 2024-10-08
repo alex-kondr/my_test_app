@@ -11,17 +11,17 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.obiwi.fr",
+    name="review.playfront.de",
     )
-# agent.create_run(
-#     name_agent_for_test="obiwi [FR]",
-#     agent_id="12943",
-#     url="https://obiwi.fr/",
-#     next_func=ProcessRun.frontpage.name,
-#     new_parser=False,
-#     breakers=False,
-#     curl=False
-# )
+agent.create_run(
+    name_agent_for_test="Playfront [DE]",
+    agent_id="16946",
+    url="https://playfront.de/category/reviews/",
+    next_func=ProcessRun.revlist.name,
+    new_parser=False,
+    breakers=False,
+    curl=False
+)
 # agent.create_frontpage(
 #     cats_xpath='//ul[@class="menu"]/li[div]/a',
 #     name_xpath='text()',
