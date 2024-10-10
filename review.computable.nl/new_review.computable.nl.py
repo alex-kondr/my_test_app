@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.computable.nl/'), process_frontpage, dict())
 
 
@@ -56,8 +56,11 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('(//div[@class="entry-content"]/p|//div[@class="entry-content"]/h5)//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="entry-content"]/p[not(@class)]//text()').string(multiple=True)
     if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
