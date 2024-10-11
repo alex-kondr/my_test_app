@@ -19,9 +19,9 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
-    revs = data.xpath('//div[contains(@class, "bodyPart")]/h3[regexp:test(., "\d+\.")]')
+    revs = data.xpath('//div[contains(@class, "bodyPart")]/h3[regexp:test(., "^\d+. ")]')
     if revs:
-        process_reviews(data, conotext, session)
+        process_reviews(data, context, session)
         return
 
     product = Product()
@@ -52,21 +52,33 @@ def process_review(data, context, session):
         grade_overall = grade_overall.split('/')[0]
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    pros = data.xpath('//div[contains(@class, "review-block-plus")]/div[@class="items"]/div')
-    if not pros:
-        pros = data.xpath('(//h4|//h3|//p)[contains(., "Plusy") or contains(., "Klady")]/following-sibling::ul[1]/li')
-
+    pros = data.xpath('(//h4|//h3|//p)[contains(., "Plusy") or contains(., "Klady") and contains(., "+")]/text()')
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
+        pro = pro.string().strip(' -+')
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[contains(@class, "review-block-minus")]/div[@class="items"]/div')
-    if not cons:
-        cons = data.xpath('(//h4|//h3|//p)[contains(., "Mínusy") or contains(., "Zápory")]/following-sibling::ul[1]/li')
+    if not pros:
+        pros = data.xpath('//div[contains(@class, "review-block-plus")]/div[@class="items"]/div')
+        if not pros:
+            pros = data.xpath('(//h4|//h3|//p)[contains(., "Plusy") or contains(., "Klady")]/following-sibling::ul[1]/li')
 
+        for pro in pros:
+            pro = pro.xpath('.//text()').string(multiple=True)
+            review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('(//h4|//h3|//p)[(contains(., "Mínusy") or contains(., "Zápory")) and contains(., "-")]/text()')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
+        con = con.string().strip(' -+')
         review.add_property(type='cons', value=con)
+
+    if not cons:
+        cons = data.xpath('//div[contains(@class, "review-block-minus")]/div[@class="items"]/div')
+        if not cons:
+            cons = data.xpath('(//h4|//h3|//p)[contains(., "Mínusy") or contains(., "Zápory")]/following-sibling::ul[1]/li')
+
+        for con in cons:
+            con = con.xpath('.//text()').string(multiple=True)
+            review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="article__perex"]/p//text()').string(multiple=True)
     if summary:
@@ -78,7 +90,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h2[contains(., "Závěr")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//h2|//h3)[contains(., "Závěr") or contains(., "Celkové hodnocení") or contains(., "Verdikt")]/preceding::div/p[not(@class or contains(., "technické parametry"))]//text()').string(multiple=True)
+        excerpt = data.xpath('(//h2|//h3)[contains(., "Závěr") or contains(., "Celkové hodnocení") or contains(., "Verdikt")]/preceding::p[not(@class or contains(., "technické parametry") or contains(., "Specifikace"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="article__body"]/p[not(contains(., "Specifikace"))]//text()').string(multiple=True)
     if not excerpt:
@@ -93,10 +105,10 @@ def process_review(data, context, session):
 
 
 def process_reviews(data, context, session):
-    revs = data.xpath('//div[contains(@class, "bodyPart")]/h3[regexp:test(., "\d+\.")]')
+    revs = data.xpath('//div[contains(@class, "bodyPart")]/h3[regexp:test(., "^\d+. ")]')
     for i, rev in enumerate(revs, start=1):
         product = Product()
-        product.name = rev.xpath('text()').split(' ', 1)[-1].strip()
+        product.name = rev.xpath('text()').string().split(' ', 1)[-1].strip()
         product.url = context['url']
         product.ssid = product.name.lower().replace(' ', '_')
 
@@ -127,7 +139,7 @@ def process_reviews(data, context, session):
         grade_overall = rev.xpath('following::table[count(preceding::h3[regexp:test(., "\d+\.")])={i} and .//font[regexp:test(., "\d+ ?%")] and not(.//font[regexp:test(., "\d+/\d+")])]//font[regexp:test(., "\d+ ?%")]/text()'.format(i=i)).string()
         if grade_overall:
             grade_overall = grade_overall.replace('%', '')
-            review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
         pros = rev.xpath('following::p[count(preceding::h3[regexp:test(., "\d+\.")])={i} and contains(., "Plusy")]/following-sibling::ul[1]/li'.format(i=i))
         for pro in pros:
