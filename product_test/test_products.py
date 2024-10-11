@@ -107,7 +107,7 @@ class Product:
 
     def save_file(self, file):
         with open(self.file_path, "w", encoding="utf-8") as fd:
-            json.dump(file, fd, indent=2)
+            json.dump(file, fd, indent=2, ensure_ascii=False)
 
 
 class TestProduct:
@@ -416,4 +416,4 @@ class TestProduct:
     def save(self, file: list, type_err: str) -> None:
         file_path = self.path / f"{self.agent_name}-{type_err}.json"
         with open(file_path, "w", encoding="utf-8") as fd:
-            json.dump(file, fd, indent=2)
+            json.dump(file, fd, indent=2, ensure_ascii=False)
