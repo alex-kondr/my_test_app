@@ -28,10 +28,10 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
 
     product = Product()
-    product.name = context['title'].replace(' im Test', '').replace(' Test', '').replace('im Check', '').replace('Details', '').replace('als Download', '').replace('-Download', '').replace('- Download', '').replace('Download', '').replace('im Vergleich', '').split(':')[0].split(' - ')[0].strip()
+    product.name = context['title'].replace('Praxistest:', '').replace('Im Test:', '').replace('im Praxistest', '').replace('im Praxis-Test', '').replace('im Nachtest', '').replace(' im Test', '').replace(' Test', '').replace('im Check', '').replace('Details', '').replace('als Download', '').replace('-Download', '').replace('- Download', '').replace('Download', '').replace('im Vergleich', '').split(' - ')[0].split(' – ')[0].strip()
     product.ssid = context['url'].split('-')[-1].replace('.html', '')
 
-    product.category = data.xpath('//div[@class="weka_award__category"]/text()').string()
+    product.category = data.xpath('//span[contains(@class, "Articlehead__subheadline")]/text()').string()
     if not product.category:
         product.category = 'Technik'
 
@@ -74,12 +74,18 @@ def process_review(data, context, session):
     pros = data.xpath('//div[contains(@class, "Rating--pro")]//li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
-        review.add_property(type='pros', value=pro)
+        if pro:
+            pro = pro.lstrip('+').strip(' -')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[contains(@class, "Rating--contra")]//li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
-        review.add_property(type='cons', value=con)
+        if con:
+            con = con.lstrip('+').strip(' -')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
 
     summary = data.xpath('//p[@class="wkArticlehead__intro"]//text()').string(multiple=True)
     if summary:
