@@ -31,7 +31,7 @@ def process_review(data, context, session):
     product.name = context['title'].replace(' Reviews', '').replace(' Review', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
-    product.category = context['cat']
+    product.category = context['cat'].replace('Reviews', '').strip()
 
     review = Review()
     review.type = 'pro'
