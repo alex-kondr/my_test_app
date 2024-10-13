@@ -28,7 +28,7 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
 
     product = Product()
-    product.name = context['title'].replace('Praxistest:', '').replace('Im Test:', '').replace('im Praxistest', '').replace('im Praxis-Test', '').replace('im Nachtest', '').replace(' im Test', '').replace(' Test', '').replace('im Check', '').replace('Details', '').replace('als Download', '').replace('-Download', '').replace('- Download', '').replace('Download', '').replace('im Vergleich', '').split(' - ')[0].split(' – ')[0].strip()
+    product.name = context['title'].replace('Praxistest:', '').replace('im Paxistest', '').replace('im Hands-on-Test', '').replace('im Connectivity-Test', '').replace('im Kurztest', '').replace('Im Test:', '').replace('im Praxistest', '').replace('im Praxis-Test', '').replace('im Lesertest', '').replace('PureView: Kamera', '').replace(': Kameras im Labor-Test', '').relace('im Kurz-Test', '').replace(': Kameras stest', '').replace('im Nachtest', '').replace(' im Test', '').replace(' Test', '').replace('im Check', '').replace('Details', '').replace('als Download', '').replace('-Download', '').replace('- Download', '').replace('Download', '').replace('im Vergleich', '').replae('-Test', '').split('im Kamera-Test:')[0].split(' - ')[0].split(' – ')[0].strip()
     product.ssid = context['url'].split('-')[-1].replace('.html', '')
 
     product.category = data.xpath('//span[contains(@class, "Articlehead__subheadline")]/text()').string()
