@@ -46,9 +46,9 @@ def process_review(data, context, session):
         product.manufacturer = manufacturer.strip(' :–')
 
     category = "Games|"
-    platforms = data.xpath('//li[strong[contains(., "Platforms")]]/text()').string()
+    platforms = data.xpath('//li[strong[contains(., "Platforms")]]//text()').string(multiple=True)
     if platforms:
-        platforms = platforms.replace(' and ', ', ').replace(' & ', ', ').replace('at launch', '').replace('coming in March', '').replace('|', '\\').replace('/', ', ').strip(' –:').split(', ')
+        platforms = platforms.replace('Platforms', '').replace(' and ', ', ').replace(' & ', ', ').replace('at launch', '').replace('coming in March', '').replace('|', '\\').replace('/', ', ').strip(' –:').split(', ')
         for platform in platforms:
             category += platform.strip(' ,') + '/'
 

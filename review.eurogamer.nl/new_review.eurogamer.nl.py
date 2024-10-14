@@ -58,7 +58,10 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//section[@class="synopsis"]//text()').string(multiple=True)
+    conclusion = data.xpath('//section[@class="conclusion"]/p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//section[@class="synopsis"]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
@@ -90,6 +93,10 @@ def process_review_next(data, context, session):
         title = review.title + " - Pagina " + str(page)
         url = data.xpath('//link[@rel="canonical"]/@href').string()
         review.add_property(type='pages', value=dict(title=title, url=url))
+
+        conclusion = data.xpath('//section[@class="conclusion"]/p//text()').string(multiple=True)
+        if conclusion:
+            review.add_property(type="conclusion", value=conclusion)
 
         excerpt = data.xpath('//section[not(@class)]/p[not(contains(., "Voor onze"))]//text()').string(multiple=True)
         if not excerpt:

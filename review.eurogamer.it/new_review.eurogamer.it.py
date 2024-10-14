@@ -42,11 +42,13 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//span[@class="author"]/a/text()').string()
+    author = data.xpath('//span[@class="author"]//text()').string(multiple=True)
     author_url = data.xpath('//span[@class="author"]/a/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//span[@class="review_rating_value"]/text()').string()
     if grade_overall:
@@ -62,7 +64,10 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//section[@class="synopsis"]//text()').string(multiple=True)
+    conclusion = data.xpath('//section[@class="conclusion"]/p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//section[@class="synopsis"]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
@@ -94,6 +99,10 @@ def process_review_next(data, context, session):
         title = review.title + " - Pagina " + str(page)
         url = data.xpath('//link[@rel="canonical"]/@href').string()
         review.add_property(type='pages', value=dict(title=title, url=url))
+
+        conclusion = data.xpath('//section[@class="conclusion"]/p//text()').string(multiple=True)
+        if conclusion:
+            review.add_property(type="conclusion", value=conclusion)
 
         excerpt = data.xpath('//section[not(@class)]/p[not(contains(., "Voor onze"))]//text()').string(multiple=True)
         if not excerpt:

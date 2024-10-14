@@ -55,7 +55,6 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.xpath('.//span[@class="rating-description"]//text()').string(multiple=True)
         if revs_cnt:
-            revs_cnt = revs_cnt.strip('( )')
             revs_url = 'https://www.bloomingdales.com/xapi/digital/v1/product/{}/reviews'.format(product.ssid)
             session.queue(Request(revs_url, use='curl', options=OPTIONS, force_charset="utf-8", max_age=0), process_reviews, dict(product=product))
 
@@ -92,8 +91,8 @@ def process_reviews(data, context, session):
         elif author_name:
             review.authors.append(Person(name=author_name, ssid=author_name))
 
-        verified_buyer = rev.get('moderationStatus')
-        if verified_buyer and verified_buyer == 'APPROVED':
+        badges = rev.get('badgesOrder', [])
+        if "verifiedPurchaser" in badges:
             review.add_property(type='is_verified_buyer', value=True)
 
         hlp_yes = rev.get('totalPositiveFeedbackCount')
