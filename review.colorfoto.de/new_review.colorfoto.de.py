@@ -28,10 +28,10 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
 
     product = Product()
-    product.name = context['title'].replace('Praxistest:', '').replace('im Paxistest', '').replace('im Hands-on-Test', '').replace('im Connectivity-Test', '').replace('im Kurztest', '').replace('Im Test:', '').replace('im Praxistest', '').replace('im Praxis-Test', '').replace('im Lesertest', '').replace('PureView: Kamera', '').replace(': Kameras im Labor-Test', '').replace('im Kurz-Test', '').replace(': Kameras stest', '').replace('im Nachtest', '').replace(' im Test', '').replace(' Test', '').replace('im Check', '').replace('Details', '').replace('als Download', '').replace('-Download', '').replace('- Download', '').replace('Download', '').replace('im Vergleich', '').replace('-Test', '').split('im Kamera-Test:')[0].split(' - ')[0].split(' – ')[0].strip()
+    product.name = context['title'].replace('Praxistest:', '').replace('Spieletest:', '').replace('im Paxistest', '').replace('im Hands-on-Test', '').replace('im Connectivity-Test', '').replace('im Kurztest', '').replace('Im Test:', '').replace('im Praxistest', '').replace('im Praxis-Test', '').replace('im Lesertest', '').replace('PureView: Kamera', '').replace(': Kameras im Labor-Test', '').replace('im Kurz-Test', '').replace(': Kameras stest', '').replace('im Nachtest', '').replace(' im Test', '').replace(' Test', '').replace('Test -', '').replace('im Check', '').replace('Details', '').replace('als Download', '').replace('-Download', '').replace('- Download', '').replace('Download', '').replace('im Vergleich', '').replace('-Test', '').split('im Kamera-Test:')[0].replace(' angetestet', '').replace('Test:', '').replace('Lesertest -', '').replace('Spieltest.com -', '').replace('Kurztest:', '').replace('Kompaktkameratest:', '').replace('TEST:', '').replace('Vergleichstest:', '').replace('Praxistest ', '').replace('Test Aldi-PC:', '').strip(' -')
     product.ssid = context['url'].split('-')[-1].replace('.html', '')
 
-    product.category = data.xpath('//span[contains(@class, "Articlehead__subheadline")]/text()').string()
+    product.category = data.xpath('(//ul[@class="breadcrumb"]/li[not(contains(., "Home") or regexp:test(., "test", "i"))])[1]//text()').string(multiple=True)
     if not product.category:
         product.category = 'Technik'
 
@@ -138,6 +138,8 @@ def process_review_next(data, context, session):
     elif context['excerpt']:
         if context['conclusion']:
             review.add_property(type='conclusion', value=context['conclusion'])
+
+            context['excerpt'] = context['excerpt'].replace(context['conclusion'], '').strip()
 
         review.add_property(type='excerpt', value=context['excerpt'])
 

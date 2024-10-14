@@ -1,10 +1,35 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
 
 
 XCAT = ["Offers", "Brands"]
 KEY = 'key_A2YIqKz8zkXkA26G'
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def run(context, session):
@@ -64,7 +89,7 @@ def process_prodlist(data, context, session):
                 product.add_property(type='id.manufacturer', value=mpn)
 
                 revs_url = 'https://api.feefo.com/api/10/reviews/product?page=1&page_size=100&since_period=ALL&full_thread=include&unanswered_feedback=include&source=on_page_product_integration&sort=-updated_date&feefo_parameters=include&media=include&merchant_identifier=andertons-music&origin=www.andertons.co.uk&product_sku={mpn}&translate_attributes=exclude%20%20%20%20&empty_reviews=true'.format(mpn=mpn)
-                session.do(Request(revs_url, force_charset='utf-8', max_age=0), process_reviews, dict(product=product, mpn=mpn))
+                session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(product=product, mpn=mpn))
 
         prods_cnt = prods_json.get('response', {}).get('total_num_results', 0)
         offset = context.get('offset', 0) + 96
@@ -91,6 +116,7 @@ def process_reviews(data, context, session):
 
         author = rev.get('customer', {}).get('display_name')
         if author:
+            author = remove_emoji(author).strip()
             review.authors.append(Person(name=author, ssid=author))
 
         grade_overall = rev.get('products', [{}])[0].get('rating', {}).get('rating')
@@ -110,7 +136,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.get('products', [{}])[0].get('review')
         if excerpt:
-            excerpt = excerpt.strip(' +-.,')
+            excerpt = remove_emoji(excerpt.strip(' +-.,'))
             if len(excerpt) > 1:
                 review.add_property(type='excerpt', value=excerpt)
 
@@ -121,7 +147,7 @@ def process_reviews(data, context, session):
     if offset < revs_cnt:
         mpn = context['mpn']
         next_url = 'https://api.feefo.com/api/10/reviews/product?page=1&page_size=100&since_period=ALL&full_thread=include&unanswered_feedback=include&source=on_page_product_integration&sort=-updated_date&feefo_parameters=include&media=include&merchant_identifier=andertons-music&origin=www.andertons.co.uk&product_sku={mpn}&translate_attributes=exclude%20%20%20%20&empty_reviews=true'.format(mpn=mpn)
-        session.do(Request(next_url, force_charset='utf-8', max_age=0), process_reviews, dict(product=product, mpn=mpn, offset=offset))
+        session.do(Request(next_url, force_charset='utf-8'), process_reviews, dict(product=product, mpn=mpn, offset=offset))
 
     elif product.reviews:
         session.emit(product)
