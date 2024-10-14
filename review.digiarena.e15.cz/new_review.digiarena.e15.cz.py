@@ -61,6 +61,8 @@ def process_review(data, context, session):
         pros = data.xpath('//div[contains(@class, "review-block-plus")]/div[@class="items"]/div')
         if not pros:
             pros = data.xpath('(//h4|//h3|//p)[contains(., "Plusy") or contains(., "Klady")]/following-sibling::ul[1]/li')
+        if not pros:
+            pros = data.xpath('//tr[contains(., "plusy")]/following-sibling::tr/td[1]/p')
 
         for pro in pros:
             pro = pro.xpath('.//text()').string(multiple=True)
@@ -75,6 +77,8 @@ def process_review(data, context, session):
         cons = data.xpath('//div[contains(@class, "review-block-minus")]/div[@class="items"]/div')
         if not cons:
             cons = data.xpath('(//h4|//h3|//p)[contains(., "Mínusy") or contains(., "Zápory")]/following-sibling::ul[1]/li')
+        if not cons:
+            cons = data.xpath('//tr[contains(., "minusy")]/following-sibling::tr/td[2]/p')
 
         for con in cons:
             con = con.xpath('.//text()').string(multiple=True)
@@ -84,13 +88,13 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('(//h2|//h3)[contains(., "Závěr") or contains(., "Celkové hodnocení") or contains(., "Verdikt")]/following-sibling::p[not(contains(., "Specifikace") or preceding-sibling::p[contains(., "Plusy") or contains(., "Mínusy") or contains(., "Cena") or contains(., "Zdroj")] or contains(., "Plusy") or contains(., "Mínusy") or contains(., "Cena") or contains(., "Zdroj"))]//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2|//h3)[contains(., "Závěr") or contains(., "Celkové hodnocení") or contains(., "Verdikt") or contains(., "Vyplatí se koupit?") or contains(., "Hodnocení")]/following-sibling::p[not(contains(., "Specifikace") or preceding-sibling::p[contains(., "Plusy") or contains(., "Mínusy") or contains(., "Cena") or contains(., "Zdroj")] or contains(., "Plusy") or contains(., "Mínusy") or contains(., "Cena") or contains(., "Zdroj"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Závěr")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//h2|//h3)[contains(., "Závěr") or contains(., "Celkové hodnocení") or contains(., "Verdikt")]/preceding::p[not(@class or contains(., "technické parametry") or contains(., "Specifikace"))]//text()').string(multiple=True)
+        excerpt = data.xpath('(//h2|//h3)[contains(., "Závěr") or contains(., "Celkové hodnocení") or contains(., "Verdikt") or contains(., "Vyplatí se koupit?") or contains(., "Hodnocení")]/preceding::p[not(@class or contains(., "technické parametry") or contains(., "Specifikace"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="article__body"]/p[not(contains(., "Specifikace"))]//text()').string(multiple=True)
     if not excerpt:

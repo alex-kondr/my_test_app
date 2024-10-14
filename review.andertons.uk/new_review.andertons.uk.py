@@ -64,7 +64,7 @@ def process_prodlist(data, context, session):
                 product.add_property(type='id.manufacturer', value=mpn)
 
                 revs_url = 'https://api.feefo.com/api/10/reviews/product?page=1&page_size=100&since_period=ALL&full_thread=include&unanswered_feedback=include&source=on_page_product_integration&sort=-updated_date&feefo_parameters=include&media=include&merchant_identifier=andertons-music&origin=www.andertons.co.uk&product_sku={mpn}&translate_attributes=exclude%20%20%20%20&empty_reviews=true'.format(mpn=mpn)
-                session.do(Request(revs_url), process_reviews, dict(product=product, mpn=mpn))
+                session.do(Request(revs_url, force_charset='utf-8', max_age=0), process_reviews, dict(product=product, mpn=mpn))
 
         prods_cnt = prods_json.get('response', {}).get('total_num_results', 0)
         offset = context.get('offset', 0) + 96
@@ -77,7 +77,7 @@ def process_prodlist(data, context, session):
 def process_reviews(data, context, session):
     product = context['product']
 
-    data_json = simplejson.loads(data.content)
+    data_json = simplejson.loads(data.content, encoding='utf-8')
     revs = data_json.get('reviews', [])
     for rev in revs:
         review = Review()
@@ -110,7 +110,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.get('products', [{}])[0].get('review')
         if excerpt:
-            excerpt = excerpt.replace(u'\ud83d', '').replace(u'\ude0d', '').replace(u'\udc4d', '').strip(' +-.,')
+            excerpt = excerpt.strip(' +-.,')
             if len(excerpt) > 1:
                 review.add_property(type='excerpt', value=excerpt)
 
@@ -121,7 +121,7 @@ def process_reviews(data, context, session):
     if offset < revs_cnt:
         mpn = context['mpn']
         next_url = 'https://api.feefo.com/api/10/reviews/product?page=1&page_size=100&since_period=ALL&full_thread=include&unanswered_feedback=include&source=on_page_product_integration&sort=-updated_date&feefo_parameters=include&media=include&merchant_identifier=andertons-music&origin=www.andertons.co.uk&product_sku={mpn}&translate_attributes=exclude%20%20%20%20&empty_reviews=true'.format(mpn=mpn)
-        session.do(Request(next_url), process_reviews, dict(product=product, mpn=mpn, offset=offset))
+        session.do(Request(next_url, force_charset='utf-8', max_age=0), process_reviews, dict(product=product, mpn=mpn, offset=offset))
 
     elif product.reviews:
         session.emit(product)
