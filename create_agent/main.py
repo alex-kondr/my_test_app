@@ -11,15 +11,15 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.colorfoto.de",
+    name="review.delamar.de",
     )
 agent.create_run(
-    name_agent_for_test="ColorFoto [DE]",
-    agent_id="18011",
-    url='https://www.connect-living.de/testbericht/',
+    name_agent_for_test="Delamar [DE]",
+    agent_id="18019",
+    url='https://www.delamar.de/testberichte/',
     next_func=ProcessRun.revlist.name,
-    new_parser=False,
-    breakers=10000,
+    new_parser=True,
+    breakers=0,
     curl=False
 )
 # agent.create_frontpage(
@@ -27,23 +27,23 @@ agent.create_run(
 #     name_xpath='.//text()',
 #     url_xpath='@href'
 # )
-# agent.create_revlist(
-#     revs_xpath='//h2[@class="ar-title"]/a',
-#     name_title="title",
-#     name_title_xpath='text()',
-#     url_xpath='@href',
-#     prod_rev="review",
-#     next_url_xpath='//div[@class="load-more-wrapper"]/a/@href',
-# )
-# agent.create_review(
-#     date_xpath='//span[contains(@class, "article__date")]/text()',
-#     author_xpath='//meta[@name="author"]/@content',
-#     author_url_xpath='',
-#     grade_overall_xpath='//div[@class="review-rating"]//text()',
-#     pros_xpath='//div[contains(@class, "review-block-plus")]/div[@class="items"]/div',
-#     cons_xpath='//div[contains(@class, "review-block-minus")]/div[@class="items"]/div',
-#     summary_xpath='',
-#     conclusion_xpath='//h2[contains(., "Závěr")]/following-sibling::p[not(contains(., "Specifikace"))]//text()',
-#     excerpt_with_concl_xpath='//h2[contains(., "Závěr")]/preceding-sibling::p//text()',
-#     excerpt_xpath='//div[@class="article__body"]/p[not(contains(., "Specifikace"))]//text()'
-# )
+agent.create_revlist(
+    revs_xpath='//article[@class]/a|//article[@class]/p[@class="m-b-0"]/a',
+    name_title="title",
+    name_title_xpath='.//text()',
+    url_xpath='@href',
+    prod_rev="review",
+    next_url_xpath='//a[@rel="next"]/@href',
+)
+agent.create_review(
+    date_xpath='//meta[@name="date"]/@content',
+    author_xpath='//div[contains(@class, "author")]/div[contains(., "Von")]/text()',
+    author_url_xpath='',
+    grade_overall_xpath='//span[@class="rating_number"]/text()', #count(//span[contains(@class, "fa-star-half")]), count(//span[@class="fa fa-star"])
+    pros_xpath='//ul[@class="pro"]/li',
+    cons_xpath='//ul[@class="contra"]/li',
+    summary_xpath='//p[@class="article_teaser"]//text()',
+    conclusion_xpath='//div[contains(@class, "fazit")]/p//text()',
+    excerpt_with_concl_xpath='',
+    excerpt_xpath='//div[@class="row"]/div/p[not(@class)]//text()'
+)
