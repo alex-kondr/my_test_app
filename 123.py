@@ -1,24 +1,10 @@
-count_char = int(input("Введіть кількість літер: "))
-count_char_copy = count_char
+from datetime import datetime, date, time, timedelta
 
-count_symbol = 1
-summ_alphabet = 0
+# time_ = time(microsecond=1705138034222)
+# date_time = datetime(second=1705138034222)
+# print(time_)
+# delta = timedelta(seconds=1705138034222)
+# print(delta + datetime(year=1970, month=1, day=1))
 
-while summ_alphabet + count_symbol < count_char + 1:
-    count_symbol += 1
-    summ_alphabet += count_symbol
-
-symbols = 1
-start_number_symbol = 65
-for i in range(count_symbol):
-    j = 0
-    for k in range(count_symbol):
-        if k <= count_symbol - symbols * 2:
-            print(" ", end="")
-        if k > count_symbol - symbols * 2:
-            print(" " + chr(start_number_symbol + j), end="")
-            j += 1
-    
-    symbols += 1
-    start_number_symbol += j
-    print()
+date_time = datetime.fromtimestamp(1675328558.759).date()
+print(date_time)
