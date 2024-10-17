@@ -30,7 +30,7 @@ def process_frontpage(data, context, session):
 def process_prodlist(data, context, session):
     prods = data.xpath("//div[@class='as-t-product-grid__item']")
     for prod in prods:
-        name = prod.xpath('.//a[contains(@class, "product-tile")]/@href').string()
+        name = prod.xpath('.//img[@class="as-a-image"]/@alt').string()
         url = prod.xpath('.//a[contains(@class, "product-tile")]/@href').string()
 
         revs_count = prod.xpath(".//span[contains(@class, 'as-a-text as-a-text--subtle as-a-text--xs')]/text()").string()
@@ -92,15 +92,15 @@ def process_reviews(data, context, session):
         pros = rev.get('reviewTextPositive')
         if pros:
             for pro in pros.splitlines():
-                if pro:
-                    pro = pro.strip()
+                pro = pro.strip(' +-\n')
+                if len(pro) > 1:
                     review.add_property(type='pros', value=pro)
 
         cons = rev.get('reviewTextNegative')
         if cons:
             for con in cons.splitlines():
-                if con:
-                    con = con.strip()
+                con = con.strip(' +-\n')
+                if len(con) > 1:
                     review.add_property(type='cons', value=con)
 
         excerpt = rev.get('reviewTitle')

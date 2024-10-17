@@ -2,7 +2,7 @@ from agent import *
 from models.products import *
 
 
-CONCLUSION_WORDS = ['In the end, ', 'In conclusion, ', 'Overall, ', 'In summary, ']
+CONCLUSION_WORDS = ['In the end, ', 'In conclusion, ', 'Overall, ', 'In summary, ', 'Conclusion']
 
 
 def run(context, session):
@@ -22,14 +22,21 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
+    excerpt = data.xpath('//div[contains(@id, "post-body")]/text()|(//div[contains(@id, "post-body")]/b|//div[contains(@id, "post-body")]/i)//text()').string(multiple=True)
+    if not excerpt:
+        return
+
     product = Product()
-    product.name = context['title'].split('Review: ')[-1].split(':')[0].split(' Review ')[0].split(' (')[0].replace('', '').strip()
+    product.name = context['title'].split('Review: ')[-1].split(':')[0].split(' Review ')[0].split(' (')[0].replace(' Review', '').strip()
     product.url = context['url']
     product.ssid = data.xpath('//div[contains(@id, "post-body")]/@id').string().split('-')[-1]
     product.category = 'Tech'
 
     if " (" in context['title']:
         product.category = 'Games|' + context['title'].split(' (')[-1].replace('Review', '').strip(' ()')
+
+    if 'Developer:' in excerpt:
+        product.manufacturer = excerpt.split('Developer:')[-1].split('Publisher:')[0].strip()
 
     review = Review()
     review.type = 'pro'
@@ -42,17 +49,16 @@ def process_review(data, context, session):
         grade_overall = grade_overall.split(':', 1)[-1].split('out')[0].split('/')[0].split()[-1]
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    excerpt = data.xpath('//div[contains(@class, "entry-content")]/text()|(//div[contains(@class, "entry-content")]/b|//div[contains(@class, "entry-content")]/i)//text()').string(multiple=True)
-    if excerpt:
-        for word in CONCLUSION_WORDS:
-            if word in excerpt:
-                excerpt, conclusion = excerpt.rsplit(word, 1)
-                conclusion = conclusion.strip().capitalize()
-                review.add_property(type='conclusion', value=conclusion)
-                break
+    for word in CONCLUSION_WORDS:
+        if word in excerpt:
+            excerpt, conclusion = excerpt.rsplit(word, 1)
+            conclusion = conclusion.split('Game Features:')[0].split('Game Information:')[0].split('Developer:')[0].split('Publisher:')[0].strip()
+            review.add_property(type='conclusion', value=conclusion)
+            break
 
-        review.add_property(type='excerpt', value=excerpt.strip())
+    excerpt = excerpt.split('Game Features:')[0].split('Game Information:')[0].split('Developer:')[0].split('Publisher:')[0].strip()
+    review.add_property(type='excerpt', value=excerpt)
 
-        product.reviews.append(review)
+    product.reviews.append(review)
 
-        session.emit(product)
+    session.emit(product)
