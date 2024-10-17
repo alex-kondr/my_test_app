@@ -11,15 +11,15 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.asadventure.nl",
+    name="review.biogamergirl.us",
     )
 agent.create_run(
-    name_agent_for_test="A.S.Adventure [NL]",
-    agent_id="18392",
-    url='https://www.asadventure.com/',
-    next_func=ProcessRun.frontpage.name,
+    name_agent_for_test="BioGamer Girl [US]",
+    agent_id="18401",
+    url='http://www.biogamergirl.com/search/label/Video%20Game%20Review',
+    next_func=ProcessRun.revlist.name,
     new_parser=False,
-    breakers=9000,
+    breakers=0,
     curl=False
 )
 # agent.create_frontpage(
@@ -27,23 +27,23 @@ agent.create_run(
 #     name_xpath='.//text()',
 #     url_xpath='@href'
 # )
-# agent.create_revlist(
-#     revs_xpath='//article[@class]/a|//article[@class]/p[@class="m-b-0"]/a',
-#     name_title="title",
-#     name_title_xpath='.//text()',
-#     url_xpath='@href',
-#     prod_rev="review",
-#     next_url_xpath='//a[@rel="next"]/@href',
-# )
-# agent.create_review(
-#     date_xpath='//meta[@name="date"]/@content',
-#     author_xpath='//div[contains(@class, "author")]/div[contains(., "Von")]/text()',
-#     author_url_xpath='',
-#     grade_overall_xpath='//span[@class="rating_number"]/text()',
-#     pros_xpath='//ul[@class="pro"]/li',
-#     cons_xpath='//ul[@class="contra"]/li',
-#     summary_xpath='//p[@class="article_teaser"]//text()',
-#     conclusion_xpath='//div[contains(@class, "fazit")]/p//text()',
-#     excerpt_with_concl_xpath='',
-#     excerpt_xpath='//div[@class="row"]/div/p[not(@class)]//text()'
-# )
+agent.create_revlist(
+    revs_xpath='//h3[contains(@class, "post-title")]/a',
+    name_title="title",
+    name_title_xpath='.//text()',
+    url_xpath='@href',
+    prod_rev="review",
+    next_url_xpath='//a[@title="More posts"]/@href',
+)
+agent.create_review( # //div[contains(@id, "post-body")]/@id
+    date_xpath='',
+    author_xpath='',
+    author_url_xpath='',
+    grade_overall_xpath='//b[contains(., "Score:")]//text()',
+    pros_xpath='',
+    cons_xpath='',
+    summary_xpath='',
+    conclusion_xpath='',
+    excerpt_with_concl_xpath='',
+    excerpt_xpath='//div[contains(@class, "entry-content")]/text()|//div[contains(@class, "entry-content")]/b//text()'
+)

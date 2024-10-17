@@ -4,8 +4,7 @@ from datetime import datetime
 import simplejson
 
 
-CAT = ["Fietsen", "Reizen", "Kamperen"]
-XCAT = ["Nieuwe collectie", "Verhuur", "Ecocheque producten", "Professioneel", "Promoties", "Veilig in het verkeer"]
+XCAT = ["Nieuwe collectie", "Verhuur", "Ecocheque producten", "Professioneel", "Promoties", "Veilig in het verkeer", "Cadeautips", "Merken"]
 
 
 def run(context, session):
@@ -18,7 +17,7 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath(".//a[contains(@data-qa, '1_level_item')]/text()").string()
 
-        if name in CAT:
+        if name not in XCAT:
             subcats = cat.xpath(".//a[contains(@data-qa, '2_level_item')]")
             for subcat in subcats:
                 sub_name = subcat.xpath("text()").string()
