@@ -92,15 +92,15 @@ def process_reviews(data, context, session):
         pros = rev.get('reviewTextPositive')
         if pros:
             for pro in pros.splitlines():
-                pro = pro.strip(' +-\n')
-                if len(pro) > 1:
+                pro = pro.strip(' +-/\n?')
+                if len(pro) > 1 and not(pro.lower() == 'null' or pro.lower() == 'no' or pro.lower() == 'na'):
                     review.add_property(type='pros', value=pro)
 
         cons = rev.get('reviewTextNegative')
         if cons:
             for con in cons.splitlines():
-                con = con.strip(' +-\n')
-                if len(con) > 1:
+                con = con.strip(' +-/\n?')
+                if len(con) > 1 and not(con == 'null' or con.lower() == 'no' or con.lower() == 'na'):
                     review.add_property(type='cons', value=con)
 
         excerpt = rev.get('reviewTitle')

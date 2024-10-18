@@ -11,39 +11,39 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.biogamergirl.us",
+    name="review.androidinsider.ru",
     )
 agent.create_run(
-    name_agent_for_test="BioGamer Girl [US]",
-    agent_id="18401",
-    url='http://www.biogamergirl.com/search/label/Video%20Game%20Review',
-    next_func=ProcessRun.revlist.name,
+    name_agent_for_test="AndroidInsider[RU]",
+    agent_id="18990",
+    url='http://androidinsider.ru/',
+    next_func=ProcessRun.frontpage.name,
     new_parser=False,
-    breakers=0,
-    curl=False
+    breakers=5000,
+    curl=True
 )
 # agent.create_frontpage(
 #     cats_xpath='//li[contains(., "Thema’s")]/ul//a',
 #     name_xpath='.//text()',
 #     url_xpath='@href'
 # )
-agent.create_revlist(
-    revs_xpath='//h3[contains(@class, "post-title")]/a',
-    name_title="title",
-    name_title_xpath='.//text()',
-    url_xpath='@href',
-    prod_rev="review",
-    next_url_xpath='//a[@title="More posts"]/@href',
-)
-agent.create_review( # //div[contains(@id, "post-body")]/@id
-    date_xpath='',
-    author_xpath='',
-    author_url_xpath='',
-    grade_overall_xpath='//b[contains(., "Score:")]//text()',
-    pros_xpath='',
-    cons_xpath='',
-    summary_xpath='',
-    conclusion_xpath='',
-    excerpt_with_concl_xpath='',
-    excerpt_xpath='//div[contains(@class, "entry-content")]/text()|//div[contains(@class, "entry-content")]/b//text()'
-)
+# agent.create_revlist(
+#     revs_xpath='//a[@class="teaser__link"]',
+#     name_title="title",
+#     name_title_xpath='.//h3[contains(@class, "teaser__title")]//text()',
+#     url_xpath='@href',
+#     prod_rev="review",
+#     next_url_xpath='//a[@title="More posts"]/@href',
+# )
+# agent.create_review(
+#     date_xpath='//meta[@property="article:published_time"]/@content',
+#     author_xpath='//meta[@name="author"]/@content',
+#     author_url_xpath='',
+#     grade_overall_xpath='//b[contains(., "Score:")]//text()',
+#     pros_xpath='',
+#     cons_xpath='',
+#     summary_xpath='//p[@data-test-id="header-intro"]//text()',
+#     conclusion_xpath='',
+#     excerpt_with_concl_xpath='',
+#     excerpt_xpath='//div[@class="paywall"]/p[not(contains(., "Geselecteerd door de redactie"))]//text()'
+# )
