@@ -11,12 +11,12 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.androidheadlines.com",
+    name="review.bgr.com",
     )
 agent.create_run(
-    name_agent_for_test="AndroidHeadlines [US]",
-    agent_id="19014",
-    url='https://www.androidheadlines.com/category/reviews',
+    name_agent_for_test="BGR [US]",
+    agent_id="19125",
+    url='https://bgr.com/reviews/',
     next_func=ProcessRun.revlist.name,
     new_parser=False,
     breakers=5000,
@@ -28,22 +28,22 @@ agent.create_run(
 #     url_xpath='@href'
 # )
 agent.create_revlist(
-    revs_xpath='//a[contains(@class, "post-holder")]',
+    revs_xpath='//h2//a[@href and text()]',
     name_title="title",
     name_title_xpath='text()',
     url_xpath='@href',
     prod_rev="review",
-    next_url_xpath='//lin[@rel="next"]/@href',
+    next_url_xpath='//link[@rel="next"]/@href',
 )
 agent.create_review(
-    date_xpath='//meta[@property="article:published_time"]/@content[contains(., "T")]',
-    author_xpath='//div[@class="entry-meta-author-name"]//a/text()',
-    author_url_xpath='//div[@class="entry-meta-author-name"]//a/@href',
-    grade_overall_xpath='',
-    pros_xpath='1',
-    cons_xpath='1',
-    summary_xpath='1',
-    conclusion_xpath='1',
-    excerpt_with_concl_xpath='1',
-    excerpt_xpath='2'
+    date_xpath='//meta[@property="article:modified_time"]/@content',
+    author_xpath='//div[contains(@class, "authors")]//a[@rel="author"]/text()',
+    author_url_xpath='//div[contains(@class, "authors")]//a[@rel="author"]/@href',
+    grade_overall_xpath='//span[contains(., "Rating:")]/text()',
+    pros_xpath='//ul[@class="pros"]/li',
+    cons_xpath='//ul[@class="cons"]/li',
+    summary_xpath='//div[@class="flex justify-between"]//p//text()',
+    conclusion_xpath='//h2[@id="h-conclusions" or regexp:test(., "conclusion", "i")]/following::p[not(preceding::div[@class="mb-8 relative"])]',
+    excerpt_with_concl_xpath='//h2[@id="h-conclusions" or regexp:test(., "conclusion", "i")]/preceding::body/p//text()',
+    excerpt_xpath='//body/p//text()'
 )

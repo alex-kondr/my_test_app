@@ -103,7 +103,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//h2[regexp:test(., "verdict", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[regexp:test(., "conclusion", "i")]/preceding-sibling::p//text()').stirng(multiple=True)
+        excerpt = data.xpath('//h2[regexp:test(., "conclusion", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('(//div[@class="entry-content"]/p|//div[@class="entry-content"]/h2)//text()').string(multiple=True)
 
@@ -154,7 +154,7 @@ def process_reviews(data, context, session):
         elif author:
             review.authors.append(Person(name=author, ssid=author))
 
-        excerpt = data.xpath('following-sibling::p[count(preceding-sibling::h1)={i} and not(.//img)]//text()'.format(i=i))
+        excerpt = data.xpath('following-sibling::p[count(preceding-sibling::h1)={i} and not(.//img)]//text()'.format(i=i)).string(multiple=True)
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
