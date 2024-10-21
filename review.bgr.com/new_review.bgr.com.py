@@ -20,7 +20,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' review: ')[0].strip()
+    product.name = context['title'].split(' review: ')[0].split(' Review: ')[0].split('Tested: ')[-1].replace(' review', '').replace(' Review', '').split(': ')[0].strip()
     product.ssid = context['url'].split('/')[-2]
 
     product.url = data.xpath('//a[contains(@rel, "sponsored")]/@href').string()
@@ -68,11 +68,12 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[@id="h-conclusions" or regexp:test(., "conclusion|final", "i")]/following::p[not(preceding::div[@class="mb-8 relative"])]//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2[@id="h-conclusions" or regexp:test(., "conclusion|final", "i")])[last()]/following::p[not(preceding::div[@class="mb-8 relative"])]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[@id="h-conclusions" or regexp:test(., "conclusion|final", "i")]/preceding::body/p//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2[@id="h-conclusions" or regexp:test(., "conclusion|final", "i")])[last()]/preceding::body/p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//body/p//text()').string(multiple=True)
 
