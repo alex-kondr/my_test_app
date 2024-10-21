@@ -20,7 +20,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' review: ')[0].split(' Review: ')[0].split('Tested: ')[-1].replace(' review', '').replace(' Review', '').split(': ')[0].strip()
+    product.name = context['title'].split(' review: ')[0].split(' Review: ')[0].split('Tested: ')[-1].replace(' review', '').replace(' review', '').replace(' Review', '').split(': ')[0].strip()
     product.ssid = context['url'].split('/')[-2]
 
     product.url = data.xpath('//a[contains(@rel, "sponsored")]/@href').string()
@@ -57,12 +57,14 @@ def process_review(data, context, session):
     pros = data.xpath('//ul[@class="pros"]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
-        review.add_property(type='pros', value=pro)
+        if pro and len(pro) > 1:
+            review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//ul[@class="cons"]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
-        review.add_property(type='cons', value=con)
+        if con and len(con) > 1:
+            review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="flex justify-between"]//p//text()').string(multiple=True)
     if summary:
