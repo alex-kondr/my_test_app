@@ -48,4 +48,36 @@ def process_product(data, context, session):
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review
+
+        date = rev.get('datePublished')
+        if date:
+            review.date = date.split()[0]
+
+        author = rev.get('author', {}).get('name')
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
+
+        grade_overall = rev.get('reviewRating', {}).get('ratingValue')
+        if grade_overall:
+            grade_overall = float(grade_overall / 20)
+            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+
+        title = rev.get('name')
+        excerpt = rev.get('description')
+        if excerpt:
+            review.title = title.replace('\r', '').replace('\n', ' ')
+        elif title:
+            excerpt = title
+
+        if excerpt:
+            excerpt = excerpt.replace('\r', '').replace('\n', ' ')
+            review.add_property(type='excerpt', value=excerpt)
+
+            review.ssid = review.digest() if author else review.digest(excerpt)
+
+            product.reviews.append(review)
+
+    if product.reviews:
+        session.emit(product)
+
+    # no next page
