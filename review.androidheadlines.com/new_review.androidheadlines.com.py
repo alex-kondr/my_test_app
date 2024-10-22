@@ -26,7 +26,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = context['title'].replace('Featured Review:', '').replace('Video:', '').split(' Review: ')[0].replace(' In Review', '').strip()
+    product.name = context['title'].replace('Featured Review:', '').replace(' Hands-On Preview', '').replace('Video:', '').split(' Review: ')[0].split(' Review – ')[0].split(' Review — ')[0].split(' Review-')[0].split(' review: ')[0].split(' review – ')[0].replace(' In Review', '').replace('Review: ', '').replace(' Review!', '').replace(' Review', '').split(' – ')[0].strip()
     product.ssid = context['url'].split('/')[-1].replace('-review', '')
     product.category = 'Tech'
 
@@ -60,7 +60,9 @@ def process_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
-    pros = data.xpath('//div[.//span[@class="h3"] and contains(., "Pros")]/ul/li')
+    pros = data.xpath('//div[@class="col-md-6" and normalize-space(.//span[@class="h3"]/text())="Pros"]/ul/li')
+    if not pros:
+        pros = data.xpath('//p[.//strong[contains(., "Good")]]/following-sibling::ul[1]/li')
     if not pros:
         pros = data.xpath('//h2[contains(., "The Good")]/following-sibling::ul[1]/li')
 
@@ -68,7 +70,9 @@ def process_review(data, context, session):
         pro = pro.xpath('.//text()').string(multiple=True)
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[.//span[@class="h3"] and contains(., "Cons")]/ul/li')
+    cons = data.xpath('//div[@class="col-md-6" and normalize-space(.//span[@class="h3"]/text())="Cons"]/ul/li')
+    if not cons:
+        cons = data.xpath('//p[.//strong[contains(., "Bad")]]/following-sibling::ul[1]/li')
     if not cons:
         cons = data.xpath('//h2[contains(., "The Bad")]/following-sibling::ul[1]/li')
 
@@ -89,6 +93,8 @@ def process_review(data, context, session):
         conclusion = data.xpath('//h2[regexp:test(., "verdict", "i")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2[regexp:test(., "conclusion", "i")]/following-sibling::p//text()').string(multiple=True)
+    if  not conclusion:
+        conclusion = data.xpath('//h2[regexp:test(., "final", "i")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="row"]//div[@class="col-12"]/p[not(@class)]//span[@property="itemListElement" and not(.//label or .//input or contains(., "Sign up to receive the latest"))]//text()').string(multiple=True)
 
@@ -105,7 +111,9 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//h2[regexp:test(., "conclusion", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//div[@class="entry-content"]/p|//div[@class="entry-content"]/h2)//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[regexp:test(., "final", "i")]/preceding-sibling::p//tet()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="entry-content"]/p//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
@@ -154,7 +162,7 @@ def process_reviews(data, context, session):
         elif author:
             review.authors.append(Person(name=author, ssid=author))
 
-        excerpt = data.xpath('following-sibling::p[count(preceding-sibling::h1)={i} and not(.//img)]//text()'.format(i=i)).string(multiple=True)
+        excerpt = prod.xpath('following-sibling::p[count(preceding-sibling::h1[@id="title"])={i} and not(.//img)]//text()'.format(i=i)).string(multiple=True)
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
