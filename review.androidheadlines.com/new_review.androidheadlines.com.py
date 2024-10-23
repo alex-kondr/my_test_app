@@ -26,7 +26,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = context['title'].replace('Featured Review:', '').replace(' Hands-On Preview', '').replace('Video:', '').split(' Review: ')[0].split(' Review – ')[0].split(' Review — ')[0].split(' Review-')[0].split(' review: ')[0].split(' review – ')[0].replace(' In Review', '').replace('Review: ', '').replace(' Review!', '').replace(' Review', '').split(' – ')[0].strip()
+    product.name = context['title'].replace('Featured Review:', '').replace('Review & Giveaway: ', '').replace(' Hands-On Preview', '').replace('Hands-on Preview ', '').replace('Review Round-Up: ', '').replace('REVIEW EXCLUSIVE: ', '').replace('Video:', '').split(' Review: ')[0].split(' Review – ')[0].split(' Review — ')[0].split(' Review-')[0].split(' review: ')[0].split(' review – ')[0].replace(' review', '').replace(' In Review', '').replace('Review: ', '').replace('REVIEW: ', '').replace(' Review!', '').replace(' Review', '').split(' – ')[0].strip()
     product.ssid = context['url'].split('/')[-1].replace('-review', '')
     product.category = 'Tech'
 
