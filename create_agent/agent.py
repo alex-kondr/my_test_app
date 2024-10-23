@@ -320,7 +320,7 @@ class AgentForm:
             file.write(text)
 
     def create_test_file(self, name_agent_for_test: str, agent_id: str):
-        name_agent_for_test = name_agent_for_test.upper().replace(" [", "_").replace("[", "_").replace("]", "").replace(".", "_").replace("-", "_").replace(" ", "_").replace("'", "")
+        name_agent_for_test = name_agent_for_test.upper().replace(" [", "_").replace("[", "_").replace("]", "").replace(".", "_").replace("-", "_").replace(" ", "_").replace("'", "").replace(",", "")
 
         with open("create_agent/test_template.txt", "r", encoding="utf-8") as file:
             test_template = file.read()

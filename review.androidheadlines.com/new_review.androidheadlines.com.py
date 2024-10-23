@@ -111,7 +111,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//h2[regexp:test(., "conclusion", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[regexp:test(., "final", "i")]/preceding-sibling::p//tet()').string(multiple=True)
+        excerpt = data.xpath('//h2[regexp:test(., "final", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="entry-content"]/p//text()').string(multiple=True)
 
