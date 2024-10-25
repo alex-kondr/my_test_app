@@ -53,6 +53,8 @@ class TestLogProduct:
             for xword in self.xwords:
                 if log_product.startswith(xword):
                     error = [
+                        self.log_product.file[i-5].split("Request GET u'")[-1].split("'&gt;")[0],
+                        self.log_product.file[i-6].split("Request GET u'")[-1].split("'&gt;")[0],
                         self.log_product.file[i-7].split("Request GET u'")[-1].split("'&gt;")[0],
                         self.log_product.file[i-8].split("Request GET u'")[-1].split("'&gt;")[0],
                         log_product
