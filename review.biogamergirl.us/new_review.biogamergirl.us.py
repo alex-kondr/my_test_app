@@ -46,17 +46,24 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//b[contains(., "Score:") or regexp:test(., "\d+ out ")]//text()').string(multiple=True)
     if grade_overall:
-        grade_overall = grade_overall.split(':', 1)[-1].split('out')[0].split('/')[0].split()[-1]
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+        grade_val = grade_overall.split(':', 1)[-1].split('out of')[0].split('out')[0].split('/')[0]
+        grade_best = grade_overall.split('out of')[-1].split('out')[-1].split('/')[-1].split()[0]
+        review.grades.append(Grade(type='overall', value=float(grade_val), best=float(grade_best)))
 
     for word in CONCLUSION_WORDS:
         if word in excerpt:
             excerpt, conclusion = excerpt.rsplit(word, 1)
-            conclusion = conclusion.split('Game Features:')[0].split('Game Information:')[0].split('Developer:')[0].split('Publisher:')[0].strip()
+            conclusion = conclusion.split('Features:')[0].split('Game Information:')[0].split('Developer:')[0].split('Publisher:')[0].strip()
             review.add_property(type='conclusion', value=conclusion)
             break
 
-    excerpt = excerpt.split('Game Features:')[0].split('Game Information:')[0].split('Developer:')[0].split('Publisher:')[0].strip()
+    conclusion = data.xpath('//u[contains(., "Conclusion")]/following-sibling::text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+        excerpt = excerpt.replace(conclusion, '').strip()
+
+    excerpt = excerpt.split('Features:')[0].split('Game Information:')[0].split('Developer:')[0].split('Publisher:')[0].strip()
     review.add_property(type='excerpt', value=excerpt)
 
     product.reviews.append(review)
