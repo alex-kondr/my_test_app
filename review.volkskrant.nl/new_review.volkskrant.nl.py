@@ -58,7 +58,10 @@ def process_review(data, context, session):
     if author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//p[regexp:test(., "^★")]//text()').string(multiple=True)
+    grade_overall = data.xpath('//span[@data-test-id="article-sublabel" and contains(., "★")]//text()').string(multiple=True)
+    if not grade_overall:
+        grade_overall = data.xpath('//p[regexp:test(., "^★")]//text()').string(multiple=True)
+
     if grade_overall:
         grade_overall = float(grade_overall.count('★'))
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))

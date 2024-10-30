@@ -65,6 +65,8 @@ def process_review(data, context, session):
         pros = data.xpath('//p[.//strong[contains(., "Good")]]/following-sibling::ul[1]/li')
     if not pros:
         pros = data.xpath('//h2[contains(., "The Good")]/following-sibling::ul[1]/li')
+    if not pros:
+        pros = data.xpath('//p[.//strong[contains(., "Good")]]/following-sibling::p[not(preceding-sibling::p[.//strong[contains(., "Bad")]] or .//strong[contains(., "Bad")])]')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -75,6 +77,8 @@ def process_review(data, context, session):
         cons = data.xpath('//p[.//strong[contains(., "Bad")]]/following-sibling::ul[1]/li')
     if not cons:
         cons = data.xpath('//h2[contains(., "The Bad")]/following-sibling::ul[1]/li')
+    if not cons:
+        cons = data.xpath('//p[.//strong[contains(., "Bad")]]/following-sibling::p[not(.//strong or .//em or preceding-sibling::p[regexp:test(., "should you buy", "i")])][string-length(.) < 70]')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
@@ -84,7 +88,7 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(., "should you buy", "i")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2|//p)[regexp:test(., "should you buy", "i")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2[regexp:test(., "right for you?", "i")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
@@ -101,7 +105,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "should you buy", "i")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2|//p)[regexp:test(., "should you buy", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//h2[regexp:test(., "right for you?", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
