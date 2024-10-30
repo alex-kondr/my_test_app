@@ -27,14 +27,14 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' Review')[0].split(' review:')[0].strip()
+    product.name = context['title'].split(' Preview ')[0].split(' Review')[0].split(' review:')[0].split(' Preview: ')[0].replace('Review: ', '').replace('Review ', '').replace(' reviewed', '').replace(' review', '').replace('&amp;', ' - ').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = 'Tech'
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = context['title'].replace('&amp;', ' - ')
     review.url = product.url
     review.ssid = product.ssid
 
@@ -58,16 +58,25 @@ def process_review(data, context, session):
     pros = data.xpath('//p[strong[contains(., "Pros")]]/text()')
     for pro in pros:
         pro = pro.string(multiple=True)
-        if pro:
-            pro = pro.strip(' -+')
+        if pro and '- ' in pro:
+            pros_ = pro.split('- ')
+        else:
+            pros_ = pro.split('– ')
+        for pro in pros_:
+            pro = pro.strip(' -–+')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//p[strong[contains(., "Cons")]]/text()')
+    # https://www.firstpost.com/tech/news-analysis/sony-kd-50x70l-google-tv-review-12777812.html
     for con in cons:
         con = con.string(multiple=True)
-        if con:
-            con = con.strip(' -+')
+        if con and '- ' in con:
+            cons_ = con.split('- ')
+        else:
+            cons_ = con.split('– ')
+        for con in cons_:
+            con = con.strip(' -–+')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 

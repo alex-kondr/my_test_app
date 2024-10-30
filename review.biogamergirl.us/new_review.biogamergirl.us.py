@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 CONCLUSION_WORDS = ['In the end, ', 'In conclusion, ', 'Overall, ', 'In summary, ', 'Conclusion']
@@ -46,6 +47,7 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//b[contains(., "Score:") or regexp:test(., "\d+ out ")]//text()').string(multiple=True)
     if grade_overall:
+        #  \d\.?\d?.[o/]
         grade_val = grade_overall.split(':', 1)[-1].split('out of')[0].split('out')[0].split('/')[0]
         grade_best = grade_overall.split('out of')[-1].split('out')[-1].split('/')[-1].split()[0]
         review.grades.append(Grade(type='overall', value=float(grade_val), best=float(grade_best)))

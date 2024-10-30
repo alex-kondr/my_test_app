@@ -38,7 +38,7 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('.//text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(title=title, url=url))
+        session.queue(Request(url, max_age=0), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
