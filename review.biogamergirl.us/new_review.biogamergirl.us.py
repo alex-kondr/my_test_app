@@ -47,10 +47,12 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//b[contains(., "Score:") or regexp:test(., "\d+ out ")]//text()').string(multiple=True)
     if grade_overall:
-        #  \d\.?\d?.[o/]
-        grade_val = grade_overall.split(':', 1)[-1].split('out of')[0].split('out')[0].split('/')[0]
-        grade_best = grade_overall.split('out of')[-1].split('out')[-1].split('/')[-1].split()[0]
-        review.grades.append(Grade(type='overall', value=float(grade_val), best=float(grade_best)))
+        grade_val = re.search(r'\d+\.?\d?', grade_overall)
+        grade_best = re.search(r'[\s/][510]+(?!\.)', grade_overall)
+        if grade_val and grade_best:
+            grade_val = float(grade_val.group())
+            grade_best = float(grade_best.group().strip(' /'))
+            review.grades.append(Grade(type='overall', value=grade_val, best=grade_best))
 
     for word in CONCLUSION_WORDS:
         if word in excerpt:

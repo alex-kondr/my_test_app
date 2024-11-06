@@ -63,7 +63,7 @@ def process_review(data, context, session):
         grade_overall = data.xpath('(//p[regexp:test(., "^★")])[1]//text()').string(multiple=True)
 
     if grade_overall:
-        grade_overall = float(grade_overall.count('★'))
+        grade_overall = float(grade_overall.split('/')[0].count('★'))
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     summary = data.xpath('//p[@data-test-id="header-intro"]//text()').string(multiple=True)

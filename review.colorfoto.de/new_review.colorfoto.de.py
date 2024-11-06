@@ -95,7 +95,7 @@ def process_review(data, context, session):
     if not context['conclusion']:
         context['conclusion'] = data.xpath('//h2[@class][contains(text(), "Fazit") or contains(text(), "Testfazit")]/following-sibling::p[not(em)]//text()').string(multiple=True)
 
-    context['excerpt'] = data.xpath('//h2[not(@class)][contains(text(), "Fazit") or contains(text(), "Testfazit")]/preceding::div[@class="wkTextblock"]/p//text()').string(multiple=True)
+    context['excerpt'] = data.xpath('(//h2[not(@class)][contains(text(), "Fazit") or contains(text(), "Testfazit")]/preceding::div[@class="wkTextblock"]/p|//h2[not(@class)][contains(text(), "Fazit") or contains(text(), "Testfazit")]/preceding-sibling::p)//text()').string(multiple=True)
     if not context['excerpt']:
         context['excerpt'] = data.xpath('//div[@class="wkTextblock"]/p[not(a and contains(., "Vergleichstest"))]//text()').string(multiple=True)
 
@@ -125,7 +125,7 @@ def process_review_next(data, context, session):
         if conclusion:
             context['conclusion'] = conclusion
 
-        excerpt = data.xpath('//h2[not(@class)][contains(text(), "Fazit") or contains(text(), "Testfazit")]/preceding::div[@class="wkTextblock"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('(//h2[not(@class)][contains(text(), "Fazit") or contains(text(), "Testfazit")]/preceding::div[@class="wkTextblock"]/p|//h2[not(@class)][contains(text(), "Fazit") or contains(text(), "Testfazit")]/preceding-sibling::p)//text()').string(multiple=True)
         if not excerpt:
             excerpt = data.xpath('//div[@class="wkTextblock"]/p[not(a and contains(., "Vergleichstest"))]//text()').string(multiple=True)
         if excerpt:

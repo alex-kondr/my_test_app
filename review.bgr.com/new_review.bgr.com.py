@@ -71,11 +71,10 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//h2[@id="h-conclusions" or regexp:test(., "conclusion|final", "i")])[last()]/following::p[not(preceding::div[@class="mb-8 relative"])]//text()').string(multiple=True)
-
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h2[@id="h-conclusions" or regexp:test(., "conclusion|final", "i")])[last()]/preceding::body/p//text()').string(multiple=True)
+    excerpt = data.xpath('((//h2[@id="h-conclusions" or regexp:test(., "conclusion|final", "i")])[last()]/preceding::body/p|(//h2[@id="h-conclusions" or regexp:test(., "conclusion|final", "i")])[last()]/preceding-sibling::p)//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//body/p//text()').string(multiple=True)
 
