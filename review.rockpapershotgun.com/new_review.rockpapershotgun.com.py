@@ -22,11 +22,19 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' review: ')[0].split(' Review: ')[0].split(' Review In ')[0].replace('Review In Progress:', '').replace(' review', '').replace(' Review', '').replace('Verdict: ', '').strip()
-    product.url = context['url']
-    product.ssid = product.url.split('/')[-1].replace('-review', '')
+    product.name = context['title'].split(' review: ')[0].split(' Review: ')[0].split(' Review In ')[0].replace('Review In Progress:', '').replace('Wot I Think:', '').replace(' review', '').replace(' Review', '').replace('Verdict: ', '').strip()
+    product.ssid = context['url'].split('/')[-1].replace('-review', '')
     product.category = 'Games'
+
     product.manufacturer = data.xpath('//li[contains(., "Developer:")]/text()').string()
+    if not product.manufacturer:
+        product.manufacturer = data.xpath('//strong[contains(., "Developer:")]/following-sibling::text()[1]').string()
+
+    product.url = data.xpath('//li[contains(., "From:")]/a/@href').string()
+    if not product.url:
+        product.url = data.xpath('//strong[contains(., "From:")]/following-sibling::a[1]/@href').string()
+    if not product.url:
+        product.url = context['url']
 
     platform = data.xpath('//li[contains(., "On:")]/text()').string()
     if platform:
@@ -35,7 +43,7 @@ def process_review(data, context, session):
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
@@ -55,7 +63,7 @@ def process_review(data, context, session):
         summary = summary.replace('Verdict:', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//div[contains(@class, "article_body_content")]/aside/text()').string(multiple=True)
+    conclusion = data.xpath('//div[contains(@class, "article_body_content")]/aside/text()[not(preceding-sibling::*[contains(., "Developer:") or contains(., "Publisher:") or contains(., "Release:")])]').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 

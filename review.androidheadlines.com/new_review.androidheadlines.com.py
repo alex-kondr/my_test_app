@@ -88,38 +88,48 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('(//h2|//p)[regexp:test(., "should you buy", "i")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2|//p)[regexp:test(., "should you buy", "i")]/following-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[regexp:test(., "right for you?", "i")]/following-sibling::p//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[regexp:test(., "right for you?", "i")]/following-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[regexp:test(., "worth the money?", "i")]/following-sibling::p//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[regexp:test(., "worth the money?", "i")]/following-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[regexp:test(., "verdict", "i")]/following-sibling::p//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[regexp:test(., "verdict", "i")]/following-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[regexp:test(., "conclusion", "i")]/following-sibling::p//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[regexp:test(., "conclusion", "i")]/following-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if  not conclusion:
-        conclusion = data.xpath('//h2[regexp:test(., "final", "i")]/following-sibling::p//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[regexp:test(., "final", "i")]/following-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//div[@class="row"]//div[@class="col-12"]/p[not(@class)]//span[@property="itemListElement" and not(.//label or .//input or contains(., "Sign up to receive the latest"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//div[@class="row"]//div[@class="col-12"]/p[not(@class or .//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//span[@property="itemListElement" and not(.//label or .//input or contains(., "Sign up to receive the latest"))]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h2|//p)[regexp:test(., "should you buy", "i")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2|//p)[regexp:test(., "should you buy", "i")]/preceding-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[regexp:test(., "right for you?", "i")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[regexp:test(., "right for you?", "i")]/preceding-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[regexp:test(., "worth the money?", "i")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[regexp:test(., "worth the money?", "i")]/preceding-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[regexp:test(., "verdict", "i")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[regexp:test(., "verdict", "i")]/preceding-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[regexp:test(., "conclusion", "i")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[regexp:test(., "conclusion", "i")]/preceding-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[regexp:test(., "final", "i")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[regexp:test(., "final", "i")]/preceding-sibling::p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="entry-content"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="entry-content"]/p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")])]//text()').string(multiple=True)
 
     if excerpt:
+        for pro in pros:
+            pro = pro.xpath('.//text()').string(multiple=True)
+            if pro:
+                excerpt = excerpt.replace(pro, '').strip()
+
+        for con in cons:
+            con = con.xpath('.//text()').string(multiple=True)
+            if con:
+                excerpt = excerpt.replace(con, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

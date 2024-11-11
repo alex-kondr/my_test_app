@@ -11,12 +11,14 @@ def run(context, session):
 
 def process_catlist(data, context, session):
     sub_cats = data.xpath('//div[contains(@class, "subcategories")]/a[not(contains(., "TODAS"))]')
+    if not sub_cats:
+        process_prodlist(data, context, session)
+        return
+
     for sub_cat in sub_cats:
         name = sub_cat.xpath('text()').string()
         url = sub_cat.xpath('@href').string()
-        session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + name))
-    else:
-        session.queue(Request(data.response_url, force_charset='utf-8'), process_prodlist, dict(cat=context['cat']))
+        session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + name.capitalize()))
 
 
 def process_prodlist(data, context, session):
@@ -27,6 +29,7 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.xpath('.//div[@class="reviews__actions"]/a/text()').string()
         if revs_cnt and int(revs_cnt.strip('()')) > 0:
+            url = 'https://www.dolce-gusto.es/' + url.split('/')[-1]
             session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, name=name, url=url))
 
     # no next page

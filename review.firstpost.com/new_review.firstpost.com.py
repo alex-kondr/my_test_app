@@ -55,7 +55,14 @@ def process_review(data, context, session):
         grade_overall = float(grade_overall.split('/')[0].split()[-1])
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
-    pros = data.xpath('//p[strong[contains(., "Pros")]]/text()')
+    grades = data.xpath('//strong[contains(., "-") and contains(., ":") and regexp:test(., "\d.?\d?/\d")]')
+    for grade in grades:
+        grade = grade.xpath('.//text()').string(multiple=True)
+        grade_name = grade.split(' - ')[-1].split(':')[0].strip() if ' - ' in grade else grade.split(':')[-1].split().strip()
+        grade_val, grade_best = grade.split(':')[-1].strip('( )').split('/')
+        review.grades.append(Grade(name=grade_name, value=float(grade_val), best=float(grade_best)))
+
+    pros = data.xpath('//p[strong[contains(., "Pros")]]/text()[not(preceding-sibling::strong[contains(., "Cons")])]')
     for pro in pros:
         pro = pro.string(multiple=True)
         if pro and '- ' in pro:
@@ -67,8 +74,10 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//p[strong[contains(., "Cons")]]/text()')
-    # https://www.firstpost.com/tech/news-analysis/sony-kd-50x70l-google-tv-review-12777812.html
+    cons = data.xpath('//strong[contains(., "Cons")]/following-sibling::text()[not(preceding-sibling::strong[contains(., "Overall Rating") or contains(., "Price")])]')
+    if not cons:
+        cons = data.xpath('//p[strong[contains(., "Cons")]]/text()[not(preceding-sibling::strong[contains(., "Overall Rating") or contains(., "Price")])]')
+
     for con in cons:
         con = con.string(multiple=True)
         if con and '- ' in con:
@@ -88,11 +97,12 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]/preceding-sibling::p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:"))]').string(multiple=True)
+    excerpt = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]/preceding-sibling::p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:"))]').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace('Image Credit: Tech2 | Ameya Dalvi[/caption]', '').replace('[caption id=“attachment_12777982” align=“alignnone” width=“640”]', '')
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
