@@ -58,8 +58,8 @@ def process_review(data, context, session):
     grades = data.xpath('//strong[contains(., "-") and contains(., ":") and regexp:test(., "\d.?\d?/\d")]')
     for grade in grades:
         grade = grade.xpath('.//text()').string(multiple=True)
-        grade_name = grade.split(' - ')[-1].split(':')[0].strip() if ' - ' in grade else grade.split(':')[-1].split().strip()
-        grade_val, grade_best = grade.split(':')[-1].strip('( )').split('/')
+        grade_name = grade.split(' - ')[-1].split(':')[0].strip() if ' - ' in grade else grade.split(':')[-1].rsplit(' ', 1)[0].strip()
+        grade_val, grade_best = grade.split(':')[-1].split()[-1].strip('( )').split('/')
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=float(grade_best)))
 
     pros = data.xpath('//p[strong[contains(., "Pros")]]/text()[not(preceding-sibling::strong[contains(., "Cons")])]')
