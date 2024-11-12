@@ -94,9 +94,9 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]/text()|//p[strong[regexp:test(., "verdict", "i")]]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]//text()|//p[strong[regexp:test(., "verdict", "i")]]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
-        conclusion = re.split(r' [vV]erdict\s', conclusion)[-1]
+        conclusion = re.split(r'[vV]erdict\s', conclusion)[-1]
         conclusion = re.sub(r'Image Credit: Tech2 \| [\s\w]+\[/caption\]', '', conclusion)
         conclusion = re.sub(r'\[caption id=.attachment_\d+. align=.alignnone. width=.\d+.\]', '', conclusion).strip()
         review.add_property(type='conclusion', value=conclusion)
@@ -106,7 +106,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[contains(@class, "content")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]').string(multiple=True)
 
     if excerpt:
-        excerpt = re.split(r' [vV]erdict\s', excerpt)[0]
+        excerpt = re.split(r'[vV]erdict\s', excerpt)[0]
         excerpt = re.sub(r'Image Credit: Tech2 \| [\s\w]+\[/caption\]', '', excerpt)
         excerpt = re.sub(r'\[caption id=“attachment_\d+” align=“alignnone” width=“\d+”\]', '', excerpt).strip()
         review.add_property(type='excerpt', value=excerpt)
