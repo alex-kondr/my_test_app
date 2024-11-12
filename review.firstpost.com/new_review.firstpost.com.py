@@ -1,6 +1,7 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
 
 
 def run(context, session):
@@ -29,7 +30,7 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split(' Preview ')[0].split(' Review')[0].split(' review:')[0].split(' Preview: ')[0].replace('Review: ', '').replace('Review ', '').replace(' reviewed', '').replace(' review', '').replace('&amp;', ' - ').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.split('-')[-1].replace('.html', '')
     product.category = 'Tech'
 
     review = Review()
@@ -55,11 +56,11 @@ def process_review(data, context, session):
         grade_overall = float(grade_overall.split('/')[0].split()[-1])
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
-    grades = data.xpath('//strong[contains(., "-") and contains(., ":") and regexp:test(., "\d.?\d?/\d")]')
+    grades = data.xpath('//strong[contains(., "-") and contains(., ":") and regexp:test(., "\d.?\d?/\d") and not(contains(., "span style"))]')
     for grade in grades:
         grade = grade.xpath('.//text()').string(multiple=True)
-        grade_name = grade.split(' - ')[-1].split(':')[0].strip() if ' - ' in grade else grade.split(':')[-1].rsplit(' ', 1)[0].strip()
-        grade_val, grade_best = grade.split(':')[-1].split()[-1].strip('( )').split('/')
+        grade_name = re.split(r'\d.?\d?/\d', grade)[0].split(' - ')[-1].strip(' :')
+        grade_val, grade_best = re.search(r'\d.?\d?/\d+', grade).group().split('/')
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=float(grade_best)))
 
     pros = data.xpath('//p[strong[contains(., "Pros")]]/text()[not(preceding-sibling::strong[contains(., "Cons")])]')
@@ -74,9 +75,9 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//strong[contains(., "Cons")]/following-sibling::text()[not(preceding-sibling::strong[contains(., "Overall Rating") or contains(., "Price")])]')
+    cons = data.xpath('//strong[contains(., "Cons")]/following-sibling::text()[not(preceding-sibling::strong[contains(., "Rating") or contains(., "Price")])]')
     if not cons:
-        cons = data.xpath('//p[strong[contains(., "Cons")]]/text()[not(preceding-sibling::strong[contains(., "Overall Rating") or contains(., "Price")])]')
+        cons = data.xpath('//p[strong[contains(., "Cons")]]/text()[not(preceding-sibling::strong[contains(., "Rating") or contains(., "Price")])]')
 
     for con in cons:
         con = con.string(multiple=True)
@@ -95,6 +96,9 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]/text()|//p[strong[regexp:test(., "verdict", "i")]]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
+        conclusion = re.split(r' [vV]erdict\s', conclusion)[-1]
+        conclusion = re.sub(r'Image Credit: Tech2 \| [\s\w]+\[/caption\]', '', conclusion)
+        conclusion = re.sub(r'\[caption id=.attachment_\d+. align=.alignnone. width=.\d+.\]', '', conclusion).strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]/preceding-sibling::p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]').string(multiple=True)
@@ -102,7 +106,9 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[contains(@class, "content")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]').string(multiple=True)
 
     if excerpt:
-        excerpt = excerpt.replace('Image Credit: Tech2 | Ameya Dalvi[/caption]', '').replace('[caption id=“attachment_12777982” align=“alignnone” width=“640”]', '')
+        excerpt = re.split(r' [vV]erdict\s', excerpt)[0]
+        excerpt = re.sub(r'Image Credit: Tech2 \| [\s\w]+\[/caption\]', '', excerpt)
+        excerpt = re.sub(r'\[caption id=“attachment_\d+” align=“alignnone” width=“\d+”\]', '', excerpt).strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
