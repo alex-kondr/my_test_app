@@ -95,20 +95,29 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]//text()|//p[strong[regexp:test(., "verdict", "i")]]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[strong[regexp:test(., "conclusion", "i")]]//text()|//p[strong[regexp:test(., "conclusion", "i")]]/following-sibling::p//text()').string(multiple=True)
+
     if conclusion:
-        conclusion = re.split(r'[vV]erdict\s', conclusion)[-1]
-        conclusion = re.sub(r'Image Credit: Tech2 \| [\s\w]+\[/caption\]', '', conclusion)
-        conclusion = re.sub(r'\[caption id=.attachment_\d+. align=.alignnone. width=.\d+.\]', '', conclusion).strip()
+        conclusion = re.split(r'[vV]erdict|[cC]onclusion', conclusion)[-1]
+        conclusion = re.sub(r'Image.+\[/caption\]', '', conclusion)
+        conclusion = re.sub(r'\|.+\[/caption\]', '', conclusion)
+        conclusion = re.sub(r'\[caption id=.attachment_\d+. align=.alignnone. width=.\d+.\]', '', conclusion)
+        conclusion = conclusion.replace('[/caption]', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]/preceding-sibling::p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]').string(multiple=True)
+    excerpt = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]/preceding-sibling::p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]|//p[strong[regexp:test(., "verdict", "i")]]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[strong[regexp:test(., "conclusion", "i")]]/preceding-sibling::p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]|//p[strong[regexp:test(., "conclusion", "i")]]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "content")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]').string(multiple=True)
 
     if excerpt:
-        excerpt = re.split(r'[vV]erdict\s', excerpt)[0]
-        excerpt = re.sub(r'Image Credit: Tech2 \| [\s\w]+\[/caption\]', '', excerpt)
-        excerpt = re.sub(r'\[caption id=“attachment_\d+” align=“alignnone” width=“\d+”\]', '', excerpt).strip()
+        excerpt = re.split(r'[vV]erdict|[cC]onclusion', excerpt)[0]
+        excerpt = re.sub(r'Image.+\[/caption\]', '', excerpt)
+        excerpt = re.sub(r'\|.+\[/caption\]', '', excerpt)
+        excerpt = re.sub(r'\[caption id=.attachment_\d+. align=.alignnone. width=.\d+.\]', '', excerpt)
+        excerpt = excerpt.replace('[/caption]', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
