@@ -70,7 +70,7 @@ def process_product(data, context, session):
         if is_verified_buyer:
             review.add_property(type='is_verified_buyer', value=True)
 
-        title = rev.xpath('.//div[contains(@class, "review-item-title")]//text()').string(multile=True)
+        title = rev.xpath('.//div[contains(@class, "review-item-title")]//text()').string(multiple=True)
         excerpt = rev.xpath('.//p[contains(@class, "review-item-content")]//text()').string(multiple=True)
         if excerpt:
             review.title = excerpt
