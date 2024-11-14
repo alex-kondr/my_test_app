@@ -102,7 +102,7 @@ def process_review(data, context, session):
         conclusion = re.split(r'[vV]erdict|[cC]onclusion', conclusion)[-1]
         conclusion = re.sub(r'Image.+\[/caption\]', '', conclusion)
         conclusion = re.sub(r'\|.+\[/caption\]', '', conclusion)
-        conclusion = re.sub(r'\[caption id=.attachment_\d+. align=.alignnone. width=.\d+.\]', '', conclusion)
+        conclusion = re.sub(r'\[caption id=.attachment_\d+. align=.+ width=.\d+.\]', '', conclusion)
         conclusion = conclusion.replace('[/caption]', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
@@ -116,7 +116,7 @@ def process_review(data, context, session):
         excerpt = re.split(r'[vV]erdict|[cC]onclusion', excerpt)[0]
         excerpt = re.sub(r'Image.+\[/caption\]', '', excerpt)
         excerpt = re.sub(r'\|.+\[/caption\]', '', excerpt)
-        excerpt = re.sub(r'\[caption id=.attachment_\d+. align=.alignnone. width=.\d+.\]', '', excerpt)
+        excerpt = re.sub(r'\[caption id=.attachment_\d+. align=.+ width=.\d+.\]', '', excerpt)
         excerpt = excerpt.replace('[/caption]', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
