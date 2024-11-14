@@ -41,7 +41,7 @@ def process_product(data, context, session):
     product.name = context['name']
     product.url = context['url']
     product.ssid = data.xpath('//meta[@itemprop="productID"]/@content').string()
-    product.category = context['cat']
+    product.category = context['cat'].replace(' / ', '/')
     product.sku = data.xpath('//span[@itemprop="sku"]/text()').string()
     product.manufacturer = data.xpath('//a[contains(@class, "product-detail-manufacturer-link")]/@title').string()
 
@@ -53,6 +53,7 @@ def process_product(data, context, session):
     for rev in revs:
         review = Review()
         review.type = 'user'
+        review.url = product.url
 
         date = rev.xpath('.//div[contains(@class, "review-item-date")]//text()').string(multiple=True)
         if date:
@@ -73,7 +74,7 @@ def process_product(data, context, session):
         title = rev.xpath('.//div[contains(@class, "review-item-title")]//text()').string(multiple=True)
         excerpt = rev.xpath('.//p[contains(@class, "review-item-content")]//text()').string(multiple=True)
         if excerpt:
-            review.title = excerpt
+            review.title = title
         else:
             excerpt = title
 
