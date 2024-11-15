@@ -3,24 +3,30 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.helsebixen.dk/', use='curl'), process_category, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.queue(Request('https://www.helsebixen.dk/', use='curl'), process_catlist, dict())
 
 
-def process_category(data, context, session):
+def process_catlist(data, context, session):
+    next_url = None
+
     cats = data.xpath('//li/a[regexp:test(@class, "^navigation-offcanvas-link") and not(@title="Brands")]')
     for cat in cats:
         name = cat.xpath('@title').string()
-        url = cat.xpath('@data-href').string()
+        next_url = cat.xpath('@data-href').string()
 
         context['cat'] = (context.get('cat', '') + '|' + name).strip(' |')
 
-        if url:
-            url = 'https://www.helsebixen.dk' + url
-            session.queue(Request(url), process_category, dict(context))
+        if next_url:
+            next_url = 'https://www.helsebixen.dk' + next_url
+            session.queue(Request(next_url), process_catlist, dict(context))
         else:
             url = cat.xpath('@href').string() + '?order=anmeldelser'
             session.queue(Request(url), process_prodlist, dict(context))
+
+    if not next_url:
+        url = data.xpath('//a[contains(., "Se alt")]/@href').string() + '?order=anmeldelser'
+        session.queue(Request(url), process_prodlist, dict(context))
 
 
 def process_prodlist(data, context, session):
@@ -34,6 +40,11 @@ def process_prodlist(data, context, session):
             session.queue(Request(url), process_product, dict(context, name=name, url=url))
         else:
             return
+
+    next_page = data.xpath('//input[@id="p-next" and not(@disabled)]/@value').string()
+    if next_page:
+        next_url = data.response_url + '?p=' + next_page
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -73,17 +84,19 @@ def process_product(data, context, session):
 
         title = rev.xpath('.//div[contains(@class, "review-item-title")]//text()').string(multiple=True)
         excerpt = rev.xpath('.//p[contains(@class, "review-item-content")]//text()').string(multiple=True)
-        if excerpt:
-            review.title = title
+        if excerpt and title:
+            review.title = title.strip(' +-')
         else:
             excerpt = title
 
         if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = excerpt.strip(' +-')
+            if len(excerpt) > 1:
+                review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = review.digest() if author else review.digest(excerpt)
+                review.ssid = review.digest() if author else review.digest(excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)

@@ -11,28 +11,28 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.helsebixen.dk",
+    name="review.miekofishing.se",
     )
-agent.create_run(
-    name_agent_for_test="Helsebixen [DK]",
-    agent_id="19717",
-    url='https://www.helsebixen.dk/',
-    next_func=ProcessRun.frontpage.name,
-    new_parser=False,
-    breakers=10000,
-    curl=True
-)
-agent.create_frontpage(
-    cats_xpath='//ul[contains(@class, "navigation-offcanvas")]/li/a[not(@title="Brands")]',
-    name_xpath='@title',
-    url_xpath='@data-href'
-)
+# agent.create_run(
+#     name_agent_for_test="Mieko Fishing [SE]",
+#     agent_id="19729",
+#     url='https://www.miekofishing.se/',
+#     next_func=ProcessRun.frontpage.name,
+#     new_parser=False,
+#     breakers=10000,
+#     curl=True
+# )
+# agent.create_frontpage(
+#     cats_xpath='//li[@class="li0 has-ul"]',
+#     name_xpath='(a|span)//text()',
+#     url_xpath=''
+# )
 # agent.create_revlist(
-#     revs_xpath='//div[contains(@class, "sub-cat-list")]',
-#     name_title="title",
-#     name_title_xpath='p/text()',
-#     url_xpath='a/@href',
-#     prod_rev="review",
+#     revs_xpath='//h2[contains(@class, "product-title")]/a',
+#     name_title="name",
+#     name_title_xpath='text()',
+#     url_xpath='@href',
+#     prod_rev="product",
 #     next_url_xpath='//link[@rel="next"]/@href',
 # )
 # agent.create_review(
