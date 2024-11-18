@@ -99,20 +99,23 @@ def process_reviews(data, context, session):
 
         title = rev.xpath('.//b[contains(@class, "title")]//text()').string(multiple=True)
         excerpt = rev.xpath('.//div[contains(@class, "body")]//text()').string(multiple=True)
-        if title and excerpt:
-            review.title = remove_emoji(title)
-        elif not excerpt:
+
+        if excerpt and len(remove_emoji(excerpt)) > 1:
+            if title:
+                review.title = remove_emoji(title)
+        else:
             excerpt = title
 
         if excerpt:
             excerpt = remove_emoji(excerpt)
-            review.add_property(type='excerpt', value= excerpt)
+            if len(excerpt) > 1:
+                review.add_property(type='excerpt', value= excerpt)
 
-            review.ssid = rev.xpath('@data-review-id').string()
-            if not review.ssid:
-                review.ssid = review.digest() if author else review.digest(excerpt)
+                review.ssid = rev.xpath('@data-review-id').string()
+                if not review.ssid:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     revs_cnt = revs_data.get('total_count')
     offset = context.get('offset', 0) + 5
