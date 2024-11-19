@@ -1,13 +1,14 @@
 from agent import *
 from models.products import *
 import simplejson
+import HTMLParser
 
 
 XCAT = ['WBY']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=9000)]
     session.queue(Request('https://www.miekofishing.se/', use='curl'), process_frontpage, dict())
 
 
@@ -46,8 +47,7 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = product.url.split('/')[-1].split('-', 1)[-1].replace('.html', '')
-    product.sku = product.url.split('/')[-1].split('-', 1)[0]
+    product.ssid = product.url.split('/')[-1].replace('.html', '')
     product.category = context['cat'].replace('|Övriga tillbehör', '').replace('|Övrigt', '').replace('|Övriga Spinnare', '').replace('|Övriga skeddrag', '')
     product.manufacturer = data.xpath('//tr[@class="product-brand"]/td[@class="value"]//text()').string(multiple=True)
 
@@ -68,6 +68,7 @@ def process_product(data, context, session):
 def process_reviews(data, context, session):
     product = context['product']
 
+    h = HTMLParser.HTMLParser()
     revs_data = simplejson.loads(data.content)
 
     revs = revs_data.get('comments', [])
@@ -82,6 +83,7 @@ def process_reviews(data, context, session):
 
         author = rev.get('customer_name')
         if author:
+            author = h.unescape(author)
             review.authors.append(Person(name=author, ssid=author))
 
         grade_overall = rev.get('grade')
@@ -99,20 +101,23 @@ def process_reviews(data, context, session):
         title = rev.get('title')
         excerpt = rev.get('content')
         if excerpt:
-            review.title = title
+            review.title = h.unescape(title).replace('\r\n', ' ').replace('  ', ' ').strip()
         else:
             excerpt = title
 
         if excerpt:
+            excerpt = h.unescape(excerpt).replace('\r\n', ' ').replace('  ', ' ').strip()
             review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = rev.get('id_product_comment')
-            if not review.ssid:
+            ssid = rev.get('id_product_comment')
+            if ssid:
+                review.ssid = str(ssid)
+            else:
                 review.ssid = review.digest() if author else review.digest(excerpt)
 
             product.reviews.append(review)
 
-    revs_cnt = rev.get('comments_nb', 0)
+    revs_cnt = revs_data.get('comments_nb', 0)
     offset = context.get('offset', 0) + 5
     if offset < revs_cnt:
         next_page = context.get('page', 1) + 1

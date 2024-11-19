@@ -28,14 +28,14 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' Preview ')[0].split(' Review')[0].split(' review:')[0].split(' Preview: ')[0].replace('Review: ', '').replace('Review ', '').replace(' reviewed', '').replace(' review', '').replace('&amp;', ' - ').strip()
+    product.name = context['title'].split(' Preview ')[0].split(' Review')[0].split(' review:')[0].split(' Preview: ')[0].replace('Review: ', '').replace('Review ', '').replace(' reviewed', '').replace(' review', '').replace('&amp;', ' - ').replace('&#039;', "’").strip()
     product.url = context['url']
     product.ssid = product.url.split('-')[-1].replace('.html', '')
     product.category = 'Tech'
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title'].replace('&amp;', ' - ')
+    review.title = context['title'].replace('&amp;', ' - ').replace('&#039;', "'")
     review.url = product.url
     review.ssid = product.ssid
 
@@ -51,16 +51,16 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//p[contains(., "Rating:")]/text()[regexp:test(., "\d.?\d?/\d")]').string()
+    grade_overall = data.xpath('//p[contains(., "Rating:")]//text()[regexp:test(., "\d.?\d?/\d")]').string()
     if grade_overall:
         grade_overall = float(grade_overall.split('/')[0].split()[-1])
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
-    grades = data.xpath('//strong[contains(., "-") and contains(., ":") and regexp:test(., "\d.?\d?/\d") and not(contains(., "span style"))]')
+    grades = data.xpath('//strong[contains(., ":") and regexp:test(., "\d.?\d?/\d") and not(contains(., "span style"))]')
     for grade in grades:
         grade = grade.xpath('.//text()').string(multiple=True)
-        grade_name = re.split(r'\d.?\d?/\d', grade)[0].split(' - ')[-1].strip(' :')
-        grade_val, grade_best = re.search(r'\d.?\d?/\d+', grade).group().split('/')
+        grade_name = re.split(r'\d\.?\d{0,2}/\d+', grade)[0].split(' - ')[-1].strip(' :')
+        grade_val, grade_best = re.search(r'\d\.?\d{0,2}/\d+', grade).group().split('/')
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=float(grade_best)))
 
     pros = data.xpath('//p[strong[contains(., "Pros")]]/text()[not(preceding-sibling::strong[contains(., "Cons")])]')
@@ -90,8 +90,9 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//span[@class="less-cont"]//text()').string(multiple=True)
+    summary = data.xpath('(//h2|//span)[@class="less-cont"]//text()').string(multiple=True)
     if summary:
+        summary = summary.replace('&mldr;', '...')
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]//text()|//p[strong[regexp:test(., "verdict", "i")]]/following-sibling::p//text()').string(multiple=True)
@@ -103,7 +104,7 @@ def process_review(data, context, session):
         conclusion = re.sub(r'Image.+\[/caption\]', '', conclusion)
         conclusion = re.sub(r'\|.+\[/caption\]', '', conclusion)
         conclusion = re.sub(r'\[caption id=.attachment_\d+. align=.+ width=.\d+.\]', '', conclusion)
-        conclusion = conclusion.replace('[/caption]', '').strip()
+        conclusion = conclusion.replace('[/caption]', '').replace('&#039;', "'").strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]/preceding-sibling::p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]|//p[strong[regexp:test(., "verdict", "i")]]//text()').string(multiple=True)
@@ -113,7 +114,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[contains(@class, "content")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]').string(multiple=True)
 
     if excerpt:
-        excerpt = re.split(r'[vV]erdict|[cC]onclusion', excerpt)[0]
+        excerpt = re.split(r'\.[\w\s\d,]+[vV]erdict|[cC]onclusion', excerpt)[0]
         excerpt = re.sub(r'Image.+\[/caption\]', '', excerpt)
         excerpt = re.sub(r'\|.+\[/caption\]', '', excerpt)
         excerpt = re.sub(r'\[caption id=.attachment_\d+. align=.+ width=.\d+.\]', '', excerpt)
