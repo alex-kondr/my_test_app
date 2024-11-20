@@ -114,7 +114,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[contains(@class, "content")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]').string(multiple=True)
 
     if excerpt:
-        excerpt = re.split(r'\.[\w\s\d,]+[vV]erdict|[cC]onclusion', excerpt)[0]
+        excerpt = re.split(r'\.[\w\s\d,:]+[vV]erdict|[cC]onclusion', excerpt)[0]
         excerpt = re.sub(r'Image.+\[/caption\]', '', excerpt)
         excerpt = re.sub(r'\|.+\[/caption\]', '', excerpt)
         excerpt = re.sub(r'\[caption id=.attachment_\d+. align=.+ width=.\d+.\]', '', excerpt)

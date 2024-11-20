@@ -123,5 +123,6 @@ def process_reviews(data, context, session):
         next_page = context.get('page', 1) + 1
         next_url = 'https://www.miekofishing.se/module/productcomments/ListComments?id_product={sku}&page={page}'.format(sku=product.sku, page=next_page)
         session.do(Request(next_url), process_reviews, dict(product=product, offset=offset, page=next_page))
-    else:
+
+    elif product.reviews:
         session.emit(product)
