@@ -39,6 +39,8 @@ def process_frontpage(data, context, session):
         url = cat.xpath('@href').string()
         session.queue(Request(url), process_prodlist, dict(cat=name))
 
+    session.queue(Request('https://hammeronline.in/collections/hammer-gadgets'), process_prodlist, dict(cat='Hammer Gadgets'))
+
 
 def process_prodlist(data, context, session):
     prods = data.xpath('//div[@data-product-id]')

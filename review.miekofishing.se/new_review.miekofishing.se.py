@@ -61,7 +61,7 @@ def process_product(data, context, session):
 
     revs_cnt = data.xpath('//small[contains(., "recensioner)")]')
     if revs_cnt:
-        revs_url = 'https://www.miekofishing.se/module/productcomments/ListComments?id_product={sku}&page=1'.format(sku=product.sku)
+        revs_url = 'https://www.miekofishing.se/module/productcomments/ListComments?id_product={mpn}&page=1'.format(mpn=mpn)
         session.do(Request(revs_url), process_reviews, dict(product=product))
 
 
