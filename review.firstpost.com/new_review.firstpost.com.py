@@ -63,7 +63,7 @@ def process_review(data, context, session):
         grade_val, grade_best = re.search(r'\d\.?\d{0,2}/\d+', grade).group().split('/')
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=float(grade_best)))
 
-    pros = data.xpath('//p[strong[contains(., "Pros")]]/text()[not(preceding-sibling::strong[contains(., "Cons")])]')
+    pros = data.xpath('//p[strong[contains(., "Pros")]]//text()[not(preceding-sibling::strong[contains(., "Cons")] or contains(., "Pros:"))][normalize-space()]')
     for pro in pros:
         pro = pro.string(multiple=True)
         if pro and '- ' in pro:
@@ -75,9 +75,9 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//strong[contains(., "Cons")]/following-sibling::text()[not(preceding-sibling::strong[contains(., "Rating") or contains(., "Price")])]')
+    cons = data.xpath('//strong[contains(., "Cons")]/following-sibling::text()[not(preceding-sibling::strong[contains(., "Rating") or contains(., "Price")])][normalize-space()]')
     if not cons:
-        cons = data.xpath('//p[strong[contains(., "Cons")]]/text()[not(preceding-sibling::strong[contains(., "Rating") or contains(., "Price")])]')
+        cons = data.xpath('//p[strong[contains(., "Cons")]]//text()[not(preceding-sibling::strong[contains(., "Rating") or contains(., "Price")] or contains(., "Cons:"))][normalize-space()]')
 
     for con in cons:
         con = con.string(multiple=True)
@@ -114,7 +114,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[contains(@class, "content")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d"))]').string(multiple=True)
 
     if excerpt:
-        excerpt = re.split(r'\.[\w\s\d,]+[vV]erdict|[cC]onclusion', excerpt)[0]
+        excerpt = re.split(r'\.[\w\s\d,:()]+[vV]erdict|\.[\w\s\d,:()]+[cC]onclusion', excerpt)[0]
         excerpt = re.sub(r'Image.+\[/caption\]', '', excerpt)
         excerpt = re.sub(r'\|.+\[/caption\]', '', excerpt)
         excerpt = re.sub(r'\[caption id=.attachment_\d+. align=.+ width=.\d+.\]', '', excerpt)

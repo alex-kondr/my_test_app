@@ -198,7 +198,7 @@ class TestProduct:
         xproduct_names_category = self.xproduct_names_category + xproduct_names
         if not_xproduct_name:
             xproduct_names_category.remove(not_xproduct_name)
-        properties = self.product.get("product", {}).get("properties", {})
+        properties = self.product.get("product", {}).get("properties", [])
         property = [property for property in properties if property.get("type") == "name"][0]
         name = property.get("value")
 
@@ -224,7 +224,7 @@ class TestProduct:
     def test_product_category(self, xproduct_names: list[str]=[]) -> None:
         xproduct_names_category = self.xproduct_names_category + xproduct_names
 
-        properties = self.product.get("product", {}).get("properties", {})
+        properties = self.product.get("product", {}).get("properties", [])
         category = [property.get("value") for property in properties if property.get("type") == "category"][0]
 
         temp_cat = None
@@ -241,21 +241,21 @@ class TestProduct:
             self.error_category.append(properties)
 
     def test_product_sku(self):
-        properties = self.product.get("product", {}).get("properties", {})
+        properties = self.product.get("product", {}).get("properties", [])
         sku = [property.get("value") for property in properties if property.get("type") == "id.sku"]
 
         if sku and len(sku[0]) < 2:
             self.error_sku.append(properties)
 
     def test_product_id_manufacturer(self):
-        properties = self.product.get("product", {}).get("properties", {})
+        properties = self.product.get("product", {}).get("properties", [])
         id_manufacturer = [property.get("value") for property in properties if property.get("type") == "id.manufacturer"]
 
         if not id_manufacturer or len(id_manufacturer[0]) < 2:
             self.error_id_manufacturer.append(properties)
 
     def test_product_ean_gtin(self):
-        properties = self.product.get("product", {}).get("properties", {})
+        properties = self.product.get("product", {}).get("properties", [])
         ean = [property.get("value") for property in properties if property.get("type") == "id.ean"]
 
         if ean and (len(str(ean[0])) < 11 or not str(ean[0]).isdigit()):
@@ -264,7 +264,7 @@ class TestProduct:
     def test_review_title(self, xreview_title: list[str]=[]) -> None:
         xreview_title = self.xreview_title + xreview_title
 
-        properties = self.product.get("review", {}).get("properties", {})
+        properties = self.product.get("review", {}).get("properties", [])
         property = [property for property in properties if property.get("type") == "title"]
 
         if not property:
@@ -279,40 +279,40 @@ class TestProduct:
             self.error_title.append(properties)
 
     def test_review_date(self) -> None:
-        properties = self.product.get("review", {}).get("properties", {})
+        properties = self.product.get("review", {}).get("properties", [])
         date = [property for property in properties if property.get("type") == "publish_date"]
 
         if not date:
             self.error_date.append(properties)
 
     def test_review_grade(self) -> None:
-        properties = self.product.get("review", {}).get("properties", {})
+        properties = self.product.get("review", {}).get("properties", [])
         grades = [property for property in properties if property.get("type") == "grade"]
 
         if not grades:
             self.error_grade.append(properties)
 
     def test_review_author(self) -> None:
-        properties = self.product.get("person", {}).get("properties", {})
+        properties = self.product.get("person", {}).get("properties", [])
         author = [property for property in properties if property.get("type") == "name"]
 
         if not author:
-            properties = self.product.get("review", {}).get("properties", {})
+            properties = self.product.get("review", {}).get("properties", [])
             properties.append({"error_no_author": "No author"})
             self.error_author.append(properties)
 
     def test_review_award(self) -> None:
-        properties = self.product.get("review", {}).get("properties", {})
+        properties = self.product.get("review", {}).get("properties", [])
         award = [property for property in properties if property.get("type") == "awards"]
 
         if not award:
-            properties = self.product.get("review", {}).get("properties", {})
+            properties = self.product.get("review", {}).get("properties", [])
             properties.append({"error_no_award": "No award"})
             self.error_award.append(properties)
 
     def test_review_pros_cons(self) -> None:
         temp_pros_cons = None
-        properties = self.product.get("review", {}).get("properties", {})
+        properties = self.product.get("review", {}).get("properties", [])
         property_pros = [property for property in properties if property.get("type") == "pros"]
         property_cons = [property for property in properties if property.get("type") == "cons"]
         pros = [property.get("value") for property in property_pros]
@@ -348,7 +348,7 @@ class TestProduct:
     def test_review_conclusion(self, xreview_conclusion: list[str] = []) -> None:
         xreview_conclusions = self.xreview_excerpt + xreview_conclusion
 
-        properties = self.product.get("review", {}).get("properties", {})
+        properties = self.product.get("review", {}).get("properties", [])
         property = [property for property in properties if property.get("type") == "conclusion"]
 
         if not property:
@@ -365,7 +365,7 @@ class TestProduct:
     def test_review_excerpt(self, xreview_excerpt: list[str] = [], len_chank: int = 100, len_excerpt: int = 10) -> None:
         xreview_excerpts = self.xreview_excerpt + xreview_excerpt
 
-        properties = self.product.get("review", {}).get("properties", {})
+        properties = self.product.get("review", {}).get("properties", [])
         conclusion = [property.get("value") for property in properties if property.get("type") == "conclusion"]
         summary = [property.get("value") for property in properties if property.get("type") == "summary"]
         property = [property for property in properties if property.get("type") == "excerpt"]
