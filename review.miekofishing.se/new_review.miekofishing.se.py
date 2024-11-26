@@ -2,6 +2,7 @@ from agent import *
 from models.products import *
 import simplejson
 import HTMLParser
+import re
 
 
 XCAT = ['WBY']
@@ -49,10 +50,11 @@ def process_product(data, context, session):
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('.html', '')
     product.category = context['cat'].replace('|Övriga tillbehör', '').replace('|Övrigt', '').replace('|Övriga Spinnare', '').replace('|Övriga skeddrag', '')
+    product.sku = data.xpath('//input[@name="id_product"]/@value').string()
     product.manufacturer = data.xpath('//tr[@class="product-brand"]/td[@class="value"]//text()').string(multiple=True)
 
     mpn = data.xpath('//tr[@class="product-reference"]/td[@class="value"]//text()').string(multiple=True)
-    if mpn:
+    if mpn and re.search(r'^[\d\-\.]+$', mpn):
         product.add_property(type="id.manufacturer", value=mpn)
 
     ean = data.xpath('//tr[contains(., "ean13")]/td[@class="value"]//text()').string(multiple=True)
@@ -61,7 +63,7 @@ def process_product(data, context, session):
 
     revs_cnt = data.xpath('//small[contains(., "recensioner)")]')
     if revs_cnt:
-        revs_url = 'https://www.miekofishing.se/module/productcomments/ListComments?id_product={mpn}&page=1'.format(mpn=mpn)
+        revs_url = 'https://www.miekofishing.se/module/productcomments/ListComments?id_product={sku}&page=1'.format(sku=product.sku)
         session.do(Request(revs_url), process_reviews, dict(product=product))
 
 
