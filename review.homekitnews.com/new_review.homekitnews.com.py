@@ -2,7 +2,7 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['apple', 'aqara', 'eve', 'mi', 'mijia', 'hpm', 'reviews', 'lifesmart', 'd-link', 'vocolinc', 'youtube', 'ikea', 'velux', 'wozart', 'opus', 'ge', 'athom', 'philips', 'zemismart']
+XCAT = ['apple', 'aqara', 'eve', 'mi', 'mijia', 'hpm', 'reviews', 'lifesmart', 'd-link', 'vocolinc', 'youtube', 'ikea', 'velux', 'wozart', 'opus', 'ge', 'athom', 'philips', 'zemismart', 'how to...']
 
 
 def run(context, session):
@@ -23,7 +23,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = data.xpath('//h2[@class="cwp-item"]/text()').string() or context['title'].split(' (review')[0]
+    product.name = data.xpath('//h2[@class="cwp-item"]/text()').string() or context['title'].split(' (review')[0].replace('(installation and review)', '').replace('(Review)', '').strip()
     product.url = data.xpath('//div[contains(@class, "affiliate-button")]/a/@href').string() or context['url']
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
 
@@ -73,18 +73,22 @@ def process_review(data, context, session):
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//div[contains(@class, "entry-summary")]//p[preceding-sibling::p[regexp:test(., "conclusion:", "i") or regexp:test(., "in conclusion", "i" or contains(., "CONCLUSION"))]]//text()').string(multiple=True)
+    conclusion = data.xpath('//div[contains(@class, "entry-summary")]//p[preceding-sibling::p[regexp:test(., "conclusion:", "i") or regexp:test(., "in conclusion", "i") or contains(., "CONCLUSION")]]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[contains(@class, "entry-summary")]//p[contains(., "CONCLUSION")]/text()').string()
     if not conclusion:
         conclusion = data.xpath('//h5[contains(., "SUMMING UP")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[contains(., "IN SUMMARY")]/following-sibling::p//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h5[contains(., "SUMMING UP")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "entry-summary")]//p[not(preceding-sibling::p[regexp:test(., "conclusion:", "i") or contains(., "CONCLUSION") or regexp:test(., "in conclusion", "i")])][not(regexp:test(., "conclusion:", "i") or contains(., "CONCLUSION") or regexp:test(., "in conclusion", "i"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//p[contains(., "IN SUMMARY")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "entry-summary")]//p[not(preceding-sibling::p[regexp:test(., "conclusion:", "i") or contains(., "CONCLUSION") or regexp:test(., "in conclusion", "i")])][not(regexp:test(., "conclusion:", "i") or contains(., "CONCLUSION") or regexp:test(., "in conclusion", "i") or a[regexp:test(., ".\w")])]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
