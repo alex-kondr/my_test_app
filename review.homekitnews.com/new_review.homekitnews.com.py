@@ -28,12 +28,13 @@ def process_review(data, context, session):
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
 
     category = ''
-    cats = data.xpath('//a[@rel="category tag"]/text()').strings()
+    cats = data.xpath('//a[@rel="category tag"]/text()[normalize-space(.)]')
     for cat in cats:
+        cat = cat.string()
         if cat.lower() not in XCAT:
             category += cat + '|'
 
-    product.category = category.replace('/', ' ').strip(' |') if category else 'Tech'
+    product.category = category.replace('/', ' ').replace(' | ', '|').strip(' |') if category else 'Tech'
 
     review = Review()
     review.title = context['title']

@@ -46,7 +46,7 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod.xpath('.//div[contains(@class, "product__title ")]/text()').string()
         ean = prod.xpath('@data-product-id').string()
-        url = prod.xpath('.//a[@class="grid-product__link"]/@href').string()
+        url = 'https://hammeronline.in/collections/hammer-gadgets/products/' + prod.xpath('.//a[@class="grid-product__link"]/@href').string().split('/')[-1]
 
         revs_cnt = prod.xpath('.//span[contains(@class, "badge__text")]/text()').string()
         if revs_cnt and revs_cnt.split()[0].isdigit() and int(revs_cnt.split()[0]) > 0:
