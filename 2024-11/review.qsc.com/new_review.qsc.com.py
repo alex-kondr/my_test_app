@@ -6,7 +6,6 @@ XCAT = ['Solutions', 'Software & Firmware']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.qsc.com/products/', use='curl'), process_catlist, dict())
 
 

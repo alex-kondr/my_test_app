@@ -30,6 +30,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.queue(Request('https://hammeronline.in/'), process_frontpage, dict())
+    session.queue(Request('https://hammeronline.in/collections/hammer-gadgets'), process_prodlist, dict(cat='Hammer Gadgets'))
 
 
 def process_frontpage(data, context, session):
@@ -38,8 +39,6 @@ def process_frontpage(data, context, session):
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
         session.queue(Request(url), process_prodlist, dict(cat=name))
-
-    session.queue(Request('https://hammeronline.in/collections/hammer-gadgets'), process_prodlist, dict(cat='Hammer Gadgets'))
 
 
 def process_prodlist(data, context, session):
@@ -125,5 +124,5 @@ def process_reviews(data, context, session):
         next_page = context.get('page', 1) + 1
         next_url = 'https://judge.me/reviews/reviews_for_widget?url=hammer-audio.myshopify.com&shop_domain=hammer-audio.myshopify.com&platform=shopify&page={page}&per_page=5&product_id={ean}'.format(ean=context['ean'], page=next_page)
         session.do(Request(next_url), process_reviews, dict(context, product=product, offset=offset, page=next_page))
-    else:
+    elif product.reviews:
         session.emit(product)
