@@ -3,6 +3,7 @@ from models.products import *
 
 
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://latestintech.com/category/reviews/'), process_revlist, dict())
 
 
@@ -20,48 +21,44 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' Review')[0]
-    product.url = context['url']
+    product.name = context['title'].split(' Review')[0].strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
 
-    product.category = data.xpath("//div[@class='post-tags footer-block-links clearfix']//a[1]//text()").string()
-    if not product.category:
-        product.category = data.xpath("//div[@class='crumb'][last()]//text()").string(multiple=True)
+    product.url = data.xpath('//a[@rel="noreferrer noopener" or @data-type="link"]/@href').string()
+    if not product.url:
+        product.url = context['url']
+
+    tags = data.xpath('//meta[@property="article:tag"]/@content').strings()
+    for tag in tags:
+        if data.xpath('//a[regexp:test(@href, "{tag}", "i") and contains(@href, "/tag/")]/text()'.format(tag=tag.replace(' ', '-'))):
+            product.category = tag
+        elif not product.manufacturer:
+            product.manufacturer = tag
+
     if not product.category:
         product.category = 'Tech'
 
-    # cat
-    # //meta[@property="article:tag"]/@content
-    # //a[regexp:test(@href, //meta[@property="article:tag"]/@content, "i") and contains(@href, "/tag/")]/text()
-    
+    review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
     if date:
         review.date = date.split('T')[0]
 
-    grades = data.xpath("//div[@class='lets-review-block__crit']")
-    for grade in grades:
-        name = grade.xpath(".//div[@class='lets-review-block__crit__title lr-font-h']//text()").string()
-        value = grade.xpath(".//div[@class='lets-review-block__crit__score']//text()").string()
-        review.grades.append(Grade(name=name, value=float(value), best=10.0))
-
-    grade_overall = data.xpath("//div[@class='score']//text()").string()
-    if grade_overall:
-        review.grades.append(Grade(type='overall', name='Total Score', value=float(grade_overall), best=10.0))
-
-    conclusion = data.xpath("//div[@class='entry-content body-color clearfix link-color-wrap']/h2[contains(.,'Summary')]/following-sibling::p//text()").string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "conclusion|summary", "i")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath("//div[@class='entry-content body-color clearfix link-color-wrap']/h2[contains(.,'Summary')]/preceding-sibling::p//text()").string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(., "conclusion|summary", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath("//div[@class='entry-content body-color clearfix link-color-wrap']//p//text()").string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "entry-content")]/p//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
+
         session.emit(product)
