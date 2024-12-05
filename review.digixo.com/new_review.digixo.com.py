@@ -46,8 +46,10 @@ def process_product(data, context, session):
     product.manufacturer = context['brand']
 
     ean = data.xpath('//meta[@itemprop="gtin13"]/@content').string()
-    if ean:
+    if ean and ean.isdigit() and len(ean) > 10:
         product.add_property(type="id.ean", value=ean)
+    elif ean:
+        product.add_property(type='id.manufacturer', value=ean)
 
     revs_url = 'https://www.digixo.com/v1/product/{ssid}/getreviews'.format(ssid=product.ssid)
     session.queue(Request(revs_url), process_reviews, dict(product=product))
@@ -74,15 +76,17 @@ def process_reviews(data, context, session):
         if pros:
             pros = pros.split('\r\n')
             for pro in pros:
-                pro = pro.strip()
-                review.add_property(type='pros', value=pro)
+                pro = pro.strip(' -+')
+                if len(pro) > 1:
+                    review.add_property(type='pros', value=pro)
 
         cons = rev.get('comment_neg')
         if cons:
             cons = cons.split('\r\n')
             for con in cons:
-                con = con.strip()
-                review.add_property(type='cons', value=con)
+                con = con.strip(' -+')
+                if len(con) > 1:
+                    review.add_property(type='cons', value=con)
 
         title = rev.get('titre')
         excerpt = rev.get('comment')
@@ -94,7 +98,7 @@ def process_reviews(data, context, session):
         if excerpt:
             excerpt = excerpt.replace('\r\n', '').strip()
 
-            if len(excerpt) > 1:
+            if len(excerpt) > 2:
                 review.add_property(type="excerpt", value=excerpt)
 
                 review.ssid = review.digest() if author else review.digest(excerpt)
