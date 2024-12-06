@@ -4,7 +4,6 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.apothema.gr/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -44,7 +43,7 @@ def process_product(data, context, session):
     product.name = context['name']
     product.url = context['url']
     product.ssid = product.url.split('-')[-1]
-    product.category = context['cat']
+    product.category = context['cat'].title().replace(' - ', '/')
 
     prod_json = data.xpath("""//script[contains(., '"@type": "Product"')]/text()""").string()
     if prod_json:
