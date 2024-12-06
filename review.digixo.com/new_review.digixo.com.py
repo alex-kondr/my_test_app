@@ -74,18 +74,30 @@ def process_reviews(data, context, session):
 
         pros = rev.get('comment_pos')
         if pros:
-            pros = pros.split('\r\n')
+            if '\r\n' in pros:
+                pros = pros.split('\r\n')
+            elif '- ' in pros:
+                pros = pros.split('- ')
+            else:
+                pros = [pros]
+
             for pro in pros:
-                pro = pro.strip(' -+')
-                if len(pro) > 1:
+                pro = pro.replace('N/A', '').replace('n/a', '').replace('???', '').replace('??', '').replace('•', '').strip(' -+–')
+                if len(pro) > 1 and pro != 'na':
                     review.add_property(type='pros', value=pro)
 
         cons = rev.get('comment_neg')
         if cons:
-            cons = cons.split('\r\n')
+            if '\r\n' in cons:
+                cons = cons.split('\r\n')
+            elif '- ' in cons:
+                cons = cons.split('- ')
+            else:
+                cons = [cons]
+
             for con in cons:
-                con = con.strip(' -+')
-                if len(con) > 1:
+                con = con.replace('N/A', '').replace('n/a', '').replace('???', '').replace('??', '').replace('•', '').strip(' -+–')
+                if len(con) > 1 and con != 'na':
                     review.add_property(type='cons', value=con)
 
         title = rev.get('titre')
