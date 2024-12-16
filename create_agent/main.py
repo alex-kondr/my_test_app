@@ -11,28 +11,28 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.apothema.gr",
+    name="review.smarthomesounds.co.uk",
     )
-# agent.create_run(
-#     name_agent_for_test="apothema.gr [GR]",
-#     agent_id="19842",
-#     url='https://www.apothema.gr/',
-#     next_func=ProcessRun.frontpage.name,
-#     new_parser=False,
-#     breakers=10000,
-#     curl=True
-# )
-# agent.create_frontpage(
-#     cats_xpath='//li[@class="dropdown"]',
-#     name_xpath='a/text()',
-#     url_xpath='@href'
-# )
+agent.create_run(
+    name_agent_for_test="Smart Home Sounds [UK]",
+    agent_id="19946",
+    url='https://www.smarthomesounds.co.uk/',
+    next_func=ProcessRun.frontpage.name,
+    new_parser=False,
+    breakers=10000,
+    curl=False
+)
+agent.create_frontpage(
+    cats_xpath='//a[regexp:test(@class, "^level-0")]',
+    name_xpath='.//text()',
+    url_xpath='@href'
+)
 # agent.create_revlist(
-#     revs_xpath='//h2[contains(@class, "gb-headline-text")]/a',
-#     name_title="title",
+#     revs_xpath='//div[@class="product-info"]/a',
+#     name_title="name",
 #     name_title_xpath='text()',
 #     url_xpath='@href',
-#     prod_rev="review",
+#     prod_rev="product",
 #     next_url_xpath='//link[@rel="next"]/@href',
 # )
 # agent.create_review(
