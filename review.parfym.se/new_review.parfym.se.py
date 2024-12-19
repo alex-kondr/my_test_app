@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('https://www.parfym.se/', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -27,7 +27,11 @@ def process_frontpage(data, context, session):
 
 
 def process_prodlist(data, context, session):
-    prods_json = simplejson.loads(data.content)
+    try:
+        prods_json = simplejson.loads(data.content)
+    except:
+        return
+
     new_data = data.parse_fragment(prods_json.get('products'))
 
     prods = new_data.xpath('//div[@class="pfour-prod-item pfour-hasplusbutton"]')
@@ -70,3 +74,35 @@ def process_product(data, context, session):
         ean = ean.split(',')[0]
         if ean.isdigit() and len(ean) > 10:
             product.add_property(type='id.ean', value=ean)
+
+
+    revs = data.xpath('//div[@class="pfour-product-detail-reviewmenu__body__review"]')
+    for rev in revs:
+        review = Review()
+        review.type = 'user'
+        review.url = product.url
+
+        review.date = rev.xpath('.//div[contains(@class, "date")]/text()').string()
+
+        author = rev.xpath('.//div[contains(@class, "stars__name")]/text()').string()
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
+
+        grade_overall = rev.xpath('count(.//img[@alt="Star"])')
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+
+        excerpt = rev.xpath('.//div[contains(@class, "text")]//text()').string(multiple=True)
+        if excerpt:
+            excerpt = excerpt.strip(' •+-')
+            if len(excerpt) > 1:
+                review.add_property(type='excerpt', value=excerpt)
+
+                review.ssid = review.digest() if author else review.digest(excerpt)
+
+                product.reviews.append(review)
+
+    if product.reviews:
+        session.emit(product)
+
+# no next page
