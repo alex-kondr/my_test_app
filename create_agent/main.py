@@ -11,20 +11,20 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.parfym.se",
+    name="reviews.rollei.de",
     )
 # agent.create_run(
-#     name_agent_for_test="Parfym [SE]",
-#     agent_id="19973",
-#     url='https://www.parfym.se/',
-#     next_func=ProcessRun.revlist.name,
+#     name_agent_for_test="Rollei [DE]",
+#     agent_id="20090",
+#     url='https://www.rollei.de/collections/',
+#     next_func=ProcessRun.frontpage.name,
 #     new_parser=False,
 #     breakers=10000,
 #     curl=False
 # )
 # agent.create_frontpage(
-#     cats_xpath='//a[regexp:test(@class, "^level-0")]',
-#     name_xpath='.//text()',
+#     cats_xpath='//a[contains(@class, "card-link")]',
+#     name_xpath='text()',
 #     url_xpath='@href'
 # )
 # agent.create_revlist(

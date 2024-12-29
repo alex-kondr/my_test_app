@@ -71,7 +71,7 @@ def process_product(data, context, session):
 
     revs_data = data.xpath('//div[@class="product_ruk_rating_snippet"]/@data-sku').string()
     if revs_data:
-        revs_url = 'https://api.reviews.co.uk/timeline/data?store=smart-home-sounds&page=1&per_page=150&sku={}'.format(revs_data)
+        revs_url = 'https://api.reviews.co.uk/timeline/data?store=smart-home-sounds&page=1&per_page=10&sku={}'.format(revs_data)
         session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(product=product))
 
 
@@ -127,7 +127,7 @@ def process_reviews(data, context, session):
 
     revs_cnt = revs_json.get('stats', {}).get('review_count', 0)
     next_page = context.get('page', 1) + 1
-    offset = context.get('offset', 0) + 150
+    offset = context.get('offset', 0) + 10
     if offset < int(revs_cnt):
         next_url = data.response_url.replace('&page='+str(next_page-1), '&page='+str(next_page))
         session.do(Request(next_url, force_charset='utf-8'), process_reviews, dict(product=product, page=next_page, offset=offset))

@@ -20,7 +20,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = data.xpath('//h1[@class="o-post__title"]//text()').string(multiple=True)
+    product.name = data.xpath('//h1[@class="o-post__title"]//text()').string(multiple=True).replace(u'\uFEFF', '')
     product.url = context["url"]
     product.ssid = product.url.split('/')[-2]
     product.category = "Tech"
@@ -45,10 +45,12 @@ def process_review(data, context, session):
 
     summary = data.xpath("//div[contains(@class, 'o-post__lead')]//text()").string(multiple=True)
     if summary:
+        summary = summary.replace(u'\uFEFF', '')
         review.add_property(type="summary", value=summary)
 
     excerpt = data.xpath('//div[@class="u-onlyArticlePages"]/p[not(contains(., "(Technet.hu)") or contains(., "linkek:"))]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '')
         review.add_property(type="excerpt", value=excerpt)
 
         product.reviews.append(review)
