@@ -1,6 +1,34 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
+
+
+XCAT = ['All Products', 'Angebote unter 20 €', 'B-Ware', 'Black Friday', 'Black Weeks', 'Black Weeks2', 'Cyber Monday', 'Gesamtes Filterzubehor', 'Summer Black Friday']
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def run(context, session):
@@ -13,7 +41,9 @@ def process_catlist(data, context, session):
     for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url), process_prodlist, dict(cat=name))
+
+        if name not in XCAT and 'Mach ' not in name and 'Top Producte' not in name:
+            session.queue(Request(url), process_prodlist, dict(cat=name))
 
     next_url = data.xpath('//a[contains(., "Nächste")]/@href').string()
     if next_url:
@@ -92,12 +122,12 @@ def process_reviews(data, context, session):
         excerpt = rev.get('body')
         if excerpt and len(excerpt) > 1:
             if title:
-                review.title = title.replace('&amp;', '&')
+                review.title = remove_emoji(title.replace('&amp;', '&'))
         else:
             excerpt = title
 
         if excerpt and len(excerpt) > 1:
-            excerpt = excerpt.replace('&amp;', '&')
+            excerpt = remove_emoji(excerpt.replace('&amp;', '&'))
             review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
