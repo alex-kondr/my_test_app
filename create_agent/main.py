@@ -11,28 +11,28 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="reviews.rollei.de",
+    name="review.spiceworks.com",
     )
-# agent.create_run(
-#     name_agent_for_test="Rollei [DE]",
-#     agent_id="20090",
-#     url='https://www.rollei.de/collections/',
-#     next_func=ProcessRun.frontpage.name,
-#     new_parser=False,
-#     breakers=10000,
-#     curl=False
-# )
+agent.create_run(
+    name_agent_for_test="spiceworks[US]",
+    agent_id="19653",
+    url='https://community.spiceworks.com/tag/product-reviews/l/latest.json?page=0&tags[]=product-reviews',
+    next_func=ProcessRun.prodlist.name,
+    new_parser=False,
+    breakers=10000,
+    curl=False
+)
 # agent.create_frontpage(
-#     cats_xpath='//a[contains(@class, "card-link")]',
-#     name_xpath='text()',
-#     url_xpath='@href'
+#     cats_xpath='//body[span[@class="link-top-line"]]',
+#     name_xpath='.//a[contains(@class, "title")]/text()',
+#     url_xpath='.//a[contains(@class, "title")]/@href'
 # )
 # agent.create_revlist(
-#     revs_xpath='//a[@class="m-articleWidget__link" and contains(@href, "https://24.hu/tech/")]',
-#     name_title="title",
-#     name_title_xpath='text()',
-#     url_xpath='@href',
-#     prod_rev="reviews",
+#     revs_xpath='//body[span[@class="link-top-line"]]',
+#     name_title="name",
+#     name_title_xpath='.//a[contains(@class, "title")]/text()',
+#     url_xpath='.//a[contains(@class, "title")]/@href',
+#     prod_rev="product",
 #     next_url_xpath='//a[contains(@class, "next")]/@href',
 # )
 # agent.create_review(

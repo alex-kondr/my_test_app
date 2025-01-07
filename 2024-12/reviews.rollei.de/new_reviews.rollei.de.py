@@ -120,17 +120,19 @@ def process_reviews(data, context, session):
 
         title = rev.get('heading')
         excerpt = rev.get('body')
-        if excerpt and len(excerpt) > 1:
-            if title:
-                review.title = remove_emoji(title.replace('&amp;', '&'))
+        if excerpt:
+            excerpt = remove_emoji(excerpt.replace('&amp;', '&')).strip()
+            if title and len(excerpt) >1:
+                review.title = remove_emoji(title.replace('&amp;', '&')).strip()
         else:
             excerpt = title
 
-        if excerpt and len(excerpt) > 1:
-            excerpt = remove_emoji(excerpt.replace('&amp;', '&'))
-            review.add_property(type='excerpt', value=excerpt)
+        if excerpt:
+            excerpt = remove_emoji(excerpt.replace('&amp;', '&')).strip()
+            if len(excerpt) > 1:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     revs_cnt = revs_json.get('meta', {}).get('total_count', 0)
     offset = context.get('offset', 0) + 6
