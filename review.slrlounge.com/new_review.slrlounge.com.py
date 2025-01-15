@@ -51,16 +51,29 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"])]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace('â€¢', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"])]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="entry-content"]/p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="entry-content"]/p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
 
     if excerpt:
-        review.add_property(type='excerpt', value=excerpt)
+        excerpt = excerpt.replace('â€¢', '').strip()
+
+        if 'Overall, ' in excerpt:
+            excerpt, conclusion = excerpt.split('Overall, ')
+
+            review.add_property(type='conclusion', value=conclusion.capitalize().strip())
+
+        elif 'Competition –' in excerpt:
+            excerpt, conclusion = excerpt.split('Competition –')
+
+            review.add_property(type='conclusion', value=conclusion.capitalize().strip())
+
+        review.add_property(type='excerpt', value=excerpt.strip())
 
         product.reviews.append(review)
 
