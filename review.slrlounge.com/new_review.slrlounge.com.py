@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' Review')[0].strip()
+    product.name = context['title'].split(' Review')[0].split(' | ')[0].split(': ')[0].replace(' Test', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = 'Tech'
 
@@ -51,28 +51,27 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
+    pros = data.xpath('//h3[contains(., "Pros")]/following-sibling::ul[1]/li')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//h3[contains(., "Cons")]/following-sibling::ul[1]/li')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        review.add_property(type='cons', value=con)
+
+    conclusion = data.xpath('//h2[regexp:test(., "Conclusion|Verdict")]/following-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace('â€¢', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(., "Conclusion|Verdict")]/preceding-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="entry-content"]/p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = excerpt.replace('â€¢', '').strip()
-
-        if 'Overall, ' in excerpt:
-            excerpt, conclusion = excerpt.split('Overall, ')
-
-            review.add_property(type='conclusion', value=conclusion.capitalize().strip())
-
-        elif 'Competition –' in excerpt:
-            excerpt, conclusion = excerpt.split('Competition –')
-
-            review.add_property(type='conclusion', value=conclusion.capitalize().strip())
-
         review.add_property(type='excerpt', value=excerpt.strip())
 
         product.reviews.append(review)
