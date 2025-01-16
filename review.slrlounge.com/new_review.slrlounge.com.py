@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.slrlounge.com/camera/'), process_revlist, dict())
 
 
@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' Review')[0].split(' | ')[0].split(': ')[0].replace(' Test', '').strip()
+    product.name = context['title'].replace('Review |', '').split(' | ')[0].split(' Preview –')[0].replace(' Test', '').replace('Review:', '').replace(' Review', '').split(' REVIEW: ')[-1].split(' review: ')[-1].strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = 'Tech'
 
@@ -53,12 +53,14 @@ def process_review(data, context, session):
 
     pros = data.xpath('//h3[contains(., "Pros")]/following-sibling::ul[1]/li')
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
+        pro = pro.xpath('.//text()').string(multiple=True).strip(' -+.')
         review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//h3[contains(., "Cons")]/following-sibling::ul[1]/li')
+    cons = data.xpath('//h3[regexp:test(., "Cons$| Cons$|Cons ") and not(contains(., "Pros"))]/following-sibling::*[1]/li')
+    if not cons:
+        con = data.xpath('//h3[regexp:test(., "Cons$| Cons$|Cons ") and contains(., "Pros")]/following-sibling::*[2]/li')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
+        con = con.xpath('.//text()').string(multiple=True).strip(' -+.')
         review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//h2[regexp:test(., "Conclusion|Verdict")]/following-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
@@ -66,7 +68,7 @@ def process_review(data, context, session):
         conclusion = conclusion.replace('â€¢', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "Conclusion|Verdict")]/preceding-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2[regexp:test(., "Conclusion|Verdict")])[1]/preceding-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="entry-content"]/p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
 
