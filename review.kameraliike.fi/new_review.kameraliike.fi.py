@@ -59,7 +59,7 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.get('reviews', {}).get('totalCount', 0)
         if revs_cnt and int(revs_cnt) > 0:
-            session.queue(Request(url), process_product, dict(context, name=name, ssid=ssid, url=url))
+            session.queue(Request('https://www.kameraliike.fi' + url), process_product, dict(context, name=name, ssid=ssid, url=url))
 
     next_page = context.get('page', 1) + 1
     last_page = prods_json.get('pagination', {}).get('lastPage', 1)
