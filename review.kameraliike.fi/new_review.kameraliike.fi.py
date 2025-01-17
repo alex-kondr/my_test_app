@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.kameraliike.fi'), process_frontpage, dict())
 
 
@@ -55,11 +55,11 @@ def process_prodlist(data, context, session):
     for prod in prods:
         ssid = prod.get('id')
         name = prod.get('name')
-        url = prod.get('link')
+        url = 'https://www.kameraliike.fi' + prod.get('link')
 
         revs_cnt = prod.get('reviews', {}).get('totalCount', 0)
         if revs_cnt and int(revs_cnt) > 0:
-            session.queue(Request('https://www.kameraliike.fi' + url), process_product, dict(context, name=name, ssid=ssid, url=url))
+            session.queue(Request(url), process_product, dict(context, name=name, ssid=ssid, url=url))
 
     next_page = context.get('page', 1) + 1
     last_page = prods_json.get('pagination', {}).get('lastPage', 1)
@@ -72,7 +72,7 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = context['ssid']
+    product.ssid = str(context['ssid'])
     product.sku = product.url.split('/')[-1]
     product.category = context['cat']
 
