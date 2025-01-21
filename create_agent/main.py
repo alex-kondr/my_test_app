@@ -11,20 +11,20 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.hotpoint.co.ke",
+    name="review.bernabei.it",
     )
 agent.create_run(
-    name_agent_for_test="Hotpoint [EN]",
-    agent_id="19977",
-    url='https://www.the-ambient.com/reviews/',
+    name_agent_for_test="Bernabei [IT]",
+    agent_id="19985",
+    url='https://www.bernabei.it',
     next_func=ProcessRun.frontpage.name,
-    new_parser=False,
+    new_parser=True,
     breakers=10000,
     curl=False
 )
 agent.create_frontpage(
-    cats_xpath='//li[contains(@class, "nav-item dropdown header-menu-mega")]',
-    name_xpath='text()',
+    cats_xpath='//li[contains(@class, "level0")]/a',
+    name_xpath='.//text()',
     url_xpath='@href'
 )
 # agent.create_revlist(
