@@ -3,6 +3,7 @@ from models.products import *
 
 
 def run(context, session):
+    session.browser.use_new_parser = True
     session.queue(Request('https://www.the-ambient.com/reviews/'), process_revlist, dict())
 
 
@@ -20,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace(' review', '').strip()
+    product.name = context['title'].split(' Review:')[0].replace(' review', '').replace(' review', '').replace('Review: ', '').replace(' Review', '').split(': ')[0].strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
 
@@ -52,23 +53,30 @@ def process_review(data, context, session):
 
     pros = data.xpath('//div[@class="col" and .//h2[contains(., "Pros")]]/div/ul/li')
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
-        review.add_property(type='pros', value=pro)
+        pro = pro.xpath('.//text()').string(multiple=True).replace('n/a', '').strip()
+        if len(pro) > 1:
+            review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[@class="col" and .//h2[contains(., "Cons")]]/div/ul/li')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
-        review.add_property(type='cons', value=con)
+        con = con.xpath('.//text()').string(multiple=True).replace('n/a', '').strip()
+        if len(con) > 1:
+            review.add_property(type='cons', value=con)
 
     summary = data.xpath('//section[@class="review-summary"]/h2/text()').string()
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//section[@class="review-summary"]/p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(@id, "final|verdict")]/following-sibling::p[not(preceding-sibling::h2[contains(@id, "test")])]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//section[@class="review-summary"]/p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(contains(., "Read our guide"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(@id, "final|verdict")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(preceding-sibling::h2[contains(@id, "test")])]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
