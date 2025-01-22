@@ -11,30 +11,30 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.bernabei.it",
+    name="review.onikumagaming.com",
     )
 agent.create_run(
-    name_agent_for_test="Bernabei [IT]",
-    agent_id="19985",
-    url='https://www.bernabei.it',
-    next_func=ProcessRun.frontpage.name,
+    name_agent_for_test="onikumagaming.com [EN]",
+    agent_id="20051",
+    url='https://onikumagaming.com/collections/all-products?page=1',
+    next_func=ProcessRun.prodlist.name,
     new_parser=True,
     breakers=10000,
     curl=False
 )
-agent.create_frontpage(
-    cats_xpath='//li[contains(@class, "level0")]/a',
-    name_xpath='.//text()',
-    url_xpath='@href'
-)
-# agent.create_revlist(
-#     revs_xpath='//div[contains(@class, "grid-card")]//h2[@class="is-title post-title"]/a',
-#     name_title="title",
-#     name_title_xpath='text()',
-#     url_xpath='@href',
-#     prod_rev="review",
-#     next_url_xpath='//link[@rel="next"]/@href',
+# agent.create_frontpage(
+#     cats_xpath='//li[contains(@class, "level0")]/a',
+#     name_xpath='.//text()',
+#     url_xpath='@href'
 # )
+agent.create_revlist(
+    revs_xpath='//h2[@class="tt-title prod-thumb-title-color"]/a',
+    name_title="name",
+    name_title_xpath='text()',
+    url_xpath='@href',
+    prod_rev="product",
+    next_url_xpath='//link[@rel="next"]/@href',
+)
 # agent.create_review(
 #     date_xpath='//meta[@property="article:published_time"]/@content',
 #     author_xpath='//span[span[@class="by"]]/a[@rel="author"]/text()',
