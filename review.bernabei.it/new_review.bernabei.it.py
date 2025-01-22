@@ -38,9 +38,8 @@ def process_catlist(data, context, session):
 def process_prodlist(data, context, session):
     prods = data.xpath('//div[@class="item-title"]/a')
     for prod in prods:
-        name = prod.xpath('text()').string()
         url = prod.xpath('@href').string()
-        session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        session.queue(Request(url), process_product, dict(context, url=url))
 
     next_url = data.xpath('//a[@class="button next"]/@href').string()
     if next_url:
@@ -49,7 +48,7 @@ def process_prodlist(data, context, session):
 
 def process_product(data, context, session):
     product = Product()
-    product.name = context['name']
+    product.name = data.xpath('//h1[@itemprop="name"]/text()').string()
     product.url = context['url']
     product.ssid = data.xpath('//input[@name="product"]/@value').string()
     product.category = context['cat']
@@ -96,19 +95,21 @@ def process_reviews(data, context, session):
 
         title = rev.xpath('.//div[@class="titolo-recensione"]/text()').string()
         excerpt = rev.xpath('.//div[@class="test-recensione"]//text()').string(multiple=True)
-        if excerpt:
+        if excerpt and len(excerpt.strip(' \n\r\t.+-')) > 1:
             review.title = title
         else:
             excerpt = title
 
         if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = excerpt.strip(' \n\r\t.+-')
+            if len(excerpt) > 1:
+                review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = rev.xpath('.//div[@class="votes"]/@rel').string()
-            if not review.ssid:
-                review.ssid = review.digest() if author else review.digest(excerpt)
+                review.ssid = rev.xpath('.//div[@class="votes"]/@rel').string()
+                if not review.ssid:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
