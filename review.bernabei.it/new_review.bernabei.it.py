@@ -8,7 +8,7 @@ XCAT = ['Offerte', 'Esperienze']
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=9000)]
     session.queue(Request('https://www.bernabei.it'), process_frontpage, dict())
 
 
