@@ -62,7 +62,7 @@ def process_reviews(data, context, session):
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review.ssid = rev.get('id')
+        review.ssid = str(rev.get('id'))
 
         date = rev.get('createdAt')
         if date:
@@ -71,7 +71,7 @@ def process_reviews(data, context, session):
         author = (rev.get('customer', {}).get('firstName', '') + ' ' + rev.get('customer', {}).get('lastName', '')).strip()
         author_ssid = rev.get('customer', {}).get('id')
         if author and author_ssid:
-            review.authors.append(Person(name=author, ssid=author_ssid))
+            review.authors.append(Person(name=author, ssid=str(author_ssid)))
         elif author:
             review.authors.append(Person(name=author, ssid=author))
 
@@ -85,7 +85,7 @@ def process_reviews(data, context, session):
 
         title = rev.get('title')
         excerpt = rev.get('body')
-        if excerpt and len(excerpt.strip(' +-.') > 1):
+        if excerpt and len(excerpt.strip(' +-.')) > 1:
             review.title = title
         else:
             excerpt = title
