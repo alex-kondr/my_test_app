@@ -11,15 +11,15 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.onikumagaming.com",
+    name="review.blackview.hk",
     )
 agent.create_run(
-    name_agent_for_test="onikumagaming.com [EN]",
-    agent_id="20051",
-    url='https://onikumagaming.com/collections/all-products?page=1',
-    next_func=ProcessRun.prodlist.name,
-    new_parser=True,
-    breakers=10000,
+    name_agent_for_test="Blackview.hk [HK]",
+    agent_id="20062",
+    url='https://store.blackview.hk',
+    next_func=ProcessRun.frontpage.name,
+    new_parser=False,
+    breakers=False,
     curl=False
 )
 # agent.create_frontpage(
@@ -27,14 +27,14 @@ agent.create_run(
 #     name_xpath='.//text()',
 #     url_xpath='@href'
 # )
-agent.create_revlist(
-    revs_xpath='//h2[@class="tt-title prod-thumb-title-color"]/a',
-    name_title="name",
-    name_title_xpath='text()',
-    url_xpath='@href',
-    prod_rev="product",
-    next_url_xpath='//link[@rel="next"]/@href',
-)
+# agent.create_revlist(
+#     revs_xpath='//h2[@class="tt-title prod-thumb-title-color"]/a',
+#     name_title="name",
+#     name_title_xpath='text()',
+#     url_xpath='@href',
+#     prod_rev="product",
+#     next_url_xpath='//link[@rel="next"]/@href',
+# )
 # agent.create_review(
 #     date_xpath='//meta[@property="article:published_time"]/@content',
 #     author_xpath='//span[span[@class="by"]]/a[@rel="author"]/text()',
