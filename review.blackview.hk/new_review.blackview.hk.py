@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.queue(Request("https://store.blackview.hk", use='curl'), process_frontpage, dict())
+    session.queue(Request("https://store.blackview.hk"), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -20,7 +20,7 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod.xpath('text()').string()
         url = prod.xpath('@href').string()
-        session.queue(Request(url, use='curl'), process_product, dict(context, name=name, url=url))
+        session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
 
 def process_product(data, context, session):
@@ -47,7 +47,7 @@ def process_product(data, context, session):
 
     revs_cnt = prod_json.get("aggregateRating", {}).get("reviewCount")
     if revs_cnt and int(revs_cnt) > 0:
-        revs_url = "https://store.blackview.hk/apps/ssw/storefront-api/reviews-storefront/v2/review/getReviewList?x-gw-current-app=default&designMode=false&productId={ssid}&sortingOptions%5B%5D=mostRecent&perPage=5&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InJvbGUiOiJndWVzdCIsImN1c3RvbWVySWQiOm51bGwsInNob3BpZnlDdXN0b21lcklkIjpudWxsLCJzZXNzaW9uVG9rZW4iOiJmZjZhYjk0NzJmN2U0ZTgwMmM5ZDcxNWIiLCJzaG9wSWQiOjEzNTI5MX0sImV4cCI6MTczNzcyNzg4NSwiaWF0IjoxNzM3NzI0Mjg1fQ.4l7F00fiO3GHxjQHA3yEyqXSmz0JDCMfBCHJoeLsQNI&x-gw-token-strategy=growave".format(ssid=product.ssid)
+        revs_url = "https://store.blackview.hk/apps/ssw/storefront-api/reviews-storefront/v2/review/getReviewList?x-gw-current-app=default&designMode=false&productId={ssid}&sortingOptions%5B%5D=mostRecent&perPage=5&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InJvbGUiOiJndWVzdCIsImN1c3RvbWVySWQiOm51bGwsInNob3BpZnlDdXN0b21lcklkIjpudWxsLCJzZXNzaW9uVG9rZW4iOiIzZWU1ODRjNDgzNmQ1NTU1OWMyYzVhZGEiLCJzaG9wSWQiOjEzNTI5MX0sImV4cCI6MTczNzkxMzI2NiwiaWF0IjoxNzM3OTA5NjY2fQ.u7NLnIb8jncHY9eSRXr_L7o53qSZV5EPn7Mw8hf6SNA&x-gw-token-strategy=growave".format(ssid=product.ssid)
         session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
 
 
@@ -101,7 +101,7 @@ def process_reviews(data, context, session):
     offset = context.get('offset', 0) + 5
     revs_cnt = revs_json.get('totalCount')
     if offset < revs_cnt:
-        revs_url = "https://store.blackview.hk/apps/ssw/storefront-api/reviews-storefront/v2/review/getReviewList?x-gw-current-app=default&designMode=false&productId={ssid}&offset={offset}&perPage=5&sortingOptions%5B%5D=mostRecent&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InJvbGUiOiJndWVzdCIsImN1c3RvbWVySWQiOm51bGwsInNob3BpZnlDdXN0b21lcklkIjpudWxsLCJzZXNzaW9uVG9rZW4iOiJmZjZhYjk0NzJmN2U0ZTgwMmM5ZDcxNWIiLCJzaG9wSWQiOjEzNTI5MX0sImV4cCI6MTczNzcyNzg4NSwiaWF0IjoxNzM3NzI0Mjg1fQ.4l7F00fiO3GHxjQHA3yEyqXSmz0JDCMfBCHJoeLsQNI&x-gw-token-strategy=growave".format(ssid=product.ssid, offset=offset)
+        revs_url = "https://store.blackview.hk/apps/ssw/storefront-api/reviews-storefront/v2/review/getReviewList?x-gw-current-app=default&designMode=false&productId={ssid}&offset={offset}&perPage=5&sortingOptions%5B%5D=mostRecent&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InJvbGUiOiJndWVzdCIsImN1c3RvbWVySWQiOm51bGwsInNob3BpZnlDdXN0b21lcklkIjpudWxsLCJzZXNzaW9uVG9rZW4iOiIzZWU1ODRjNDgzNmQ1NTU1OWMyYzVhZGEiLCJzaG9wSWQiOjEzNTI5MX0sImV4cCI6MTczNzkxMzI2NiwiaWF0IjoxNzM3OTA5NjY2fQ.u7NLnIb8jncHY9eSRXr_L7o53qSZV5EPn7Mw8hf6SNA&x-gw-token-strategy=growave".format(ssid=product.ssid, offset=offset)
         session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, product=product, offset=offset))
 
     elif product.reviews:
