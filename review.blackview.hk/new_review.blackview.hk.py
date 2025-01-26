@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.queue(Request("https://store.blackview.hk"), process_frontpage, dict())
+    session.queue(Request("https://store.blackview.hk", use='curl'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -12,7 +12,7 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url), process_prodlist, dict(cat=name))
+        session.queue(Request(url, use='curl'), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
@@ -20,7 +20,7 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod.xpath('text()').string()
         url = prod.xpath('@href').string()
-        session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        session.queue(Request(url, use='curl'), process_product, dict(context, name=name, url=url))
 
 
 def process_product(data, context, session):
@@ -28,7 +28,7 @@ def process_product(data, context, session):
     if not prod_json:
         return
 
-    prod_json = simplejson.loads(prod_json)
+    prod_json = simplejson.loads(prod_json.replace('\\', '/'))
 
     product = Product()
     product.name = context['name']
@@ -36,7 +36,6 @@ def process_product(data, context, session):
     product.url = context['url']
     product.ssid = data.xpath('//div/@data-product_id').string()
     product.manufacturer = 'Blackview'
-
 
     mpn = prod_json.get("sku")
     if mpn:
@@ -49,7 +48,7 @@ def process_product(data, context, session):
     revs_cnt = prod_json.get("aggregateRating", {}).get("reviewCount")
     if revs_cnt and int(revs_cnt) > 0:
         revs_url = "https://store.blackview.hk/apps/ssw/storefront-api/reviews-storefront/v2/review/getReviewList?x-gw-current-app=default&designMode=false&productId={ssid}&sortingOptions%5B%5D=mostRecent&perPage=5&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InJvbGUiOiJndWVzdCIsImN1c3RvbWVySWQiOm51bGwsInNob3BpZnlDdXN0b21lcklkIjpudWxsLCJzZXNzaW9uVG9rZW4iOiJmZjZhYjk0NzJmN2U0ZTgwMmM5ZDcxNWIiLCJzaG9wSWQiOjEzNTI5MX0sImV4cCI6MTczNzcyNzg4NSwiaWF0IjoxNzM3NzI0Mjg1fQ.4l7F00fiO3GHxjQHA3yEyqXSmz0JDCMfBCHJoeLsQNI&x-gw-token-strategy=growave".format(ssid=product.ssid)
-        session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(product=product))
+        session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -68,7 +67,9 @@ def process_reviews(data, context, session):
         if date:
             review.date = date.split('T')[0]
 
-        author = (rev.get('customer', {}).get('firstName', '') + ' ' + rev.get('customer', {}).get('lastName', '')).strip()
+        first_name = rev.get('customer', {}).get('firstName') or ''
+        last_name = rev.get('customer', {}).get('lastName') or ''
+        author = (first_name + ' ' + last_name).strip()
         author_ssid = rev.get('customer', {}).get('id')
         if author and author_ssid:
             review.authors.append(Person(name=author, ssid=str(author_ssid)))
@@ -101,7 +102,7 @@ def process_reviews(data, context, session):
     revs_cnt = revs_json.get('totalCount')
     if offset < revs_cnt:
         revs_url = "https://store.blackview.hk/apps/ssw/storefront-api/reviews-storefront/v2/review/getReviewList?x-gw-current-app=default&designMode=false&productId={ssid}&offset={offset}&perPage=5&sortingOptions%5B%5D=mostRecent&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InJvbGUiOiJndWVzdCIsImN1c3RvbWVySWQiOm51bGwsInNob3BpZnlDdXN0b21lcklkIjpudWxsLCJzZXNzaW9uVG9rZW4iOiJmZjZhYjk0NzJmN2U0ZTgwMmM5ZDcxNWIiLCJzaG9wSWQiOjEzNTI5MX0sImV4cCI6MTczNzcyNzg4NSwiaWF0IjoxNzM3NzI0Mjg1fQ.4l7F00fiO3GHxjQHA3yEyqXSmz0JDCMfBCHJoeLsQNI&x-gw-token-strategy=growave".format(ssid=product.ssid, offset=offset)
-        session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(context, product=product, offset=offset))
+        session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, product=product, offset=offset))
 
     elif product.reviews:
         session.emit(product)

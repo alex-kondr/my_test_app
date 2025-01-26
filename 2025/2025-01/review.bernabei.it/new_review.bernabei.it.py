@@ -63,7 +63,7 @@ def process_product(data, context, session):
     revs_cnt = data.xpath('//meta[@itemprop="reviewCount"]/@content').string()
     if revs_cnt and revs_cnt.isdigit() and int(revs_cnt) > 0:
         revs_url = 'https://www.bernabei.it/bernabei_customization/index/getreviewsprodotto?product_id=' + product.ssid
-        session.queue(Request(revs_url), process_reviews, dict(product=product))
+        session.do(Request(revs_url), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
