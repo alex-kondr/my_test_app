@@ -75,7 +75,7 @@ def process_product(data, context, session):
         if grade_overall and float(grade_overall) > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        hlp_yes = data.xpath('.//span[@id="spnReview96"]/b/text()').string()
+        hlp_yes = data.xpath('.//span[@id="spnReview96"]//text()[contains(., "of")]').string()
         if hlp_yes:
             hlp_yes, hlp_cnt = hlp_yes.split('of')
             hlp_no = int(hlp_cnt) - int(hlp_yes)

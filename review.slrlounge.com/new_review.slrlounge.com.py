@@ -63,16 +63,23 @@ def process_review(data, context, session):
         con = con.xpath('.//text()').string(multiple=True).strip(' -+.')
         review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[regexp:test(., "Conclusion|Verdict")]/following-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
+    summary = data.xpath('(//div[@class="entry-content"]/p)[1]/em//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    conclusion = data.xpath('(//h2[regexp:test(., "Conclusion|Verdict")]|//h3[regexp:test(., "final", "i")])/following-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace('â€¢', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h2[regexp:test(., "Conclusion|Verdict")])[1]/preceding-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2[regexp:test(., "Conclusion|Verdict")]|//h3[regexp:test(., "final", "i")])[1]/preceding-sibling::p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="entry-content"]/p[not(.//strong[text()="B&H" or text()="Adorama" or text()="Amazon"] or regexp:test(., "Article written by:|Pre-Order the"))]//text()').string(multiple=True)
 
     if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '')
+
         excerpt = excerpt.replace('â€¢', '').strip()
         review.add_property(type='excerpt', value=excerpt.strip())
 

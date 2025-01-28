@@ -1,6 +1,34 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
+
+
+TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InJvbGUiOiJndWVzdCIsImN1c3RvbWVySWQiOm51bGwsInNob3BpZnlDdXN0b21lcklkIjpudWxsLCJzZXNzaW9uVG9rZW4iOiIzZWU1ODRjNDgzNmQ1NTU1OWMyYzVhZGEiLCJzaG9wSWQiOjEzNTI5MX0sImV4cCI6MTczODA1NTQ4MywiaWF0IjoxNzM4MDUxODgzfQ.qW1v6e0tReDR52Wr3yK2aXfLh5pXC6dQWYaGa-jogCM'
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def run(context, session):
@@ -47,8 +75,8 @@ def process_product(data, context, session):
 
     revs_cnt = prod_json.get("aggregateRating", {}).get("reviewCount")
     if revs_cnt and int(revs_cnt) > 0:
-        revs_url = "https://store.blackview.hk/apps/ssw/storefront-api/reviews-storefront/v2/review/getReviewList?x-gw-current-app=default&designMode=false&productId={ssid}&sortingOptions%5B%5D=mostRecent&perPage=5&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InJvbGUiOiJndWVzdCIsImN1c3RvbWVySWQiOm51bGwsInNob3BpZnlDdXN0b21lcklkIjpudWxsLCJzZXNzaW9uVG9rZW4iOiIzZWU1ODRjNDgzNmQ1NTU1OWMyYzVhZGEiLCJzaG9wSWQiOjEzNTI5MX0sImV4cCI6MTczNzkxMzI2NiwiaWF0IjoxNzM3OTA5NjY2fQ.u7NLnIb8jncHY9eSRXr_L7o53qSZV5EPn7Mw8hf6SNA&x-gw-token-strategy=growave".format(ssid=product.ssid)
-        session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
+        revs_url = "https://store.blackview.hk/apps/ssw/storefront-api/reviews-storefront/v2/review/getReviewList?x-gw-current-app=default&designMode=false&productId={ssid}&sortingOptions%5B%5D=mostRecent&perPage=5&token={token}&x-gw-token-strategy=growave".format(ssid=product.ssid, token=TOKEN)
+        session.do(Request(revs_url, use='curl', max_age=0, force_charset='utf-8'), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -80,29 +108,33 @@ def process_reviews(data, context, session):
         if grade_overall and grade_overall > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
+        is_verified = rev.get('customer', {}).get('verifiedBuyer')
+        if is_verified:
+            review.add_property(type='is_verified_buyer', value=True)
+
         helpful = rev.get('votes')
         if helpful and helpful > 0:
             review.add_property(type='helpful_votes', value=helpful)
 
         title = rev.get('title')
         excerpt = rev.get('body')
-        if excerpt and len(excerpt.strip(' +-.')) > 1:
+        if excerpt and len(remove_emoji(excerpt).strip(' +-.\n\t')) > 1:
             review.title = title
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = excerpt.strip(' +-.')
+            excerpt = remove_emoji(excerpt).strip(' +-.\n\t')
             if len(excerpt) > 1:
-                review.add_property(type="excerpt", value=excerpt)
+                review.add_property(type='excerpt', value=excerpt)
 
                 product.reviews.append(review)
 
     offset = context.get('offset', 0) + 5
     revs_cnt = revs_json.get('totalCount')
     if offset < revs_cnt:
-        revs_url = "https://store.blackview.hk/apps/ssw/storefront-api/reviews-storefront/v2/review/getReviewList?x-gw-current-app=default&designMode=false&productId={ssid}&offset={offset}&perPage=5&sortingOptions%5B%5D=mostRecent&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7InJvbGUiOiJndWVzdCIsImN1c3RvbWVySWQiOm51bGwsInNob3BpZnlDdXN0b21lcklkIjpudWxsLCJzZXNzaW9uVG9rZW4iOiIzZWU1ODRjNDgzNmQ1NTU1OWMyYzVhZGEiLCJzaG9wSWQiOjEzNTI5MX0sImV4cCI6MTczNzkxMzI2NiwiaWF0IjoxNzM3OTA5NjY2fQ.u7NLnIb8jncHY9eSRXr_L7o53qSZV5EPn7Mw8hf6SNA&x-gw-token-strategy=growave".format(ssid=product.ssid, offset=offset)
-        session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, product=product, offset=offset))
+        revs_url = "https://store.blackview.hk/apps/ssw/storefront-api/reviews-storefront/v2/review/getReviewList?x-gw-current-app=default&designMode=false&productId={ssid}&offset={offset}&perPage=5&sortingOptions%5B%5D=mostRecent&token={token}&x-gw-token-strategy=growave".format(ssid=product.ssid, offset=offset, token=TOKEN)
+        session.do(Request(revs_url, use='curl', max_age=0, force_charset='utf-8'), process_reviews, dict(context, product=product, offset=offset))
 
     elif product.reviews:
         session.emit(product)

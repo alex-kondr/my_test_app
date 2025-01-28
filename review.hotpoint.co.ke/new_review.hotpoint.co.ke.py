@@ -32,9 +32,8 @@ def process_frontpage(data, context, session):
 def process_prodlist(data, context, session):
     prods = data.xpath('//div[@class="card product-card"]')
     for prod in prods:
-        name = prod.xpath('.//h5[@class="card-title product-card-name"]/text()').string()
         url = prod.xpath('a/@href').string()
-        session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        session.queue(Request(url), process_product, dict(context, url=url))
 
     next_url = data.xpath('//a[text()="Next"]/@href').string()
     if next_url:
@@ -43,7 +42,7 @@ def process_prodlist(data, context, session):
 
 def process_product(data, context, session):
     product = Product()
-    product.name = context['name']
+    product.name = data.xpath('//div[@class="product-title"]/h1/text()').string()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].split('_')[-1]
     product.sku = data.xpath('//tr[th[text()="SKU"]]/td/text()').string()
