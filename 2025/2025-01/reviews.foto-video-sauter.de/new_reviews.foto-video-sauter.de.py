@@ -78,7 +78,7 @@ def process_prodlist(data, context, session):
 
         revs = prod.xpath('.//calumet-icon[@symbol="star-full" or @symbol="star-half"]')
         if revs:
-            session.queue(Request(product.url), process_product, dict(product=product))
+            session.do(Request(product.url), process_product, dict(product=product))
 
 
 def process_product(data, context, session):
