@@ -11,39 +11,39 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.turtlebeach.com",
+    name="review.bordspeler.nl",
     )
-agent.create_run(
-    name_agent_for_test="Turtlebeach.com [US]",
-    agent_id="20076",
-    url='https://www.turtlebeach.com/',
-    next_func=ProcessRun.frontpage.name,
-    new_parser=False,
-    breakers=10000,
-    curl=False
-)
-agent.create_frontpage(
-    cats_xpath='//div[contains(@class, "category-card-category-card")]',
-    name_xpath='span/text()',
-    url_xpath='a/@href'
-)
+# agent.create_run(
+#     name_agent_for_test="Bordspeler.nl [NL]",
+#     agent_id="19950",
+#     url='https://bordspeler.nl/category/op-reis/',
+#     next_func=ProcessRun.revlist.name,
+#     new_parser=False,
+#     breakers=False,
+#     curl=False
+# )
+# agent.create_frontpage(
+#     cats_xpath='//div[contains(@class, "category-card-category-card")]',
+#     name_xpath='span/text()',
+#     url_xpath='a/@href'
+# )
 # agent.create_revlist(
-#     revs_xpath='//h2[@class="tt-title prod-thumb-title-color"]/a',
-#     name_title="name",
+#     revs_xpath='//h4[@class="elementor-post__title"]/a',
+#     name_title="title",
 #     name_title_xpath='text()',
 #     url_xpath='@href',
-#     prod_rev="product",
-#     next_url_xpath='//link[@rel="next"]/@href',
+#     prod_rev="review",
+#     next_url_xpath='//a[@class="page-numbers next"]/@href',
 # )
-# agent.create_review(
-#     date_xpath='//meta[@property="article:published_time"]/@content',
-#     author_xpath='//span[span[@class="by"]]/a[@rel="author"]/text()',
-#     author_url_xpath='//span[span[@class="by"]]/a[@rel="author"]/@href',
-#     grade_overall_xpath='count((//div[@class="full-stars"])[1]/i[@class="fa-solid fa-star"]) + count((//div[@class="full-stars"])[1]/i[@class="fa-solid fa-star"]) div 2',
-#     pros_xpath='//div[@class="col" and .//h2[contains(., "Pros")]]/div/ul/li',
-#     cons_xpath='//div[@class="col" and .//h2[contains(., "Cons")]]/div/ul/li',
-#     summary_xpath='',
-#     conclusion_xpath='//section[@class="review-summary"]/p//text()',
-#     excerpt_with_concl_xpath='',
-#     excerpt_xpath='//div[contains(@class, "post-content")]/p[not(contains(., "Read our guide"))]//text()'
-# )
+agent.create_review(
+    date_xpath='//span[contains(@class, "item--type-date")]/text()',
+    author_xpath='//span[contains(@class, "item--type-author")]/text()',
+    author_url_xpath='',
+    grade_overall_xpath='',
+    pros_xpath='',
+    cons_xpath='',
+    summary_xpath='',
+    conclusion_xpath='//h2[contains(., "Ten slotte")]/following-sibling::p[not(@style)]//text()',
+    excerpt_with_concl_xpath='//h2[contains(., "Ten slotte")]/preceding-sibling::p[not(@style)]//text()',
+    excerpt_xpath='//div[contains(@class, "post-content")]//p[not(@style)]//text()'
+)
