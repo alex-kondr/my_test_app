@@ -36,8 +36,11 @@ def process_prodlist(data, context, session):
         name = prod.xpath('.//img[@class="card-img img-fluid"]/@alt').string()
         url = prod.xpath('a[contains(@class, "btn-product-card")]/@href').string()
 
-        revs_cnt = data.xpath('.//div[contains(@class, "text-secondary")]/text()').string()
+        revs_cnt = prod.xpath('.//div[contains(@class, "text-secondary")]/text()').string()
         if revs_cnt:
+            
+            print('revs_cnt=', revs_cnt)
+            
             revs_cnt = int(revs_cnt.split()[-1].strip('()'))
             if revs_cnt > 0:
                 session.do(Request(url), process_product, dict(context, name=name, url=url, revs_cnt=revs_cnt))
@@ -113,7 +116,7 @@ def process_reviews(data, context, session):
     offset = context.get('offset', 0) + 6
     if offset < context['revs_cnt']:
         next_page = context.get('page', 1) + 1
-        tags = data.xpath('//div/@data-tags').split('|')
+        tags =context.get('tags') or data.xpath('//div/@data-tags').string().split('|')
         parameters = simplejson.dumps(dict(
             ExternalId=product.ssid,
             ContentTypeId="82",
@@ -122,8 +125,10 @@ def process_reviews(data, context, session):
             Tags=tags
         ))
         next_url = 'https://www.monsternotebook.com.tr/tr/Widget/Get/ProductComments?parameters=' + parameters
+        
         print('next_url=', next_url)
-        session.do(Request(next_url), process_reviews, dict(context, product=product, offset=offset, page=next_page))
+        
+        session.do(Request(next_url), process_reviews, dict(context, product=product, offset=offset, page=next_page, tags=tags))
 
     elif product.reviews:
         session.emit(product)
