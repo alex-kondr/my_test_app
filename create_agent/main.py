@@ -11,22 +11,22 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.bordspeler.nl",
+    name="review.monsternotebook.com-tr",
     )
-# agent.create_run(
-#     name_agent_for_test="Bordspeler.nl [NL]",
-#     agent_id="19950",
-#     url='https://bordspeler.nl/category/op-reis/',
-#     next_func=ProcessRun.revlist.name,
-#     new_parser=False,
-#     breakers=False,
-#     curl=False
-# )
-# agent.create_frontpage(
-#     cats_xpath='//div[contains(@class, "category-card-category-card")]',
-#     name_xpath='span/text()',
-#     url_xpath='a/@href'
-# )
+agent.create_run(
+    name_agent_for_test="monsternotebook.com [TR]",
+    agent_id="20084",
+    url='https://www.monsternotebook.com.tr/laptop/',
+    next_func=ProcessRun.catlist.name,
+    new_parser=False,
+    breakers=10000,
+    curl=False
+)
+agent.create_frontpage(
+    cats_xpath='//li[@class="pt-10 pb-10 ps-15"]',
+    name_xpath='span/text()',
+    url_xpath='a/@href'
+)
 # agent.create_revlist(
 #     revs_xpath='//h4[@class="elementor-post__title"]/a',
 #     name_title="title",
