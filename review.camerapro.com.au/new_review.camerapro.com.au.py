@@ -36,3 +36,7 @@ def process_prodlist(data, context, session):
         revs = prod.xpath('.//a[@class="action view"]/text()').string()
         if revs:
             session.queue(Request(url), process_product, dict(context, name=name, url=url))
+
+    next_url = data.xpath('//a[@class="action next"]/@href').string()
+    if next_url:
+        session.queue(Request(next_url), process_prodlist, dict(context))
