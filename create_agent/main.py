@@ -11,20 +11,20 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.deltachildren.com",
+    name="review.treblab.com",
     )
 agent.create_run(
-    name_agent_for_test="DELTA CHILDREN [US]",
-    agent_id="20086",
-    url='https://www.deltachildren.com/',
-    next_func=ProcessRun.catlist.name,
+    name_agent_for_test="treblab.com[US]",
+    agent_id="19753",
+    url='https://treblab.com/',
+    next_func=ProcessRun.frontpage.name,
     new_parser=False,
-    breakers=10000,
+    breakers=False,
     curl=False
 )
 agent.create_frontpage(
-    cats_xpath='//li[contains(@class, "site-header__nav-item--bottom")]/a',
-    name_xpath='a/text()',
+    cats_xpath='//ul[@id="SiteNav"]/li',
+    name_xpath='a/span/text()',
     url_xpath='a/@href'
 )
 # agent.create_revlist(
