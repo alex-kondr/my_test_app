@@ -11,19 +11,19 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.treblab.com",
+    name="review.camerapro.com.au",
     )
 agent.create_run(
-    name_agent_for_test="treblab.com[US]",
-    agent_id="19753",
-    url='https://treblab.com/',
+    name_agent_for_test="CameraPro [AU]",
+    agent_id="19758",
+    url='https://www.camerapro.com.au/',
     next_func=ProcessRun.frontpage.name,
     new_parser=False,
-    breakers=False,
+    breakers=10000,
     curl=False
 )
 agent.create_frontpage(
-    cats_xpath='//ul[@id="SiteNav"]/li',
+    cats_xpath='//li[contains(@class, "level0")]',
     name_xpath='a/span/text()',
     url_xpath='a/@href'
 )
