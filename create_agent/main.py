@@ -11,30 +11,30 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.camerapro.com.au",
+    name="review.bouyguestelecom.fr",
     )
 agent.create_run(
-    name_agent_for_test="CameraPro [AU]",
-    agent_id="19758",
-    url='https://www.camerapro.com.au/',
-    next_func=ProcessRun.frontpage.name,
+    name_agent_for_test="Bouygues Telecom [FR]",
+    agent_id="19774",
+    url='https://www.bouyguestelecom.fr/telephones-mobiles/',
+    next_func=ProcessRun.prodlist.name,
     new_parser=False,
     breakers=10000,
-    curl=False
+    curl=True
 )
-agent.create_frontpage(
-    cats_xpath='//li[contains(@class, "level0")]',
-    name_xpath='a/span/text()',
-    url_xpath='a/@href'
-)
-# agent.create_revlist(
-#     revs_xpath='//h4[@class="elementor-post__title"]/a',
-#     name_title="title",
-#     name_title_xpath='text()',
-#     url_xpath='@href',
-#     prod_rev="review",
-#     next_url_xpath='//a[@class="page-numbers next"]/@href',
+# agent.create_frontpage(
+#     cats_xpath='//li[contains(@class, "level0")]',
+#     name_xpath='a/span/text()',
+#     url_xpath='a/@href'
 # )
+agent.create_revlist(
+    revs_xpath='//div[contains(@class, "has-text-centered product-card")]',
+    name_title="name",
+    name_title_xpath='.//p[contains(@class, "product-card-title")]/text()',
+    url_xpath='a/@href',
+    prod_rev="review",
+    next_url_xpath='//a[@class="pagination-next"]/@href',
+)
 # agent.create_review(
 #     date_xpath='//span[contains(@class, "item--type-date")]/text()',
 #     author_xpath='//span[contains(@class, "item--type-author")]/text()',
