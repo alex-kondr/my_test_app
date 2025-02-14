@@ -29,7 +29,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
     session.queue(Request('https://www.bouyguestelecom.fr/telephones-mobiles/', use='curl', max_age=0), process_prodlist, dict())
 
 
@@ -105,7 +105,7 @@ def process_reviews(data, context, session):
 
         is_recommended = rev.get('isRecommended')
         if is_recommended:
-            review.properties.append(ReviewProperty(type='is_recommended', value=True))
+            review.add_property(type='is_recommended', value=True)
 
         title = rev.get('title')
         excerpt = rev.get('message')
