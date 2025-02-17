@@ -11,39 +11,39 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="review.bouyguestelecom.fr",
+    name="review.popsci.com",
     )
-agent.create_run(
-    name_agent_for_test="Bouygues Telecom [FR]",
-    agent_id="19774",
-    url='https://www.bouyguestelecom.fr/telephones-mobiles/',
-    next_func=ProcessRun.prodlist.name,
-    new_parser=False,
-    breakers=10000,
-    curl=True
-)
+# agent.create_run(
+#     name_agent_for_test="popsci [USA]",
+#     agent_id="20019",
+#     url='https://www.popsci.com/category/gear/',
+#     next_func=ProcessRun.catlist.name,
+#     new_parser=False,
+#     breakers=6000,
+#     curl=False
+# )
 # agent.create_frontpage(
-#     cats_xpath='//li[contains(@class, "level0")]',
-#     name_xpath='a/span/text()',
-#     url_xpath='a/@href'
+#     cats_xpath='//li[contains(@class, "tag-list-item")]/a',
+#     name_xpath='text()',
+#     url_xpath='@href'
 # )
 agent.create_revlist(
-    revs_xpath='//div[contains(@class, "has-text-centered product-card")]',
-    name_title="name",
-    name_title_xpath='.//p[contains(@class, "product-card-title")]/text()',
+    revs_xpath='//div[contains(@class, "post-content")]',
+    name_title="title",
+    name_title_xpath='.//span[contains(@class, "desktop")]/text()',
     url_xpath='a/@href',
     prod_rev="review",
-    next_url_xpath='//a[@class="pagination-next"]/@href',
+    next_url_xpath='//link[@rel="next"]/@href',
 )
-# agent.create_review(
-#     date_xpath='//span[contains(@class, "item--type-date")]/text()',
-#     author_xpath='//span[contains(@class, "item--type-author")]/text()',
-#     author_url_xpath='',
-#     grade_overall_xpath='',
-#     pros_xpath='',
-#     cons_xpath='',
-#     summary_xpath='',
-#     conclusion_xpath='//h2[contains(., "Ten slotte")]/following-sibling::p[not(@style)]//text()',
-#     excerpt_with_concl_xpath='//h2[contains(., "Ten slotte")]/preceding-sibling::p[not(@style)]//text()',
-#     excerpt_xpath='//div[contains(@class, "post-content")]//p[not(@style)]//text()'
-# )
+agent.create_review(
+    date_xpath='//meta[@name="article:published_time"]/@content',
+    author_xpath='//p[contains(@class, "item-author")]//a',
+    author_url_xpath='',
+    grade_overall_xpath='',
+    pros_xpath='pros',
+    cons_xpath='cons',
+    summary_xpath='summ',
+    conclusion_xpath='sonlu',
+    excerpt_with_concl_xpath='...',
+    excerpt_xpath='...'
+)
