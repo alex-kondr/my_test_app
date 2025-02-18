@@ -141,5 +141,4 @@ def process_reviews(data, context, session):
 
             product.reviews.append(review)
 
-    if product.reviews:
-        session.emit(product)
+            session.emit(product)
