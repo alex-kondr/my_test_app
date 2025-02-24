@@ -40,29 +40,27 @@ def process_frontpage(data, context, session):
     cats = data.xpath('//div[contains(@class, "category-card-category-card")]')
     for cat in cats:
         name = cat.xpath('span/text()').string()
-        url = cat.xpath('a/@href').string()
+        handle = cat.xpath('a/@href').string().split('/')[-1]
 
         if name not in XCAT:
-            session.queue(Request(url), process_prodlist, dict(cat=name))
+            url = 'https://www.turtlebeach.com/api/collection-filter?handle=' + handle
+            session.queue(Request(url), process_prodlist, dict(cat=name, handle=handle))
 
 
 def process_prodlist(data, context, session):
-    prods = data.xpath('//div[contains(@class, "product-card-details-top")]')
-    for prod in prods:
-        name = prod.xpath('h2/text()').string()
-        url = prod.xpath('a/@href').string().split('?')[0]
-        session.queue(Request(url), process_product, dict(context, name=name, url=url))
+    prods_json = simplejson.loads(data.content)
 
-    next_url = 'https://www.turtlebeach.com/api/collection-filter?handle=' + data.response_url.split('/')[-1]
-    session.queue(Request(next_url), process_prodlist_next, dict(context))
-
-
-def process_prodlist_next(data, context, session):
-    prods = simplejson.loads(data.content).get('products', [])
+    prods = prods_json.get('products', [])
     for prod in prods:
         name = prod.get('name')
         url = 'https://www.turtlebeach.com/products/' + prod.get('handle')
         session.queue(Request(url), process_product, dict(context, name=name, url=url))
+
+    next_page = prods_json.get('hasNextPage')
+    if next_page:
+        end_cursor = prods_json.get('endCursor')
+        next_url = 'https://www.turtlebeach.com/api/collection-filter?handle={handle}&endCursor={end_cursor}'.format(handle=context['handle'], end_cursor=end_cursor)
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -90,7 +88,7 @@ def process_reviews(data, context, session):
     product = context['product']
 
     revs_json = simplejson.loads(data.content)
-    product.sku = revs_json.get('products', [{}])[0].get('id')
+    product.sku = str(revs_json.get('products', [{}])[0].get('id'))
 
     revs = revs_json.get('reviews', [])
     for rev in revs:
