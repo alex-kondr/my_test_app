@@ -47,16 +47,12 @@ def process_product(data, context, session):
     product = Product()
     product.name = data.xpath('//h1[@class="h2 product-single__title"]/text()').string()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-1]
+    product.ssid = data.xpath('//a/span/@data-id').string()
     product.category = context['cat']
     product.manufacturer = 'TREBLAB'
 
-    ean = data.xpath('//a/span/@data-id').string()
-    if ean and ean.isdigit():
-        product.add_property(type='id.ean', value=ean)
-
-        revs_url = 'https://storefront.trustshop.io/storefront/reviews?product_id={}&type=all&per_page=6'.format(ean)
-        session.do(Request(revs_url), process_reviews, dict(product=product, ean=ean))
+    revs_url = 'https://storefront.trustshop.io/storefront/reviews?product_id={}&type=all&per_page=6'.format(product.ssid)
+    session.do(Request(revs_url), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -108,8 +104,8 @@ def process_reviews(data, context, session):
     next_revs = revs_json.get('next_cursor')
     if next_revs:
         next_page = context.get('page', 1) + 1
-        next_url = 'https://storefront.trustshop.io/storefront/reviews?product_id={ean}&type=all&current_page={page}&per_page=6'.format(ean=context['ean'], page=next_page)
-        session.do(Request(next_url), process_reviews, dict(context, product=product, page=next_page))
+        next_url = 'https://storefront.trustshop.io/storefront/reviews?product_id={ssid}&type=all&current_page={page}&per_page=6'.format(ssid=product.ssid, page=next_page)
+        session.do(Request(next_url), process_reviews, dict(product=product, page=next_page))
 
     elif product.reviews:
         session.emit(product)

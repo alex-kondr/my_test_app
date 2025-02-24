@@ -36,8 +36,8 @@ def run(context, session):
 def process_prodlist(data, context, session):
     prods = data.xpath('//div[contains(@class, "has-text-centered product-card")]')
     for prod in prods:
-        name = prod.xpath('.//p[contains(@class, "product-card-title")]/text()').string()
-        url = prod.xpath('a/@href').string()
+        name = prod.xpath('.//a[contains(@class, "product-card-title")]/text()').string()
+        url = prod.xpath('.//a[contains(@class, "product-card-title")]/@href').string()
 
         revs_cnt = prod.xpath('.//p[contains(@class, "rating-text")]/text()')
         if revs_cnt:
@@ -124,7 +124,7 @@ def process_reviews(data, context, session):
                 product.reviews.append(review)
 
     revs_cnt = revs_json.get('reviewCount')
-    offset = context.get('offset', 5) + 5
+    offset = context.get('offset', 0) + 5
     if offset < revs_cnt:
         next_url = 'https://www.bouyguestelecom.fr/webapi/reviews?gencode={gencode}&offset={offset}&limit=5'.format(gencode=context['gencode'], offset=offset)
         session.do(Request(next_url), process_reviews, dict(context, product=product, offset=offset))

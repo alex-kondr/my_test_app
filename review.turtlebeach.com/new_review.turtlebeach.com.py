@@ -69,7 +69,7 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name'] or data.xpath('//div[@role="presentation"]/span/text()').string()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-1].split('?')[0]
+    product.ssid = data.xpath('//div/@data-yotpo-product-id').string()
     product.manufacturer = 'Turtle Beach'
 
     product.category = context['cat']
@@ -82,22 +82,15 @@ def process_product(data, context, session):
         mpn = mpn.split('sku":"')[-1].split('","')[0]
         product.add_property(type='id.manufacturer', value=mpn)
 
-    ean = data.xpath('//div/@data-yotpo-product-id').string()
-    if ean and ean.isdigit() and len(ean) > 10:
-        product.add_property(type='id.ean', value=ean)
-
-        revs_url = 'https://api-cdn.yotpo.com/v3/storefront/store/nO2yjgOHmfFpaM5z1vmPsjWPIde6ptX61rA6IEke/product/{ean}/reviews?page=1&perPage=5&sort=date,rating,badge,images'.format(ean=ean)
-        session.do(Request(revs_url), process_reviews, dict(product=product, ean=ean))
+    revs_url = 'https://api-cdn.yotpo.com/v3/storefront/store/nO2yjgOHmfFpaM5z1vmPsjWPIde6ptX61rA6IEke/product/{}/reviews?page=1&perPage=5&sort=date,rating,badge,images'.format(product.ssid)
+    session.do(Request(revs_url), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
     product = context['product']
 
     revs_json = simplejson.loads(data.content)
-    prod_ssid = revs_json.get('products', [{}])[0].get('id')
-    if prod_ssid:
-        product.ssid = str(prod_ssid)
-        product.sku = product.ssid
+    product.sku = revs_json.get('products', [{}])[0].get('id')
 
     revs = revs_json.get('reviews', [])
     for rev in revs:
@@ -143,8 +136,9 @@ def process_reviews(data, context, session):
 
         title = rev.get('title')
         excerpt = rev.get('content')
-        if excerpt and len(excerpt.strip(' +-.,')) > 1 and title:
-            review.title = remove_emoji(title).strip(' +-.\n')
+        if excerpt and len(excerpt.strip(' +-.,')) > 1:
+            if title:
+                review.title = remove_emoji(title).strip(' +-.\n')
         else:
             excerpt = title
 
@@ -159,8 +153,8 @@ def process_reviews(data, context, session):
     offset = context.get('offset', 0) + 5
     if offset < revs_cnt:
         next_page = context.get('page', 1) + 1
-        next_url = 'https://api-cdn.yotpo.com/v3/storefront/store/nO2yjgOHmfFpaM5z1vmPsjWPIde6ptX61rA6IEke/product/{ean}/reviews?page={next_page}&perPage=5&sort=date,rating,badge,images'.format(ean=context['ean'], next_page=next_page)
-        session.do(Request(next_url), process_reviews, dict(context, product=product, offset=offset, page=next_page))
+        next_url = 'https://api-cdn.yotpo.com/v3/storefront/store/nO2yjgOHmfFpaM5z1vmPsjWPIde6ptX61rA6IEke/product/{ssid}/reviews?page={next_page}&perPage=5&sort=date,rating,badge,images'.format(ssid=product.ssid, next_page=next_page)
+        session.do(Request(next_url), process_reviews, dict(product=product, offset=offset, page=next_page))
 
     elif product.reviews:
         session.emit(product)

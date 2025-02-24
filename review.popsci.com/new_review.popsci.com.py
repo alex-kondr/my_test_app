@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=6000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.popsci.com/category/gear/'), process_catlist, dict())
 
 
@@ -38,7 +38,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].split(' review:')[0].replace('Best overall:', '').split(': ')[-1].strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = context['cat']
 
@@ -75,11 +75,11 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(., "verdict", "i")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "verdict|final|should buy", "i")]/following-sibling::p[not(regexp:test(., "buy now", "i"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "verdict", "i")]/preceding-sibling::p[not(regexp:test(., "Pros|Cons"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(., "verdict|final|should buy", "i")]/preceding-sibling::p[not(regexp:test(., "Pros|Cons"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="content-wrapper"]/p[not(regexp:test(., "Pros|Cons"))]//text()').string(multiple=True)
 
@@ -94,15 +94,24 @@ def process_review(data, context, session):
 def process_reviews(data, context, session):
     revs = data.xpath('//h3[@class="wp-block-heading" and a]')
     if not revs:
-        revs = data.xpath('//h3[@class="wp-block-heading" and not(contains(., "More deals"))]')
+        revs = data.xpath('//h3[@class="wp-block-heading" and not(contains(., "More deals")) and text()]')
+    if not revs:
+        revs = data.xpath('//body[a and p]')
 
     for i, rev in enumerate(revs, start=1):
         product = Product()
-        product.name = rev.xpath('.//text()').string(multiple=True).replace('Best overall:', '').strip()
-        product.ssid = product.name.strip().lower().replace(' ', '-')
         product.category = context['cat']
 
-        product.url = rev.xpath('following-sibling::button[count(preceding-sibling::h3[@class="wp-block-heading" and a]) = {}]/a[contains(@class, "product-button-link")]/@href'.format(i)).string()
+        name = rev.xpath('a[@rel="noreferrer noopener nofollow"]/text()').string()
+        if not name:
+            name = rev.xpath('.//text()').string(multiple=True)
+
+        product.name = name.split(' review:')[0].replace('Best overall:', '').split(': ')[-1].strip()
+        product.ssid = product.name.strip().lower().replace(' ', '-')
+
+        product.url = rev.xpath('a[@rel="noreferrer noopener nofollow"]/text()').string()
+        if not product.url:
+            product.url = rev.xpath('following-sibling::button[count(preceding-sibling::h3[@class="wp-block-heading" and a]) = {}]/a[contains(@class, "product-button-link")]/@href'.format(i)).string()
         if not product.url:
             product.url = context['url']
 
@@ -135,8 +144,12 @@ def process_reviews(data, context, session):
         if conclusion:
             review.add_property(type='conclusion', value=conclusion)
 
-        excerpt = rev.xpath('following-sibling::p[count(preceding-sibling::h3[@class="wp-block-heading" and a]) = {}][not(contains(., "Specs") or contains(., "Why it made the cut"))]//text()'.format(i)).string(multiple=True)
+        excerpt = rev.xpath('p//text()').string(multiple=True)
+        if not excerpt:
+            excerpt = rev.xpath('following-sibling::p[count(preceding-sibling::h3[@class="wp-block-heading" and a]) = {}][not(contains(., "Specs") or contains(., "Why it made the cut"))]//text()'.format(i)).string(multiple=True)
+
         if excerpt:
+            excerpt = excerpt.replace('[Editor’s note:', '').strip()
             review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)

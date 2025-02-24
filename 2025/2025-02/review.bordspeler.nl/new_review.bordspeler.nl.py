@@ -12,11 +12,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(title=title, url=url))
+        session.queue(Request(url), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//a[@class="page-numbers next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_revlist, dict())
+        session.queue(Request(next_url), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
@@ -24,16 +24,14 @@ def process_review(data, context, session):
     product.name = context['title']
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    product.category = 'Games'
+    product.category = context['cat'] + "|" + 'Games'
 
     review = Review()
     review.type = 'pro'
     review.title = context['title']
     review.url = product.url
     review.ssid = product.ssid
-
     review.date = data.xpath('//span[contains(@class, "item--type-date")]/text()').string(multiple=True)
-
 
     author = data.xpath('//span[contains(@class, "item--type-author")]/text()').string(multiple=True)
     if author:
