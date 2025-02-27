@@ -38,7 +38,7 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split(' review:')[0].replace('Best overall:', '').split(': ')[-1].strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
-    product.category = context['cat'].strip('|')
+    product.category = 'Tech' if context['cat'].strip('|') == 'Gift Guides' else context['cat'].strip('|')
 
     product.url = data.xpath('//a[contains(@class, "product-card-link")]/@href').string()
     if not product.url:
@@ -56,9 +56,10 @@ def process_review(data, context, session):
 
     authors = data.xpath('//p[contains(@class, "item-author")]//a')
     for author in authors:
-        author_ssid = author.xpath('@href').string().split('/')[-2]
+        author_url = author.xpath('@href').string()
+        author_ssid = author_url.split('/')[-2]
         author = author.xpath('text()').string()
-        review.authors.append(Person(name=author, ssid=author_ssid))
+        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
 
     pros = data.xpath('//p[contains(., "Pros")]/following-sibling::ul[1]/li')
     for pro in pros:
@@ -101,7 +102,7 @@ def process_reviews(data, context, session):
 
     for i, rev in enumerate(revs, start=1):
         product = Product()
-        product.category = context['cat'].strip('|')
+        product.category = 'Tech' if context['cat'].strip('|') == 'Gift Guides' else context['cat'].strip('|')
 
         name = rev.xpath('a[@rel="noreferrer noopener nofollow"]/text()').string()
         if not name:
@@ -128,8 +129,10 @@ def process_reviews(data, context, session):
 
         authors = data.xpath('//p[contains(@class, "item-author")]//a')
         for author in authors:
+            author_url = author.xpath('@href').string()
+            author_ssid = author_url.split('/')[-2]
             author = author.xpath('text()').string()
-            review.authors.append(Person(name=author, ssid=author))
+            review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
 
         pros = rev.xpath('following-sibling::div[count(preceding-sibling::h3[@class="wp-block-heading" and a]) = {}]/div[h4[contains(., "Pros")]]//li'.format(i))
         for pro in pros:
