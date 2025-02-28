@@ -33,7 +33,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.trendyol.com/', use='curl', options=OPTIONS, max_age=0), process_frontpage, dict())
+    session.queue(Request('https://www.trendyol.com/', use='curl', options=OPTIONS), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -46,7 +46,7 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.get('displayName')
         url = 'https://www.trendyol.com' + cat.get('path') + '?sst=MOST_RATED'
-        session.queue(Request(url, use='curl', options=OPTIONS, max_age=0), process_prodlist, dict(cat=name))
+        session.queue(Request(url, use='curl', options=OPTIONS), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
@@ -58,7 +58,7 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.xpath('.//span[contains(@class, "total-rating-count")]/text()')
         if revs_cnt:
-            session.queue(Request(url, use='curl', options=OPTIONS, max_age=0), process_product, dict(context, name=name, brand=brand, url=url))
+            session.queue(Request(url, use='curl', options=OPTIONS), process_product, dict(context, name=name, brand=brand, url=url))
         else:
             return
 
@@ -67,14 +67,14 @@ def process_prodlist(data, context, session):
     if prods_cnt and offset < int(prods_cnt):
         next_page = context.get('page', 1) + 2
         next_url = data.response_url.split('&pi=')[0] + '&pi={}'.format(next_page)
-        session.queue(Request(next_url, use='curl', options=OPTIONS, max_age=0), process_prodlist, dict(context, offset=offset, page=next_page))
+        session.queue(Request(next_url, use='curl', options=OPTIONS), process_prodlist, dict(context, offset=offset, page=next_page))
 
 
 def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = product.url.split('-')[-1]
+    product.ssid = product.url.split('?')[0].split('-')[-1]
     product.category = context['cat']
     product.manufacturer = context['brand']
 
@@ -83,7 +83,7 @@ def process_product(data, context, session):
         product.sku = sku.split()[-1]
 
     revs_url = 'https://apigw.trendyol.com/discovery-sfint-social-service/api/review/reviews/{}?page=0&pageSize=20'.format(product.ssid)
-    session.do(Request(revs_url, max_age=0), process_reviews, dict(product=product))
+    session.do(Request(revs_url, use='curl', options=OPTIONS), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -138,7 +138,7 @@ def process_reviews(data, context, session):
     if offset < revs_cnt:
         next_page = context.get('page', 0) + 1
         next_url = 'https://apigw.trendyol.com/discovery-sfint-social-service/api/review/reviews/{ssid}?page={page}&pageSize=20'.format(ssid=product.ssid, page=next_page)
-        session.do(Request(next_url, max_age=0), process_reviews, dict(product=product, offset=offset, page=next_page))
+        session.do(Request(next_url, use='curl', options=OPTIONS), process_reviews, dict(product=product, offset=offset, page=next_page))
 
     elif product.reviews:
         session.emit(product)
