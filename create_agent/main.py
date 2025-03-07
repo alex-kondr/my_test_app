@@ -11,20 +11,20 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="reviews.nailpolishdirect.co.uk",
+    name="reviews.tires-easy.com",
     )
 agent.create_run(
-    name_agent_for_test="Nailpolishdirect[UK]",
-    agent_id="20095",
-    url='https://www.nailpolishdirect.co.uk/',
+    name_agent_for_test="Tires-Easy [EN]",
+    agent_id="20101",
+    url='https://www.tires-easy.com/tire-categories',
     next_func=ProcessRun.frontpage.name,
     new_parser=False,
     breakers=10000,
     curl=False
 )
 agent.create_frontpage(
-    cats_xpath='//li[contains(@class, "nail-polish-top-links")]',
-    name_xpath='a/text()',
+    cats_xpath='//div[@class="categories__single"]',
+    name_xpath='div[@class="categories__single-title"]/p/text()',
     url_xpath='@href'
 )
 # agent.create_revlist(
