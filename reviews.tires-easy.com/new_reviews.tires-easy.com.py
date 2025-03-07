@@ -5,10 +5,10 @@ import simplejson
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.tires-easy.com/tire-categories'), process_frontpage, dict())
+    session.queue(Request('https://www.tires-easy.com/tire-categories'), process_catlist, dict())
 
 
-def process_frontpage(data, context, session):
+def process_catlist(data, context, session):
     cats = data.xpath('//div[@class="categories__single"]')
     for cat in cats:
         name = cat.xpath('div[@class="categories__single-title"]/p/text()').string()
