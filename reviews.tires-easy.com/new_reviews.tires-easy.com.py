@@ -17,7 +17,7 @@ def process_catlist(data, context, session):
         if sub_cats:
             for sub_cat in sub_cats:
                 sub_name = sub_cat.xpath('text()').string()
-                url = cat.xpath('@href').string()
+                url = sub_cat.xpath('@href').string()
                 session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
         else:
             url = cat.xpath('.//div[@class="all-subcat-link"]/a/@href').string()
@@ -61,7 +61,7 @@ def process_product(data, context, session):
             product.add_property(type='id.ean', value=ean)
 
     revs_url = 'https://www.resellerratings.com//product_ratings/ui/reviews.json?product_id=' + product.sku + '&merchant_id=1037&limit=5'
-    session.queue(Request(revs_url), process_review, dict(context, product=product))
+    session.do(Request(revs_url), process_review, dict(context, product=product))
 
 
 def process_review(data, context, session):
@@ -72,7 +72,7 @@ def process_review(data, context, session):
 
     revs = new_data.xpath('//div[@class="grid-x grid-container"]')
     for rev in revs:
-        if product.name.lower() not in rev.xpath('.//div[@class="rr-heavy-txt rr-product-variant-name"]/text()').string().lower():
+        if product.name.lower() not in rev.xpath('.//div[contains(@class, "product-variant-name")]//text()').string(multiple=True).lower():
             continue
 
         review = Review()
@@ -112,14 +112,16 @@ def process_review(data, context, session):
             if len(excerpt) > 1:
                 review.add_property(type='excerpt', value=excerpt)
 
-                review.ssid = review.digest() if author else review.digest(excerpt)
+                review.ssid = rev.xpath('.//div/@data-review-id').string()
+                if not review.ssid:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
 
                 product.reviews.append(review)
 
     offset = context.get('offset', 0) + 5
     if offset < context['revs_cnt']:
         next_url = 'https://www.resellerratings.com//product_ratings/ui/reviews.json?product_id=' + product.sku + '&merchant_id=1037&limit=5&offset=' + str(offset)
-        session.queue(Request(next_url), process_review, dict(context, product=product, offset=offset))
+        session.do(Request(next_url), process_review, dict(context, product=product, offset=offset))
 
     elif product.reviews:
         session.emit(product)
