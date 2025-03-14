@@ -11,15 +11,15 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="reviews.matratzen-concord.de",
+    name="reviews.expertentesten.de",
     )
 agent.create_run(
-    name_agent_for_test="Matratzen-concord [DE]",
-    agent_id="20115",
-    url='https://www.matratzen-concord.de/',
+    name_agent_for_test="Expertentesten [DE]",
+    agent_id="20116",
+    url='https://www.expertentesten.de/',
     next_func=ProcessRun.frontpage.name,
     new_parser=False,
-    breakers=False,
+    breakers=5000,
     curl=False
 )
 # agent.create_frontpage(
