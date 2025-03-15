@@ -36,7 +36,7 @@ def process_revlist(data, context, session):
 
 
 def process_reviews(data, context, session):
-    revs_json = data.xpath('//script[not(@id) and contains(., "json")]/text()').string()
+    revs_json = data.xpath('''//script[contains(., '"attributes"')]/text()''').string()
     if not revs_json:
         return
 
@@ -44,17 +44,30 @@ def process_reviews(data, context, session):
     names = revs_json.get('name')
     for i in range(1, len(names)):
         product = Product()
-        product.url = context['url']
         product.category = context['cat']
+        product.url = ''
+
+        amazon_rating = revs_json.get('amazon_rating')
+        if amazon_rating:
+            product.url = data.parse_fragment(amazon_rating[i]).xpath('//a/@href').string()
+
+        if not product.url:
+            product.url = context['url']
 
         name = data.parse_fragment(names[i])
         product.name = name.xpath('//span[not(@class)]/text()').string()
         product.ssid = product.name.lower().replace(' ', '-')
         product.manufacturer = name.xpath('//span/@data-brand').string()
 
+        offer = revs_json.get('offer')
+        if offer:
+            mpn = data.parse_fragment(offer[i]).xpath('//span/@data-asin').string()
+            if mpn:
+                product.add_property(type='id.manufacturer', value=mpn)
+
         review = Review()
         review.type = 'pro'
-        review.url = product.url
+        review.url = context['url']
         review.ssid = product.ssid
         review.title = context['title']
 
@@ -72,34 +85,42 @@ def process_reviews(data, context, session):
             author = author.split(' - ')[0]
             review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = data.parse_fragment(revs_json.get('rating')[i]).xpath('//span/strong/text()').string()
-        if grade_overall:
-            grade_overall = grade_overall.replace(',', '.').strip(' -')
+        rating = revs_json.get('rating')
+        if rating:
+            grade_overall = data.parse_fragment(rating[i]).xpath('//span/strong/text()').string()
             if grade_overall:
-                review.grades.append(Grade(type='overall', value=float(grade_overall), best=1.0, worst=6.0))
+                grade_overall = grade_overall.replace(',', '.').strip(' -')
+                if grade_overall:
+                    review.grades.append(Grade(type='overall', value=float(grade_overall), best=1.0, worst=6.0))
 
-        for j in range(2, 5):
-            grade = data.parse_fragment(revs_json.get('attributes')[j][i]).xpath('//span/@style').string()
-            if grade:
-                grade_name = revs_json.get('attributes')[j][0].strip()
-                grade = float(grade.split()[-1].replace('%', '')) / 10
-                review.grades.append(Grade(name=grade_name, value=grade, best=10.0))
+        for attribute in revs_json.get('attributes', []):
 
-        pros = data.parse_fragment(revs_json.get('attributes')[7][i]).xpath('//li')
-        for pro in pros:
-            pro = pro.xpath('.//text()').string(multiple=True)
-            review.add_property(type='pros', value=pro)
+            if '%' in attribute[1]:
+                grade = data.parse_fragment(attribute[i]).xpath('//span/@style').string()
+                if grade:
+                    grade_name = attribute[0].strip()
+                    grade = float(grade.split()[-1].replace('%', '')) / 10
+                    review.grades.append(Grade(name=grade_name, value=grade, best=10.0))
 
-        cons = data.parse_fragment(revs_json.get('attributes')[8][i]).xpath('//li')
-        for con in cons:
-            con = con.xpath('.//text()').string(multiple=True)
-            review.add_property(type='cons', value=con)
+            if 'Vorteile' in attribute[0]:
+                pros = data.parse_fragment(attribute[i]).xpath('//li')
+                for pro in pros:
+                    pro = pro.xpath('.//text()').string(multiple=True)
+                    review.add_property(type='pros', value=pro)
 
-        excerpt = data.parse_fragment(revs_json.get('attributes')[1][i]).xpath('.//text()').string(multiple=True)
-        if excerpt:
-            excerpt = excerpt.strip(' "')
-            review.add_property(type='excerpt', value=excerpt)
+            if 'Nachteile' in attribute[0]:
+                cons = data.parse_fragment(attribute[i]).xpath('//li')
+                for con in cons:
+                    con = con.xpath('.//text()').string(multiple=True)
+                    review.add_property(type='cons', value=con)
 
-            product.reviews.append(review)
+            if 'Testergebnis' in attribute[0]:
+                excerpt = data.parse_fragment(attribute[i]).xpath('.//text()').string(multiple=True)
+                if excerpt:
+                    excerpt = excerpt.strip(' "<>')
+                    review.add_property(type='excerpt', value=excerpt)
 
+                    product.reviews.append(review)
+
+        if product.reviews:
             session.emit(product)
