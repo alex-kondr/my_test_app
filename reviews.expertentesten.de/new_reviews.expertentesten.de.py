@@ -44,6 +44,8 @@ def process_reviews(data, context, session):
     names = revs_json.get('name')
     for i in range(1, len(names)):
         product = Product()
+        product.name = data.parse_fragment(names[i]).xpath('//span/@data-brand').string()
+        product.ssid = product.name.lower().replace(' ', '-')
         product.category = context['cat']
 
         amazon_rating = revs_json.get('amazon_rating')
@@ -51,10 +53,6 @@ def process_reviews(data, context, session):
             product.url = data.parse_fragment(amazon_rating[i]).xpath('//a/@href').string()
         else:
             product.url = context['url']
-
-        name = data.parse_fragment(names[i])
-        product.name = name.xpath('//span/@data-brand').string()
-        product.ssid = product.name.lower().replace(' ', '-')
 
         offer = revs_json.get('offer')
         if offer:
@@ -97,6 +95,8 @@ def process_reviews(data, context, session):
                 if grade:
                     grade_name = attribute[0].strip()
                     grade = float(grade.split()[-1].replace('%', '')) / 10
+                    if grade > 10:
+                        grade = 10.0
                     review.grades.append(Grade(name=grade_name, value=grade, best=10.0))
 
             if 'Vorteile' in attribute[0]:
