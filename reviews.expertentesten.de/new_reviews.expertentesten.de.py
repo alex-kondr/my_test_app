@@ -44,7 +44,7 @@ def process_reviews(data, context, session):
     names = revs_json.get('name')
     for i in range(1, len(names)):
         product = Product()
-        product.name = data.parse_fragment(names[i]).xpath('//span/@data-brand').string()
+        product.name = names[i].split('data-brand="')[-1].split('"')[0]
         product.ssid = product.name.lower().replace(' ', '-')
         product.category = context['cat']
 
