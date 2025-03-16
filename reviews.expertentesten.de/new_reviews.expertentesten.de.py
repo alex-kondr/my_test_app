@@ -45,19 +45,16 @@ def process_reviews(data, context, session):
     for i in range(1, len(names)):
         product = Product()
         product.category = context['cat']
-        product.url = ''
 
         amazon_rating = revs_json.get('amazon_rating')
         if amazon_rating:
             product.url = data.parse_fragment(amazon_rating[i]).xpath('//a/@href').string()
-
-        if not product.url:
+        else:
             product.url = context['url']
 
         name = data.parse_fragment(names[i])
-        product.name = name.xpath('//span[not(@class)]/text()').string()
+        product.name = name.xpath('//span/@data-brand').string()
         product.ssid = product.name.lower().replace(' ', '-')
-        product.manufacturer = name.xpath('//span/@data-brand').string()
 
         offer = revs_json.get('offer')
         if offer:
@@ -75,7 +72,7 @@ def process_reviews(data, context, session):
         if date:
             review.date = date.split('T')[0]
 
-        author = data.xpath('//div[@class="v3-author-social"]/a/@aria-label').string()
+        author = data.xpath('//div[@class="v3-author-right"]/span[@class="author-name"]/text()').string()
         author_url = data.xpath('//div[@class="v3-author-social"]/a/@href').string()
         if author and author_url:
             author = author.split(' - ')[0]
@@ -105,22 +102,25 @@ def process_reviews(data, context, session):
             if 'Vorteile' in attribute[0]:
                 pros = data.parse_fragment(attribute[i]).xpath('//li')
                 for pro in pros:
-                    pro = pro.xpath('.//text()').string(multiple=True)
-                    review.add_property(type='pros', value=pro)
+                    pro = pro.xpath('.//text()').string(multiple=True).replace('kA', '').strip(' "<>')
+                    if len(pro) > 1:
+                        review.add_property(type='pros', value=pro)
 
             if 'Nachteile' in attribute[0]:
                 cons = data.parse_fragment(attribute[i]).xpath('//li')
                 for con in cons:
-                    con = con.xpath('.//text()').string(multiple=True)
-                    review.add_property(type='cons', value=con)
+                    con = con.xpath('.//text()').string(multiple=True).replace('kA', '').strip(' "<>')
+                    if len(con) > 1:
+                        review.add_property(type='cons', value=con)
 
             if 'Testergebnis' in attribute[0]:
                 excerpt = data.parse_fragment(attribute[i]).xpath('.//text()').string(multiple=True)
                 if excerpt:
-                    excerpt = excerpt.strip(' "<>')
-                    review.add_property(type='excerpt', value=excerpt)
+                    excerpt = excerpt.replace('kA', '').strip(' "<>')
+                    if len(excerpt) > 2:
+                        review.add_property(type='excerpt', value=excerpt)
 
-                    product.reviews.append(review)
+                        product.reviews.append(review)
 
         if product.reviews:
             session.emit(product)
