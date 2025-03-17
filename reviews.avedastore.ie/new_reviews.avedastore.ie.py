@@ -53,6 +53,7 @@ def process_prodlist(data, context, session):
         url = prod.xpath('a/@href').string()
         ssid = prod.xpath('span/@data-id').string()
         if name and url and ssid:
+            url = 'https://www.avedastore.ie/collections/all-products/products/' + url.split('/')[-1]
             session.queue(Request(url, force_charset='utf-8', use='curl'), process_product, dict(context, name=name, url=url, ssid=ssid))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
@@ -67,7 +68,6 @@ def process_product(data, context, session):
     product.category = context['cat']
     product.manufacturer = 'Aveda'
     product.ssid = context['ssid']
-    product.sku = data.xpath('//div[@class="trustpilot_review_container"]/div/@data-sku').string()
 
     prod_json = data.xpath('//script[@id="ProductJson-product-template"]/text()').string()
     if prod_json:
@@ -75,9 +75,12 @@ def process_product(data, context, session):
         if ean and ean.isdigit() and len(ean) > 10:
             product.add_property(type='id.ean', value=ean)
 
+    sku = data.xpath('//div[@class="trustpilot_review_container"]/div/@data-sku').string()
+    if sku:
+        product.sku = sku.split(',')[0]
 
-    revs_url = 'https://widget.trustpilot.com/trustbox-data/5763bccae0a06d08e809ecbb?businessUnitId=6628178da21a8d427174cb34&locale=en-GB&sku={sku}&reviewsPerPage=10&reviewLanguages=en'.format(sku=product.sku.replace(',', '%2C'))
-    session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+        revs_url = 'https://widget.trustpilot.com/trustbox-data/5763bccae0a06d08e809ecbb?businessUnitId=6628178da21a8d427174cb34&locale=en-GB&sku={}&reviewsPerPage=10&reviewLanguages=en'.format(sku.replace(',', '%2C'))
+        session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):

@@ -44,14 +44,15 @@ def process_reviews(data, context, session):
     names = revs_json.get('name')
     for i in range(1, len(names)):
         product = Product()
-        product.name = names[i].split('data-brand="')[-1].split('"')[0]
+        product.name = names[i].split('data-brand="')[-1].split('"')[0].replace('&amp;', '&') + ' ' + names[i].split('</span><span>')[-1].split('</span>')[0]
         product.ssid = product.name.lower().replace(' ', '-')
         product.category = context['cat']
 
         amazon_rating = revs_json.get('amazon_rating')
         if amazon_rating:
             product.url = data.parse_fragment(amazon_rating[i]).xpath('//a/@href').string()
-        else:
+
+        if not product.url:
             product.url = context['url']
 
         offer = revs_json.get('offer')
@@ -114,13 +115,11 @@ def process_reviews(data, context, session):
                         review.add_property(type='cons', value=con)
 
             if 'Testergebnis' in attribute[0]:
-                excerpt = data.parse_fragment(attribute[i]).xpath('.//text()').string(multiple=True)
-                if excerpt:
-                    excerpt = excerpt.replace('kA', '').strip(' "<>')
-                    if len(excerpt) > 2:
-                        review.add_property(type='excerpt', value=excerpt)
+                excerpt = attribute[i].replace('<em>', '').replace('</em>', '').replace('<span>', '').replace('</span>', '').replace('kA', '').strip(' "<>')
+                if len(excerpt) > 2:
+                    review.add_property(type='excerpt', value=excerpt)
 
-                        product.reviews.append(review)
+                    product.reviews.append(review)
 
         if product.reviews:
             session.emit(product)

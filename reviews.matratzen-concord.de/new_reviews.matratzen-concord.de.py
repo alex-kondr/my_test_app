@@ -95,7 +95,7 @@ def process_product(data, context, session):
             sku_code += hex(ord(char))[2:]
 
         revs_url = 'https://integrations.etrusted.com/feeds/product-reviews/v1/channels/chl-cf9b6dac-2f0c-4154-b67d-ff6ee8f037bf/sku/{}/default/all/feed.json'.format(sku_code)
-        session.do(Request(revs_url), process_reviews, dict(product=product))
+        session.queue(Request(revs_url), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
