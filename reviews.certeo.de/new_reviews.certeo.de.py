@@ -5,7 +5,7 @@ import simplejson
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.kaiserkraft.de/'), process_frontpage, dict())
+    session.queue(Request('https://www.kaiserkraft.de/', force_charset='utf-8'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -21,7 +21,7 @@ def process_frontpage(data, context, session):
             for sub_cat1 in sub_cats1:
                 sub_name1 = sub_cat1.xpath('.//text()').string()
                 url = sub_cat1.xpath('@href').string()
-                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
 
 
 def process_prodlist(data, context, session):
@@ -33,7 +33,7 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.xpath('.//span[not(@class) and regexp:test(., "\(\d+\)")]/text()').string()
         if revs_cnt and int(revs_cnt.strip('()')) > 0:
-            session.queue(Request(url), process_product, dict(context, name=name, url=url, ssid=ssid))
+            session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, name=name, url=url, ssid=ssid))
 
     next_url = data.xpath('//a[contains(@data-test-id, "pagination-next")]/@href').string()
     if next_url:
