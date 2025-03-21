@@ -32,7 +32,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://undgretel.com/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -43,7 +43,7 @@ def process_frontpage(data, context, session):
         url = cat.xpath('@href').string()
 
         if name not in XCAT:
-            session.queue(Request(url, use='curl'), process_prodlist, dict(cat='Beauty' + '|' + name))
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat='Beauty' + '|' + name))
 
 
 def process_prodlist(data, context, session):
@@ -66,15 +66,13 @@ def process_product(data, context, session):
     product.manufacturer = 'UND GRETEL'
 
     revs_cnt = data.xpath('//div/text()[contains(., "Reviews")]').string()
-    if revs_cnt and int(revs_cnt.replace('Reviews', '')) > 0:
+    if revs_cnt and int(revs_cnt.replace('Reviews', '').replace('.', '')) > 0:
         revs_url = 'https://judge.me/reviews/reviews_for_widget?url=undgretel.myshopify.com&shop_domain=undgretel.myshopify.com&platform=shopify&page=1&per_page=10&product_id={}'.format(product.ssid)
         session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
     product = context['product']
-    
-    print('data.content=', data.content)
 
     revs_json = simplejson.loads(data.content)
     new_data = data.parse_fragment(revs_json.get('html'))

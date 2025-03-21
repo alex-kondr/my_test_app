@@ -1,4 +1,4 @@
-from time import time
+import time
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import cpu_count
 
@@ -18,7 +18,7 @@ def get_logger(name):
     return logger
 
 
-time_start = time()
+# time_start = time()
 
 CPU_COUNT = cpu_count()
 executor = ProcessPoolExecutor(2 * CPU_COUNT + 1)
@@ -26,6 +26,7 @@ executor = ProcessPoolExecutor(2 * CPU_COUNT + 1)
 range_ = 10**5
 
 def print_numb(i):
+    time.sleep(1)
     log = get_logger(__name__)
     log.error(f'{i=}')
     # log.log(level=0, msg=f'{i=}')
@@ -47,5 +48,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main1()
-    print(time() - time_start)
+    main()
+    # print(time() - time_start)
