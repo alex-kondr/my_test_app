@@ -1,5 +1,8 @@
 from pathlib import Path
 from enum import Enum, auto
+from typing import Optional
+
+from product_test.functions import get_old_agent, get_agent_code, get_agent_name, get_source_name
 
 
 class ProcessRun(Enum):
@@ -9,10 +12,10 @@ class ProcessRun(Enum):
     prodlist = auto()
 
 
-
 class AgentForm:
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self, agent_id: int):
+        self.agent_id = agent_id
+        self.name = get_source_name(agent_id)
         self.agent_dir = Path(self.name)
         self.agent_dir.mkdir(exist_ok=True)
         self.file_path = self.agent_dir / Path("new_" + self.name + ".py")
@@ -27,16 +30,18 @@ class AgentForm:
 
     def create_run(
         self,
-        name_agent_for_test: str,
-        agent_id: str,
+        # name_agent_for_test: str,
+        # agent_id: str,
         url: str,
         next_func: ProcessRun,
         new_parser: bool,
-        breakers: str,
+        breakers: Optional[int],
         curl: bool
         ):
 
-        self.create_test_file(name_agent_for_test, agent_id)
+        html = get_old_agent(self.agent_id)
+        name_agent_for_test = get_agent_name(html)
+        self.create_test_file(name_agent_for_test, self.agent_id)
 
         text = (
             "from agent import *\n"
@@ -48,7 +53,9 @@ class AgentForm:
         text += f"    session.sessionbreakers = [SessionBreak(max_requests={breakers})]\n" if breakers else ""
         text += """    session.queue(Request('{url}'{curl}), process_{next_func}, dict())\n""".format(url=url, next_func=next_func, curl=", use='curl'" if curl else "")
 
-        with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8"): pass
+        with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8") as file:
+            file.writelines(get_agent_code(html))
+
         with open(self.file_path, "w", encoding="utf-8") as file:
             file.write(text)
 

@@ -11,15 +11,16 @@ from create_agent.agent import AgentForm, ProcessRun
 
 
 agent = AgentForm(
-    name="reviews.fotokoch.de",
+    # name="reviews.fotokoch.de",
+    agent_id="20044"
     )
 agent.create_run(
-    name_agent_for_test="Fotokoch [DE]",
-    agent_id="20182",
-    url='https://www.fotokoch.de/index.html',
-    next_func=ProcessRun.prodlist.name,
+    # name_agent_for_test="Fotokoch [DE]",
+    # agent_id="20182",
+    url='https://www.netto-online.de/',
+    next_func=ProcessRun.frontpage.name,
     new_parser=False,
-    breakers=4000,
+    breakers=10000,
     curl=False
 )
 # agent.create_frontpage(
