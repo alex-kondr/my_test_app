@@ -1,8 +1,8 @@
 from agent import *
 from models.products import *
-import simplejson
 
-XCAT = ['Neuheiten']
+
+XCAT = ['Neuheiten', 'Angebote', 'Angebote', 'Reisen & mehr', 'Sale', 'Bestseller', 'Rezepte']
 OPTIONS = "--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:136.0) Gecko/20100101 Firefox/136.0' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3'"
 
 
@@ -13,75 +13,94 @@ def run(context, session):
 
 
 def process_frontpage(data, context, session):
-    cats = data.xpath("//a[contains(@class,'level-0') and not(regexp:test(normalize-space(.), 'Angebote|Sale|Rezepte|Reisen & mehr', 'i'))]")
+    cats = data.xpath('//li[contains(@class, "main-navigation__list")]')
     for cat in cats:
-        name = cat.xpath(".//span//text()").string()
-        url = cat.xpath("@href").string()
-        session.queue(Request(url, use='curl', options=OPTIONS, force_charset="utf-8"), process_productlist, dict(cat=name))
+        name = cat.xpath('a//text()').string(multiple=True)
+
+        if name not in XCAT:
+            sub_cats = cat.xpath('.//ul[contains(@class, "sub__categories")]')
+            for sub_cat in sub_cats:
+                sub_name = sub_cat.xpath('a/text()').string()
+
+                if sub_name not in XCAT:
+                    sub_cats1 = sub_cat.xpath('.//li[contains(@class, "inner-list")]/a')
+
+                    if sub_cats1:
+                        for sub_cat1 in sub_cats1:
+                            sub_name1 = sub_cat1.xpath('text()').string()
+
+                            if sub_name1 not in XCAT and 'Alle ' not in sub_name1:
+                                url = sub_cat1.xpath("@href").string()
+                                session.queue(Request(url, use='curl', options=OPTIONS, force_charset="utf-8"), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                    else:
+                        url = cat.xpath('a/@href').string()
+                        session.queue(Request(url, use='curl', options=OPTIONS, force_charset="utf-8"), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
-def process_productlist(data, context, session):
-    all_productlist = data.xpath("//div[@class='teaser__box']//a[contains(.,'Alle')]/@href").string()
-    if all_productlist:
-        session.do(Request(all_productlist, use='curl', options=OPTIONS, force_charset="utf-8"), process_productlist, dict())
-        return
-
-    prods = data.xpath("//li[contains(@class,'product-list__item')]")
+def process_prodlist(data, context, session):
+    prods = data.xpath('//a[contains(@class, "product__content")]')
     for prod in prods:
-        revs = prod.xpath(".//div[@class='product__rating']//span[@class='point full']").string()
-        name = prod.xpath(".//div[contains(@class,'product__title__inner')]//text()").string(multiple=True)
-        url = prod.xpath(".//a[contains(@class,'product') and not(contains(@class,'btn-primary'))]/@href").string()
-        sku = prod.xpath(".//a[contains(@class,'product') and not(contains(@class,'btn-primary'))]/@data-sku").string()
+        name = prod.xpath('.//div[contains(@class, "product__title")]/text()').string()
+        url = prod.xpath('@href').string()
 
-        if revs:
-            session.queue(Request(url, use='curl', options=OPTIONS, force_charset="utf-8"), process_product, dict(context, url=url, name=name, sku=sku))
+        rating = prod.xpath('.//div[@class="product__rating"]')
+        if rating:
+            session.queue(Request(url, use='curl', options=OPTIONS, force_charset="utf-8"), process_product, dict(context, name=name, url=url))
 
-    next_url = data.xpath("//ul[@class='pagination']//a[contains(@class,'next-page')]/@href").string()
+    next_url = data.xpath('//a[@title="Nächste Seite"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', options=OPTIONS, force_charset="utf-8"), process_productlist, dict(context))
+        session.queue(Request(next_url, use='curl', options=OPTIONS, force_charset="utf-8"), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
-    json_body = data.xpath("//script[contains(., 'baseData')]//text()").string().split("(", 1)[-1].replace(");", "")
-    if not json_body:
-        return
-
-    resp = simplejson.loads(json_body.strip())
-
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.category = resp['ecommerce']['detail']['products'][0]['dimension14'].split("Sortiment/")[-1].replace("/", "|")
-    product.ssid = context['sku']
+    product.ssid = data.xpath('//input/@data-sku').string()
     product.sku = product.ssid
+    product.category = context['cat']
     product.manufacturer = data.xpath("//div[@itemscope='brand']//span[@itemprop='name']//text()").string(multiple=True)
 
-    ekomi = data.xpath("//div[contains(@class,'rating-box__ekomi')]//a[@class='rating-box__ekomi__link']")
-    if not ekomi:
-        return
+    ean = data.xpath('//span[@class="artikel-ean"]/text()').string()
+    if ean:
+        ean = ean.split()[-1]
+        if ean.isdigit() and len(ean) > 10:
+            product.add_property(type='id.ean', value=ean)
 
-    revs = data.xpath("//div[contains(@class,'rating-comment-box__info')]")
+    revs = data.xpath('//section[contains(@class,"rating-comment-box")]')
     for rev in revs:
         review = Review()
-        review.title = product.name
-        review.url = product.url
         review.type = 'user'
-        review.date = rev.xpath("following::span[@itemprop='datePublished'][1]/@content").string()
+        review.url = product.url
+        review.date = rev.xpath('.//span[@itemprop="datePublished"]/@content').string()
 
-        grade_overall = rev.xpath(".//span[@itemprop='ratingValue']/text()").string()
-        if grade_overall:
-            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
-
-        author_name = rev.xpath(".//span[@itemprop='author']//text()").string(multiple=True).strip()
+        author_name = rev.xpath('.//strong[@itemprop="name"]/text()').string()
         if author_name:
             review.authors.append(Person(name=author_name, ssid=author_name))
 
-        excerpt = rev.xpath("following::p[@class='rating-comment-box__comment'][1]//text()").string(multiple=True)
+        grade_overall = rev.xpath('.//div[contains(@class, "rating rating")]/@class').string()
+        if grade_overall:
+            grade_overall = grade_overall.split('rating-')[-1].split('-')[0]
+            if grade_overall.isdigit() and float(grade_overall) > 0:
+                review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
+        hlp_yes = rev.xpath('.//span[contains(@class, "rate pro")]/text()').string()
+        if hlp_yes and int(hlp_yes) > 0:
+            review.add_property(type='helpful_votes', value=int(hlp_yes))
+
+        hlp_no = rev.xpath('.//span[contains(@class, "rate contra")]/text()').string()
+        if hlp_no and int(hlp_no) > 0:
+            review.add_property(type='not_helpful_votes', value=int(hlp_no))
+
+        excerpt = rev.xpath('.//p[@itemprop="reviewBody"]//text()').string(multiple=True)
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
             review.ssid = review.digest() if author_name else review.digest(excerpt)
+
             product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
+
+# no next page
