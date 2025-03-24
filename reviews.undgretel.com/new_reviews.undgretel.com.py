@@ -32,7 +32,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://undgretel.com/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -59,7 +59,7 @@ def process_prodlist(data, context, session):
 def process_product(data, context, session):
     product = Product()
     product.name = context['name']
-    product.url = context['url']
+    product.url = context['url'].split('?')[0]
     product.ssid = data.xpath('//input[@name="product-id"]/@value').string()
     product.sku = data.xpath('//input[@class="product-variant-id"]/@value').string()
     product.category = context['cat']

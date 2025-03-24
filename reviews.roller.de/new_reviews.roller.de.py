@@ -41,18 +41,15 @@ def process_prodlist(data, context, session):
 
     prods = prods_json.get('products', [])
     for prod in prods:
-        product = Product()
-        product.name = prod.get('name')
-        product.url = 'https://www.roller.de' + prod.get('url')
-        product.ssid = prod.get('code')
-        product.sku = product.ssid
-        product.category = context['cat']
-        product.manufacturer = prod.get('brandName')
+        name = prod.get('name')
+        ssid = prod.get('code')
+        manufacturer = prod.get('brandName')
+        url = 'https://www.roller.de' + prod.get('url')
 
         revs_cnt = prod.get('rating', {}).get('count')
         if revs_cnt and int(revs_cnt) > 0:
-            url = 'https://www.roller.de/nuxt-api/view/products/{}/reviews?page=0&sort=rating&rating'.format(product.ssid)
-            session.do(Request(url), process_reviews, dict(product=product))
+            url = 'https://www.roller.de/nuxt-api/view/products/{}/reviews?page=0&sort=rating&rating'.format(ssid)
+            session.queue(Request(url), process_reviews, dict(context, name=name, ssid=ssid, manufacturer=manufacturer, url=url))
 
     curr_page = prods_json.get('pagination', {}).get('currentPage', 0)
     total_pages = prods_json.get('pagination', {}).get('totalPages', 0)
@@ -62,7 +59,15 @@ def process_prodlist(data, context, session):
 
 
 def process_reviews(data, context, session):
-    product = context['product']
+    product = context.get('product')
+    if not product:
+        product = Product()
+        product.name = context['name']
+        product.url = context['url']
+        product.ssid = context['ssid']
+        product.sku = product.ssid
+        product.category = context['cat']
+        product.manufacturer = context['manufacturer']
 
     revs_json = simplejson.loads(data.content)
 

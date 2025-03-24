@@ -1,6 +1,6 @@
 from pathlib import Path
 from enum import Enum, auto
-from typing import Optional
+from typing import Union
 
 from product_test.functions import get_old_agent, get_agent_code, get_agent_name, get_source_name
 
@@ -35,7 +35,7 @@ class AgentForm:
         url: str,
         next_func: ProcessRun,
         new_parser: bool,
-        breakers: Optional[int],
+        breakers: Union[int, bool],
         curl: bool
         ):
 

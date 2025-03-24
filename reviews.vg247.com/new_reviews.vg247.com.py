@@ -22,14 +22,18 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split('review:')[0].split('review -')[0].split(' Review')[0].split('review –')[0].split('review-')[0].split(' reviews ')[0].strip()
-    product.url = context['url']
-    product.ssid = product.url.split('/')[-1].replace('-review', '')
+    product.ssid = context['url'].split('/')[-1].replace('-review', '')
     product.category = 'Games'
+    product.manufacturer = data.xpath('//li[strong[contains(., "Developer")]]/text()').string(multiple=True)
+
+    product.url = data.xpath('//li[strong[contains(., "Link")]]/a/@href').string()
+    if not product.url:
+        product.url = context['url']
 
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
