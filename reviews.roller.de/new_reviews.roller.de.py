@@ -7,7 +7,7 @@ XCAT = ['Wohnideen', 'SALE', 'Marken', 'Prospekte', 'Gutscheine', 'Wohnbereiche'
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('https://www.roller.de/'), process_frontpage, dict())
 
 
@@ -44,12 +44,12 @@ def process_prodlist(data, context, session):
         name = prod.get('name')
         ssid = prod.get('code')
         manufacturer = prod.get('brandName')
-        url = 'https://www.roller.de' + prod.get('url')
+        prod_url = 'https://www.roller.de' + prod.get('url')
 
         revs_cnt = prod.get('rating', {}).get('count')
         if revs_cnt and int(revs_cnt) > 0:
             url = 'https://www.roller.de/nuxt-api/view/products/{}/reviews?page=0&sort=rating&rating'.format(ssid)
-            session.queue(Request(url), process_reviews, dict(context, name=name, ssid=ssid, manufacturer=manufacturer, url=url))
+            session.queue(Request(url), process_reviews, dict(context, name=name, ssid=ssid, manufacturer=manufacturer, prod_url=prod_url))
 
     curr_page = prods_json.get('pagination', {}).get('currentPage', 0)
     total_pages = prods_json.get('pagination', {}).get('totalPages', 0)
@@ -63,7 +63,7 @@ def process_reviews(data, context, session):
     if not product:
         product = Product()
         product.name = context['name']
-        product.url = context['url']
+        product.url = context['prod_url']
         product.ssid = context['ssid']
         product.sku = product.ssid
         product.category = context['cat']
