@@ -36,15 +36,15 @@ agent.create_revlist(
     prod_rev="review",
     next_url_xpath='//link[@rel="next"]/@href',
 )
-agent.create_review(
-    date_xpath='//meta[@property="article:published_time"]/@content',
-    author_xpath='//a[@class="author-name"]/text()',
-    author_url_xpath='//a[@class="author-name"]/@href',
-    grade_overall_xpath='',
-    pros_xpath='',
-    cons_xpath='',
-    summary_xpath='',
-    conclusion_xpath='//h3[contains(., "Fazit")]/following-sibling::p//text()',
-    excerpt_with_concl_xpath='//h3[contains(., "Fazit")]/preceding-sibling::p//text()',
-    excerpt_xpath='//div[@class="entry"]/p//text()'
-)
+# agent.create_review(
+#     date_xpath='//meta[@property="article:published_time"]/@content',
+#     author_xpath='//a[@class="author-name"]/text()',
+#     author_url_xpath='//a[@class="author-name"]/@href',
+#     grade_overall_xpath='',
+#     pros_xpath='',
+#     cons_xpath='',
+#     summary_xpath='',
+#     conclusion_xpath='//h3[contains(., "Fazit")]/following-sibling::p//text()',
+#     excerpt_with_concl_xpath='//h3[contains(., "Fazit")]/preceding-sibling::p//text()',
+#     excerpt_xpath='//div[@class="entry"]/p//text()'
+# )
