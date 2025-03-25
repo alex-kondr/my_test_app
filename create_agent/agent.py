@@ -51,7 +51,7 @@ class AgentForm:
 
         text += "    session.browser.use_new_parser = True\n" if new_parser else ""
         text += f"    session.sessionbreakers = [SessionBreak(max_requests={breakers})]\n" if breakers else ""
-        text += """    session.queue(Request('{url}'{curl}), process_{next_func}, dict())\n""".format(url=url, next_func=next_func, curl=", use='curl'" if curl else "")
+        text += """    session.queue(Request('{url}'{curl}, forse_charset='utf-8'), process_{next_func}, dict())\n""".format(url=url, next_func=next_func, curl=", use='curl'" if curl else "")
 
         with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8") as file:
             file.writelines(get_agent_code(html))
@@ -73,7 +73,7 @@ class AgentForm:
             "    for cat in cats:\n"
             f"        name = cat.xpath('{name_xpath}').string()\n"
             f"        url = cat.xpath('{url_xpath}').string()\n"
-            "        session.queue(Request(url), process_revlist, dict(cat=name))\n"
+            "        session.queue(Request(url, forse_charset='utf-8'), process_revlist, dict(cat=name))\n"
         )
 
         with open(self.file_path, "a", encoding="utf-8") as file:
@@ -99,10 +99,10 @@ class AgentForm:
             "    for rev in revs:\n"
             f"        {name_title} = rev.xpath('{name_title_xpath}').string()\n"
             f"        url = rev.xpath('{url_xpath}').string()\n"
-            f"        session.queue(Request(url), process_{prod_rev}, dict({name_title}={name_title}, url=url))\n"
+            f"        session.queue(Request(url, forse_charset='utf-8'), process_{prod_rev}, dict({name_title}={name_title}, url=url))\n"
             f"\n    next_url = data.xpath('{next_url_xpath}').string()\n"
             "    if next_url:\n"
-            "        session.queue(Request(next_url), process_revlist, dict())\n"
+            "        session.queue(Request(next_url, forse_charset='utf-8'), process_revlist, dict())\n"
         )
 
         with open(self.file_path, "a", encoding="utf-8") as file:

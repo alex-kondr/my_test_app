@@ -34,3 +34,19 @@
 # print(next(my_list))
 # print(next(my_list))
 # print(next(my_list))
+
+
+def is_prime(n: int) -> bool:
+    i = 2
+    if n < 2:
+        return False
+
+    while i < n ** 0.5:
+        if n % i == 0:
+            print(i)
+            return False
+        i += 1
+    return True
+
+
+print(is_prime(2000))
