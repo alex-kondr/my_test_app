@@ -1,3 +1,5 @@
+from calendar import c
+from multiprocessing import process
 from agent import *
 from models.products import *
 
@@ -61,23 +63,54 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h3[contains(., "Заключение")]/following-sibling::p[not(contains(., "По итогам обзора"))]//text()').string(multiple=True)
+    last_page = ''
+    pages = data.xpath('//div[@class="ui list"]//div[@class="content"]')
+    for page in pages:
+        title = page.xpath('.//text()').string()
+        last_page = page.xpath('a/@href').string()
+        if title and last_page:
+            review.add_property(type='pages', value=dict(title=title, url=last_page))
+        elif title:
+            review.add_property(type='pages', value=dict(title=title, url=product.url))
+
+    conclusion = data.xpath('(//h3|//h1)[contains(., "Заключение")]/following-sibling::p[not(regexp:test(., "По итогам обзора|P.S.|Дискуссии по теме|JavaScript") or .//script)]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Заключение")]/preceding-sibling::p[not(regexp:test(., "CPU-Z:|AIDA64|Cinebench|PCMark 10:|3DMark|Winrar|7-Zip|Geekbench|CrystalDisk|Benchmark:"))]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//div[@itemprop="articleBody"]/p[not(regexp:test(., "CPU-Z:|AIDA64|Cinebench|PCMark 10:|3DMark|Winrar|7-Zip|Geekbench|CrystalDisk|Benchmark:|По итогам обзора"))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h3|//h1)[contains(., "Заключение")]/preceding-sibling::p[not(regexp:test(., "CPU-Z:|AIDA64|Cinebench|PCMark 10:|3DMark|Winrar|7-Zip|Geekbench|CrystalDisk|Benchmark:|P.S.|Дискуссии по теме|JavaScript") or .//script)]//text()').string(multiple=True)
+    if not excerpt and not conclusion:
+        excerpt = data.xpath('//div[@itemprop="articleBody"]//p[not(regexp:test(., "CPU-Z:|AIDA64|Cinebench|PCMark 10:|3DMark|Winrar|7-Zip|Geekbench|CrystalDisk|Benchmark:|По итогам обзора|P.S.|Дискуссии по теме|JavaScript") or .//script)]//text()').string(multiple=True)
 
-    if excerpt:
-        if summary:
-            excerpt = excerpt.replace(summary, '')
-        if conclusion:
-            excerpt = excerpt.replace(conclusion, '')
+    if last_page:
+        session.do(Request(last_page), process_lastpage, dict(product=product, review=review, excerpt=excerpt))
 
-        excerpt = excerpt.strip()
+    elif excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
+        product.reviews.append(review)
+
+        session.emit(product)
+
+
+def process_lastpage(data, context, session):
+    review = context['review']
+
+    conclusion = data.xpath('(//h3|//h1)[contains(., "Заключение")]/following-sibling::p[not(regexp:test(., "По итогам обзора|P.S.|Дискуссии по теме|JavaScript") or .//script)]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('(//h3|//h1)[contains(., "Заключение")]/preceding-sibling::p[not(regexp:test(., "CPU-Z:|AIDA64|Cinebench|PCMark 10:|3DMark|Winrar|7-Zip|Geekbench|CrystalDisk|Benchmark:|P.S.|Дискуссии по теме|JavaScript") or .//script)]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@itemprop="articleBody"]//p[not(regexp:test(., "CPU-Z:|AIDA64|Cinebench|PCMark 10:|3DMark|Winrar|7-Zip|Geekbench|CrystalDisk|Benchmark:|По итогам обзора|P.S.|Дискуссии по теме|JavaScript") or .//script)]//text()').string(multiple=True)
+
+    if excerpt:
+        context['excerpt'] = context.get('excerpt', '') + ' ' + excerpt
+
+    if context['excerpt']:
+        excerpt = context['excerpt'].strip()
+        review.add_property(type='excerpt', value=excerpt)
+
+        product = context['product']
         product.reviews.append(review)
 
         session.emit(product)
