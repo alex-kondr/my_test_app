@@ -41,10 +41,10 @@ agent.create_review(
     author_xpath='//meta[@name="author"]/@content',
     author_url_xpath='',
     grade_overall_xpath='//div[@class="score"]/text()',
-    pros_xpath='',
-    cons_xpath='',
+    pros_xpath='//div[contains(@class, "pros")]/div[contains(@class, "procon")]',
+    cons_xpath='//div[contains(@class, "cons")]/div[contains(@class, "procon")]',
     summary_xpath='//p[contains(@class, "subtitle")]//text()',
-    conclusion_xpath='',
-    excerpt_with_concl_xpath='',
-    excerpt_xpath='//div[contains(@id, "tekst_prom")]/a[@class="link_tekst"]//text()'
+    conclusion_xpath='.',
+    excerpt_with_concl_xpath='.',
+    excerpt_xpath='//div[contains(@class, "entry-content")]/p[not(.//em)]//text()'
 )

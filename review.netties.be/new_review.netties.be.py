@@ -3,6 +3,7 @@ from models.products import *
 
 
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.netties.be/index.php?arc=Hardware&arc_start=0', force_charset='utf-8'), process_revlist, dict())
 
 
