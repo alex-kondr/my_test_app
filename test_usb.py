@@ -36,17 +36,27 @@
 # print(next(my_list))
 
 
-def is_prime(n: int) -> bool:
-    i = 2
-    if n < 2:
-        return False
+# def is_prime(n: int) -> bool:
+#     i = 2
+#     if n < 2:
+#         return False
 
-    while i < n ** 0.5:
-        if n % i == 0:
-            print(i)
-            return False
-        i += 1
-    return True
+#     while i < n ** 0.5:
+#         if n % i == 0:
+#             print(i)
+#             return False
+#         i += 1
+#     return True
 
 
-print(is_prime(2000))
+# print(is_prime(2000))
+
+# PC & Gaming|Gaming|Playstation 5
+# PC & Gaming|Souris PC|Souris gamer
+# cats = 'PC & Gaming|Gaming|Playstation 5'.split('|')
+
+# category = ''
+# for cat in cats:
+#     if not (any([cat_ for cat_ in cat.split() if cat_ in category])):
+#         category += cat + '|'
+# print(category.strip('|'))

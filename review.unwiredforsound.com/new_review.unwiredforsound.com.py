@@ -25,7 +25,7 @@ def process_revlist(data, context, session):
     if not revs:
         new_data = simplejson.loads(data.content.replace("{}\r\n", ''))[1]
         new_data = data.parse_fragment(new_data)
-        revs = data.xpath('//h3[@class="title"]/a')
+        revs = new_data.xpath('//h3[@class="title"]/a')
 
     if not revs:
         return
@@ -38,8 +38,8 @@ def process_revlist(data, context, session):
     cat_id = context.get('cat_id', data.xpath('//a[contains(., "Load more")]/@data-id').string())
     page = context.get('page', 1) + 1
     next_url = 'https://unwiredforsound.com/wp-json/codetipi-zeen/v1/block?paged={page}&type=1&data%5Bid%5D={cat_id}&data%5Bnext%5D={next_page}&data%5Bprev%5D=1&data%5Btarget%5D=0&data%5Bmnp%5D=0&data%5Bpreview%5D=1&data%5Bis110%5D=1&data%5Bcounter%5D=0&data%5Bcounter_class%5D=&data%5Bpost_subtitle%5D=&data%5Bexcerpt_off%5D=0&data%5Bexcerpt_length%5D=12&data%5Bexcerpt_full%5D=0&data%5Bimg_shape%5D=0&data%5Bbyline_off%5D=0&data%5Bfi_off%5D=0&data%5Bppp%5D=8&data%5Bargs%5D%5Bcat%5D=33&data%5Bargs%5D%5Bposts_per_page%5D=8&data%5Bargs%5D%5Bauthor__in%5D=&data%5Bargs%5D%5Btag__in%5D=&data%5Bargs%5D%5Bpost__in%5D=&data%5Bargs%5D%5Boffset%5D=&data%5Bargs%5D%5Bpost_type%5D=&data%5Bargs%5D%5Btax_query%5D=&data%5Bargs%5D%5Btipi%5D=&data%5Bargs%5D%5Btrending%5D='.format(page=page, next_page=page+1, cat_id=cat_id)
-    if next_url:
-        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict(context))
+    if cat_id:
+        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict(context, cat_id=cat_id, page=page))
 
 
 def process_review(data, context, session):

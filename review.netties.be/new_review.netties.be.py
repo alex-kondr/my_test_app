@@ -12,7 +12,8 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, url=url))
+        if title and url:
+            session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//button[contains(., "Volgende pagina")]/@onclick').string()
     if next_url:
