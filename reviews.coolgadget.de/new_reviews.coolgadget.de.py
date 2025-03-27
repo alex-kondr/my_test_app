@@ -114,3 +114,5 @@ def process_reviews(data,context, session):
 
     if product.reviews:
         session.emit(product)
+
+# no next page
