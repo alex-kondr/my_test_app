@@ -2,10 +2,7 @@ from agent import *
 from models.products import *
 import simplejson
 import re
-import httplib
 
-
-httplib._MAXHEADERS = 200
 
 XCAT = ['Brands']
 
@@ -36,7 +33,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.storedj.com.au/', force_charset='utf-8'), process_frontpage, dict())
+    session.queue(Request('https://www.storedj.com.au/', force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -56,7 +53,7 @@ def process_frontpage(data, context, session):
                 if sub_name:
                     options = """--compressed -X POST --data-raw '{"searches":[{"query_by":"title,description,sid","highlight_full_fields":"title,sid","query_by_weights":"10,1,1","num_typos":1,"typo_tokens_threshold":1,"sort_by":"_text_match:desc,globalSortOverride:desc,globalSortOrder:desc","enable_overrides":true,"per_page":20,"collection":"sdj_products","q":"*","facet_by":"brand,catdesc.lvl0,catdesc.lvl1,catdesc.lvl2,in_stock,price,product_status","filter_by":"catdesc.lvl1:=[`""" + '{name} > {sub_name}'.format(name=name, sub_name=sub_name) + """]","max_facet_values":200,"page":1}]}'"""
                     url = 'https://search.soundbay.com.au/multi_search?x-typesense-api-key=465FSQRbitoh2YfhEMZAMwjdMlbmLYhc'
-                    session.do(Request(url, use='curl', options=options, force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name, cat_name=name, sub_catname=sub_name))
+                    session.do(Request(url, use='curl', options=options, force_charset='utf-8', max_age=0), process_prodlist, dict(cat=name + '|' + sub_name, cat_name=name, sub_catname=sub_name))
 
 
 def process_prodlist(data, context, session):
@@ -64,9 +61,9 @@ def process_prodlist(data, context, session):
     if not prods_json:
         return
 
-    prods_json = prods_json[0]
+    prods_json = prods_json.get('results', [])[0]
 
-    prods = prods_json.get('hits')
+    prods = prods_json.get('hits', [])
     for prod in prods:
         prod = prod.get('document')
 
@@ -89,7 +86,7 @@ def process_prodlist(data, context, session):
             product.add_property(type='id.ean', value=str(ean))
 
         revs_url = 'https://api.trustpilot.com/v1/product-reviews/business-units/5487e55500006400057c0ed1/reviews?apikey=7qfADKhmajegupAzebRovRVAjxdpou0s&sku={}&perPage=100'.format(mpn)
-        session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(product=product))
+        session.do(Request(revs_url, force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
 
     prods_cnt = prods_json.get('found')
     offset = context.get('offset', 0) + 20
