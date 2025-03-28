@@ -3,6 +3,9 @@ from models.products import *
 import simplejson
 
 
+XCAT = ['Dịch vụ', 'Hỗ trợ', 'Hệ thống siêu thị', 'Thông tin hữu ích', 'Bán hàng doanh nghiệp']
+
+
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"
     out = file(tmp, "w")
@@ -24,11 +27,13 @@ def run(context, session):
 def process_frontpage(data, context, session):
     strip_namespace(data)
 
-    cats = data.xpath('(//div[@class="menu-item"])[position() < 11]//a')
+    cats = data.xpath('//div[@class="menu-item"]//a')
     for cat in cats:
         name = cat.xpath('text()').string().strip()
         url = cat.xpath('@href').string()
-        session.queue(Request(url), process_prodlist, dict(cat=name))
+
+        if name not in XCAT:
+            session.queue(Request(url), process_prodlist, dict(cat=name))
 
 
 def process_catlist(data, context, session):
