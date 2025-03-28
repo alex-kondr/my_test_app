@@ -2,7 +2,10 @@ from agent import *
 from models.products import *
 import simplejson
 import re
+import httplib
 
+
+httplib._MAXHEADERS = 200
 
 XCAT = ['Brands']
 
@@ -51,7 +54,7 @@ def process_frontpage(data, context, session):
                 sub_name = sub_cat.get('categoryName')
 
                 if sub_name:
-                    options = """--compressed -X POST --data-raw '{"searches":[{"query_by":"title,description,sid","highlight_full_fields":"title,sid","query_by_weights":"10,1,1","num_typos":1,"typo_tokens_threshold":1,"sort_by":"_text_match:desc,globalSortOverride:desc,globalSortOrder:desc","enable_overrides":true,"per_page":20,"collection":"sdj_products","q":"*","facet_by":"brand,catdesc.lvl0,catdesc.lvl1,catdesc.lvl2,in_stock,price,product_status","filter_by":"catdesc.lvl1:=[`{name} > {sub_name}`]","max_facet_values":200,"page":1}]}'""".format(name=name, sub_name=sub_name)
+                    options = """--compressed -X POST --data-raw '{"searches":[{"query_by":"title,description,sid","highlight_full_fields":"title,sid","query_by_weights":"10,1,1","num_typos":1,"typo_tokens_threshold":1,"sort_by":"_text_match:desc,globalSortOverride:desc,globalSortOrder:desc","enable_overrides":true,"per_page":20,"collection":"sdj_products","q":"*","facet_by":"brand,catdesc.lvl0,catdesc.lvl1,catdesc.lvl2,in_stock,price,product_status","filter_by":"catdesc.lvl1:=[`""" + '{name} > {sub_name}'.format(name=name, sub_name=sub_name) + """]","max_facet_values":200,"page":1}]}'"""
                     url = 'https://search.soundbay.com.au/multi_search?x-typesense-api-key=465FSQRbitoh2YfhEMZAMwjdMlbmLYhc'
                     session.do(Request(url, use='curl', options=options, force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name, cat_name=name, sub_catname=sub_name))
 
