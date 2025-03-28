@@ -7,7 +7,7 @@ XCAT = ['Accueil']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
     session.queue(Request('https://www.clubic.com/test-produit/', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -28,7 +28,7 @@ def process_review(data, context, session):
 
     product.name = data.xpath('//div[contains(@class, "fFEfHL")]/a[@class="un-styled-linked"]/text()').string()
     if not product.name:
-        product.name = context['title'].split(':')[0].replace('Test ', '').strip()
+        product.name = context['title'].replace('Test :', '').replace('Test:', '').replace('TEST :', '').replace('TEST:', '').split(':')[0].split('|')[-1].replace('(Tech Preview)', '').replace('Test ', '').replace('TEST ', '').strip()
 
     product.url = data.xpath('//a[contains(@href, "https://redirect.affilizz.com")]/@href').string()
     if not product.url:
@@ -40,16 +40,16 @@ def process_review(data, context, session):
     else:
         product.ssid = context['url'].split('/')[-1].replace('.html', '').replace('test-', '')
 
-    # PC & Gaming|Gaming|Playstation 5
-    # PC & Gaming|Souris PC|Souris gamer
     cats = data.xpath('//ul[@id="breadcrumb-list"]/li/a/text()').strings()
     if cats:
         category = ''
         for cat in cats:
-            if cat not in XCAT and not any([cat_ for cat_ in cat.split() if cat_ in category]):
+            if 'Test' not in cat and cat not in XCAT and not any([cat_ for cat_ in cat.split() if cat_ in category]):
                 category += cat + '|'
 
-        product.category = category.strip(' |')
+        category = category.strip(' |')
+        if len(category) > 1:
+            product.category = category
     else:
         product.category = 'Tech'
 
@@ -84,13 +84,15 @@ def process_review(data, context, session):
 
     pros = data.xpath('(//div[contains(., "Les plus")]/following-sibling::ul)[1]/li')
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
-        review.add_property(type='pros', value=pro)
+        pro = pro.xpath('.//text()').string(multiple=True).strip(' -.')
+        if len(pro) > 1:
+            review.add_property(type='pros', value=pro)
 
     cons = data.xpath('(//div[contains(., "Les moins")]/following-sibling::ul)[1]/li')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
-        review.add_property(type='cons', value=con)
+        con = con.xpath('.//text()').string(multiple=True).strip(' -.')
+        if len(con) > 1:
+            review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[contains(@class, "row")]/div/p/strong//text()').string(multiple=True)
     if summary:
