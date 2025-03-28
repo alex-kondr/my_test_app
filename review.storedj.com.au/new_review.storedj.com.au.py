@@ -5,6 +5,7 @@ import re
 
 
 XCAT = ['Brands']
+MPNS = []
 
 
 def remove_emoji(string):
@@ -51,7 +52,7 @@ def process_frontpage(data, context, session):
                 sub_name = sub_cat.get('categoryName')
 
                 if sub_name:
-                    options = """--compressed -X POST --data-raw '{"searches":[{"query_by":"title,description,sid","highlight_full_fields":"title,sid","query_by_weights":"10,1,1","num_typos":1,"typo_tokens_threshold":1,"sort_by":"_text_match:desc,globalSortOverride:desc,globalSortOrder:desc","enable_overrides":true,"per_page":20,"collection":"sdj_products","q":"*","facet_by":"brand,catdesc.lvl0,catdesc.lvl1,catdesc.lvl2,in_stock,price,product_status","filter_by":"catdesc.lvl1:=[`""" + '{name} > {sub_name}'.format(name=name, sub_name=sub_name) + """]","max_facet_values":200,"page":1}]}'"""
+                    options = """--compressed -X POST --data-raw '{"searches":[{"query_by":"title,description,sid","highlight_full_fields":"title,sid","query_by_weights":"10,1,1","num_typos":1,"typo_tokens_threshold":1,"sort_by":"_text_match:desc,globalSortOverride:desc,globalSortOrder:desc","enable_overrides":true,"per_page":20,"collection":"sdj_products","q":"*","facet_by":"brand,catdesc.lvl0,catdesc.lvl1,catdesc.lvl2,in_stock,price,product_status","filter_by":"catdesc.lvl1:=[`""" + name + ' > ' + sub_name + """]","max_facet_values":200,"page":1}]}'"""
                     url = 'https://search.soundbay.com.au/multi_search?x-typesense-api-key=465FSQRbitoh2YfhEMZAMwjdMlbmLYhc'
                     session.do(Request(url, use='curl', options=options, force_charset='utf-8', max_age=0), process_prodlist, dict(cat=name + '|' + sub_name, cat_name=name, sub_catname=sub_name))
 
@@ -75,10 +76,11 @@ def process_prodlist(data, context, session):
         product.category = context['cat']
         product.manufacturer = prod.get('Brand')
 
-        mpn = prod.get('parent_product')
-        if not mpn:
-            return
+        mpn = prod.get('parent_product') or prod.get('id')
+        if not mpn or mpn in MPNS:
+            continue
 
+        MPNS.append(mpn)
         product.add_property(type='id.manufacturer', value=mpn)
 
         ean = prod.get('shopifyId')
@@ -92,9 +94,9 @@ def process_prodlist(data, context, session):
     offset = context.get('offset', 0) + 20
     next_page = context.get('page', 1) + 1
     if offset < prods_cnt:
-        options = """--compressed -X POST --data-raw '{"searches":[{"query_by":"title,description,sid","highlight_full_fields":"title,sid","query_by_weights":"10,1,1","num_typos":1,"typo_tokens_threshold":1,"sort_by":"_text_match:desc,globalSortOverride:desc,globalSortOrder:desc","enable_overrides":true,"per_page":20,"collection":"sdj_products","q":"*","facet_by":"brand,catdesc.lvl0,catdesc.lvl1,catdesc.lvl2,in_stock,price,product_status","filter_by":"catdesc.lvl1:=[`{name} > {sub_name}`]","max_facet_values":200,"page":{page}}]}'""".format(name=context['cat_name'], sub_name=context['sub_catname'], page=next_page)
-        url = 'https://search.soundbay.com.au/multi_search?x-typesense-api-key=465FSQRbitoh2YfhEMZAMwjdMlbmLYhc'
-        session.do(Request(url, use='curl', options=options, force_charset='utf-8'), process_prodlist, dict(context, page=next_page, offset=offset))
+        options = """--compressed -X POST --data-raw '{"searches":[{"query_by":"title,description,sid","highlight_full_fields":"title,sid","query_by_weights":"10,1,1","num_typos":1,"typo_tokens_threshold":1,"sort_by":"_text_match:desc,globalSortOverride:desc,globalSortOrder:desc","enable_overrides":true,"per_page":20,"collection":"sdj_products","q":"*","facet_by":"brand,catdesc.lvl0,catdesc.lvl1,catdesc.lvl2,in_stock,price,product_status","filter_by":"catdesc.lvl1:=[`""" + context['cat_name'] + ' > ' + context['sub_catname'] + """]","max_facet_values":200,"page":""" + str(next_page) + """}]}'"""
+        next_url = 'https://search.soundbay.com.au/multi_search?x-typesense-api-key=465FSQRbitoh2YfhEMZAMwjdMlbmLYhc'
+        session.do(Request(next_url, use='curl', options=options, force_charset='utf-8', max_age=0), process_prodlist, dict(context, page=next_page, offset=offset))
 
 
 def process_reviews(data, context, session):
@@ -128,7 +130,7 @@ def process_reviews(data, context, session):
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
-                product.reviews.append(excerpt)
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
