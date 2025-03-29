@@ -153,12 +153,15 @@ def process_reviews(data,context, session):
         excerpt = rev.xpath('.//div[contains(@class, "item-comment")]//text()').string(multiple=True)
         if excerpt and len(remove_emoji(excerpt).strip(' .+-')) > 2:
             if title:
-                review.title = remove_emoji(title)
+                review.title = remove_emoji(title).strip()
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = remove_emoji(excerpt).strip(' .+-')
+            excerpt = remove_emoji(excerpt).strip(' +-')
+            if '...' in excerpt:
+                excerpt = excerpt.strip(' .')
+
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 

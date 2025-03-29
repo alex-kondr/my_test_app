@@ -49,10 +49,15 @@ def process_review(data, context, session):
         review.date = date.split('T')[0]
 
     conclusion = data.xpath('//h3[contains(., "Fazit")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h3[contains(@id, "Kostenlos")]/following-sibling::p//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h3[contains(., "Fazit")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h3[contains(@id, "Kostenlos")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="entry"]/p//text()').string(multiple=True)
 

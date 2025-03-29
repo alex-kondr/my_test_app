@@ -99,6 +99,10 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
+    conclusion = data.xpath('//div[contains(@class, "conclusion")]/text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
     excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(.//em)]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
