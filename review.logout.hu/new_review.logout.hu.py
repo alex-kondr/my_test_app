@@ -21,14 +21,14 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].replace(' Tech Review', '').replace(' Review', '').replace(u'\uFEFF', '').strip(' .')
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.split('/')[-2].replace('_tech_review', '').replace('_review', '')
     product.category = 'Technológia'
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = context['title'].replace(u'\uFEFF', '')
     review.url = product.url
     review.ssid = product.ssid
 
@@ -46,10 +46,12 @@ def process_review(data, context, session):
 
     summary = data.xpath('//p[@itemprop="description about"]//text()').string(multiple=True)
     if summary:
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//h2|//p)[regexp:test(., "Végszó|Fnatic|Konklúzió")]/following-sibling::p[@class][not(s)]//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h2|//p)[regexp:test(., "Végszó|Fnatic|Konklúzió")]/preceding-sibling::p[@class][not(starts-with(normalize-space(.), "-"))]//text()').string(multiple=True)
@@ -63,9 +65,10 @@ def process_review(data, context, session):
         review.add_property(type='pages', value=dict(url=page_url, title=title))
 
     if pages:
-        session.queue(Request(page_url, force_charset='utf-8'), process_review_next, dict(excerpt=excerpt, review=review, product=product))
+        session.queue(Request(page_url, force_charset='utf-8'), process_review_last, dict(excerpt=excerpt, review=review, product=product))
 
     elif excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
@@ -73,21 +76,23 @@ def process_review(data, context, session):
         session.emit(product)
 
 
-def process_review_next(data, context, session):
+def process_review_last(data, context, session):
     review = context['review']
 
     conclusion = data.xpath('(//h2|//p)[regexp:test(., "Végszó|Fnatic|Konklúzió")]/following-sibling::p[@class][not(s)]//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h2|//p)[regexp:test(., "Végszó|Fnatic|Konklúzió")]/preceding-sibling::p[@class][not(starts-with(normalize-space(.), "-"))]//text()').string(multiple=True)
-    if not excerpt:
+    if not all(excerpt, conclusion):
         excerpt = data.xpath('//div[contains(@class, "content-body")]/p[@class][not(starts-with(normalize-space(.), "-"))]//text()').string(multiple=True)
 
     if excerpt:
         context['excerpt'] += ' ' + excerpt
 
     if context['excerpt']:
+        context['excerpt'] = context['excerpt'].replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=context['excerpt'])
 
         product = context['product']
