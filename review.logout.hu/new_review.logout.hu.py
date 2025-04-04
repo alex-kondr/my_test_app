@@ -23,7 +23,7 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title']
     product.url = context['url']
-    product.ssid = product.url.split('/')[-1].replace('.html', '')
+    product.ssid = product.url.split('/')[-2]
     product.category = 'Technológia'
 
     review = Review()
@@ -48,13 +48,13 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(., "Végszó|Fnatic")]/following-sibling::p[@class="mgt0" or @class="mgt1"][not(s)]//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2|//p)[regexp:test(., "Végszó|Fnatic|Konklúzió")]/following-sibling::p[@class][not(s)]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "Végszó|Fnatic")]/preceding-sibling::p[@class="mgt0" or @class="mgt1"]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2|//p)[regexp:test(., "Végszó|Fnatic|Konklúzió")]/preceding-sibling::p[@class][not(starts-with(normalize-space(.), "-"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "content-body")]/p[@class="mgt0" or @class="mgt1"]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "content-body")]/p[@class][not(starts-with(normalize-space(.), "-"))]//text()').string(multiple=True)
 
     pages = data.xpath('//li/div[contains(@class, "dropdown-menu-limit")]/a')
     for page in pages:
@@ -75,3 +75,22 @@ def process_review(data, context, session):
 
 def process_review_next(data, context, session):
     review = context['review']
+
+    conclusion = data.xpath('(//h2|//p)[regexp:test(., "Végszó|Fnatic|Konklúzió")]/following-sibling::p[@class][not(s)]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('(//h2|//p)[regexp:test(., "Végszó|Fnatic|Konklúzió")]/preceding-sibling::p[@class][not(starts-with(normalize-space(.), "-"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "content-body")]/p[@class][not(starts-with(normalize-space(.), "-"))]//text()').string(multiple=True)
+
+    if excerpt:
+        context['excerpt'] += ' ' + excerpt
+
+    if context['excerpt']:
+        review.add_property(type='excerpt', value=context['excerpt'])
+
+        product = context['product']
+        product.reviews.append(review)
+
+        session.emit(product)
