@@ -85,7 +85,7 @@ def process_review_last(data, context, session):
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h2|//p)[regexp:test(., "Végszó|Fnatic|Konklúzió")]/preceding-sibling::p[@class][not(starts-with(normalize-space(.), "-"))]//text()').string(multiple=True)
-    if not all(excerpt, conclusion):
+    if not excerpt and not conclusion:
         excerpt = data.xpath('//div[contains(@class, "content-body")]/p[@class][not(starts-with(normalize-space(.), "-"))]//text()').string(multiple=True)
 
     if excerpt:
