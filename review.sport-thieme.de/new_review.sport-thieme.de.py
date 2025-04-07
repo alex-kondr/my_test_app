@@ -2,9 +2,10 @@ from agent import *
 from models.products import *
 import re
 import simplejson
+import urllib
 
 
-OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br, zstd' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: cross-site' -H 'Connection: keep-alive' -H 'Alt-Used: www.sport-thieme.de' -H 'Cookie: __Secure-authjs.callback-url=https://www.sport-thieme.de; qwik-session=eyJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uSWQiOiI1MDAwNTQ0Yi0zNzg2LTQ2ZmUtODI3Mi1jZGRkZmUyNjk0MGQiLCJleHAiOjE3NDc4OTU4OTUsImlhdCI6MTc0NDAwNzg5NX0._yxXvf8Txyp3T3dZJw-hhWYw5l0eizUup26zzUMTETE; marketingOrigin=W0-OA; __qw_i=0; _dd_s=logs=1&id=10e55a10-ac75-45a1-bcdb-d2e7ad9e8d60&created=1744007896780&expire=1744009480526; lastseen=["1869369"]; aws-waf-token=632fa5e9-74e2-42b9-a655-f4d64c658dd9:DQoAivsvdAsNAAAA:gz2pdP+TIvQ1sBDcStWdgXdYJ4dO5sAHicDbg9rcq0ct7uh5Kh5U1qWRKkZTyedXdGaMUCCjUahgU0zjI/sXisvTyU8HUf4qrFnjO0fXqDp76O9py1M3dtRPuI0myuxfcMCEk+F3SY9crQgr9909bwm1LJVfmYogv0YFdwA5O3fjRiEmgwaG5H3WsStDf7gu+JBeQGGCKYzSuVYL0T2rthzJ8P4tjPhzG1gGe0eonG7SBWLg/MOyyn4G/mtn41uGgepGKrf9WQ==' -H 'Priority: u=0, i'"""
+OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br, zstd' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: cross-site' -H 'Connection: keep-alive' -H 'Alt-Used: www.sport-thieme.de' -H 'Cookie: __Secure-authjs.callback-url=https://www.sport-thieme.de; qwik-session=eyJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uSWQiOiI1MDAwNTQ0Yi0zNzg2LTQ2ZmUtODI3Mi1jZGRkZmUyNjk0MGQiLCJleHAiOjE3NDc5MjIyODUsImlhdCI6MTc0NDAzNDI4NX0.WVIy72PJ8gHzrN-a-65xQCPe0tJgaP0cDfgF9SiqL18; marketingOrigin=W0-OA; __qw_i=0; lastseen=["2747402","2570802","1997255","2824202","1080908","2611701","1869369"]; _dd_s=logs=1&id=e3e4e414-e11d-48af-aec5-81dfc4643413&created=1744032451989&expire=1744035545577; aws-waf-token=632fa5e9-74e2-42b9-a655-f4d64c658dd9:DQoAv/NiCdc3AAAA:dhTYkykvv5BYbNShPJn8DUBDiGKrYnNHNIWm7wI8VoTO+vwLgW+pQpIyJGrEdpt0xQ2774U8AB8+0j2lGjv02fQiycAh3IHODkQL90CQqr2SG0MecOHyysjtYWBwqHYzqpONoCHZW45RI9+8IjJ5NGZlcHCbNf/1WzBKXcLFM9aJ4C/VNBWeT9Gz9/LwsxKJ/6s85LzAxVIA47RpcocrzvUlWRC3dCA21g3QX4wo2Wtto9DsAG+N0kez7dfCkNHK5ZMb9VWeOw==' -H 'Priority: u=0, i'"""
 
 
 def remove_emoji(string):
@@ -33,7 +34,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.sport-thieme.de/', use='curl', option=OPTIONS, force_charset='utf-8'), process_frontpage, dict())
+    session.queue(Request('https://www.sport-thieme.de/', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -41,7 +42,7 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url, use='curl', option=OPTIONS, force_charset='utf-8'), process_prodlist, dict(cat=name))
+        session.queue(Request(url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
@@ -52,11 +53,11 @@ def process_prodlist(data, context, session):
 
         revs = prod.xpath('.//span[@stars]')
         if revs:
-            session.queue(Request(url, use='curl', option=OPTIONS, force_charset='utf-8'), process_product, dict(context, name=name, url=url))
+            session.queue(Request(url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//a[svg[@aria-label="Chevron Right Icon"]]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', option=OPTIONS, force_charset='utf-8'), process_prodlist, dict(context))
+        session.queue(Request(next_url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -65,7 +66,7 @@ def process_product(data, context, session):
     product.url = context['url']
     product.ssid = product.url.split('=')[-1]
     product.sku = product.ssid
-    product.category = context['cat'] + product.url.split('/')[-2]
+    product.category = context['cat'] + '|' + urllib.unquote(product.url.split('/')[-2].encode('utf-8'))
 
     manufacturer = data.xpath('//a[@class="brandLink"]/@href').string()
     if manufacturer:
@@ -94,39 +95,17 @@ def process_reviews(data, context, session):
         review.url = product.url
         review.date = rev.get('datePublished')
 
-        author = rev.xpath('.//span[contains(., "schrieb")]/strong/text()').string()
+        author = rev.get('author', {}).get('name')
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = rev.xpath('.//span[contains(@class, "regular")]/@stars').string()
+        grade_overall = rev.get('reviewRating', {}).get('ratingValue')
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        grades = rev.xpath('.//li[span[@stars]]')
-        for grade in grades:
-            grade_name = grade.xpath('small/text()').string()
-            grade_val = grade.xpath('span/@stars').string()
-            if grade_val and grade_val.isdigit() and grade_name:
-                review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
-
-        is_recommended = rev.xpath('.//small[contains(., "Ich empfehle dieses Produkt")]')
-        if is_recommended:
-            review.add_property(type='is_recommended', value=True)
-
-        is_verified_buyer = rev.xpath('.//small[contains(., "Gekauft am:")]')
-        if is_verified_buyer:
-            review.add_property(type='is_verified_buyer', value=True)
-
-        title = rev.xpath('.//p[not(@q_key)]/strong/text()').string()
-        excerpt = rev.xpath('.//p[contains(@class, "shopText")]//text()').string(multiple=True)
-        if excerpt and len(remove_emoji(excerpt).strip()) > 2:
-            if title:
-                review.title = remove_emoji(title).strip()
-        else:
-            excerpt = title
-
+        excerpt = rev.get('reviewBody')
         if excerpt:
-            excerpt = remove_emoji(excerpt).strip()
+            excerpt = remove_emoji(excerpt.replace('&#34;', '"').replace('\r\n', '')).strip()
             review.add_property(type="excerpt", value=excerpt)
 
             review.ssid = review.digest() if author else review.digest(excerpt)
@@ -136,3 +115,4 @@ def process_reviews(data, context, session):
     if product.reviews:
         session.emit(product)
 
+# no next page
