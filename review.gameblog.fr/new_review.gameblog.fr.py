@@ -4,9 +4,6 @@ import simplejson
 import re
 
 
-XCAT = ['Tech', 'Tests']
-
-
 def remove_emoji(string):
     emoji_pattern = re.compile("["
                                u"\U0001F600-\U0001F64F"  # emoticons
@@ -32,7 +29,6 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     url = 'https://www.gameblog.fr/api/posts/load_more_posts/route/list_page/controller/components_controller/method/search_post_items/view_mode/full/sort_order/desc/offset/0/ppp/10/release_filter/a-venir/search_filters/Tech%2CHardware%20Tests%2Call%2Call%2C%2C%2C%2C%2C%2C%2C%2C%2C/limit/gameblog'
     session.queue(Request(url, force_charset='utf-8'), process_revlist, {})
 
@@ -54,18 +50,13 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = data.xpath('//h3[contains(@class, "title ")]/a/text()').string() or context['title'].split('TEST de ')[-1].split('TEST ')[-1].split(' : ', 1)[0]
+    product.name = data.xpath('//h3[contains(@class, "title ")]/a/text()').string() or context['title'].split('TEST de ')[-1].split('TEST ')[-1].split(' : ', 1)[0].replace('Notre Test !', '').replace('Test Du', '').replace('La Test', '').strip().title()
     product.url = context['url']
     product.ssid = product.url.split('-')[-1]
     product.manufacturer = data.xpath('//div[@class="developers"]/span/a/text()').string()
 
-    cats = data.xpath('//div[@class="post-tags"]/a/text()').strings()
-    cats = '|'.join([cat.strip() for cat in cats if cat.strip() not in XCAT])
-
     platforms = data.xpath('//div[@class="platforms"]/div/a/text()').strings()
-    platforms = '|'.join([platform.strip() for platform in platforms])
-
-    product.category = (cats + '/' + platforms).strip(' |/')
+    product.category = '/'.join({platform.strip() for platform in platforms if platform.strip()})
     if not product.category:
         product.category = 'Tech'
 
@@ -122,6 +113,10 @@ def process_review_next(data, context, session):
     new_data = simplejson.loads(data.content).get('body', {}).get('content_block_8')
     new_data = data.parse_fragment(new_data)
 
+    grade_overall = new_data.xpath('//text[@class="rating-text"]/text()').string()
+    if grade_overall and grade_overall.isdigit():
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+
     pros = new_data.xpath('//div[@class="good-points"]//div[@class="point"]')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True).replace('…', '').strip(' .\n\t+-')
@@ -133,10 +128,6 @@ def process_review_next(data, context, session):
         con = con.xpath('.//text()').string(multiple=True).replace('…', '').strip(' .\n\t+-')
         if con:
             review.add_property(type='cons', value=con)
-
-    grade_overall = new_data.xpath('//text[@class="rating-text"]/text()').string()
-    if grade_overall and grade_overall.isdigit():
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     conclusion = new_data.xpath('//div[@class="review-text"]//text()').string(multiple=True)
     if conclusion:
