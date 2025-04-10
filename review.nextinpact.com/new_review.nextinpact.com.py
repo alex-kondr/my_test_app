@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].replace(u'\uFEFF', '').strip()
     product.url = context['url']
     product.category = data.xpath('//p[contains(@class, "post-categorie")]/text()').string() or 'Tech'
 
@@ -31,7 +31,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = product.name
     review.url = product.url
     review.ssid = product.ssid
 
