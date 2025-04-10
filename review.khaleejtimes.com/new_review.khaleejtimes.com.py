@@ -33,7 +33,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = context['title'].replace('Gadget Review:', '').replace('Tech Review:', '').replace('Partner Content:', '').split(' Review:')[0].split(' review: ')[0].replace('Review: ', '').strip()
+    product.name = context['title'].replace('Gadget Review:', '').replace('Tech Review:', '').replace('Partner Content:', '').split(' Review:')[0].split(' review: ')[0].replace('Review: ', '').replace('REVIEW:', '').replace('Review ', '').strip()
     product.url = context['url']
     product.ssid = context['ssid']
     product.category = 'Tech'
@@ -58,17 +58,23 @@ def process_review(data, context, session):
 
     pros = data.xpath('//p[contains(., "Hits:")]/following-sibling::p[not(preceding-sibling::p[contains(., "Misses:")]) and starts-with(normalize-space(.), "-")]')
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
-        review.add_property(type='pros', value=pro)
+        pro = pro.xpath('.//text()').string(multiple=True).strip('-+. ')
+        if len(pro) > 1:
+            review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//p[contains(., "Misses:")]/following-sibling::p[starts-with(normalize-space(.), "-")]')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
-        review.add_property(type='cons', value=con)
+        con = con.xpath('.//text()').string(multiple=True).strip('-+. ')
+        if len(con) > 1:
+            review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="recent"]//p[contains(@class, "preamble")]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
+        
+        # con, pros, cons
+        # 'https://www.khaleejtimes.com/reviews/tech-reviews/gadget-review-a-reliable-companion-for-your-active-lifestyle'
+        
 
     excerpt = data.xpath('//p[contains(., "Hits:")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
