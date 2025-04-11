@@ -4,7 +4,6 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.khaleejtimes.com/contentapi/v1/getcollectionstories/tech-reviews-reviews?page=1&records=10', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -56,29 +55,29 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    pros = data.xpath('//p[contains(., "Hits:")]/following-sibling::p[not(preceding-sibling::p[contains(., "Misses:")]) and starts-with(normalize-space(.), "-")]')
+    pros = data.xpath('//p[contains(., "Hits")]/following-sibling::p[not(preceding-sibling::p[contains(., "Misses")] or contains(., "Misses"))][normalize-space(.)]')
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True).strip('-+. ')
+        pro = pro.xpath('.//text()').string(multiple=True).strip(u'-+.•‭‬ ')
         if len(pro) > 1:
             review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//p[contains(., "Misses:")]/following-sibling::p[starts-with(normalize-space(.), "-")]')
+    cons = data.xpath('//p[contains(., "Misses")]/following-sibling::p[not(preceding-sibling::p[regexp:test(., "Verdict|ALSO READ")] or regexp:test(., "Verdict|ALSO READ"))][normalize-space(.)]')
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True).strip('-+. ')
+        con = con.xpath('.//text()').string(multiple=True).strip(u'-+.•‭‬ ')
         if len(con) > 1:
             review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="recent"]//p[contains(@class, "preamble")]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
-        
-        # con, pros, cons
-        # 'https://www.khaleejtimes.com/reviews/tech-reviews/gadget-review-a-reliable-companion-for-your-active-lifestyle'
-        
 
-    excerpt = data.xpath('//p[contains(., "Hits:")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    conclusion = data.xpath('//p[.//strong[contains(., "Verdict")]]/following-sibling::p[not(preceding-sibling::p[contains(., "ALSO READ")] or contains(., "ALSO READ"))]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//p[contains(., "Hits")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[contains(., "Misses:")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+        excerpt = data.xpath('//p[contains(., "Misses")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "inner")]/p[not(@class)]//text()').string(multiple=True)
 
