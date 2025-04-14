@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import simplejson
 
 
 def run(context, session):
@@ -59,12 +60,9 @@ def process_product(data, context, session):
 def process_reviews(data, context, session):
     product = context['product']
 
-    try:
-        revs_json = data.content.replace("\n", "").split("var tempreviews = ")[-1].split(";sa_product_reviews")[0].split(";sa_merchant_reviews")[0]
-        revs = simplejson.loads(revs_json)
-    except:
-        return
+    revs_json = data.content.replace("\n", "").split("var tempreviews = ")[-1].split(";sa_product_reviews")[0].split(";sa_merchant_reviews")[0]
 
+    revs = simplejson.loads(revs_json)
     for rev in revs:
         review = Review()
         review.type = 'user'
@@ -91,7 +89,7 @@ def process_reviews(data, context, session):
         title = rev.get('heading')
         excerpt = rev.get('comments')
         if excerpt and len(excerpt) > 3:
-            review,title = title
+            review.title = title
         else:
             excerpt = title
 
