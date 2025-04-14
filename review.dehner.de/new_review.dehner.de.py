@@ -47,6 +47,11 @@ def process_product(data, context, session):
     if manufacturer:
         product.manufacturer = manufacturer.split('/')[-1].title()
 
+    revs_cnt = data.xpath('//meta[@itemprop="reviewCount"]/@content').string()
+    if int(revs_cnt.strip('()')) > 0:
+        raise ValueError("!!!!!!!!")
+    else:
+        print('revs_cnt=', int(revs_cnt.strip('()')))
 
 
 
