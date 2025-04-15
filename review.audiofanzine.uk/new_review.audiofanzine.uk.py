@@ -98,7 +98,7 @@ def process_product(data, context, session):
     product.name = context['name']
     product.manufacturer = data.xpath('//li//span[contains(., "Manufacturer:")]/following-sibling::span/text()').string()
     product.url = context['url'].strip('/')
-    product.category = context['cat'].replace('…', '')
+    product.category = context['cat'].replace('…', '').replace('Other gear|', '')
     product.ssid = data.xpath('//input[@id="product_id"]/@value').string() or product.url.split('/')[-1]
 
     user_revs = data.xpath('//div/a[contains(text(), "Reviews")]/@href').string()
@@ -107,7 +107,7 @@ def process_product(data, context, session):
 
     pro_revs = data.xpath('//div[contains(@class, "product-review ")]/a/@href').string()
     if pro_revs:
-        session.do(Request(pro_revs), process_pro_review, dict(product=product))
+        session.do(Request(pro_revs), process_review, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -117,7 +117,7 @@ def process_reviews(data, context, session):
 
     revs = data.xpath('//ul[@class="reviews"]/li')
     for rev in revs:
-        if rev.xpath('.//span[@class="reviewIsTranslation"]') or rev.xpath('.//div[contains(., "This review was originally published on")]'):
+        if rev.xpath('.//span[@class="reviewIsTranslation"]') or rev.xpath('.//div[regexp:test(., "This review was originally published on|Originally written by serialdj/translated")]'):
             continue
 
         review = Review()
@@ -168,13 +168,13 @@ def process_reviews(data, context, session):
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.do(Request(next_url), process_reviews, context)
+        session.do(Request(next_url), process_reviews, dict(product=product))
 
     elif product.reviews:
         session.emit(product)
 
 
-def process_pro_review(data, context, session):
+def process_review(data, context, session):
     strip_namespace(data)
 
     product = context['product']
@@ -202,15 +202,15 @@ def process_pro_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    pros = data.xpath('//ul[@class="plus"]/li/text()').strings()
+    pros = data.xpath('(//ul[@class="plus"]/li|//p[starts-with(normalize-space(.), "[+]")])/text()').strings()
     for pro in pros:
-        pro = remove_emoji(serialize_text(pro)).strip(' +-*.\t\n\r,')
+        pro = remove_emoji(serialize_text(pro)).strip(' []+-*.\t\n\r,')
         if len(pro) > 1:
             review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//ul[@class="minus"]/li/text()').strings()
+    cons = data.xpath('(//ul[@class="minus"]/li|//p[starts-with(normalize-space(.), "[-]")])/text()').strings()
     for con in cons:
-        con = remove_emoji(serialize_text(con)).strip(' +-*.\t\n\r,')
+        con = remove_emoji(serialize_text(con)).strip(' []+-*.\t\n\r,')
         if len(con) > 1:
             review.add_property(type='cons', value=con)
 
@@ -220,7 +220,7 @@ def process_pro_review(data, context, session):
         if len(summary) > 2:
             review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(@id, "conclusion")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(@id, "conclusion")]/following-sibling::p[not(strong[contains(., "Conclusion")] or regexp:test(., "\[\+\]|\[\-\]"))]//text()').string(multiple=True)
     if conclusion:
         conclusion = remove_emoji(serialize_text(conclusion)).strip()
         if conclusion:
@@ -228,7 +228,7 @@ def process_pro_review(data, context, session):
 
     excerpt = data.xpath('//div[@class="t-content"]/p[not(preceding-sibling::h2[contains(@id, "conclusion")])]//text()').string(multiple=True)
     if excerpt:
-        excerpt = remove_emoji(serialize_text(excerpt)).strip()
+        excerpt = remove_emoji(serialize_text(excerpt)).replace(u'\x80', '').strip()
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 

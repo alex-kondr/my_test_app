@@ -21,7 +21,7 @@ agent.create_run(
     next_func=ProcessRun.frontpage.name,
     new_parser=False,
     breakers=10000,
-    curl=True
+    # curl=True
 )
 # agent.create_frontpage(
 #     cats_xpath='//ul[@class="menu"]//a',

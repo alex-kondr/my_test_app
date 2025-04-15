@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://www.districtcamera.com/', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -37,8 +37,7 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = data.xpath('//input[@id="product_id"]/@value').string()
-    product.sku = product.ssid
+    product.ssid = product.url.split('/')[-1]
     product.category = context['cat']
 
     manufacturer = data.xpath('//div[@class="collection-logo"]/a/@href').string()
@@ -59,6 +58,9 @@ def process_product(data, context, session):
 
 def process_reviews(data, context, session):
     product = context['product']
+
+    if 'tempreviews' not in data.content:
+        return
 
     revs_json = data.content.replace("\n", "").split("var tempreviews = ")[-1].split(";sa_product_reviews")[0].split(";sa_merchant_reviews")[0]
 
@@ -93,12 +95,13 @@ def process_reviews(data, context, session):
         else:
             excerpt = title
 
-        if excerpt and len(excerpt) > 3:
+        if excerpt:
             excerpt = excerpt.replace('<br>', '').replace('&#039;', "'")
+            if len(excerpt) > 3:
 
-            review.add_property(type='excerpt', value=excerpt)
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
