@@ -41,7 +41,7 @@ def process_frontpage(data, context, session):
 def process_prodlist(data, context, session):
     strip_namespace(data)
 
-    prods = data.xpath('//div[contains(@class, "product-item") and h5]/a')
+    prods = data.xpath('//a[contains(@class, "product-item__name")]')
     for prod in prods:
         name = prod.xpath('h5/text()').string()
         url = prod.xpath('@href').string()
