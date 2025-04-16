@@ -6,7 +6,7 @@ XCAT = ['Geschenkideen',  'Neuheiten', 'Sale']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.reiterladen24.de/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -95,17 +95,20 @@ def process_reviews(data, context, session):
 
         title = rev.xpath('.//p[@class="h5"]//text()').string(multiple=True)
         excerpt = rev.xpath('.//p[contains(@class, "content")]//text()').string(multiple=True)
-        if excerpt:
-            review.title = title
+        if excerpt and len(excerpt.strip(' .+-*')) > 2:
+            if title:
+                review.title = title.strip(' .+-*')
         else:
             excerpt = title
 
         if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = excerpt.strip(' .+-*')
+            if len(excerpt) > 2:
+                review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = review.digest(excerpt)
+                review.ssid = review.digest(excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     revs_url = data.xpath('//form[contains(@class, "review-pagination")]/@action').string()
     next_page = data.xpath('//input[@id="p-next"]/@value').string()
