@@ -1,5 +1,5 @@
-from agent import *
-from models.products import *
+# from agent import *
+# from models.products import *
 
 
 XCAT = ['Geschenkideen',  'Neuheiten', 'Sale']
