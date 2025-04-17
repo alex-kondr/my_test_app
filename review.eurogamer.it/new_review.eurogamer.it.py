@@ -63,7 +63,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' review: ')[0].replace(' review', '').replace(' Review', '').split(' - ')[0].strip()
+    product.name = context['title'].split(' review: ')[0].replace(' review', '').replace(' Review', '').split(' - ')[0].split(' Preview: ')[0].replace('Review: ', '').replace(' re-review', '').replace('Hardware Test:', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('-review', '')
     product.manufacturer = data.xpath('//li[strong[contains(., "Developer:")]]/text()').string()
