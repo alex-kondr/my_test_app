@@ -2,6 +2,9 @@ from agent import *
 from models.products import *
 
 
+XCAT = ['Beste games']
+
+
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"
     out = file(tmp, "w")
@@ -16,7 +19,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://gamer.nl/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -27,11 +30,12 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('a/text()').string()
 
-        sub_cats = cat.xpath('ul/li/a')
-        for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath('text()').string()
-            url = sub_cat.xpath('@href').string()
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name + '|' + sub_name))
+        if name not in XCAT:
+            sub_cats = cat.xpath('ul/li/a')
+            for sub_cat in sub_cats:
+                sub_name = sub_cat.xpath('text()').string()
+                url = sub_cat.xpath('@href').string()
+                session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name + '|' + sub_name))
 
 
 def process_revlist(data, context, session):
@@ -39,7 +43,7 @@ def process_revlist(data, context, session):
 
     revs = data.xpath('//a[.//p[contains(@class, "font-bold")]]')
     for rev in revs:
-        title = rev.xpath('.//p/text()').string()
+        title = rev.xpath('.//p/text()').string().replace(' &amp;', '')
         url = rev.xpath('@href').string()
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
@@ -50,14 +54,9 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     strip_namespace(data)
-    
-    if "mini-reviews" in context["title"].lower():
-        ValueError("mini-reviews")
-    # process_reviews(data, context, session)
-    # return
 
     product = Product()
-    product.name = context['title'].split('Review: ')[-1].strip()
+    product.name = context['title'].split('Review: ')[-1].replace('Review -', '').replace('Review-in-progress: ', '').replace(' &amp;', '').strip()
     product.url = context['url']
     product.ssid = context['url'].split('/')[-2]
     product.category = context['cat']
@@ -68,9 +67,9 @@ def process_review(data, context, session):
     review.url = product.url
     review.ssid = product.ssid
 
-    date = data.xpath('//meta[@name="article:modified_time"]/@content').string()
+    date = data.xpath('//p[contains(@class, "extra-info text-white")]/text()').string()
     if date:
-        review.date = date.split('T')[0]
+        review.date = date.split(' - ')[0]
 
     author = data.xpath('//span[contains(., "Door:") and not(preceding::span[contains(., "Volgende artikel")])]/a[contains(@href, "/auteur/")]/text()').string()
     author_url = data.xpath('//span[contains(., "Door:") and not(preceding::span[contains(., "Volgende artikel")])]/a[contains(@href, "/auteur/")]/@href').string()
@@ -79,7 +78,7 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('(//div[div/span[contains(., "Conclusie")]])[1]//div[contains(@class, "text-center")]/text()').string(multiple=True)
+    grade_overall = data.xpath('(//div[div/span[contains(., "Conclusie")]])[1]//div[contains(@class, "text-center")]//text()').string(multiple=True)
     if grade_overall:
         grade_overall = float(grade_overall.replace(',', '.').replace(' ', ''))
         review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
@@ -88,7 +87,7 @@ def process_review(data, context, session):
     for pro in pros:
         pros_ = pro.xpath('.//text()').string(multiple=True).split('- ')
         for pro_ in pros_:
-            pro_ = pro_.strip(' +-*.')
+            pro_ = pro_.replace(' &amp;', '').strip(' +-*.')
             if pro_:
                 review.add_property(type='pros', value=pro_)
 
@@ -96,12 +95,13 @@ def process_review(data, context, session):
     for con in cons:
         cons_ = con.xpath('.//text()').string(multiple=True).split('- ')
         for con_ in cons_:
-            con_ = con_.strip(' +-*.')
+            con_ = con_.replace(' &amp;', '').strip(' +-*.')
             if con_:
                 review.add_property(type='cons', value=con_)
 
     summary = data.xpath('//h2[contains(@class, "text-white italic") and not(preceding::span[contains(., "Volgende artikel")])]//text()').string(multiple=True)
     if summary:
+        summary = summary.replace(' &amp;', '')
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[regexp:test(., "Conclusie|Concluderend")]/following-sibling::p//text()').string(multiple=True)
@@ -109,6 +109,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('//div[div/span[contains(., "Conclusie")]]//p//text()').string(multiple=True)
 
     if conclusion:
+        conclusion = conclusion.replace(' &amp;', '')
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[regexp:test(., "Conclusie|Concluderend")]/preceding-sibling::p//text()').string(multiple=True)
@@ -116,6 +117,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[h2]/p//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(' &amp;', '')
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
