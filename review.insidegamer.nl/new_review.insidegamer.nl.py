@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 XCAT = ['Beste games']
@@ -117,7 +118,9 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[h2]/p//text()').string(multiple=True)
 
     if excerpt:
-        excerpt = excerpt.replace(' &amp;', '')
+        excerpt = re.sub(r'href=\S+', '', excerpt.replace(' &amp;', '').replace('&lt;', '').replace('&gt;', ''))
+        excerpt = re.sub(r'rel=\"\S+\s?\S+\"', '', excerpt)
+        excerpt = re.sub(r'target=\"\S+\s?\S+\"', '', excerpt).strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
