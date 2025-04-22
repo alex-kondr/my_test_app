@@ -12,15 +12,15 @@ from create_agent.agent import AgentForm, ProcessRun
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="17617"
+    agent_id="20158"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.bestofrobots.fr/',
-    next_func=ProcessRun.catlist.name,
-    new_parser=False,
-    breakers=3000,
+    url='hhttps://www.koffermarkt.com/',
+    next_func=ProcessRun.frontpage.name,
+    new_parser=True,
+    breakers=0,
     # curl=True
 )
 # agent.create_frontpage(
@@ -28,26 +28,23 @@ agent.create_run(
 #     name_xpath='a/text()',
 #     url_xpath='@href'
 # )
-#  ul/li/a
-#   text()
-#   @href
 # agent.create_revlist(
-#     revs_xpath='//li[contains(., "Reviews")]/ul/li[contains(@class, "group/category")]',
+#     revs_xpath='//a[@class="stretched-link"]',
 #     name_title="title",
-#     name_title_xpath='a/text()',
+#     name_title_xpath='.//text()',
 #     url_xpath='@href',
 #     prod_rev="review",
-#     next_url_xpath='//a[span[@aria-label="Próxima página"]]/@href',
+#     next_url_xpath='//a[@rel="next"]/@href',
 # )
 # agent.create_review(
-#     date_xpath='//meta[@property="article:published_time"]/@content',
-#     author_xpath='//span[@class="author"]/a/text()',
-#     author_url_xpath='//span[@class="author"]/a/@href',
-#     grade_overall_xpath='//div[@class="review_rating"]/@data-value',
-#     pros_xpath='//td[font[@color="#169600"]]/ul/li',
-#     cons_xpath='//td[font[@color="#E10000"]]/ul/li',
-#     summary_xpath='//p[@class="strapline"]//text()',
-#     conclusion_xpath='//h2[contains(., "Conclusão")]/following-sibling::p//text()',
-#     excerpt_with_concl_xpath='//h2[contains(., "Conclusão")]/preceding-sibling::p//text()',
-#     excerpt_xpath='//div[contains(@class, "body_content")]/p//text()'
+#     date_xpath='//p[img[contains(@src, "/authors/")]]/text()',
+#     author_xpath='//p[img[contains(@src, "/authors/")]]/img/@title',
+#     author_url_xpath='',
+#     grade_overall_xpath='//div[p[contains(., "SCORE")]]/p[not(contains(., "SCORE"))]/text()',
+#     pros_xpath='//ul[contains(@class, "ul_pro")]/li',
+#     cons_xpath='//ul[contains(@class, "ul_contra ")]/li',
+#     summary_xpath='//h2[contains(@class, "h1")]/span/text()',
+#     conclusion_xpath='//div[contains(@class, "fazit")]//text()',
+#     excerpt_with_concl_xpath='.//text()',
+#     excerpt_xpath='//div[not(.//p[contains(., "SCORE")] or contains(@class, "fazit"))]/p[not(@class)]//text()'
 # )
