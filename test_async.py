@@ -53,7 +53,7 @@
 
 # ------------------------------------------------------------------
 
-from pydantic import BaseModel, Field, validator, root_validator, field_validator, model_validator, BeforeValidator, EmailStr
+from pydantic import BaseModel, Field, validator, root_validator, field_validator, model_validator, BeforeValidator, EmailStr, AfterValidator
 from typing import List, Optional, Annotated
 import re
 from datetime import datetime
@@ -104,47 +104,105 @@ from datetime import datetime
 # from pydantic import BaseModel, Field, validator, EmailStr
 # from typing import List, Optional
 # from datetime import datetime
-from uuid import uuid4
+# from uuid import uuid4
 
-class EventModel(BaseModel):
-    id: Annotated[str, Field(default_factory=uuid4)]
-    name: str = Field(..., example="Annual Tech Conference")
-    description: Optional[str] = Field(None, examples=["A conference about the latest in technology"])
-    start_datetime: datetime = Field(..., examples=["2023-12-25T09:00:00Z"])
-    emails: List[EmailStr] = Field(..., examples=[["example@example.com"]])
+# class EventModel(BaseModel):
+#     id: Annotated[str, Field(default_factory=uuid4)]
+#     name: str = Field(..., example="Annual Tech Conference")
+#     description: Annotated[str, Field(..., examples=["A conference about the latest in technology"])]
+#     start_datetime: datetime = Field(..., examples=["2023-12-25T09:00:00Z"])
+#     emails: List[EmailStr] = Field(..., examples=[["example@example.com"]])
 
-    @field_validator('start_datetime')
-    def start_datetime_cannot_be_in_the_past(cls, v):
-        if v < datetime.now():
-            raise ValueError('start_datetime must be in the future')
-        return v
+#     @field_validator('start_datetime')
+#     def start_datetime_cannot_be_in_the_past(cls, v):
+#         if v < datetime.now():
+#             raise ValueError('start_datetime must be in the future')
+#         return v
 
-    # @validator('emails', each_item=True)
-    # def validate_email(cls, v):
-    #     return v
+#     @model_validator(mode='after')
+#     def validate_after(cls, values: "EventModel"):
+#         if len(values.name) < len(values.description):
+#             raise ValueError('name must be longer than description')
+
+#     class Config:
+#         str_min_length = 1
+#         str_max_length = 255
+#         # error_msg_templates = {
+#         #     'value_error.missing': 'field required',
+#         #     'value_error.any_str.min_length': 'ensure this value has at least {limit_value} characters',
+#         #     'value_error.any_str.max_length': 'ensure this value has no more than {limit_value} characters',
+#         #     'value_error.datetime': 'incorrect datetime format, use YYYY-MM-DDTHH:MM:SS format',
+#         # }
+
+# event = EventModel(
+#     name="Ann",
+#     description="4565",
+#     start_datetime="2025-12-01",
+#     emails=["example@example.com"]
+# )
+# event1 = EventModel(
+#     name="Annual Tech Conference",
+#     description="4565",
+#     start_datetime="2025-12-01",
+#     emails=["example@example.com"]
+# )
+
+# print(event.model_dump_json(indent=2))
+# print(event1.model_dump_json(indent=2))
+
+
+# from pydantic import BaseModel, EmailStr, ValidationError
+
+# class Country(BaseModel):
+#     name: str
+#     code: str
+
+# class City(BaseModel):
+#     name: str
+#     country: Country
+
+# class Address(BaseModel):
+#     street: str
+#     city: City
+#     postal_code: str
+
+# class User(BaseModel):
+#     name: str
+#     email: EmailStr
+#     address: Address
+
+# # Тестування моделі
+# try:
+#     user = dict(
+#         name="Alex",
+#         email="alex@example.com",
+#         address=dict(
+#             street="Main Street 123",
+#             city=dict(
+#                 name="Springfield",
+#                 country=dict(
+#                     name="Fictional Land",
+#                     code="FL"
+#                 )
+#             ),
+#             postal_code="12345"
+#         )
+#     )
+#     print("User model is valid:", user)
+# except ValidationError as e:
+#     print("Validation error:", e)
+
+class User(BaseModel):
+    name: str
+    email: EmailStr
+    signup_ts: datetime = None
 
     class Config:
-        str_min_length = 1
-        str_max_length = 255
-        # error_msg_templates = {
-        #     'value_error.missing': 'field required',
-        #     'value_error.any_str.min_length': 'ensure this value has at least {limit_value} characters',
-        #     'value_error.any_str.max_length': 'ensure this value has no more than {limit_value} characters',
-        #     'value_error.datetime': 'incorrect datetime format, use YYYY-MM-DDTHH:MM:SS format',
-        # }
+        json_encoders = {
+            datetime: lambda v: v.strftime('%Y-%m-%d HULULU %H:%M:%S')
+        }
 
-event = EventModel(
-    name="Annual Tech Conference",
-    description="4565",
-    start_datetime="2025-12-01",
-    emails=["example@example.com"]
-)
-event1 = EventModel(
-    name="Annual Tech Conference",
-    description="4565",
-    start_datetime="2025-12-01",
-    emails=["example@example.com"]
-)
 
-print(event.model_dump_json(indent=2))
-print(event1.model_dump_json(indent=2))
+user = User(name='Alex', email='alex@example.com', signup_ts=datetime.now())
+serialized_user = user.model_dump_json()
+print(serialized_user)
