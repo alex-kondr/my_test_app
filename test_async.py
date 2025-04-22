@@ -133,15 +133,18 @@ class EventModel(BaseModel):
         #     'value_error.datetime': 'incorrect datetime format, use YYYY-MM-DDTHH:MM:SS format',
         # }
 
-try:
-    event = EventModel(
-        name="Annual Tech Conference",
-        description="4565",
-        start_datetime="2025-12-01",
-        emails=["example@example.com"]
-    )
-except Exception as e:
-    print(f"Error: {e}")
+event = EventModel(
+    name="Annual Tech Conference",
+    description="4565",
+    start_datetime="2025-12-01",
+    emails=["example@example.com"]
+)
+event1 = EventModel(
+    name="Annual Tech Conference",
+    description="4565",
+    start_datetime="2025-12-01",
+    emails=["example@example.com"]
+)
 
-if event:
-    print(event.model_dump_json(indent=2))
+print(event.model_dump_json(indent=2))
+print(event1.model_dump_json(indent=2))
