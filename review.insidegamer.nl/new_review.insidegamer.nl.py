@@ -120,7 +120,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h2[regexp:test(., "Conclusie|Concluderend")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[h2]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[h2]/p[not(@class="intro-line")]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = re.sub(r'href=\S+', '', h.unescape(excerpt))
