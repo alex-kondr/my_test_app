@@ -1,8 +1,10 @@
 from agent import *
 from models.products import *
 import re
+import HTMLParser
 
 
+h = HTMLParser.HTMLParser()
 XCAT = ['Beste games']
 
 
@@ -88,7 +90,7 @@ def process_review(data, context, session):
     for pro in pros:
         pros_ = pro.xpath('.//text()').string(multiple=True).split('- ')
         for pro_ in pros_:
-            pro_ = pro_.replace(' &amp;', '').strip(' +-*.')
+            pro_ = h.unescape(pro_).strip(' +-*.')
             if pro_:
                 review.add_property(type='pros', value=pro_)
 
@@ -96,13 +98,16 @@ def process_review(data, context, session):
     for con in cons:
         cons_ = con.xpath('.//text()').string(multiple=True).split('- ')
         for con_ in cons_:
-            con_ = con_.replace(' &amp;', '').strip(' +-*.')
+            con_ = h.unescape(con_).strip(' +-*.')
             if con_:
                 review.add_property(type='cons', value=con_)
 
     summary = data.xpath('//h2[contains(@class, "text-white italic") and not(preceding::span[contains(., "Volgende artikel")])]//text()').string(multiple=True)
+    if not summary:
+        summary = data.xpath('//p[@class="intro-line" and not(preceding::span[contains(., "Volgende artikel")])]//text()').string(multiple=True)
+
     if summary:
-        summary = summary.replace(' &amp;', '')
+        summary = h.unescape(summary)
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[regexp:test(., "Conclusie|Concluderend")]/following-sibling::p//text()').string(multiple=True)
@@ -110,7 +115,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('//div[div/span[contains(., "Conclusie")]]//p//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = conclusion.replace(' &amp;', '')
+        conclusion = h.unescape(conclusion)
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[regexp:test(., "Conclusie|Concluderend")]/preceding-sibling::p//text()').string(multiple=True)
@@ -118,7 +123,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[h2]/p//text()').string(multiple=True)
 
     if excerpt:
-        excerpt = re.sub(r'href=\S+', '', excerpt.replace(' &amp;', '').replace('&lt;', '').replace('&gt;', ''))
+        excerpt = re.sub(r'href=\S+', '', h.unescape(excerpt))
         excerpt = re.sub(r'rel=\"\S+\s?\S+\"', '', excerpt)
         excerpt = re.sub(r'target=\"\S+\s?\S+\"', '', excerpt).strip()
         review.add_property(type='excerpt', value=excerpt)
