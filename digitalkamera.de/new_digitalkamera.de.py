@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Testbericht: ', '').replace('Vergleichstest: ', '').replace(' im Praxistest', '').replace(' im Praxis-Test', '').replace(' im Test', '').replace(' im Vergleichstest', '').replace('Testbericht', '').replace(' Labortest', '').replace('Objektivtest ', '').replace(' Testbilder', '').replace('Test: ', '').replace(' Test', '').replace(' getestet', '').replace('Vergleichstest', '').strip(' .:')
+    product.name = context['title'].replace('Testbericht: ', '').replace('Vergleichstest: ', '').replace('Praxistest des', '').replace(' im Praxistest', '').replace(' im Praxis-Test', '').replace('im Kamera-Test', '').replace('im DigitalPhoto-Test', '').replace(' im Test', '').replace(' im Vergleichstest', '').replace('Testbericht', '').replace(' Labortest', '').replace('Objektivtest ', '').replace(' Testbilder', '').replace('Test: ', '').replace(' Test', '').replace('Test ', '').replace(' getestet', '').replace('Vergleichstest', '').strip(' .:')
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('.aspx', '')
     product.category = 'Tech'
