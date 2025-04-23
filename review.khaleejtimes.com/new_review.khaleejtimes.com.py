@@ -16,14 +16,14 @@ def process_revlist(data, context, session):
         ssid = rev.get('id')
         url = rev.get('url')
         if title and url:
-            session.queue(Request(url), process_review, dict(context, title=title, ssid=ssid, url=url))
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, ssid=ssid, url=url))
 
     revs_cnt = revs_json.get('total_child_stories_count')
     offset = context.get('offset', 0) + 10
     if offset < revs_cnt:
         next_page = context.get('page', 1) + 1
         next_url = 'https://www.khaleejtimes.com/contentapi/v1/getcollectionstories/tech-reviews-reviews?page={}&records=10'.format(next_page)
-        session.queue(Request(next_url), process_revlist, dict(context, page=next_page, offset=offset))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context, page=next_page, offset=offset))
 
 
 def process_review(data, context, session):
@@ -45,7 +45,7 @@ def process_review(data, context, session):
 
     date = data.xpath('//p[contains(., "Published:")]//text()').string()
     if date:
-        review.date = date.split('T')[0]
+        review.date = date.split(' ', 2)[-1].split(',')[0].strip()
 
     author = data.xpath('//div[contains(@class, "auther")]//li//a[@class=""]/text()').string()
     author_url = data.xpath('//div[contains(@class, "auther")]//li//a[@class=""]/@href').string()
@@ -55,13 +55,18 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
+    grade_overall = data.xpath('//p[contains(., "stars")]//text()').string(multiple=True)
+    if grade_overall:
+        grade_overall = grade_overall.split(':')[-1].split()[0].strip(u' \u202c\u202d')
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
     pros = data.xpath('//p[contains(., "Hits")]/following-sibling::p[not(preceding-sibling::p[contains(., "Misses")] or contains(., "Misses"))][normalize-space(.)]')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True).strip(u'-+.•‭‬ ')
         if len(pro) > 1:
             review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//p[contains(., "Misses")]/following-sibling::p[not(preceding-sibling::p[regexp:test(., "Verdict|ALSO READ")] or regexp:test(., "Verdict|ALSO READ"))][normalize-space(.)]')
+    cons = data.xpath('//p[contains(., "Misses")]/following-sibling::p[not(preceding-sibling::p[regexp:test(., "Verdict|ALSO READ|Price")] or regexp:test(., "Verdict|ALSO READ|Price"))][normalize-space(.)]')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True).strip(u'-+.•‭‬ ')
         if len(con) > 1:
@@ -106,7 +111,7 @@ def process_reviews(data, context, session):
 
         date = data.xpath('//p[contains(., "Published:")]//text()').string()
         if date:
-            review.date = date.split('T')[0]
+            review.date = date.split(' ', 2)[-1].split(',')[0].strip()
 
         author = data.xpath('//div[contains(@class, "auther")]//li//a[@class=""]/text()').string()
         author_url = data.xpath('//div[contains(@class, "auther")]//li//a[@class=""]/@href').string()

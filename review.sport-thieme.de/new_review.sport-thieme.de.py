@@ -3,8 +3,10 @@ from models.products import *
 import re
 import simplejson
 import urllib
+import HTMLParser
 
 
+h = HTMLParser.HTMLParser()
 OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br, zstd' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: cross-site' -H 'Connection: keep-alive' -H 'Alt-Used: www.sport-thieme.de' -H 'Cookie: __Secure-authjs.callback-url=https://www.sport-thieme.de; qwik-session=eyJhbGciOiJIUzI1NiJ9.eyJzZXNzaW9uSWQiOiI1MDAwNTQ0Yi0zNzg2LTQ2ZmUtODI3Mi1jZGRkZmUyNjk0MGQiLCJleHAiOjE3NDc5MjIyODUsImlhdCI6MTc0NDAzNDI4NX0.WVIy72PJ8gHzrN-a-65xQCPe0tJgaP0cDfgF9SiqL18; marketingOrigin=W0-OA; __qw_i=0; lastseen=["2747402","2570802","1997255","2824202","1080908","2611701","1869369"]; _dd_s=logs=1&id=e3e4e414-e11d-48af-aec5-81dfc4643413&created=1744032451989&expire=1744035545577; aws-waf-token=632fa5e9-74e2-42b9-a655-f4d64c658dd9:DQoAv/NiCdc3AAAA:dhTYkykvv5BYbNShPJn8DUBDiGKrYnNHNIWm7wI8VoTO+vwLgW+pQpIyJGrEdpt0xQ2774U8AB8+0j2lGjv02fQiycAh3IHODkQL90CQqr2SG0MecOHyysjtYWBwqHYzqpONoCHZW45RI9+8IjJ5NGZlcHCbNf/1WzBKXcLFM9aJ4C/VNBWeT9Gz9/LwsxKJ/6s85LzAxVIA47RpcocrzvUlWRC3dCA21g3QX4wo2Wtto9DsAG+N0kez7dfCkNHK5ZMb9VWeOw==' -H 'Priority: u=0, i'"""
 
 
@@ -105,7 +107,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.get('reviewBody')
         if excerpt:
-            excerpt = remove_emoji(excerpt.replace('&#34;', '"').replace('\r\n', '')).strip()
+            excerpt = excerpt = h.unescape(remove_emoji(excerpt).replace('\r\n', '')).strip()
             review.add_property(type="excerpt", value=excerpt)
 
             review.ssid = review.digest() if author else review.digest(excerpt)

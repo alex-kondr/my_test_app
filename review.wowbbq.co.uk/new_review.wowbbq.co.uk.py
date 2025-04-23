@@ -55,7 +55,7 @@ def process_product(data, context, session):
     product.ssid = data.xpath('//form[@data-product-sku="{}"]//input[@name="product"]/@value'.format(product.sku)).string()
     product.manufacturer = 'Weber'
 
-    ean = data.xpath('//span[contains(., "Barcode")]/text()[contains(., "Barcode:")]').string(multiple=True)
+    ean = data.xpath('//span[regexp:test(., "Barcode|EAN")]//text()[regexp:test(., "Barcode:|EAN:")]').string(multiple=True)
     if ean:
         ean = ean.split()[-1]
         if ean and ean.isdigit():

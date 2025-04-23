@@ -1,6 +1,10 @@
 from agent import *
 from models.products import *
 import simplejson
+import HTMLParser
+
+
+h = HTMLParser.HTMLParser()
 
 
 def run(context, session):
@@ -96,7 +100,7 @@ def process_reviews(data, context, session):
             excerpt = title
 
         if excerpt:
-            excerpt = excerpt.replace('<br>', '').replace('&#039;', "'")
+            excerpt = h.unescape(excerpt).replace('<br>', ' ').strip()
             if len(excerpt) > 3:
 
                 review.add_property(type='excerpt', value=excerpt)

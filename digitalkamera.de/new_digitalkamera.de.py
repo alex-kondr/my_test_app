@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Testbericht: ', '').replace(' im Test', '').replace(' Testbericht', '').replace(' Labortest', '').replace(' Testbilder', '').strip(' .')
+    product.name = context['title'].replace('Testbericht: ', '').replace('Vergleichstest: ', '').replace(' im Praxistest', '').replace(' im Praxis-Test', '').replace(' im Test', '').replace(' im Vergleichstest', '').replace('Testbericht', '').replace(' Labortest', '').replace('Objektivtest ', '').replace(' Testbilder', '').replace('Test: ', '').replace(' Test', '').replace(' getestet', '').replace('Vergleichstest', '').strip(' .:')
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('.aspx', '')
     product.category = 'Tech'
@@ -42,11 +42,15 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     summary = data.xpath('//div[@class="teaser"]/p/text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
-    excerpt = data.xpath('//h3[@id]/following-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('(//h3[@id]/following-sibling::p|//div[not(@class)]/p|//div[contains(@id, "center")]/p)//text()').string(multiple=True)
     if excerpt:
+        if summary:
+            review.add_property(type='summary', value=summary)
+    else:
+        excerpt = summary
+
+    if excerpt:
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

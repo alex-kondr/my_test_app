@@ -7,7 +7,6 @@ XCAT = ['Sale', 'Support', 'Learn More']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=9000)]
     session.queue(Request('https://www.shop-beurer.com/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
