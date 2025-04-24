@@ -22,7 +22,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split('- Análise')[0].replace("Review -", '')[-1].replace(' - Review', '').split(" Review")[0].split(" review")[0].split("Review:")[-1].split(":")[0].strip()
+    product.name = context['title'].split('- Análise')[0].replace("Review -", '')[-1].replace(' - Review', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].split('-')[0]
     product.category = 'Tech'
