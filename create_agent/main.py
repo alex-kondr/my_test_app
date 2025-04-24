@@ -12,15 +12,15 @@ from create_agent.agent import AgentForm, ProcessRun
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="19817"
+    agent_id="17366"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://nettbutikk.ice.no/mobiltelefoner',
-    next_func=ProcessRun.frontpage.name,
+    url='https://www.tecmundo.com.br/review/',
+    next_func=ProcessRun.revlist.name,
     new_parser=False,
-    breakers=0,
+    breakers=5000,
     # curl=True
 )
 # agent.create_frontpage(
@@ -28,23 +28,23 @@ agent.create_run(
 #     name_xpath='a/text()',
 #     url_xpath='@href'
 # )
-# agent.create_revlist(
-#     revs_xpath='//a[@class="stretched-link"]',
-#     name_title="title",
-#     name_title_xpath='.//text()',
-#     url_xpath='@href',
-#     prod_rev="review",
-#     next_url_xpath='//a[@rel="next"]/@href',
-# )
-# agent.create_review(
-#     date_xpath='//p[img[contains(@src, "/authors/")]]/text()',
-#     author_xpath='//p[img[contains(@src, "/authors/")]]/img/@title',
-#     author_url_xpath='',
-#     grade_overall_xpath='//div[p[contains(., "SCORE")]]/p[not(contains(., "SCORE"))]/text()',
-#     pros_xpath='//ul[contains(@class, "ul_pro")]/li',
-#     cons_xpath='//ul[contains(@class, "ul_contra ")]/li',
-#     summary_xpath='//h2[contains(@class, "h1")]/span/text()',
-#     conclusion_xpath='//div[contains(@class, "fazit")]//text()',
-#     excerpt_with_concl_xpath='.//text()',
-#     excerpt_xpath='//div[not(.//p[contains(., "SCORE")] or contains(@class, "fazit"))]/p[not(@class)]//text()'
-# )
+agent.create_revlist(
+    revs_xpath='//h4[contains(@class, "title")]/a',
+    name_title="title",
+    name_title_xpath='text()',
+    url_xpath='@href',
+    prod_rev="review",
+    next_url_xpath='//a[@rel="next"]/@href',
+)
+agent.create_review(
+    date_xpath='//time/@datetime',
+    author_xpath='//a[contains(@href, "/autor/") and contains(@class, "link")]/text()',
+    author_url_xpath='//a[contains(@href, "/autor/") and contains(@class, "link")]/@href',
+    grade_overall_xpath='',
+    pros_xpath='//h3[regexp:test(., "positivos|prós")]/following-sibling::ul[1]/li',
+    cons_xpath='//h3[regexp:test(., "negativos|contras")]/following-sibling::ul[1]/li',
+    summary_xpath='//div[contains(@class, "tec--article__body")]/p[@dir="ltr"][1]//text()',
+    conclusion_xpath='//h2[contains(., "Vale a pena?")]/following-sibling::p[not(contains(., "Comente nas redes sociais do Voxel"))]//text()',
+    excerpt_with_concl_xpath='.//text()',
+    excerpt_xpath='//div[not(.//p[contains(., "SCORE")] or contains(@class, "fazit"))]/p[not(@class)]//text()'
+)
