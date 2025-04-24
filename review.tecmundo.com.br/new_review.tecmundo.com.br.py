@@ -14,14 +14,10 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
         session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
 
-    revs_cnt = data.xpath('//span[contains(., " reviews")]/text()').string()
-    offset = context.get('offset', 0) + 20
-    if revs_cnt:
-        revs_cnt = revs_cnt.split(' de ')[-1].split()[0]
-        if revs_cnt.isdigit() and int(revs_cnt) > offset:
-            next_page = context.get('page', 1) + 1
-            next_url = data.response_url.split('?')[0] + '?page=' + str(next_page)
-            session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(page=next_page))
+    if revs:
+        next_page = context.get('page', 1) + 1
+        next_url = data.response_url.split('?')[0] + '?page=' + str(next_page)
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(page=next_page))
 
 
 def process_review(data, context, session):
