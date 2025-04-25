@@ -53,10 +53,10 @@
 
 # ------------------------------------------------------------------
 
-from pydantic import BaseModel, Field, validator, root_validator, field_validator, model_validator, BeforeValidator, EmailStr, AfterValidator
-from typing import List, Optional, Annotated
-import re
-from datetime import datetime
+# from pydantic import BaseModel, Field, validator, root_validator, field_validator, model_validator, BeforeValidator, EmailStr, AfterValidator
+# from typing import List, Optional, Annotated
+# import re
+# from datetime import datetime
 
 
 # def validate_participants(v):
@@ -192,17 +192,59 @@ from datetime import datetime
 # except ValidationError as e:
 #     print("Validation error:", e)
 
-class User(BaseModel):
-    name: str
-    email: EmailStr
-    signup_ts: datetime = None
+# class User(BaseModel):
+#     name: str
+#     email: EmailStr
+#     signup_ts: datetime = None
 
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.strftime('%Y-%m-%d HULULU %H:%M:%S')
-        }
+#     class Config:
+#         json_encoders = {
+#             datetime: lambda v: v.strftime('%Y-%m-%d HULULU %H:%M:%S')
+#         }
 
 
-user = User(name='Alex', email='alex@example.com', signup_ts=datetime.now())
-serialized_user = user.model_dump_json()
-print(serialized_user)
+# user = User(name='Alex', email='alex@example.com', signup_ts=datetime.now())
+# serialized_user = user.model_dump_json()
+# print(serialized_user)
+
+
+# import unittest
+# from unittest.mock import MagicMock
+
+
+# class PaymentProcessor:
+#     def __init__(self, payment_gateway):
+#         self.payment_gateway = payment_gateway
+
+
+#     def make_payment(self, amount):
+#         if amount >= 0:
+#             self.payment_gateway.process_payment(amount)
+#             return "Payment successful"
+#         else:
+#             return "Invalid amount"
+
+
+# class TestPaymentProcessor(unittest.TestCase):
+
+
+#     def test_make_payment_success(self):
+#         mock_gateway = MagicMock()
+#         processor = PaymentProcessor(mock_gateway)
+#         result = processor.make_payment(0)
+#         print(f"{result = }")
+#         mock_gateway.process_payment.assert_called_with(0, test='1')
+#         # self.assertEqual(result, "Payment successful")
+
+
+#     def test_make_payment_invalid_amount(self):
+#         mock_gateway = MagicMock()
+#         processor = PaymentProcessor(mock_gateway)
+#         result = processor.make_payment(-50)
+#         print(f"{result = }")
+#         # mock_gateway.process_payment.assert_not_called()
+#         self.assertEqual(result, "Invalid amount")
+
+
+# if __name__ == '__main__':
+#     unittest.main()

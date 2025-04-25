@@ -22,7 +22,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split('- Análise')[0].replace("Review -", '')[-1].replace(' - Review', '').strip()
+    product.name = context['title'].replace('Veja o review', '').replace('Veja review', '').replace(' Veja Review', '').replace('Veja análise', '').split('- Análise')[0].split('— Análise')[0].split(' - Review')[0].split('– Review')[0].split(' — Review')[0].split('- review')[0].split(' REVIEW: ')[0].replace('Review de ', '').replace("Review -", '').replace('Review:', '').replace('(análise)', '').replace('(o que você vai precisar)', '').replace(' review', '').replace('Review ', '').replace('[Review]', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].split('-')[0]
     product.category = 'Tech'
@@ -86,7 +86,9 @@ def process_review(data, context, session):
         conclusion = conclusion.split('---')[0]
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[contains(@class, "tec--article__body")]/p[not(span/@data-fonte)][not(.//@data-src)][not(.//img)]//text() | /descendant::ul/li[@dir="ltr"]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Vale a pena?")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "tec--article__body")]/p[not(span/@data-fonte)][not(.//@data-src)][not(.//img)]//text() | /descendant::ul/li[@dir="ltr"]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "tec--article__body")]//p[not(contains(@class, "font-semibold"))]//text()').string(multiple=True)
     if not excerpt:

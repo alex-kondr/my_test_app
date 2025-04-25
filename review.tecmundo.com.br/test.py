@@ -21,7 +21,7 @@ if __name__ == "__main__":
     product = Product(agent, reload=reload)
     print(product.result)
     test = TestProduct(product)
-    test.run(xproduct_names=[], len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
+    test.run(xproduct_names=[], not_xproduct_name='Ã', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
 
     log = LogProduct(agent, reload=reload)
     test_log = TestLogProduct(log)
