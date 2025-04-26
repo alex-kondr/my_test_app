@@ -5,7 +5,7 @@ import simplejson
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=9000)]
-    session.queue(Request("https://www.snowys.com.au/", use='curl', force_charset="utf-8", max_age=0), process_catlist, dict())
+    session.queue(Request("https://www.snowys.com.au/", use='curl', force_charset='utf-8'), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -23,39 +23,42 @@ def process_catlist(data, context, session):
                     for sub_cat1 in sub_cats1:
                         sub_name1 = sub_cat1.xpath('.//text()').string(multiple=True)
                         url = sub_cat1.xpath('@href').string()
-                        session.queue(Request(url + 'orderBy=20', use='curl', force_charset="utf-8", max_age=0), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                        session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
                 else:
                     url = sub_cat.xpath('a/@href').string()
-                    session.queue(Request(url + 'orderBy=20', use='curl', force_charset="utf-8", max_age=0), process_prodlist, dict(cat=name + '|' + sub_name))
+                    session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name))
         else:
             url = cat.xpath('a/@href').string()
-            session.queue(Request(url + 'orderBy=20', use='curl', force_charset="utf-8", max_age=0), process_prodlist, dict(cat=name))
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name))
 
-# curl 'https://www.snowys.com.au/productreview/ajaxreviews' -X POST --data-raw 'productId=50970'
-# curl 'https://www.snowys.com.au/snowys-filters-ajax' -X POST --data-raw 'categoryId=104&orderBy=20&pageNumber=1'
 
 def process_prodlist(data, context, session):
-    prods = data.xpath('//div[@class="product-item"]')
+    prods = data.xpath('//div[contains(@class, "product-item")]')
     for prod in prods:
         url = prod.xpath('.//a[@class="product-linksubarea"]/@href').string()
         ssid = prod.xpath('@data-productid').string()
 
         revs_cnt = prod.xpath('.//div[@class="reviewsCount"]//text()').string()
         if revs_cnt and int(revs_cnt.strip('()')) > 0:
-            session.queue(Request(url, max_age=0), process_product, dict(context, url=url, ssid=ssid))
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, url=url, ssid=ssid))
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url + '&orderBy=20', max_age=0), process_prodlist, dict(context))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
     product = Product()
-    product.name = context['name']
-    product.category = context['cat']
+    product.name = data.xpath('//div[@class="product-name"]/h1/text()').string()
     product.url = context['url']
     product.ssid = context['ssid']
-    product.manufacturer = context.get('manufacturer')
+    product.sku = data.xpath('//div[contains(@id, "sku")]/text()').string()
+    product.category = context['cat']
+    product.manufacturer = data.xpath('//div[@class="product-name"]/h2//text()').string(multiple=True)
+
+    mpn = data.xpath('//div[contains(@id, "mpn")]/text()').string()
+    if mpn:
+        product.add_property(type='id.manufacturer', value=mpn)
 
     prod_json = data.xpath('''//script[contains(text(), '"@type": "Product"')]/text()''').string()
     if prod_json:
@@ -65,23 +68,18 @@ def process_product(data, context, session):
         if ean:
             product.add_property(type='id.ean', value=str(ean))
 
-        mpn = prod_json.get('mpn')
-        if mpn:
-            product.add_property(type='id.manufacturer', value=mpn)
-
-    revs_url = 'https://www.snowys.com.au/DbgReviews/ProductDetailsReviews?pagenumber=1&productId=' + product.ssid
-    session.do(Request(revs_url, max_age=0), process_reviews, dict(product=product))
+    revs_url = 'https://www.snowys.com.au/DbgReviews/ProductDetailsReviews/?pagenumber=1&productId={}&pageSize=5&orderBy=0'.format(product.ssid)
+    session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
     product = context['product']
 
-    revs = data.xpath('//body[div[@class="customer-review"]]')
+    revs = data.xpath('//div[@class="product-review-item"]')
     for rev in revs:
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review.title = rev.xpath('h4//text()').string(multiple=True)
         review.date = rev.xpath('.//span[@class="date"]/@content').string()
 
         author = rev.xpath('div[@class="customer-name"]/span/text()').string()
@@ -96,15 +94,17 @@ def process_reviews(data, context, session):
         if hlp_yes and int(hlp_yes) > 0:
             review.add_property(type='helpful_votes', value=int(hlp_yes))
 
-        hlp_no = rev.xpath('.//input[@title="Downvote"]/@value').string()
-        if hlp_no and int(hlp_no) > 0:
-            review.add_property(type='not_helpful_votes', value=int(hlp_no))
+        title = rev.xpath('h4//text()').string(multiple=True)
+        excerpt = rev.xpath('p//text()').string(multiple=True)
+        if excerpt:
+            review.title = title
+        else:
+            excerpt = title
 
-        excerpt = rev.xpath('p//text() | span//text()').string(multiple=True)
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
-            ssid = rev.xpath('div[@class="vote-options"]/@id').string()
+            ssid = rev.xpath('div[contains(@class, "vote-options")]/@id').string()
             if ssid:
                 review.ssid = ssid.split('options-')[-1]
             else:
@@ -114,7 +114,7 @@ def process_reviews(data, context, session):
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
-        session.do(Request(next_url, max_age=0), process_reviews, dict(product=product))
+        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
 
     elif product.reviews:
         session.emit(product)
