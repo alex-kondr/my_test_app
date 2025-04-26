@@ -3,12 +3,27 @@ from models.products import *
 import simplejson
 
 
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
 def run(context, session):
+    session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=9000)]
     session.queue(Request("https://www.snowys.com.au/", use='curl', force_charset='utf-8'), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
+    strip_namespace(data)
+
     cats = data.xpath('//div[ul[@class="home-subcategory-list"]]')
     for cat in cats:
         name = cat.xpath('a//text()').string()
@@ -33,6 +48,8 @@ def process_catlist(data, context, session):
 
 
 def process_prodlist(data, context, session):
+    strip_namespace(data)
+
     prods = data.xpath('//div[contains(@class, "product-item")]')
     for prod in prods:
         url = prod.xpath('.//a[@class="product-linksubarea"]/@href').string()
@@ -48,6 +65,8 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
+    strip_namespace(data)
+
     product = Product()
     product.name = data.xpath('//div[@class="product-name"]/h1/text()').string()
     product.url = context['url']
@@ -73,6 +92,8 @@ def process_product(data, context, session):
 
 
 def process_reviews(data, context, session):
+    strip_namespace(data)
+
     product = context['product']
 
     revs = data.xpath('//div[@class="product-review-item"]')
@@ -95,7 +116,7 @@ def process_reviews(data, context, session):
             review.add_property(type='helpful_votes', value=int(hlp_yes))
 
         title = rev.xpath('h4//text()').string(multiple=True)
-        excerpt = rev.xpath('p//text()').string(multiple=True)
+        excerpt = rev.xpath('(p|span)//text()').string(multiple=True)
         if excerpt:
             review.title = title
         else:
