@@ -1,11 +1,6 @@
 from agent import *
 from models.products import *
-import simplejson
 import re
-import HTMLParser
-
-
-h = HTMLParser.HTMLParser()
 
 
 def strip_namespace(data):
@@ -110,11 +105,9 @@ def process_product(data, context, session):
 
     prod_json = data.xpath('''//script[contains(text(), '"@type": "Product"')]/text()''').string()
     if prod_json:
-        prod_json = simplejson.loads(h.unescape(prod_json))
-
-        ean = prod_json.get('gtin13')
-        if ean:
-            product.add_property(type='id.ean', value=str(ean))
+        ean = prod_json.split('"gtin13" : "')[-1].split('"')[0]
+        if ean and ean.isdigit() and len(ean) > 10:
+            product.add_property(type='id.ean', value=ean)
 
     revs_url = 'https://www.snowys.com.au/DbgReviews/ProductDetailsReviews/?pagenumber=1&productId={}&pageSize=5&orderBy=0'.format(product.ssid)
     session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
