@@ -139,23 +139,24 @@ def process_reviews(data, context, session):
 
         title = rev.xpath('h4//text()').string(multiple=True)
         excerpt = rev.xpath('(p|span)//text()').string(multiple=True)
-        if excerpt:
+        if excerpt and len(remove_emoji(excerpt.strip(' +-*'))) > 2:
             if title:
                 review.title = remove_emoji(title)
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = remove_emoji(excerpt)
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = remove_emoji(excerpt).strip(' +-*')
+            if len(excerpt) > 2:
+                review.add_property(type='excerpt', value=excerpt)
 
-            ssid = rev.xpath('div[contains(@class, "vote-options")]/@id').string()
-            if ssid:
-                review.ssid = ssid.split('options-')[-1]
-            else:
-                review.ssid = review.digest() if author else review.digest(excerpt)
+                ssid = rev.xpath('div[contains(@class, "vote-options")]/@id').string()
+                if ssid:
+                    review.ssid = ssid.split('options-')[-1]
+                else:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
