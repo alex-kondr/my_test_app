@@ -12,12 +12,12 @@ from create_agent.agent import AgentForm, ProcessRun
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="18835"
+    agent_id="19889"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.moviefone.com/movie-reviews/',
+    url='http://www.ddworld.cz/',
     next_func=ProcessRun.revlist.name,
     new_parser=False,
     breakers=5000,
