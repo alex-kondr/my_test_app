@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split('- test')[0].split('- pierwsze wrażenia')[0].split('Sprawdzamy ')[-1].split(': Test')[0].split('Test: ')[-1].split('Test -')[-1].split('Test faceta: ')[-1].split('Test Faceta: ')[-1].split('Test ')[-1].replace("Testowałam", "").replace("TEST", "").replace("Recenzja", "").replace("Test", "").replace("[]", "").strip()
+    product.name = context['title'].split('- test')[0].split('- pierwsze wrażenia')[0].split('Sprawdzamy ')[-1].split(': Test')[0].split('Test: ')[-1].split('Test -')[-1].split('Test faceta: ')[-1].split('Test Faceta: ')[-1].split('Test ')[-1].replace("Testowałam", "").replace("TEST", "").replace("Recenzja", "").replace("Test", "").replace("[]", "").replace('(test)', '').replace('– test', '').replace('[test]', '').strip()
     product.url = context["url"]
     product.ssid = product.url.split(',')[-1]
 
@@ -51,11 +51,11 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type="summary", value=summary)
 
-    conclusion = data.xpath('//div[*[regexp:test(., "Czy warto kupić|Podsumowanie", "i")]]/following-sibling::div/p//text()').string(multiple=True)
+    conclusion = data.xpath('//div[(.//h2|.//p)[regexp:test(., "Czy warto kupić|Podsumowanie", "i")]]/following-sibling::div/p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath('//div[*[regexp:test(., "Czy warto kupić|Podsumowanie", "i")]]/preceding-sibling::div/p//text()').string(multiple=True)
+    excerpt = data.xpath('//div[(.//h2|.//p)[regexp:test(., "Czy warto kupić|Podsumowanie", "i")]]/preceding-sibling::div/p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[not(@class or @id)]/div/p//text()').string(multiple=True)
 
