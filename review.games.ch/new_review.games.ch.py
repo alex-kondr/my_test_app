@@ -2,13 +2,13 @@ from agent import *
 from models.products import *
 
 
-OPTIONS = """-H 'Cookie: my=2h7c4tqbh5mutfc52i4r7cqseo; privacyOk=1808893675428' -H 'If-Modified-Since: Sat, 26 Apr 2025 20:10:27 GMT' -H 'If-None-Match: W/"28c604ffa3f2559ee6297a385"' -H 'Priority: u=0, i'"""
+OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br, zstd' -H 'Referer: https://www.games.ch/artikel.html' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: same-origin' -H 'Sec-Fetch-User: ?1' -H 'Connection: keep-alive' -H 'Cookie: my=2h7c4tqbh5mutfc52i4r7cqseo; privacyOk=1808893675428'"""
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('https://www.games.ch', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_frontpage, dict())
-    session.queue(Request('https://www.games.ch/artikel.html', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_revlist, dict())
+    session.queue(Request('https://www.games.ch', use='curl', force_charset='utf-8'), process_frontpage, dict())
+    session.queue(Request('https://www.games.ch/artikel.html', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_frontpage(data, context, session):
@@ -16,7 +16,7 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('.//text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url + "artikel.html", options=OPTIONS, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(cat=name))
+        session.queue(Request(url + "artikel.html", use='curl', force_charset='utf-8'), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
@@ -24,11 +24,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_review, dict(context, title=title, url=url))
+        session.do(Request(url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_revlist, dict(context))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
@@ -101,7 +101,7 @@ def process_review(data, context, session):
         title = review.title + ' - Pagina 1'
         review.add_property(type='pages', value=dict(title=title, url=review.url))
 
-        session.do(Request(next_url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_review_next, dict(context, product=product, review=review, url=next_url, page=2))
+        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_review_next, dict(context, product=product, review=review, url=next_url, page=2))
 
     else:
         context['product'] = product
@@ -130,7 +130,7 @@ def process_review_next(data, context, session):
 
     next_url = data.xpath('//div[@id="pagination"]//li[span]/following-sibling::li/a/@href').string()
     if next_url:
-        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, review=review, url=next_url, page=page + 1))
+        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_review_next, dict(context, review=review, url=next_url, page=page + 1))
 
     elif context['excerpt']:
         if context.get('conclusion'):

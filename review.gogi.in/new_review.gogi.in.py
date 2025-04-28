@@ -23,8 +23,8 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Unboxing and Overview of the', '').replace('Unboxing and In-Depth Review of the', '').replace('Unboxing the', '').split('review')[0].split('Review')[0].split('unboxing')[0].split('Unboxing')[0].split('(')[0].split(' – ')[0].split(', ')[0].strip()
-    product.ssid = context['url'].split('/')[-1].split(".html")[0]
+    product.name = context['title'].replace('Unboxing and Overview of the', '').replace('Unboxing and In-Depth Review of the', '').replace('Unboxing and Review of the', '').replace('Unboxing and First Impressions:', '').replace('Unboxing the', '').split('review')[0].split('Review')[0].split('unboxing')[0].split('(')[0].split(' – ')[0].split(', ')[0].replace('Unboxing ', '').strip()
+    product.ssid = context['url'].split('/')[-1].replace(".html", '').replace('-review', '')
     product.category = data.xpath('//div[@class="bs-blog-category"]/a[not(contains(., "Review"))]/text()').string() or 'Tech'
 
     product.url = data.xpath('//a[regexp:test(., "buy", "i") or contains(., "Via ") or regexp:test(., "available on ", "i")]/@href').string()
@@ -68,17 +68,19 @@ def process_review(data, context, session):
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-    summary = data.xpath('//p[not(preceding::span[contains(@id, "more")])]//text()').string()
-    if summary:
-        review.add_property(type='conclusion', value=summary.strip())
-
-    conclusion = data.xpath('//div[@class="bs-blog-post"]/*[self::h2 or self::p or self::h3][regexp:test(., "verdict", "i") or regexp:test(., "conclusion:", "i") or contains(., "Conclusion")]//text() | //div[@class="bs-blog-post"]/*[self::h2 or self::p or self::h3][regexp:test(., "verdict", "i") or regexp:test(., "conclusion:", "i") or contains(., "Conclusion")]/following-sibling::p[not(contains(., "[poll") or regexp:test(., "buy here|Pros:|Cons:|Recommended For:|Final Verdict:", "i") or regexp:test(., "you can buy", "i") or regexp:test(., "available on", "i")) and not(a[contains(@href, "amzn.to")])][not(preceding-sibling::*[self::h2 or self::h3][1][regexp:test(., "rating", "i")])][not(preceding::*[regexp:test(., "buy here", "i")][1])]//text()').string(multiple=True)
+    conclusion = data.xpath('//div[@class="bs-blog-post"]/*[self::h2 or self::p or self::h3][regexp:test(., "verdict", "i") or regexp:test(., "conclusion:", "i") or contains(., "Conclusion")]//text() | //div[@class="bs-blog-post"]/*[self::h2 or self::p or self::h3][regexp:test(., "verdict", "i") or regexp:test(., "conclusion:", "i") or contains(., "Conclusion")]/following-sibling::p[not(contains(., "[poll") or regexp:test(., "buy here|Pros:|Cons:|Recommended For:|verdict", "i") or regexp:test(., "you can buy", "i") or regexp:test(., "available on", "i")) and not(a[contains(@href, "amzn.to")])][not(preceding-sibling::*[self::h2 or self::h3][1][regexp:test(., "rating", "i")])][not(preceding::*[regexp:test(., "buy here", "i")][1])]//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace('Final Verdict:', '').replace('Verdict', '').replace('In conclusion,', '').replace('Conclusion', '').strip(' :')
         if conclusion:
             review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="bs-blog-post"]/p[not(regexp:test(., "you can buy", "i") or regexp:test(., "buy here", "i") or regexp:test(., "available on", "i") or regexp:test(., "watch video", "i") or contains(., "Conclusion")) and not(a[contains(@href, "amzn.to")])][not(preceding-sibling::*[self::h2 or self::p or self::h3][regexp:test(., "verdict", "i") or regexp:test(., "conclusion:", "i") or contains(., "Conclusion")])][not(regexp:test(., "conclusion:", "i"))][not(*[(regexp:test(., "rating", "i")) and (contains(., "out of") or contains(., "/"))])]//text()').string(multiple=True)
+    summary = data.xpath('//p[not(preceding::span[contains(@id, "more")])]//text()').string()
+    excerpt = data.xpath('//div[@class="bs-blog-post"]//p[not(regexp:test(., "you can buy|Verdict|• ", "i") or regexp:test(., "buy here", "i") or regexp:test(., "available on", "i") or regexp:test(., "watch video", "i") or contains(., "Conclusion")) and not(a[contains(@href, "amzn.to")])][not(preceding-sibling::*[self::h2 or self::p or self::h3][regexp:test(., "verdict", "i") or regexp:test(., "conclusion:", "i") or contains(., "Conclusion")])][not(regexp:test(., "conclusion:", "i"))][not(*[(regexp:test(., "rating", "i")) and (contains(., "out of") or contains(., "/"))])]//text()').string(multiple=True)
+    if excerpt and summary and len(excerpt.replace(summary, '').strip()) > 3:
+        review.add_property(type='summary', value=summary.strip())
+    elif summary:
+        excerpt = summary
+
     if excerpt:
         if conclusion:
             excerpt = excerpt.replace(conclusion, '')

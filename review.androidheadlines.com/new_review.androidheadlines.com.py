@@ -1,4 +1,3 @@
-from math import e
 from agent import *
 from models.products import *
 import re
@@ -27,8 +26,8 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = context['title'].replace('Featured Review:', '').replace('Review & Giveaway: ', '').replace(' Hands-On Preview', '').replace('Hands-on Preview ', '').replace('Review Round-Up: ', '').replace('REVIEW EXCLUSIVE: ', '').replace('Video:', '').split(' Review: ')[0].split(' Review – ')[0].split(' Review — ')[0].split(' Review-')[0].split(' review: ')[0].split(' review – ')[0].replace(' review', '').replace(' In Review', '').replace('Review: ', '').replace('REVIEW: ', '').replace(' Review!', '').replace(' Review', '').split(' – ')[0].strip()
-    product.ssid = context['url'].split('/')[-1].replace('-review', '')
+    product.name = context['title'].replace('Featured Review:', '').replace('Review & Giveaway: ', '').replace(' Hands-On Preview', '').replace('Hands-on Preview ', '').replace('Review Round-Up: ', '').replace('REVIEW EXCLUSIVE: ', '').replace('Hands-On ', '').replace('Reviews and Deals:', '').replace('Review Update:', '').replace('Review Preview:', '').replace('Video:', '').split(' Review: ')[0].split(' Review – ')[0].split(' Review — ')[0].split(' Review-')[0].split(' review: ')[0].split(' review – ')[0].replace(' review', '').replace(' In Review', '').replace('Review: ', '').replace('REVIEW: ', '').replace(' Review!', '').replace(' Review', '').split(' – ')[0].replace(' Preview', '').replace('Review ', '').strip()
+    product.ssid = context['url'].split('/')[-1].replace('-review', '').replace('reviews-', '').replace('.html', '')
     product.category = 'Tech'
 
     product.category = data.xpath('//a[@class="taxonomy category" and not(regexp:test(., "News|Reviews"))]//text()').string()
@@ -123,6 +122,9 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(.//strong[contains(., "Good")] or .//strong[contains(., "Bad")] or preceding-sibling::h2[contains(., "Where to Get It")])]//text()').string(multiple=True)
 
     if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         for pro in pros:
             pro = pro.xpath('.//text()').string(multiple=True)
             if pro:
@@ -153,7 +155,7 @@ def process_reviews(data, context, session):
             continue
 
         product = Product()
-        product.name = name
+        product.name = name.replace('â„¢', '')
         product.url = context["url"]
         product.ssid = product.name.lower().replace(' ', '_').replace('-', '').replace('—', '').replace('__', '_')
 
