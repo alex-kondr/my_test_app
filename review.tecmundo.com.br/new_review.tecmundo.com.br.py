@@ -49,10 +49,10 @@ def process_review(data, context, session):
     if not grade_overall:
         grade_overall = data.xpath("//div[@class='tec--game-rating__value']//text()").string()
     if not grade_overall:
-        grade_overall = data.xpath("//h2[.//text()[contains(.,'Nota')]]//text()").string(multiple=True)
+        grade_overall = data.xpath("(//h2[.//text()[contains(.,'Nota')]])[1]//text()").string(multiple=True)
 
     if grade_overall:
-        grade_overall = grade_overall.replace('na complexidade', '').split("Nota")[-1].split(":")[-1].split()[-1].replace(',', '')
+        grade_overall = grade_overall.replace('na complexidade', '').split("Nota")[-1].split(":")[-1].split()[-1].split('/')[0].replace(',', '')
 
         if float(grade_overall) <= 10.0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
@@ -60,12 +60,18 @@ def process_review(data, context, session):
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
     pros = data.xpath('//h3[regexp:test(., "positivos|prós")]/following-sibling::ul[1]/li')
+    if not pros:
+        pros = data.xpath('//h3[regexp:test(., "positivos|prós")]/following-sibling::p[starts-with(., "-") and not(preceding-sibling::h3[regexp:test(., "negativos|contras")])]')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True).strip(' +-*.:;')
         if len(pro) > 1:
             review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//h3[regexp:test(., "negativos|contras")]/following-sibling::ul[1]/li')
+    if not cons:
+        cons = data.xpath('//h3[regexp:test(., "negativos|contras")]/following-sibling::p[starts-with(., "-")]')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True).strip(' +-*.:;')
         if len(con) > 1:
