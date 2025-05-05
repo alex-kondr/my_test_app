@@ -32,7 +32,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://www.asadventure.com/nl.html', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
