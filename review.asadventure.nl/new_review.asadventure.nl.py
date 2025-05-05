@@ -98,7 +98,57 @@ def process_product(data, context, session):
         review.type = 'user'
         review.url = product.url
 
-        
+        date_author = rev.xpath('.//div[contains(@class, "text--subtle")]/span/text()').string()
+        if date_author:
+            review.date = date_author.rsplit(' ', 1)[-1]
 
+            author = date_author.rsplit(',')[0].split(' door ')[-1].strip()
+            if author:
+                review.authors.append(Person(name=author, ssid=author))
 
+        grade_overall = rev.xpath('count(.//span[contains(@class, "rating-item--full")])')
+        if grade_overall and grade_overall > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
+        pros = rev.xpath('.//li[.//span[contains(@class, "positive")]]//div//span//text()').string(multiple=True)
+        if pros:
+            if '\n' in pros:
+                pros = pros.split('\n')
+            elif '.' in pros:
+                pros = pros.split('.')
+            elif ';' in pros:
+                pros = pros.split(';')
+
+            for pro in pros:
+                pro = remove_emoji(pro).strip(' +-/\n?')
+                if len(pro) > 1 and not(pro.lower() == 'null' or pro.lower() == 'no' or pro.lower() == 'na'):
+                    review.add_property(type='pros', value=pro)
+
+        cons = rev.xpath('.//li[.//span[contains(@class, "negative")]]//div//span//text()').string(multiple=True)
+        if cons:
+            if '\n' in cons:
+                cons = cons.split('\n')
+            elif '.' in cons:
+                cons = cons.split('.')
+            elif ';' in cons:
+                cons = cons.split(';')
+
+            for con in cons:
+                con = remove_emoji(con).strip(' +-/\n?')
+                if len(con) > 1 and not(con == 'null' or con.lower() == 'no' or con.lower() == 'na'):
+                    review.add_property(type='cons', value=con)
+
+        excerpt = rev.xpath('.//h2//text()').string(multiple=True)
+        if excerpt:
+            excerpt = remove_emoji(excerpt).strip()
+            if len(excerpt) > 1:
+                review.add_property(type="excerpt", value=excerpt)
+
+                review.ssid = review.digest() if date_author and author else review.digest(excerpt)
+
+                product.reviews.append(review)
+
+    if product.reviews:
+        session.emit(product)
+
+# no next page
