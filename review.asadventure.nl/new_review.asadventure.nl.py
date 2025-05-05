@@ -4,7 +4,7 @@ import simplejson
 import re
 
 
-XCAT = ["Nieuwe collectie", "Nieuwe outdoorcollectie", "Verhuur", "Ecocheque producten", "Professioneel", "Promoties", "Veilig in het verkeer", "Cadeautips", "Merken"]
+XCAT = ["Nieuwe collectie", "Nieuwe outdoorcollectie", "Nieuwe fashioncollectie", "Verhuur", "Ecocheque producten", "Professioneel", "Promoties", "Veilig in het verkeer", "Cadeautips", "Merken"]
 
 
 def remove_emoji(string):
@@ -49,13 +49,12 @@ def process_frontpage(data, contenxt, session):
                 if sub_name not in XCAT:
                     sub_cats1 = sub_cat.xpath('li[not(contains(@class, "menu-item"))]/a')
 
-                    if sub_cats1:
-                        for sub_cat1 in sub_cats1:
-                            sub_name1 = sub_cat1.xpath('text()').string()
-                            url = sub_cat1.xpath('@href').string()
+                    for sub_cat1 in sub_cats1:
+                        sub_name1 = sub_cat1.xpath('text()').string()
+                        url = sub_cat1.xpath('@href').string()
 
-                            if sub_name1 not in XCAT:
-                                session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                        if sub_name1 not in XCAT:
+                            session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
                     else:
                         url = sub_cat.xpath('li[contains(@class, "menu-item")]/a/@href').string()
                         session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name))
@@ -118,6 +117,8 @@ def process_product(data, context, session):
                 pros = pros.split('.')
             elif ';' in pros:
                 pros = pros.split(';')
+            else:
+                pros = [pros]
 
             for pro in pros:
                 pro = remove_emoji(pro).strip(' +-/\n?')
@@ -132,6 +133,8 @@ def process_product(data, context, session):
                 cons = cons.split('.')
             elif ';' in cons:
                 cons = cons.split(';')
+            else:
+                cons = [cons]
 
             for con in cons:
                 con = remove_emoji(con).strip(' +-/\n?')
