@@ -23,3 +23,14 @@ def remove_emoji(string):
 
 '//h2[contains(., "Fazit")]/preceding-sibling::*'
 '//h2[contains(., "Fazit")]/following-sibling::*'
+
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
