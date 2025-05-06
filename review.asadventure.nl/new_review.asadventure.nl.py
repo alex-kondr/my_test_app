@@ -109,7 +109,7 @@ def process_product(data, context, session):
         if grade_overall and grade_overall > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        pros = rev.xpath('.//li[.//span[contains(@class, "positive")]]//div//span//text()').string(multiple=True)
+        pros = rev.xpath('.//li[.//span[contains(@class, "positive")]]//div//span//text()').string(multiple=True, normalize_space=False)
         if pros:
             if '\n' in pros:
                 pros = pros.split('\n')
@@ -125,7 +125,7 @@ def process_product(data, context, session):
                 if len(pro) > 1 and not(pro.lower() == 'null' or pro.lower() == 'no' or pro.lower() == 'na'):
                     review.add_property(type='pros', value=pro)
 
-        cons = rev.xpath('.//li[.//span[contains(@class, "negative")]]//div//span//text()').string(multiple=True)
+        cons = rev.xpath('.//li[.//span[contains(@class, "negative")]]//div//span//text()').string(multiple=True, normalize_space=False)
         if cons:
             if '\n' in cons:
                 cons = cons.split('\n')

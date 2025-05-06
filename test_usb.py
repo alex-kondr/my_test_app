@@ -60,3 +60,11 @@
 #     if not (any([cat_ for cat_ in cat.split() if cat_ in category])):
 #         category += cat + '|'
 # print(category.strip('|'))
+
+a = """Materiaal aangename touch 
+Voldoet aan de eigenschappen"""
+
+ass = a.splitlines()
+print(ass)
+print('\n' in a)
+print(a.split('\n'))
