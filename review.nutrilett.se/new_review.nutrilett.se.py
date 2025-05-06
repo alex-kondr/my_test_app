@@ -2,10 +2,36 @@ from agent import *
 from models.products import *
 import simplejson
 import HTMLParser
+import re
 
 
 h = HTMLParser.HTMLParser()
 XCAT = ['Alla produkter']
+PROD_ID = []
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def run(context, session):
@@ -52,7 +78,8 @@ def process_product(data, context, session):
             product.add_property(type='id.ean', value=ean)
 
         revs_cnt = prod_json.get('review_count', 0)
-        if revs_cnt and int(revs_cnt) > 0:
+        if revs_cnt and int(revs_cnt) > 0 and product.ssid not in PROD_ID:
+            PROD_ID.append(product.ssid)
             revs_url = 'https://www.nutrilett.se/api/reviews?productId={}&page=1&perPage=4'.format(product.ssid)
             session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product, revs_cnt=revs_cnt))
 
@@ -92,7 +119,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.get('text')
         if excerpt:
-            excerpt = h.unescape(excerpt).strip()
+            excerpt = remove_emoji(h.unescape(excerpt)).replace('\n', ' ').strip()
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
