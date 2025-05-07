@@ -4,6 +4,7 @@ import simplejson
 
 
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.telepolis.pl/api/infinity-content/artykuly/testy-sprzetu?page=1', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
