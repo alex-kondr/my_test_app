@@ -12,13 +12,13 @@ from create_agent.agent import AgentForm, ProcessRun
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="4902"
+    agent_id="6262"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.all-nintendo.com/category/tests/',
-    next_func=ProcessRun.catlist.name,
+    url='https://www.telepolis.pl/artykuly/testy-sprzetu',
+    next_func=ProcessRun.revlist.name,
     new_parser=False,
     breakers=0,
     # curl=True
