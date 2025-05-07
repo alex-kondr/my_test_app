@@ -53,6 +53,12 @@ def process_review(data, context, session):
     if author:
         review.authors.append(Person(name=author, ssid=author))
 
+    grade_overall = data.xpath('//h3[contains(., "Ocena końcowa:")]//text()').string()
+    if grade_overall:
+        grade_overall = grade_overall.split(':')[-1].split('/')[0]
+        if grade_overall and grade_overall.isdigigt() and float(grade_overall) > 0:
+            review.grades.append(Grade(type='overall', value= float(grade_overall), best=10.0))
+
     summary = data.xpath('//div[@class="article__lead"]/p//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
@@ -60,3 +66,7 @@ def process_review(data, context, session):
     excerpt = data.xpath('//div[contains(@class, "content")]/p//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
