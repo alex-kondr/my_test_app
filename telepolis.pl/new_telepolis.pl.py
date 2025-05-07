@@ -1,6 +1,7 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
 
 
 def run(context, session):
@@ -28,8 +29,8 @@ def process_review(data, context, session):
     title = data.xpath('//h1[contains(@class, "title")]/text()').string()
 
     product = Product()
-    product.name = title.replace('(pierwsze wrażenia)', '').replace('(test)', '').replace('(Test)', '').replace('- test', '').replace('(albo zazdrosna)', '').split('. Test')[-1].split('? Test')[-1].strip()
-    product.ssid = context['url'].split('/')[-1].replace('testy-', '')
+    product.name = title.replace('(pierwsze wrażenia)', '').replace('(test)', '').replace('(Test)', '').replace('- test', '').replace('(albo zazdrosna)', '').split('. Test ')[-1].split('? Test ')[-1].replace('. Test', '').strip()
+    product.ssid = context['url'].split('/')[-1].replace('testy-', '').replace('-test', '')
     product.category = 'Technologia'
 
     product.url = data.xpath('//a[@class="sales-item"]/@href').string()
@@ -55,19 +56,59 @@ def process_review(data, context, session):
         author = author.title()
         review.authors.append(Person(name=author, ssid=author))
 
-# https://www.telepolis.pl/artykuly/testy-sprzetu/samsung-galaxy-ring-test-recenzja-opinie
+    grade_overall = data.xpath('(//h3[contains(., "Ocena końcowa:")]|//span[contains(@class, "review__title")])//text()[regexp:test(., "\d+,?\d?/\d+")]').string(multiple=True)
+    if not grade_overall:
+        grade_overall = data.xpath('//strong[contains(., "ocena końcowa")]/text()[regexp:test(., "\d+,?\d?/\d+")]').string()
 
-    grade_overall = data.xpath('//h3[contains(., "Ocena końcowa:")]//text()').string(multiple=True)
     if grade_overall:
-        grade_overall = grade_overall.split(':')[-1].split('/')[0]
-        if grade_overall and grade_overall.isdigit() and float(grade_overall) > 0:
+        grade_overall = re.search(r'\d+,?\d?/\d+', grade_overall).group().split('/')[0].replace(',', '.')
+        if len(grade_overall) > 1 and float(grade_overall) > 0:
             review.grades.append(Grade(type='overall', value= float(grade_overall), best=10.0))
+
+    grades = data.xpath('//div[contains(., "Ocena końcowa:")]/following-sibling::div[contains(@class, "paragraph")][1][regexp:test(., "\d+,?\d?/\d+")]//li')
+    for grade in grades:
+        grade = grade.xpath('.//text()').string(multiple=True)
+        if grade:
+            grade_name, grade_val = grade.split(':') if ':' in grade else grade.split(', ')
+            grade_val = grade_val.split('/')[0].replace(',', '.')
+            grade_name = grade_name.strip()
+            if len(grade_val) > 1 and float(grade_val) > 0:
+                review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
+
+    pros = data.xpath('(//div[contains(., "Zalety:")]/following-sibling::div[contains(@class, "paragraph")][1][not(contains(., "Wady:"))]//p|//div[contains(., "Zalety:")]/following-sibling::div[contains(@class, "paragraph")][1][not(contains(., "Wady:"))]//li)//text()[not(contains(., "Zalety:"))][normalize-space(.)]')
+    if not pros:
+        pros = data.xpath('//div[contains(@class, "review__content") and contains(., "plusy")]//li/div[not(@class)]//text()[normalize-space(.)]')
+    if not pros:
+        pros = data.xpath('//p[contains(., "Zalety:")]/text()[not(regexp:test(., "Zalety:|Wady:"))][normalize-space(.)]')
+
+    for pro in pros:
+        pro = pro.string().strip(' \n+-.,')
+        if len(pro) > 1:
+            review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('(//div[contains(., "Wady:")]/following-sibling::div[contains(@class, "paragraph")][1]//p|//div[contains(., "Wady:")]/following-sibling::div[contains(@class, "paragraph")][1]//li)//text()[not(contains(., "Wady:"))][normalize-space(.)]')
+    if not cons:
+        cons = data.xpath('//div[contains(@class, "review__content") and contains(., "minusy")]//li/div[not(@class)]//text()[normalize-space(.)]')
+    if not cons:
+        cons = data.xpath('//p[contains(., "Wady:")]/text()[not(regexp:test(., "Zalety:|Wady:"))][normalize-space(.)]')
+
+    for con in cons:
+        con = con.string().strip(' \n+-.,')
+        if len(con) > 1:
+            review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="article__lead"]/p//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('//div[contains(@class, "content")]/p//text()').string(multiple=True)
+    conclusion = data.xpath('//div[regexp:test(., "Podsumowanie|Dla kogo to produkt?")]/following-sibling::div/p[not(preceding::div[regexp:test(., "Wady:|Zalety:")] or regexp:test(., "Wady:|Zalety:"))]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//div[regexp:test(., "Podsumowanie|Dla kogo to produkt?")]/preceding-sibling::div/p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(preceding::div[regexp:test(., "Wady:|Zalety:")] or regexp:test(., "Wady:|Zalety:"))]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
