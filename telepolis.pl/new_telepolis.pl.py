@@ -69,7 +69,11 @@ def process_review(data, context, session):
     for grade in grades:
         grade = grade.xpath('.//text()').string(multiple=True)
         if grade:
-            grade_name, grade_val = grade.split(':') if ':' in grade else grade.split(', ')
+            if ':' in grade:
+                grade_name, grade_val = grade.split(':')
+            else:
+                grade_val, grade_name = grade.split(', ')
+
             grade_val = grade_val.split('/')[0].replace(',', '.')
             grade_name = grade_name.strip()
             if len(grade_val) > 1 and float(grade_val) > 0:
