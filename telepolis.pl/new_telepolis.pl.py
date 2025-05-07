@@ -55,10 +55,12 @@ def process_review(data, context, session):
         author = author.title()
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//h3[contains(., "Ocena końcowa:")]//text()').string()
+# https://www.telepolis.pl/artykuly/testy-sprzetu/samsung-galaxy-ring-test-recenzja-opinie
+
+    grade_overall = data.xpath('//h3[contains(., "Ocena końcowa:")]//text()').string(multiple=True)
     if grade_overall:
         grade_overall = grade_overall.split(':')[-1].split('/')[0]
-        if grade_overall and grade_overall.isdigigt() and float(grade_overall) > 0:
+        if grade_overall and grade_overall.isdigit() and float(grade_overall) > 0:
             review.grades.append(Grade(type='overall', value= float(grade_overall), best=10.0))
 
     summary = data.xpath('//div[@class="article__lead"]/p//text()').string(multiple=True)
