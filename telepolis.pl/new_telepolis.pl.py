@@ -31,7 +31,7 @@ def process_review(data, context, session):
     product.ssid = context['url'].split('/')[-1].replace('testy-', '')
     product.category = 'Technologia'
 
-    product.url = data.xapth('//a[@class="sales-item"]/@href').string()
+    product.url = data.xpath('//a[@class="sales-item"]/@href').string()
     if not product.url:
         product.url = context['url']
 
@@ -51,6 +51,7 @@ def process_review(data, context, session):
 
     author = data.xpath('//span[contains(@class, "date__name")]/text()').string()
     if author:
+        author = author.title()
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//h3[contains(., "Ocena końcowa:")]//text()').string()
