@@ -16,7 +16,7 @@ def process_revlist(data, context, session):
     revs = new_data.xpath('//a[contains(@class, "teaser--mobile")]')
     for rev in revs:
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(url=url))
 
     has_next_page = data_json.get('hasNextPage')
     if has_next_page:
@@ -27,9 +27,11 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     title = data.xpath('//h1[contains(@class, "title")]/text()').string()
+    if not title:
+        return
 
     product = Product()
-    product.name = title.replace('(pierwsze wrażenia)', '').replace('(test)', '').replace('(Test)', '').replace('- test', '').replace('(albo zazdrosna)', '').split('. Test ')[-1].split('? Test ')[-1].replace('. Test', '').strip()
+    product.name = title.replace('(pierwsze wrażenia)', '').replace('(test)', '').replace('(Test)', '').replace('- test', '').replace('(albo zazdrosna)', '').split('. Test ')[-1].split('? Test ')[-1].split(' – test')[0].replace('. Test', '').replace('Test ', '').strip().capitalize()
     product.ssid = context['url'].split('/')[-1].replace('testy-', '').replace('-test', '')
     product.category = 'Technologia'
 
@@ -59,10 +61,12 @@ def process_review(data, context, session):
     grade_overall = data.xpath('(//h3[contains(., "Ocena końcowa:")]|//span[contains(@class, "review__title")])//text()[regexp:test(., "\d+,?\d?/\d+")]').string(multiple=True)
     if not grade_overall:
         grade_overall = data.xpath('//strong[contains(., "ocena końcowa")]/text()[regexp:test(., "\d+,?\d?/\d+")]').string()
+    if not grade_overall:
+        grade_overall = data.xpath('//p[contains(., "Ocena końcowa")]//text()[regexp:test(., "\d+,?\d?/\d+")]').string()
 
     if grade_overall:
         grade_overall = re.search(r'\d+,?\d?/\d+', grade_overall).group().split('/')[0].replace(',', '.')
-        if len(grade_overall) > 1 and float(grade_overall) > 0:
+        if len(grade_overall) > 0 and float(grade_overall) > 0:
             review.grades.append(Grade(type='overall', value= float(grade_overall), best=10.0))
 
     grades = data.xpath('//div[contains(., "Ocena końcowa:")]/following-sibling::div[contains(@class, "paragraph")][1][regexp:test(., "\d+,?\d?/\d+")]//li')
@@ -72,18 +76,18 @@ def process_review(data, context, session):
             if ':' in grade:
                 grade_name, grade_val = grade.split(':')
             else:
-                grade_val, grade_name = grade.split(', ')
+                grade_val, grade_name = grade.split(', ', 1)
 
             grade_val = grade_val.split('/')[0].replace(',', '.')
             grade_name = grade_name.strip()
-            if len(grade_val) > 1 and float(grade_val) > 0:
+            if len(grade_val) > 0 and float(grade_val) > 0:
                 review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
     pros = data.xpath('(//div[contains(., "Zalety:")]/following-sibling::div[contains(@class, "paragraph")][1][not(contains(., "Wady:"))]//p|//div[contains(., "Zalety:")]/following-sibling::div[contains(@class, "paragraph")][1][not(contains(., "Wady:"))]//li)//text()[not(contains(., "Zalety:"))][normalize-space(.)]')
     if not pros:
         pros = data.xpath('//div[contains(@class, "review__content") and contains(., "plusy")]//li/div[not(@class)]//text()[normalize-space(.)]')
     if not pros:
-        pros = data.xpath('//p[contains(., "Zalety:")]/text()[not(regexp:test(., "Zalety:|Wady:"))][normalize-space(.)]')
+        pros = data.xpath('//p[contains(., "Zalety:")]/text()[not(preceding-sibling::strong[1][contains(., "Wady:")] or regexp:test(., "Zalety:|Wady:"))][normalize-space(.)]')
 
     for pro in pros:
         pro = pro.string().strip(' \n+-.,')
@@ -94,7 +98,7 @@ def process_review(data, context, session):
     if not cons:
         cons = data.xpath('//div[contains(@class, "review__content") and contains(., "minusy")]//li/div[not(@class)]//text()[normalize-space(.)]')
     if not cons:
-        cons = data.xpath('//p[contains(., "Wady:")]/text()[not(regexp:test(., "Zalety:|Wady:"))][normalize-space(.)]')
+        cons = data.xpath('//p[contains(., "Wady:")]/text()[not(regexp:test(., "Zalety:|Wady:") or preceding-sibling::strong[1][contains(., "Zalety:")])][normalize-space(.)]')
 
     for con in cons:
         con = con.string().strip(' \n+-.,')
