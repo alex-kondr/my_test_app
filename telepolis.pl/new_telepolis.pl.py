@@ -31,7 +31,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = title.replace('(pierwsze wrażenia)', '').replace('(test)', '').replace('(Test)', '').replace('- test', '').replace('(albo zazdrosna)', '').split('. Test ')[-1].split('? Test ')[-1].split(' – test')[0].replace('. Test', '').replace('Test ', '').strip().capitalize()
+    product.name = title.replace('(pierwsze wrażenia)', '').replace('(test)', '').replace('(Test)', '').replace('- test', '').replace('(albo zazdrosna)', '').split('. Test ')[-1].split('? Test ')[-1].split(' – test')[0].split(' | ')[0].replace('. Test', '').replace('Test ', '').strip().capitalize()
     product.ssid = context['url'].split('/')[-1].replace('testy-', '').replace('-test', '')
     product.category = 'Technologia'
 
