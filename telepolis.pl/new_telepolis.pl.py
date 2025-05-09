@@ -94,7 +94,7 @@ def process_review(data, context, session):
         if len(pro) > 1:
             review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('(//div[contains(., "Wady:")]/following-sibling::div[contains(@class, "paragraph")][1]//p|//div[contains(., "Wady:")]/following-sibling::div[contains(@class, "paragraph")][1]//li)//text()[not(contains(., "Wady:"))][normalize-space(.)]')
+    cons = data.xpath('(//div[contains(., "Wady:")]/following-sibling::div[contains(@class, "paragraph")][1]//p|//div[contains(., "Wady:")]/following-sibling::div[contains(@class, "paragraph")][1]//li)//text()[not(regexp:test(., "Zalety:|Wady:") or preceding-sibling::strong[1][contains(., "Zalety:")])][normalize-space(.)]')
     if not cons:
         cons = data.xpath('//div[contains(@class, "review__content") and contains(., "minusy")]//li/div[not(@class)]//text()[normalize-space(.)]')
     if not cons:
