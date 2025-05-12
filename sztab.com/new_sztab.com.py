@@ -44,9 +44,11 @@ def process_review(data, context, session):
     grades = data.xpath('//div[@class="rating"]')
     for grade in grades:
         grade_name = grade.xpath('text()[not(regexp:test(., "GŁOSUJ|procent"))]').string(multiple=True).title()
-        grade_val = grade.xpath('span/text()').string().replace('%', '')
-        if grade_name and grade_val and grade_val.isdigit():
-            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=100))
+        grade_val = grade.xpath('span/text()').string()
+        if grade_name and grade_val:
+            grade_val = grade_val.replace('%', '')
+            if grade_val.isdigit() and float(grade_val) > 0:
+                review.grades.append(Grade(name=grade_name, value=float(grade_val), best=100))
 
     pros = data.xpath('//div[@id="game_description"]/b[contains(., "ZALETY:")]/following-sibling::text()[not(preceding-sibling::b[contains(., "WADY:")])][normalize-space(.)]')
     for pro in pros:
