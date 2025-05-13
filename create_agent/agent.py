@@ -99,7 +99,7 @@ class AgentForm:
             "    for rev in revs:\n"
             f"        {name_title} = rev.xpath('{name_title_xpath}').string()\n"
             f"        url = rev.xpath('{url_xpath}').string()\n"
-            f"        session.queue(Request(url, force_charset='utf-8'), process_{prod_rev}, dict({name_title}={name_title}, url=url))\n"
+            f"        session.queue(Request(url, use='curl', force_charset='utf-8'), process_{prod_rev}, dict({name_title}={name_title}, url=url))\n"
             f"\n    next_url = data.xpath('{next_url_xpath}').string()\n"
             "    if next_url:\n"
             "        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())\n"

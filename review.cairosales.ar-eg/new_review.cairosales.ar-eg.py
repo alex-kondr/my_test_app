@@ -2,13 +2,27 @@ from agent import *
 from models.products import *
 
 
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://cairosales.com/ar/', use='curl'), process_frontpage, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.queue(Request('https://cairosales.com/ar/', use='curl', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
+    strip_namespace(data)
+
     cats = data.xpath('//ul[contains(@class, "mm_columns_ul_tab")]/li')
     for cat in cats:
         name = cat.xpath('div//span/text()').string(multiple=True)
@@ -25,24 +39,31 @@ def process_frontpage(data, context, session):
 
 
 def process_category(data, context, session):
+    strip_namespace(data)
+
     prods = data.xpath('//ul[contains(@class, "product_list")]/li')
     for prod in prods:
-        name = prod.xpath('.//h5/a/text()').string()
         prod_ssid = prod.xpath('@data-id-product').string()
         url = prod.xpath('.//h5/a/@href').string()
 
         revs = prod.xpath('.//div[contains(@class, "rating-star")]')
         if revs:
-            session.queue(Request(url, use='curl'), process_product, dict(context, name=name, prod_ssid=prod_ssid, url=url))
+            session.queue(Request(url, use='curl', max_age=0), process_product, dict(context, prod_ssid=prod_ssid, url=url))
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl'), process_category, dict(context))
+        session.queue(Request(next_url, use='curl', max_age=0), process_category, dict(context))
 
 
 def process_product(data, context, session):
+    strip_namespace(data)
+
+    name = data.xpath('//div[contains(@class, "center")]/h1//text()').string(multiple=True)
+    if not name:
+        return
+
     product = Product()
-    product.name = context['name']
+    product.name = name.replace(u'\uFEFF', '').strip()
     product.url = context['url']
     product.ssid = context['prod_ssid']
     product.sku = product.ssid

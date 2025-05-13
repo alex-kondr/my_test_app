@@ -12,39 +12,39 @@ from create_agent.agent import AgentForm, ProcessRun
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="19732"
+    agent_id="17403"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.tomshw.it/cerca?keyword=Recensione',
-    next_func=ProcessRun.revlist.name,
+    url='https://www.theverge.com/reviews/',
+    next_func=ProcessRun.catlist.name,
     new_parser=False,
-    breakers=0,
+    breakers=3000,
     # curl=True
 )
-# agent.create_frontpage(
-#     cats_xpath='//li[contains(., "Reviews")]/ul/li[contains(@class, "group/category")]',
-#     name_xpath='a/text()',
-#     url_xpath='@href'
-# )
-# agent.create_revlist(
-#     revs_xpath='//h4[contains(@class, "title")]/a',
-#     name_title="title",
-#     name_title_xpath='text()',
-#     url_xpath='@href',
-#     prod_rev="review",
-#     next_url_xpath='//a[@rel="next"]/@href',
-# )
-# agent.create_review(
-#     date_xpath='//time/@datetime',
-#     author_xpath='//a[contains(@href, "/autor/") and contains(@class, "link")]/text()',
-#     author_url_xpath='//a[contains(@href, "/autor/") and contains(@class, "link")]/@href',
-#     grade_overall_xpath='',
-#     pros_xpath='//h3[regexp:test(., "positivos|prós")]/following-sibling::ul[1]/li',
-#     cons_xpath='//h3[regexp:test(., "negativos|contras")]/following-sibling::ul[1]/li',
-#     summary_xpath='//div[contains(@class, "tec--article__body")]/p[@dir="ltr"][1]//text()',
-#     conclusion_xpath='//h2[contains(., "Vale a pena?")]/following-sibling::p[not(contains(., "Comente nas redes sociais do Voxel"))]//text()',
-#     excerpt_with_concl_xpath='.//text()',
-#     excerpt_xpath='//div[not(.//p[contains(., "SCORE")] or contains(@class, "fazit"))]/p[not(@class)]//text()'
-# )
+agent.create_frontpage(
+    cats_xpath='//ul/li//a[contains(., " Reviews") and not(contains(., "All Reviews"))]',
+    name_xpath='text()',
+    url_xpath='@href'
+)
+agent.create_revlist(
+    revs_xpath='//a[contains(@class, "comments-link")]',
+    name_title="title",
+    name_title_xpath='text()',
+    url_xpath='@href',
+    prod_rev="review",
+    next_url_xpath='//a[@rel="next"]/@href',
+)
+agent.create_review(
+    date_xpath='//meta[@property="article:published_time"]/@content',
+    author_xpath='//a[contains(@href, "https://www.theverge.com/authors/")]/text()',
+    author_url_xpath='//a[contains(@href, "https://www.theverge.com/authors/")]/@href',
+    grade_overall_xpath='//div[contains(@class, "scorecard ")]/div/div[p[contains(., "Verge Score")]]/p[not(contains(., "Verge Score"))]//text()',
+    pros_xpath='//h4[contains(., "The Good")]/following-sibling::ul[1]/li',
+    cons_xpath='//h4[contains(., "The Bad")]/following-sibling::ul[1]/li',
+    summary_xpath='//div[@class=""]/p[contains(@class, "dangerously")]//text()',
+    conclusion_xpath='//',
+    excerpt_with_concl_xpath='.',
+    excerpt_xpath='//div[contains(@class, "body-component")]/p[not(.//em[regexp:test(., "Photography by|Update, ")])]//text()'
+)
