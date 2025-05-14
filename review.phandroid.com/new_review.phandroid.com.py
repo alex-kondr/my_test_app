@@ -101,6 +101,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[contains(@class, "entry-content")]//p[not(img)][not(.//strong[contains(., "Read:")])][not(preceding::h2[regexp:test(., "conclusion", "i") or regexp:test(., "final thoughts", "i")])][not(regexp:test(., "\[via", "i"))][not(regexp:test(., "Note:|Disclaimer:"))]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace('\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
