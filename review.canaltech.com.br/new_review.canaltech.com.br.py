@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.sessionbreakers=[SessionBreak(max_requests=4000)]
+    session.sessionbreakers=[SessionBreak(max_requests=3000)]
     session.queue(Request('http://canaltech.com.br/analises/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
