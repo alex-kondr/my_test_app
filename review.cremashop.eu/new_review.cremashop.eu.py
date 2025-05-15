@@ -60,7 +60,7 @@ def process_product(data, context, session):
 
     prod_json = data.xpath('''//script[contains(., '"@type":"Product"') and contains(., '"mpn":"')]/text()''').string()
     if prod_json:
-        mpn = prod_json.split('"mpn":"')[-1].split('","')[0].strip(' "')
+        mpn = prod_json.split('"mpn":"')[-1].split('","')[0].split('\\')[0].strip(' "')
         if mpn:
             product.add_property(type='id.manufacturer', value=mpn)
 

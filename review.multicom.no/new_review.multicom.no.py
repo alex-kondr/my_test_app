@@ -12,7 +12,7 @@ XPROD = [
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
     session.queue(Request('https://www.multicom.no/', use='curl', force_charset='utf-8'), process_frontpage, {})
 
 
@@ -84,8 +84,8 @@ def process_product(data, context, session):
 
     revs_cnt = data.xpath('//div[contains(@class, "rating")]/span/span/text()').string()
     if revs_cnt and int(revs_cnt.split()[0]) > 0:
-        revs_url = 'https://widget.trustpilot.com/data/jsonld/business-unit/46db331e00006400050113a8/product?sku={}&numberOfReviews=10&productName=0&templateId=5717796816f630043868e2e8'.format(mpn)
-        session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product, revs_cnt=int(revs_cnt.split()[0])))
+        revs_url = 'https://widget.trustpilot.com/trustbox-data/5717796816f630043868e2e8?businessUnitId=46db331e00006400050113a8&locale=nb-NO&sku={}&reviewsPerPage=10'.format(mpn)
+        session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product, revs_cnt=int(revs_cnt.split()[0]), mpn=mpn))
 
 
 def process_reviews(data, context, session):
@@ -100,6 +100,7 @@ def process_reviews(data, context, session):
         review = Review()
         review.type = 'user'
         review.url = product.url
+        review.ssid = rev.get('id')
 
         date = rev.get('createdAt')
         if date:
@@ -114,25 +115,21 @@ def process_reviews(data, context, session):
             review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
 
         grades = rev.get('attributes')
-        for grade in grades:
-            value = float(grades.get(grade))
-            review.grades.append(Grade(name=grade, value=value, best=5.0))
+        for grade_name, grade_val in grades.items():
+            if grade_val and float(grade_val) > 0:
+                review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
 
         excerpt = rev.get('content')
         if excerpt:
             review.add_property(type="excerpt", value=excerpt)
 
-            review.ssid = rev.get('id')
-            if not review.ssid:
-                review.ssid = review.digest() if author else review.digest(excerpt)
-
             product.reviews.append(review)
 
     offset = context.get('offset', 0) + 10
     if offset < context['revs_cnt']:
-        raise ValueError('!!!!!')
-        revs_url = 'https://widget.trustpilot.com/data/jsonld/business-unit/46db331e00006400050113a8/product?sku={}&numberOfReviews=10&productName=0&templateId=5717796816f630043868e2e8'.format(mpn)
-        session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+        next_page = context.get('page', 1) + 1
+        revs_url = 'https://widget.trustpilot.com/trustbox-data/5717796816f630043868e2e8?businessUnitId=46db331e00006400050113a8&locale=nb-NO&sku={mpn}&reviewsPerPage=10&page={page}'.format(mpn=context['mpn'], page=next_page)
+        session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context, offset=offset, page=next_page, product=product))
 
     elif product.reviews:
         session.emit(product)

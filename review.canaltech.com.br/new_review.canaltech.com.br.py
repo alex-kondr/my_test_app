@@ -1,0 +1,100 @@
+from agent import *
+from models.products import *
+import simplejson
+
+
+def run(context, session):
+    session.sessionbreakers=[SessionBreak(max_requests=4000)]
+    session.queue(Request('http://canaltech.com.br/analises/', use='curl', force_charset='utf-8'), process_revlist, dict())
+
+
+def process_revlist(data, context, session):
+    data_json = data.xpath('//script[@type="application/json"]/text()').string()
+    if data_json:
+        revs_json = simplejson.loads(data_json).get('props', {}).get('pageProps', {}).get('timelineData', {})
+    else:
+        revs_json = simplejson.loads(data.content).get('data', {})
+
+    revs_json = revs_json.get('timeline', {})
+
+    revs = revs_json.get('itens', [])
+    for rev in revs:
+        ssid = rev.get('id')
+        title = rev.get('titulo')
+        date = rev.get('data')
+        url = rev.get('url')
+        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(ssid=ssid, title=title, date=date, url=url))
+
+    next_page = revs_json.get('paginacao')
+    if next_page:
+        next_url = 'https://i.canaltech.com.br/timelines/ultimas/tipo/analise?pagination=' + next_page
+        session.queue(Request(next_url, force_charset='utf-8', max_age=0), process_revlist, dict())
+
+
+def process_review(data, context, session):
+    product = Product()
+    product.ssid = context['ssid']
+    product.category = 'Tecnologia'
+    product.manufacturer = data.xpath('//td[contains(., "Desenvolvedor:")]/text()').string()
+
+    platformes = data.xpath('//td[contains(., "Plataforma:")]/text()').string()
+    genres = data.xpath('//td[contains(., "Gênero:")]/text()').string()
+    if platformes and genres:
+        product.category = 'Games|' + platformes.replace(', ', '/') + '|' + genres.replace(', ', '/')
+    elif platformes:
+        product.category = 'Games|' + platformes.replace(', ', '/')
+
+    product.name = context['title'].split('|')[0].replace('Review: ', '').replace('Review ', '').replace('Análise: ', '').replace('Análise do Jogo: ', '').replace('Análise do ', '').replace('Análise ', '').replace('Preview ', '').strip()
+    if not product.name:
+        product.name = context['title'].split('|')[-1]
+
+    product.url = data.xpath('//a[@rel="sponsored" or @rel="nofollow sponsored"]/@href').string()
+    if not product.url:
+        product.url = context['url']
+
+    review = Review()
+    review.type = 'pro'
+    review.title = context['title']
+    review.url = context['url']
+    review.ssid = product.ssid
+
+    if context['date']:
+        review.date = context['date'].split()[0]
+
+    author = data.xpath('//a[@rel="author"]/text()').string()
+    author_url = data.xpath('//a[@rel="author"]/@href').string()
+    if author and author_url:
+        review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    contents_json = data.xpath('//script[@type="application/json"]/text()').string()
+    if contents_json:
+        contents = simplejson.loads(contents_json).get('props', {}).get('pageProps', {}).get('homeData', {}).get('conteudo', {}).get('conteudo', [])
+
+        for content in contents:
+            if content.get('tipo', '') == 'pros-e-contras':
+                pros = content.get('pros', [])
+                for pro in pros:
+                    review.add_property(type='pros', value=pro)
+
+                cons = content.get('contras', [])
+                for con in cons:
+                    review.add_property(type='cons', value=con)
+
+                break
+
+    conclusion = data.xpath('//h2[contains(., "Vale a pena") or contains(., "vale a pena")]/following-sibling::p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//h2[contains(., "Vale a pena") or contains(., "vale a pena")]/preceding-sibling::p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@id="content-news"]/p[not(.//a[contains(@rel, "sponsored")])]//text()').string(multiple=True)
+
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
