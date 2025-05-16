@@ -46,7 +46,7 @@ def strip_namespace(data):
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.browser.use_new_parser = True
-    session.queue(Request('https://www.musicstore.de/de_DE/EUR', use='curl', force_charset='utf-8'), process_frontpage, dict())
+    session.queue(Request('https://www.musicstore.de/de_DE/EUR', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -57,7 +57,7 @@ def process_frontpage(data, context, session):
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
         if name not in XCAT:
-            session.do(Request(url, use='curl', force_charset='utf-8'), process_subcategory, dict(cat=name))
+            session.do(Request(url, use='curl', force_charset='utf-8', max_age=0), process_subcategory, dict(cat=name))
 
 
 def process_subcategory(data, context, session):
@@ -72,7 +72,7 @@ def process_subcategory(data, context, session):
         name = subcat.xpath('.//div[@class="name"]/span/text()').string()
         url = subcat.xpath('a/@href').string()
         if name not in XCAT and 'youtube' not in url:
-            session.do(Request(url+'?PageSize=90', use='curl', force_charset='utf-8'), process_subcategory, dict(cat=context['cat']+'|'+name))
+            session.do(Request(url+'?PageSize=90', use='curl', force_charset='utf-8', max_age=0), process_subcategory, dict(cat=context['cat']+'|'+name))
 
 
 def process_prodlist(data, context, session):
@@ -87,11 +87,11 @@ def process_prodlist(data, context, session):
         if revs_cnt:
             revs_cnt = revs_cnt.strip('( )').replace('.', '')
             if int(revs_cnt) > 0:
-                session.do(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, url=url, revs_cnt=int(revs_cnt)))
+                session.do(Request(url, use='curl', force_charset='utf-8', max_age=0), process_product, dict(context, name=name, url=url, revs_cnt=int(revs_cnt)))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_prodlist, dict(context))
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -116,7 +116,7 @@ def process_product(data, context, session):
     if revs_id:
         revs_id = revs_id.split('PageableID=')[-1].split('&SKU')[0]
         revs_url = 'https://www.musicstore.de/INTERSHOP/web/WFS/MusicStore-MusicStoreShop-Site/de_DE/-/EUR/ViewProductReview-Paging?PageNumber=1&PageSize=5&PageableID={}&SKU={}'.format(revs_id, product.ssid)
-        session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, product=product, revs_id=revs_id))
+        session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context, product=product, revs_id=revs_id))
     else:
         context['product'] = product
         process_reviews(data, context, session)
@@ -178,7 +178,7 @@ def process_reviews(data, context, session):
     if offset < context['revs_cnt'] and context.get('revs_id'):
         next_page = context.get('next_page', 1) + 1
         revs_url = 'https://www.musicstore.de/INTERSHOP/web/WFS/MusicStore-MusicStoreShop-Site/de_DE/-/EUR/ViewProductReview-Paging?PageNumber={page}&PageSize=5&PageableID={revs_id}&SKU={ssid}'.format(page=next_page, revs_id=context['revs_id'], ssid=product.ssid)
-        session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, product=product, offset=offset, page=next_page))
+        session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context, product=product, offset=offset, page=next_page))
 
     elif product.reviews:
         session.emit(product)
