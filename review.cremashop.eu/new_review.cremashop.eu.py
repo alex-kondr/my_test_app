@@ -44,9 +44,9 @@ def process_prodlist(data, context, session):
         else:
             return
 
-    next = data.xpath("//link[@rel='next']/@href").string()
-    if next:
-        session.queue(Request(next, use="curl", force_charset='utf-8'), process_prodlist, dict(context))
+    next_url = data.xpath("//link[@rel='next']/@href").string()
+    if next_url:
+        session.queue(Request(next_url, use="curl", force_charset='utf-8'), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -67,6 +67,14 @@ def process_product(data, context, session):
     ean = data.xpath('//li[contains(., "EAN")]/span/text()').string()
     if ean and ean.isdigit() and len(ean) > 10:
         product.add_property(type='id.ean', value=ean)
+
+    context['product'] = product
+
+    process_reviews(data, context, session)
+
+
+def process_reviews(data, context, session):
+    product = context['product']
 
     revs = data.xpath('//div[@data-review]')
     for rev in revs:
@@ -96,7 +104,9 @@ def process_product(data, context, session):
 
             product.reviews.append(review)
 
-    if product.reviews:
-        session.emit(product)
+    next_url = data.xpath('//a[contains(@data-action, "loadReviews")]/@data-href').string()
+    if next_url:
+        session.do(Request('https://www.cremashop.eu' + next_url, use="curl", force_charset='utf-8'), process_reviews, dict(product=product))
 
-# no next page
+    elif product.reviews:
+        session.emit(product)
