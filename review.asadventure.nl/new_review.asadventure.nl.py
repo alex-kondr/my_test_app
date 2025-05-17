@@ -91,7 +91,7 @@ def process_product(data, context, session):
         product.ssid = prod_info.get("productId")
         product.sku = product.ssid
 
-    revs = data.xpath('//div[div/span[contains(., "Reviews")] and contains(@class, "content--modal")]//div[@class="as-t-box"]')
+    revs = data.xpath('//div[div/span[contains(., "Reviews")] and contains(@class, "content--modal")]//div[@class="as-t-box" and not(.//img[contains(@src, "/expert-images/")])]')
     for rev in revs:
         review = Review()
         review.type = 'user'
@@ -109,34 +109,18 @@ def process_product(data, context, session):
         if grade_overall and grade_overall > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        pros = rev.xpath('.//li[.//span[contains(@class, "positive")]]//div//span//text()').string(multiple=True, normalize_space=False)
-        if pros:
-            if '\n' in pros:
-                pros = pros.split('\n')
-            elif '.' in pros:
-                pros = pros.split('.')
-            elif ';' in pros:
-                pros = pros.split(';')
-            else:
-                pros = [pros]
-
-            for pro in pros:
+        pros = rev.xpath('.//li[.//span[contains(@class, "positive")]]')
+        for pro in pros:
+            pro = pro.xpath('.//div//span//text()').string(multiple=True)
+            if pro:
                 pro = remove_emoji(pro).strip(' +-/\n?')
                 if len(pro) > 1 and not(pro.lower() == 'null' or pro.lower() == 'no' or pro.lower() == 'na'):
                     review.add_property(type='pros', value=pro)
 
-        cons = rev.xpath('.//li[.//span[contains(@class, "negative")]]//div//span//text()').string(multiple=True, normalize_space=False)
-        if cons:
-            if '\n' in cons:
-                cons = cons.split('\n')
-            elif '.' in cons:
-                cons = cons.split('.')
-            elif ';' in cons:
-                cons = cons.split(';')
-            else:
-                cons = [cons]
-
-            for con in cons:
+        cons = rev.xpath('.//li[.//span[contains(@class, "negative")]]')
+        for con in cons:
+            con = con.xpath('.//div//span//text()').string(multiple=True, normalize_space=False)
+            if con:
                 con = remove_emoji(con).strip(' +-/\n?')
                 if len(con) > 1 and not(con == 'null' or con.lower() == 'no' or con.lower() == 'na'):
                     review.add_property(type='cons', value=con)

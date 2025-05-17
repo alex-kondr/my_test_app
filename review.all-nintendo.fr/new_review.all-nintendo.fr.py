@@ -166,9 +166,10 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[@itemprop="articleBody"]//p[not(contains(., "Les trucs cools du Jeu") or contains(., "Les petits bémols") or contains(., "Q :") or contains(., "Note") or .//strong[regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$")] or regexp:test(normalize-space(.), "^–|^-"))]//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = remove_emoji(excerpt)
 
         if conclusion:
-            excerpt = remove_emoji(excerpt).replace(conclusion, '').strip()
+            excerpt = excerpt.replace(conclusion, '').strip()
 
         review.add_property(type='excerpt', value=excerpt)
 

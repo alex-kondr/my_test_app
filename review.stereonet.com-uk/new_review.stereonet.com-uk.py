@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.queue(Request('https://stereonet.com/reviews', use='curl', max_age=0), process_revlist, dict())
+    session.queue(Request('https://stereonet.com/reviews'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -15,8 +15,9 @@ def process_revlist(data, context, session):
 
     if revs:
         offset = context.get('offset', 0) + 17
+        options = "--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:138.0) Gecko/20100101 Firefox/138.0' -H 'Accept: */*' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br, zstd' -H 'X-Requested-With: XMLHttpRequest' -H 'Alt-Used: stereonet.com' -H 'Connection: keep-alive' -H 'Referer: https://stereonet.com/reviews' -H 'Cookie: owa_v=cdh%3D%3E6fcecfda%7C%7C%7Cvid%3D%3E1721111560118767774%7C%7C%7Cfsts%3D%3E1721111560%7C%7C%7Cdsfs%3D%3E2%7C%7C%7Cnps%3D%3E6; owa_s=cdh%3D%3E6fcecfda%7C%7C%7Clast_req%3D%3E1721271990%7C%7C%7Csid%3D%3E1721271990517302212%7C%7C%7Cdsps%3D%3E1%7C%7C%7Creferer%3D%3E; merged_new_tracker=%7B%220%22%3A%22media%2Fcss%2Fbootstrap.min.css.map%22%2C%221%22%3A%22reviews%22%2C%222%22%3A%22page_templates%2Farticle_list_ajax%2Freviews%2F17%22%2C%22token%22%3A%225112cdd3c0d6a0a5c9917aed915c52c4836370ac4b9b2ee0ddd7e1541e4e668078ace2945007eb9fb9015ae91a092f8f%22%7D; geotargetlygeoconsent1740635347323cookie=geotargetlygeoconsent1740635347323cookie' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Priority: u=0' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"
         next_url = 'https://www.stereonet.com/uk/page_templates/article_list_ajax/reviews/' + str(offset)
-        session.queue(Request(next_url, use='curl', max_age=0), process_revlist, dict(offset=offset))
+        session.queue(Request(next_url, use='curl', options=options, max_age=0), process_revlist, dict(offset=offset))
 
 
 def process_review(data, context, session):
