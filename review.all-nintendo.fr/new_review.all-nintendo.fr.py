@@ -97,8 +97,11 @@ def process_review(data, context, session):
     grade_overall = data.xpath('//p[regexp:test(normalize-space(.), "\d+/\d+$") and contains(., "Globale")]//text()').string()
     if not grade_overall:
         grade_overall = data.xpath('//p[regexp:test(normalize-space(.), "\d+/\d+$")]//text()').string(multiple=True)
+    if not grade_overall:
+        grade_overall = data.xpath('//strong[regexp:test(normalize-space(.), "\d+,?\d?/\d+|\d+,?\d? \\\\ \d+") and contains(., "Note")]//text()').string(multiple=True)
+
     if grade_overall:
-        grade_overall = grade_overall.split(':')[-1].split(' ')[-1].split('/')[0].replace(',', '.')
+        grade_overall = grade_overall.split(':')[-1].split('/')[0].split('\\')[0].strip().split()[-1].replace(',', '.')
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=20.0))
 
     grades = data.xpath('//p[regexp:test(normalize-space(.), "\d+/\d+$") and not(contains(., "Globale"))]')
@@ -114,7 +117,7 @@ def process_review(data, context, session):
         if len(grade_name) > 1 and 'note' not in grade_name.lower() and grade_val.isdigit():
             review.grades.append(Grade(name=grade_name, value=float(grade_val), best=20.0))
 
-    pros = data.xpath('//p[contains(., "Les trucs cools du Jeu")]/following-sibling::ul[1]/li')
+    pros = data.xpath('//p[regexp:test(., "Les trucs cools du Jeu|Points positifs")]/following-sibling::ul[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True).strip(' +-*\n–')
         if len(pro) > 1:
@@ -132,7 +135,7 @@ def process_review(data, context, session):
                 if len(pro) > 1:
                     review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//p[contains(., "Les petits bémols")]/following-sibling::ul[1]/li')
+    cons = data.xpath('//p[regexp:test(., "Les petits bémols|Points négatifs")]/following-sibling::ul[1]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True).strip(' +-*\n–')
         if len(con) > 1:
@@ -149,9 +152,9 @@ def process_review(data, context, session):
                 if len(con) > 1:
                     review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[regexp:test(., "conclusion", "i")]/following-sibling::p[not(contains(., "Note") or .//strong[regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$")] or regexp:test(normalize-space(.), "^–|^-"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "conclusion|verdict", "i")]/following-sibling::p[not(regexp:test(., "Qu’en pensez-vous ?|Points positifs|Points négatifs|Les plus :|Les plus:|Les moins :|Les moins:|Je le recommande aux :|Je le recommande aux:|Évitez si vous cherchez :|Évitez si vous cherchez:"))]//text()[not(regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$|Note:|Note :") or regexp:test(normalize-space(.), "^–|^-"))]').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//p[regexp:test(., "Bilan|Conclusion")]/following-sibling::p[not(contains(., "Note") or .//strong[regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$")] or regexp:test(normalize-space(.), "^–|^-"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//p[regexp:test(., "Bilan|Conclusion")]/following-sibling::p[not(regexp:test(., "Qu’en pensez-vous ?|Points positifs|Points négatifs|Les plus :|Les plus:|Les moins :|Les moins:|Je le recommande aux :|Je le recommande aux:|Évitez si vous cherchez :|Évitez si vous cherchez:"))]//text()[not(regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$|Note:|Note :") or regexp:test(normalize-space(.), "^–|^-"))]').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[regexp:test(., "Bilan|Conclusion")]//text()').string(multiple=True)
 
@@ -159,11 +162,11 @@ def process_review(data, context, session):
         conclusion = remove_emoji(conclusion).replace('Bilan :', '').replace('Bilan:', '').replace('Conclusion :', '').replace('Conclusion:', '').replace('Bilan', '').replace('Conclusion','').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h2[regexp:test(., "conclusion", "i")])[1]/preceding-sibling::p[not(contains(., "Les trucs cools du Jeu") or contains(., "Les petits bémols") or contains(., "Q :") or contains(., "Note") or .//strong[regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$")] or regexp:test(normalize-space(.), "^–|^-"))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2[regexp:test(., "conclusion|verdict", "i")])[1]/preceding-sibling::p[not(regexp:test(., "Qu’en pensez-vous ?|Points positifs|Points négatifs|Les plus :|Les plus:|Les moins :|Les moins:|Je le recommande aux :|Je le recommande aux:|Évitez si vous cherchez :|Évitez si vous cherchez:") or contains(., "Les trucs cools du Jeu") or contains(., "Les petits bémols") or contains(., "Q :") or contains(., "Note") or .//strong[regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$")] or regexp:test(normalize-space(.), "^–|^-|Note:|Note :"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//p[regexp:test(., "Bilan|Conclusion")])[1]/preceding-sibling::p[not(contains(., "Note") or .//strong[regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$")] or regexp:test(normalize-space(.), "^–|^-"))]//text()').string(multiple=True)
+        excerpt = data.xpath('(//p[regexp:test(., "Bilan|Conclusion")])[1]/preceding-sibling::p[not(regexp:test(., "Qu’en pensez-vous ?|Points positifs|Points négatifs|Les plus :|Les plus:|Les moins :|Les moins:|Je le recommande aux :|Je le recommande aux:|Évitez si vous cherchez :|Évitez si vous cherchez:") or contains(., "Note") or .//strong[regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$")] or regexp:test(normalize-space(.), "^–|^-|Note:|Note :"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@itemprop="articleBody"]//p[not(contains(., "Les trucs cools du Jeu") or contains(., "Les petits bémols") or contains(., "Q :") or contains(., "Note") or .//strong[regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$")] or regexp:test(normalize-space(.), "^–|^-"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@itemprop="articleBody"]//p[not(regexp:test(., "Qu’en pensez-vous ?|Points positifs|Points négatifs|Les plus :|Les plus:|Les moins :|Les moins:|Je le recommande aux :|Je le recommande aux:|Évitez si vous cherchez :|Évitez si vous cherchez:") or contains(., "Les trucs cools du Jeu") or contains(., "Les petits bémols") or contains(., "Q :") or contains(., "Note") or .//strong[regexp:test(normalize-space(.), "\d+/\d+|^\+$|^–|^-$")] or regexp:test(normalize-space(.), "^–|^-|Note:|Note :"))]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = remove_emoji(excerpt)

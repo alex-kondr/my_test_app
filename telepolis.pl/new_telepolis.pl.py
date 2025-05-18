@@ -83,7 +83,7 @@ def process_review(data, context, session):
             if len(grade_val) > 0 and float(grade_val) > 0:
                 review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
-    pros = data.xpath('(//div[contains(., "Zalety:")]/following-sibling::div[contains(@class, "paragraph")][1][not(contains(., "Wady:"))]//p|//div[contains(., "Zalety:")]/following-sibling::div[contains(@class, "paragraph")][1][not(contains(., "Wady:"))]//li)//text()[not(contains(., "Zalety:"))][normalize-space(.)]')
+    pros = data.xpath('(//div[regexp:test(., "Zalety:|Plusy:")][1]/following-sibling::div[contains(@class, "paragraph")][1][not(contains(., "Wady:"))]//p|//div[regexp:test(., "Zalety:|Plusy:")][1]/following-sibling::div[contains(@class, "paragraph")][1][not(contains(., "Wady:"))]//li)//text()[not(contains(., "Zalety:"))][normalize-space(.)]')
     if not pros:
         pros = data.xpath('//div[contains(@class, "review__content") and contains(., "plusy")]//li/div[not(@class)]//text()[normalize-space(.)]')
     if not pros:
@@ -94,7 +94,7 @@ def process_review(data, context, session):
         if len(pro) > 1:
             review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('(//div[contains(., "Wady:")]/following-sibling::div[contains(@class, "paragraph")][1]//p|//div[contains(., "Wady:")]/following-sibling::div[contains(@class, "paragraph")][1]//li)//text()[not(regexp:test(., "Zalety:|Wady:") or preceding-sibling::strong[1][contains(., "Zalety:")])][normalize-space(.)]')
+    cons = data.xpath('(//div[regexp:test(., "Wady:|Minusy:")][1]/following-sibling::div[contains(@class, "paragraph")][1]//p|//div[regexp:test(., "Wady:|Minusy:")][1]/following-sibling::div[contains(@class, "paragraph")][1]//li)//text()[not(regexp:test(., "Zalety:|Wady:") or preceding-sibling::strong[1][contains(., "Zalety:")])][normalize-space(.)]')
     if not cons:
         cons = data.xpath('//div[contains(@class, "review__content") and contains(., "minusy")]//li/div[not(@class)]//text()[normalize-space(.)]')
     if not cons:
@@ -109,13 +109,13 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//div[regexp:test(., "Podsumowanie|Dla kogo to produkt?")]/following-sibling::div/p[not(preceding::div[regexp:test(., "Wady:|Zalety:")] or regexp:test(., "Wady:|Zalety:"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//div[regexp:test(., "Podsumowanie|Dla kogo to produkt?")][last()]/following-sibling::div/p[not(preceding::div[regexp:test(., "Wady:|Zalety:")] or regexp:test(., "Wady:|Zalety:|Plusy:|Minusy:"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[regexp:test(., "Podsumowanie|Dla kogo to produkt?")]/preceding-sibling::div/p//text()').string(multiple=True)
+    excerpt = data.xpath('//div[regexp:test(., "Podsumowanie|Dla kogo to produkt?")]/preceding-sibling::div/p[not(preceding::div[regexp:test(., "Wady:|Zalety:")] or regexp:test(., "Wady:|Zalety:|Plusy:|Minusy:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(preceding::div[regexp:test(., "Wady:|Zalety:")] or regexp:test(., "Wady:|Zalety:"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(preceding::div[regexp:test(., "Wady:|Zalety:")] or regexp:test(., "Wady:|Zalety:|Plusy:|Minusy:"))]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

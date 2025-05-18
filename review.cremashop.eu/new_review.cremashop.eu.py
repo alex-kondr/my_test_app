@@ -106,7 +106,8 @@ def process_reviews(data, context, session):
 
     next_url = data.xpath('//a[contains(@data-action, "loadReviews")]/@data-href').string()
     if next_url:
-        session.do(Request('https://www.cremashop.eu' + next_url, use="curl", force_charset='utf-8'), process_reviews, dict(product=product))
+        next_url = 'https://www.cremashop.eu' + next_url + '?fragment=true'
+        session.do(Request(next_url, use="curl", force_charset='utf-8'), process_reviews, dict(product=product))
 
     elif product.reviews:
         session.emit(product)
