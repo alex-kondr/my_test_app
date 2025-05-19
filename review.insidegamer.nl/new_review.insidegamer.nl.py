@@ -43,7 +43,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split('Review: ')[-1].split(' filmreview ')[0].split(' review ')[0].replace('Review -', '').replace('Review-in-progress: ', '').replace(' &', '').strip()
+    product.name = context['title'].split('Review: ')[-1].split(' filmreview ')[0].split(' review ')[0].split(' review– ')[0].split(' getest:')[0].split(' review:')[0].replace('Review -', '').replace('Review-in-progress: ', '').replace('magazine-review ', '').replace('seriereview ', '').split(' - ')[0].replace(' &', '').strip()
     product.url = context['url']
     product.ssid = context['url'].split('/')[-2]
     product.category = context['cat']
@@ -99,22 +99,29 @@ def process_review(data, context, session):
         summary = h.unescape(summary)
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(., "Conclusie|Concluderend")]/following-sibling::p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:"))]//text()').string(multiple=True)
+
+    conclusion = data.xpath('//h2[contains(., "Concluderend")][last()]/following-sibling::p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:|Lees meer"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//div[div/span[contains(., "Conclusie")]]//p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Conclusie")]/following-sibling::p[1][not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:|Lees meer"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[div/span[contains(., "Conclusie")]]//p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:|Lees meer"))]//text()').string(multiple=True)
 
     if conclusion:
         conclusion = h.unescape(conclusion)
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "Conclusie|Concluderend")]/preceding-sibling::p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Concluderend")]/preceding-sibling::p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:|Lees meer"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[h2]/p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[h2]/p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:|Lees meer"))]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = re.sub(r'href=\S+', '', h.unescape(excerpt))
         excerpt = re.sub(r'rel=\"\S+\s?\S+\"', '', excerpt)
         excerpt = re.sub(r'target=\"\S+\s?\S+\"', '', excerpt).strip()
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
