@@ -5,7 +5,6 @@ import HTMLParser
 
 
 h = HTMLParser.HTMLParser()
-XCAT = ['Beste games']
 
 
 def strip_namespace(data):
@@ -22,7 +21,6 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://pu.nl/games/reviews/review-archief/', use='curl', force_charset='utf-8'), process_revlist, dict(cat='Games'))
     session.queue(Request('https://pu.nl/tech/tech-reviews/', use='curl', force_charset='utf-8'), process_revlist, dict(cat='Tech'))
 
@@ -45,7 +43,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split('Review: ')[-1].replace('Review -', '').replace('Review-in-progress: ', '').replace(' &', '').strip()
+    product.name = context['title'].split('Review: ')[-1].split(' filmreview ')[0].split(' review ')[0].replace('Review -', '').replace('Review-in-progress: ', '').replace(' &', '').strip()
     product.url = context['url']
     product.ssid = context['url'].split('/')[-2]
     product.category = context['cat']
@@ -101,17 +99,17 @@ def process_review(data, context, session):
         summary = h.unescape(summary)
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(., "Conclusie|Concluderend")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "Conclusie|Concluderend")]/following-sibling::p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//div[div/span[contains(., "Conclusie")]]//p//text()').string(multiple=True)
+        conclusion = data.xpath('//div[div/span[contains(., "Conclusie")]]//p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:"))]//text()').string(multiple=True)
 
     if conclusion:
         conclusion = h.unescape(conclusion)
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "Conclusie|Concluderend")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(., "Conclusie|Concluderend")]/preceding-sibling::p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[h2]/p[not(@class="intro-line")]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[h2]/p[not(@class="intro-line" or regexp:test(., "Prijs:|Verbinding:|Compatibiliteit:|RGB features:|Batterijduur:"))]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = re.sub(r'href=\S+', '', h.unescape(excerpt))
