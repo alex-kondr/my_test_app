@@ -24,7 +24,7 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split('Recensione |')[0].split('|')[0].split("– Recensione")[0].split("Recensione ")[-1].split("Test ")[-1].strip()
     product.ssid = context['url'].split('/')[-1].replace('-test-recensione', '').replace('-recensione', '')
-    product.category = 'Tech'
+    product.category = 'Tecnologia'
 
     if context['cat']:
         category = context['cat'].replace('Review', '').replace('Recensione', '').replace('RECENSIONE', '').replace('recensione', '').strip()
@@ -59,6 +59,13 @@ def process_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
+    if not grade_overall:
+        grade_overall = data.xpath('//div[contains(@class, "rounded-full") and circle]/span/text()').string()
+        if grade_overall:
+            grade_overall = grade_overall.replace(',', '.').strip(' +-*.')
+            if len(grade_overall) > 0:
+                review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+
     pros = data.xpath('//h3[text()="Pro"]/following-sibling::ul[1]/li')
     if not pros:
         pros = data.xpath('//p[strong[contains(., "PRO")]]/following-sibling::ul[1]/li')
@@ -92,6 +99,8 @@ def process_review(data, context, session):
     conclusion = data.xpath('//h2[contains(@id, "verdetto") or contains(@id, "conclusioni") or contains(., "Verdetto") or contains(., "Conclusioni")]/following-sibling::p[not(@style or contains(@class, "text") or contains(@class, "font"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2[text()="Commento"]/following-sibling::div[1]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[h2[contains(., "verdetto")]]/following-sibling::div/div[@class="text-base italic"]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)

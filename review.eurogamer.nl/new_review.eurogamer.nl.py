@@ -68,9 +68,10 @@ def process_review(data, context, session):
     product.ssid = product.url.split('/')[-1].replace('-review', '')
     product.manufacturer = data.xpath('//li[strong[contains(., "Developer:")]]/text()').string()
 
-    product.category = data.xpath('//li[strong[contains(., "Availability:")]]/a/text()').strings()
-    if product.category:
-        product.category = '|'.join(product.category).replace('|Official Launcher', '')
+    categories = data.xpath('//li[strong[contains(., "Availability:")]]/a/text()').strings()
+    if categories:
+        product.category = 'Games|' + '/'.join(categories).replace('|Official Launcher', '')
+
     if not product.category or '...' in product.category:
         product.category = 'Games'
 

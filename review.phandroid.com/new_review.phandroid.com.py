@@ -22,14 +22,14 @@ def process_revlist(data, context, session):
 
     next_url = data.xpath('//a[span[contains(@class, "next")]]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use="curl", force_charset='utf-8'), process_revlist, dict(context))
+        session.queue(Request(next_url, use="curl", force_charset='utf-8', max_age=0), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split(' Review')[0].split(' review')[0].split('Review: ')[-1]
     product.ssid = context['url'].split('/')[-2]
-    product.category = context['cat'].replace('News', 'Tech')
+    product.category = context['cat'].replace('News', 'Tech').replace('Deals', 'Tech')
 
     product.url = data.xpath('(//a[contains(@class, "product")]|//a[contains(., "Buy")])/@href').string()
     if not product.url:

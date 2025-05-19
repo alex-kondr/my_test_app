@@ -90,10 +90,7 @@ def process_reviews(data, context, session):
 
         title = rev.get('title')
         excerpt = rev.get('comment')
-        if excerpt and len(excerpt.replace('\n', '').strip(' +-*.')) > 1:
-            if title:
-                review.title = remove_emoji(title).replace('\n', '').strip(' +-*.')
-        else:
+        if not excerpt or len(excerpt.replace('\n', '').strip(' +-*.')) < 2:
             excerpt = title
 
         if excerpt:
