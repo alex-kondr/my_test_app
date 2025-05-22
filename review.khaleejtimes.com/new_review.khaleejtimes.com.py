@@ -2,6 +2,10 @@ from agent import *
 from models.products import *
 import simplejson
 from datetime import datetime
+import HTMLParser
+
+
+h = HTMLParser.HTMLParser()
 
 
 def run(context, session):
@@ -52,7 +56,7 @@ def process_review(data, context, session):
 
     date = rev_json.get('published_at')
     if date:
-        review.date = str(datetime.fromtimestamp(int(str(date)[:-3])))
+        review.date = str(datetime.fromtimestamp(date / 1000))
 
     author = rev_json.get('author_name')
     if author:
@@ -89,10 +93,54 @@ def process_review(data, context, session):
     # if not excerpt:
     #     excerpt = data.xpath('//div[contains(@class, "inner")]/p[not(@class)]//text()').string(multiple=True)
 
-    excerpt_data = rev_json.get('cards', [{}])[0].get('story_elements', [])
-    excerpt = ''.join([data.parse_fragment(text.get('text')).xpath('//p//text()').string(multiple=True) for text in excerpt_data if text.get('text')])
+    new_data = rev_json.get('cards', [{}])[0].get('story_elements', [])
+
+    conclusion = ''
+    excerpt = ''
+
+    for text in new_data:
+        if not text.get('text'):
+            continue
+
+        text = text.get('text')
+        text = data.parse_fragment(text)
+
+        grade_overall = text.xpath('//p[strong[contains(., "Rating‭:")]]/text()').string(multiple=True)
+        if grade_overall:
+            grade_overall = grade_overall.replace('stars', '').replace(u'\u202d', '').replace(u'\u202c', '').strip().split()[0]
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
+        pros = text.xpath('//p[strong[contains(., "Hits‭:")]]/following-sibling::p[not(preceding-sibling::p[strong[contains(., "Misses‭:")]] or strong[contains(., "Misses‭:")])]')
+        for pro in pros:
+            pro = pro.xpath('.//text()').string(multiple=True).strip(u'-+.•‭‬ ')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+        cons = text.xpath('//p[strong[contains(., "Misses")]]/following-sibling::p')
+        for con in cons:
+            con = con.xpath('.//text()').string(multiple=True).strip(u'-+.•‭‬ ')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
+        conclusion_ = text.xpath('//h3[contains(., "Verdict")]/following-sibling::p[not(contains(., "Buy it if you want"))]//text()').string(multiple=True)
+        if conclusion_:
+            conclusion += conclusion_
+
+            excerpt_ = text.xpath('//h3[contains(., "Verdict")]/preceding-sibling::p[not(contains(., "Buy it if you want") or strong[regexp:test(., "\w+:")])]//text()').string(multiple=True)
+            if excerpt_:
+                excerpt += excerpt_
+
+        if not conclusion:
+            excerpt_ = text.xpath('//p[not(regexp:test(., "Buy it if you want|•|Misses‭:|Hits‭:|Rating‭:") or strong[regexp:test(., "\w+:")])]//text()').string(multiple=True)
+            if excerpt_:
+                excerpt += excerpt_
+
+    if conclusion:
+        conclusion = h.unescape(conclusion)
+        review.add_property(type='conclusion', value=conclusion)
 
     if excerpt:
+        excerpt = h.unescape(excerpt)
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
