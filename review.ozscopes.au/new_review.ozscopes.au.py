@@ -1,10 +1,13 @@
 from agent import *
 from models.products import *
+import re
+
+
+XCAT = ['SALE', 'Brands', 'Guide']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.ozscopes.com.au/'), process_frontpage, {})
+    session.queue(Request('https://www.ozscopes.com.au/', use='curl', force_charset='utf-8'), process_frontpage, {})
 
 
 def process_frontpage(data, context, session):
@@ -12,88 +15,95 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath("a//text()").string(multiple=True)
 
-        sub_cats = cat.xpath('.//ul/li[contains(@class, "level1")]')
-        for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath('a//text()').string(multiple=True)
+        if name not in XCAT:
+            sub_cats = cat.xpath('.//ul/li[contains(@class, "level1")]')
+            for sub_cat in sub_cats:
+                sub_name = sub_cat.xpath('a//text()').string(multiple=True)
 
-            sub_cats1 = sub_cat.xpath('.//ul/li[contains(@class, "level2")]/a')
-            for sub_cat1 in sub_cats1:
-                sub_nbame1 = sub_cat1.xpath('//text()').string(multiple=True)
-                url = sub_cat1.xpath('@href').string()
+                if 'Brands' not in sub_name:
+                    sub_cats1 = sub_cat.xpath('.//ul/li[contains(@class, "level2")]/a')
 
-                session.queue(Request(url), process_category, dict(context, url=url, cat=name))
+                    if sub_cats1:
+                        for sub_cat1 in sub_cats1:
+                            sub_name1 = sub_cat1.xpath('.//text()').string(multiple=True)
+                            url = sub_cat1.xpath('@href').string()
+
+                            if not any([sub_name1.startswith('All '), sub_name1.startswith('ALL ')]):
+                                sub_name_ = ('|' + sub_name) if 'by types' not in sub_name.lower() else ''
+                                session.queue(Request(url + '?product_list_limit=36', use='curl', force_charset='utf-8'), process_category, dict(context, url=url, cat=name + sub_name_ + '|' + sub_name1))
+                    else:
+                        url = sub_cat.xpath('a/@href').string()
+                        session.queue(Request(url + '?product_list_limit=36', use='curl', force_charset='utf-8'), process_category, dict(context, url=url, cat=name + '|' + sub_name))
 
 
 def process_category(data, context, session):
-    prods = data.xpath("//li[@class='item product product-item']")
+    prods = data.xpath('//li[contains(@class, "product-item")]')
     for prod in prods:
-        url = prod.xpath(".//strong/a/@href").string()
-        title = prod.xpath(".//strong/a//text()").string()
-        revs = prod.xpath(".//div[@class='reviews-actions']/a//text()").string()
-        if revs:
-            session.queue(Request(url), process_product, dict(context, url=url, title=title))
-    
-    nexturl = data.xpath("//li[@class='item pages-item-next']/a[@class='action next']/@href").string()
-    if nexturl:
-        session.queue(Request(nexturl), process_category, dict(context))
+        name = prod.xpath('.//strong/a//text()').string(multiple=True)
+        url = prod.xpath('.//strong/a/@href').string()
+
+        revs_cnt = prod.xpath('.//div[@class="reviews-actions"]/a/text()').string()
+        if revs_cnt and int(revs_cnt) > 0:
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, url=url))
+
+    next_url = data.xpath('//a[@title="Next"]/@href').string()
+    if next_url:
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_category, dict(context))
 
 
 def process_product(data, context, session):
     product = Product()
-    product.name = context['title']
-    product.ssid = data.xpath("//div/@data-product-id").string()
-    product.category = context['cat']
+    product.name = context['name']
     product.url = context['url']
-    product.sku = data.xpath("//td[@data-th='Barcode']//text()").string()
+    product.ssid = data.xpath('//form[@data-product-sku]//input[@name="product"]/@value').string()
+    product.sku = product.ssid
+    product.category = context['cat']
 
-    revsurl = 'https://www.ozscopes.com.au/review/product/listAjax/id/' + product.ssid
-    session.do(Request(revsurl), process_reviews, dict(context, product=product))
-    
-    if product.reviews:
-        session.emit(product)
+    mpn = data.xpath('//form/@data-product-sku').string()
+    if mpn:
+        product.add_property(type='id.manufacturer', value=mpn)
+
+    revs_url = 'https://www.ozscopes.com.au/review/product/listAjax/id/' + product.ssid
+    session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
 
 
-def process_reviews(data, context, session): 
+def process_reviews(data, context, session):
     product = context['product']
 
-    revs = data.xpath("//li[@class='item review-item']")
+    revs = data.xpath('//li[contains(@class, "review-item")]')
     for rev in revs:
         review = Review()
         review.type = 'user'
-        review.url = context['url']
-        
-        grade_overall = rev.xpath(".//div[@class='rating-result']/@title").string()
-        if grade_overall:
-            grade_overall = grade_overall.split('%')[0]
-            review.grades.append(Grade(type='overall', value=float(int(grade_overall)/20), best=5.0))
-        
-        review.title = rev.xpath(".//div[@class='review-title']//text()").string()
-    
-        for body in rev.xpath("ancestor::body/following-sibling::body"):
-            excerpt = body.xpath(".//div[@itemprop='description']//text()").string(multiple=True)
-            if excerpt:
-                review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
+        review.url = product.url
+        review.date = rev.xpath(".//time/@datetime").string()
 
-            author_name = body.xpath(".//strong[@itemprop='author']//text()").string()
-            if author_name:
-                review.authors.append(Person(name=author_name, ssid=author_name))
+        author = rev.xpath('.//strong[@itemprop="author"]/text()').string()
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
 
-            date = body.xpath(".//time/@datetime").string()
-            if date:
-                review.date = date
+        title = rev.xpath('.//div[@class="review-title"]//text()').string(multiple=True)
+        excerpt = rev.xpath('.//div[@class="review-content"]//text()').string(multiple=True)
+        if excerpt:
+            review.title = title
+        else:
+            excerpt = title
 
-            if excerpt or author_name or date:
-                break
+        if excerpt:
+            grade_overall = re.search('\\d+\\.?\\d/\\d+', excerpt)
+            if grade_overall:
+                grade_overall, grade_best = grade_overall.group(0).split('/')
+                review.grades.append(Grade(type='overall', value=float(grade_overall), best=float(grade_best)))
 
-            grade_name = body.xpath(".//span[@class='label rating-label']//text()").string()
-            grade_val = body.xpath(".//div[@class='rating-result']/@title").string().replace('%', '')
-            review.grades.append(Grade(name=grade_name, value=float(int(grade_val)/20), best=5.0))
+            excerpt = re.sub('\\d+\\.?\\d/\\d+', '', excerpt)
+            review.add_property(type='excerpt', value=excerpt)
 
-        review.ssid = product.ssid + '-' + review.date + '-' + author_name
-        product.reviews.append(review)
+            review.ssid = review.digest() if author else review.digest(excerpt)
 
-    nexturl = data.xpath("//li[@class='item pages-item-next']/a/@href").string()
-    if nexturl:
-        session.do(Request(nexturl), process_reviews, dict(context, product=product))
+            product.reviews.append(review)
 
+    next_url = data.xpath('//a[@title="Next"]/@href').string()
+    if next_url:
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
 
+    elif product.reviews:
+        session.emit(product)
