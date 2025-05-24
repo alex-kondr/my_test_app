@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://www.muycomputer.com/analisis/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(',')[0].strip()
+    product.name = context['title'].split(',')[0].replace('Review ', '').replace('Test ', '').replace('Análisis de', '').replace('Análisis ', '').replace('(Developer Preview 4)', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = 'Tech'
@@ -57,27 +57,36 @@ def process_review(data, context, session):
             grade_val = grade_val.replace(',', '.')
             review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
-    pros = data.xpath('//div[contains(@class, "pros")]/text()[normalize-space(.)]').string(multiple=True, strip=False)
+    pros = data.xpath('//div[contains(@class, "pros")]/text()').string(multiple=True, strip=False, normalize_space=False)
     if pros:
         pros = pros.split('\n')
         for pro in pros:
-            review.add_property(type='pros', value=pro)
+            pro = pro.strip(' +-*\n\t')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[contains(@class, "cons")]/text()[normalize-space(.)]').string(multiple=True, strip=False)
+    cons = data.xpath('//div[contains(@class, "cons")]/text()').string(multiple=True, strip=False, normalize_space=False)
     if cons:
         cons = cons.split('\n')
         for con in cons:
-            review.add_property(type='cons', value=con)
+            con = con.strip(' +-*\n\t')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('(//h2|//h3)[regexp:test(., "Conclusión|Conclusiones")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2|//h3|//p)[regexp:test(., "Conclusión|Conclusiones")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@property="reviewBody"]//text()').string(multiple=True)
+
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h2|//h3)[regexp:test(., "Conclusión|Conclusiones")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2|//h3|//p)[regexp:test(., "Conclusión|Conclusiones")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@id, "content")]/p//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
