@@ -44,7 +44,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.hifiklubben.se', use='curl', force_charset="utf-8", max_age=0), process_frontpage, dict())
 
 
@@ -78,12 +78,8 @@ def process_prodlist(data, context, session):
 
     prods = data.xpath('//article[@class]/a[.//div[@data-count="true"]]')
     for prod in prods:
-        # name = prod.xpath('.//div[contains(@class, "bJZKcI")]/text()').string()
         url = prod.xpath('@href').string()
-
-        # revs_cnt = prod.xpath('.//div[contains(@class, "hFamiS")]/text()').string()
-        # if revs_cnt and int(revs_cnt) > 0:
-        session.queue(Request(url, use='curl', force_charset="utf-8", max_age=0), process_prodlist, dict(context, url=url)) #name=name, 
+        session.queue(Request(url, use='curl', force_charset="utf-8", max_age=0), process_prodlist, dict(context, url=url))
 
     prods_cnt = context.get('prods_cnt', prods_cnt)
     if prods_cnt:
@@ -100,7 +96,7 @@ def process_product(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = data.xpath('//section/h1/text()').string()
+    product.name = data.xpath('//h1//text()').string(multiple=True)
     product.url = context['url']
     product.ssid = product.url.strip('/').split('/')[-1]
     product.category = context['cat']
