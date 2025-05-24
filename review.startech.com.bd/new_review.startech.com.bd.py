@@ -52,11 +52,11 @@ def process_product(data, context, session):
     product.manufacturer = data.xpath('//td[contains(@class, "product-brand")]/text()').string()
 
     revs_cnt1 = data.xpath('//meta[@itemprop="reviewCount"]/@content').string()
-    revs_cnt2 = data.xpath('count(//div[@id="review"])')
+    revs_cnt2 = data.xpath('count(//div[@class="review-wrap"])')
     if revs_cnt1 and float(revs_cnt1) != revs_cnt2:
         raise ValueError('!!!!!!!!')
 
-    revs = data.xpath('//div[@id="review"]')
+    revs = data.xpath('//div[@class="review-wrap"]')
     for rev in revs:
         review = Review()
         review.type = 'user'
@@ -70,7 +70,7 @@ def process_product(data, context, session):
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = rev.xpath('count(.//span[@class="rating"]/span[contains(., "star")])')
+        grade_overall = rev.xpath('count(.//span[@class="rating"]/span[.="star"])')
         if grade_overall:
             review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
