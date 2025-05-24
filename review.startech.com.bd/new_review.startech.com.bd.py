@@ -2,6 +2,9 @@ from agent import *
 from models.products import *
 
 
+XCAT = ['Software', 'Accessories']
+
+
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.startech.com.bd/', use='curl', force_charset='utf-8'), process_frontpage, dict())
@@ -12,22 +15,23 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('a/text()').string()
 
-        sub_cats = cat.xpath('ul[contains(@class, "drop-menu-1")]/li')
-        for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath('a/text()').string()
+        if name not in XCAT:
+            sub_cats = cat.xpath('ul[contains(@class, "drop-menu-1")]/li')
+            for sub_cat in sub_cats:
+                sub_name = sub_cat.xpath('a/text()').string()
 
-            if not any([' Offer' in sub_name, sub_name.startswith('All '), sub_name.startswith('Show All '), sub_name.startswith('Brand ')]):
-                sub_cats1 = sub_cat.xpath('ul[contains(@class, "drop-menu-2")]/li/a')
+                if not any([' Offer' in sub_name, sub_name.startswith('All '), sub_name.startswith('Show All '), sub_name.startswith('Brand ')]):
+                    sub_cats1 = sub_cat.xpath('ul[contains(@class, "drop-menu-2")]/li/a')
 
-                if sub_cats1:
-                    for sub_cat1 in sub_cats1:
-                        sub_name1 = sub_cat1.xpath('text()').string()
-                        url = sub_cat1.xpath('@href').string()
-                        session.queue(Request(url + '?limit=90', use='curl', force_charset="utf-8"), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                    if sub_cats1:
+                        for sub_cat1 in sub_cats1:
+                            sub_name1 = sub_cat1.xpath('text()').string()
+                            url = sub_cat1.xpath('@href').string()
+                            session.queue(Request(url + '?limit=90', use='curl', force_charset="utf-8"), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
 
-                else:
-                    url = sub_cat.xpath('a/@href').string()
-                    session.queue(Request(url + '?limit=90', use='curl', force_charset="utf-8"), process_prodlist, dict(cat=name + '|' + sub_name))
+                    else:
+                        url = sub_cat.xpath('a/@href').string()
+                        session.queue(Request(url + '?limit=90', use='curl', force_charset="utf-8"), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
 def process_prodlist(data, context, session):
