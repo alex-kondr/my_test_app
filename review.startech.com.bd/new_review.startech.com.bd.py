@@ -51,10 +51,13 @@ def process_product(data, context, session):
     product.category = context['cat']
     product.manufacturer = data.xpath('//td[contains(@class, "product-brand")]/text()').string()
 
-    revs_cnt1 = data.xpath('//meta[@itemprop="reviewCount"]/@content').string()
-    revs_cnt2 = data.xpath('count(//div[@class="review-wrap"])')
-    if revs_cnt1 and float(revs_cnt1) != revs_cnt2:
-        raise ValueError('!!!!!!!!')
+    context['product'] = product
+
+    process_reviews(data, context, session)
+
+
+def process_reviews(data, context, session):
+    product = context['product']
 
     revs = data.xpath('//div[@class="review-wrap"]')
     for rev in revs:
@@ -82,7 +85,9 @@ def process_product(data, context, session):
 
             product.reviews.append(review)
 
-    if product.reviews:
-        session.emit(product)
+    next_url = data.xpath('//a[contains(@href, "review") and contains(., "NEXT")]/@href').string()
+    if next_url:
+        session.do(Request(next_url, use='curl', force_charset="utf-8"), process_reviews, dict(product=product))
 
-# no next page
+    elif product.reviews:
+        session.emit(product)
