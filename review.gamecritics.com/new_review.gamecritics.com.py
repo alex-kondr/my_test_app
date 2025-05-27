@@ -16,14 +16,14 @@ def process_revlist(data, context, session):
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('', '').strip()
+    product.name = context['title'].replace('SVG REVIEW:', '').replace(' Review', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = 'Tech'
 
     review = Review()
@@ -39,13 +39,14 @@ def process_review(data, context, session):
     author = data.xpath('//span[@class="entry-author"]/a/text()').string()
     author_url = data.xpath('//span[@class="entry-author"]/a/@href').string()
     if author and author_url:
-        author_ssid = author_url.split('/')[-1]
-        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+        author_ssid = author_url.split('/')[-2]
+        review.authors.append(Person(name=author, ssid=author_ssid))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//p[contains(., "Rating")]/text()').string()
+    grade_overall = data.xpath('//p[contains(., "Rating")]//text()').string(multiple=True)
     if grade_overall:
+        grade_overall = grade_overall.split(':')[-1].strip().split()[0]
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     summary = data.xpath('//h2[@class="wp-block-heading"]//text()').string(multiple=True)
@@ -56,10 +57,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('///p[count(preceding-sibling::hr)=1]//text()').string(multiple=True)
-
+    excerpt = data.xpath('//p[count(preceding-sibling::hr)=1]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

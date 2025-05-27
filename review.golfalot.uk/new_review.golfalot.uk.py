@@ -58,26 +58,32 @@ def process_review(data, context, session):
             review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
 
     pros = data.xpath('//div[contains(@class, "review-pros")]//li')
+    if not pros:
+        pros = data.xpath('(//p[strong[normalize-space(text())="Pros"]]/following-sibling::ul)[1]/li')
+
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
+        pro = pro.xpath('.//text()').string(multiple=True).replace('�', '').strip()
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[contains(@class, "review-cons")]//li')
+    if not cons:
+        cons = data.xpath('(//p[strong[normalize-space(text())="Cons"]]/following-sibling::ul)[1]/li')
+
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
+        con = con.xpath('.//text()').string(multiple=True).replace('�', '').strip()
         review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('(//h2|//h3)[regexp:test(., "Verdict|Would I Use It")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2|//h3|//p)[regexp:test(., "Verdict|Would I Use It")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
     if conclusion:
-        conclusion = conclusion.replace(u'\uFEFF', '').strip()
+        conclusion = conclusion.replace(u'\uFEFF', '').replace('�', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('((//h2|//h3)[regexp:test(., "Verdict|Would I Use It")])[1]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath('((//h2|//h3|//p)[regexp:test(., "Verdict|Would I Use It")])[1]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "entry-content") and not(@itemprop)]/p[not(@class)]//text()').string(multiple=True)
 
     if excerpt:
-        excerpt = excerpt.replace(u'\uFEFF', '').strip()
+        excerpt = excerpt.replace(u'\uFEFF', '').replace('�', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
