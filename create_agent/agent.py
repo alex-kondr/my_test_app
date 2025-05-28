@@ -203,18 +203,24 @@ class AgentForm:
         text += (
             f"\n    grade_overall = data.xpath('{grade_overall_xpath}').string()\n"
             "    if grade_overall:\n"
-            "        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))\n"
+            "        review.grades.append(Grade(type='overall', value=float(grade_overall), best=))\n"
         ) if grade_overall_xpath else ""
 
         text += (
             f"\n    pros = data.xpath('{pros_xpath}')\n"
             "    for pro in pros:\n"
             "        pro = pro.xpath('.//text()').string(multiple=True)\n"
-            "        review.add_property(type='pros', value=pro)\n"
+            "        if pro:\n"
+            "            pro = pro.strip(' +-*.;•–')\n"
+            "            if len(pro) > 1:\n"
+            "                review.add_property(type='pros', value=pro)\n"
             f"\n    cons = data.xpath('{cons_xpath}')\n"
             "    for con in cons:\n"
             "        con = con.xpath('.//text()').string(multiple=True)\n"
-            "        review.add_property(type='cons', value=con)\n"
+            "        if con:\n"
+            "            con = con.strip(' +-*.;•–')\n"
+            "            if len(con) > 1:\n"
+            "                review.add_property(type='cons', value=con)\n"
         ) if pros_xpath else ""
 
         text += (

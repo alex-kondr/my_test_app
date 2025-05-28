@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 XCAT = ['Editors Choice', 'Reviews', 'reviews', 'Featured']
@@ -17,7 +18,7 @@ def process_revlist(data, context, session):
         url = rev.xpath('.//h3/a/@href').string()
 
         cat = rev.xpath('.//a[contains(@class, "cat-theme")]/text()').string()
-        if cat not in XCAT:
+        if not any([cat in XCAT, re.search(r'^\d+ Best| Deal| Newest |^Best |^Top ', title)]):
             session.queue(Request(url, use="curl", force_charset='utf-8'), process_review, dict(title=title, url=url, cat=cat))
 
     next_url = data.xpath('//a[span[contains(@class, "next")]]/@href').string()
@@ -29,7 +30,13 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split(' Review')[0].split(' review')[0].split('Review: ')[-1]
     product.ssid = context['url'].split('/')[-2]
-    product.category = context['cat'].replace('News', 'Tech').replace('Deals', 'Tech')
+
+    cats = data.xpath('//div[@class="single-content"]/a[contains(@class, "post__cat")]/text()').strings()
+
+    if any(['Deals' in cats, 'News' in cats]):
+        return
+
+    product.category = '|'.join([cat for cat in cats if cat not in XCAT])
 
     product.url = data.xpath('(//a[contains(@class, "product")]|//a[contains(., "Buy")])/@href').string()
     if not product.url:
