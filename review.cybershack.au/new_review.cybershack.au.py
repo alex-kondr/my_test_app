@@ -4,6 +4,7 @@ import re
 
 
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://cybershack.com.au/category/reviews/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -53,6 +54,7 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
+# https://cybershack.com.au/reviews/google-pixel-watch-3-the-heartbeat-is-strong-wearable-review/
     overall = data.xpath('//h3[regexp:test(text(), " rating", "i")]/following-sibling::p[not(preceding-sibling::p[strong[contains(text(), "Pro") or contains(text(), "Con")]] or strong[contains(text(), "Pro")])]//text()').string(multiple=True)
     if overall:
         grade_overall = re.search(r'\d+\.?\d?/\d+', overall)
