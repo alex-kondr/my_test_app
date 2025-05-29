@@ -53,10 +53,12 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = re.search(r'\d+\.?\d?/\d+', data.xpath('//h3[regexp:test(text(), " rating", "i")]/following-sibling::p[not(preceding-sibling::p[strong[contains(text(), "Pro") or contains(text(), "Con")]] or strong[contains(text(), "Pro")])]//text()').string(multiple=True))
-    if grade_overall:
-        grade_overall, grade_best = grade_overall.group(0).split('/')
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=float(grade_best)))
+    overall = data.xpath('//h3[regexp:test(text(), " rating", "i")]/following-sibling::p[not(preceding-sibling::p[strong[contains(text(), "Pro") or contains(text(), "Con")]] or strong[contains(text(), "Pro")])]//text()').string(multiple=True)
+    if overall:
+        grade_overall = re.search(r'\d+\.?\d?/\d+', overall)
+        if grade_overall:
+            grade_overall, grade_best = grade_overall.group(0).split('/')
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=float(grade_best)))
 
     pros = data.xpath('//p[strong[contains(., "Pro")]]/following-sibling::p[preceding-sibling::p[strong][1][strong[contains(., "Pro")]]][not(strong)]')
     for pro in pros:
