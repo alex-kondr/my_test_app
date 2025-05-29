@@ -17,7 +17,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('http://hintaseuranta.fi/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -67,7 +67,7 @@ def process_prodlist(data, context, session):
     options = """--compressed -X POST  --data-raw 'id={cat_id}&vals={data}&view=&sort=rating+desc'""".format(data=next_data, cat_id=cat_id)
 
     if prods_cnt and next_data:
-        session.queue(Request('https://hintaseuranta.fi/facet/filtering', options=options, use='curl', force_charset='utf-8'), process_prodlist_sort, dict(context, next_data=next_data, prods_cnt=int(prods_cnt)))
+        session.do(Request('https://hintaseuranta.fi/facet/filtering', options=options, use='curl', force_charset='utf-8', max_age=0), process_prodlist_sort, dict(context, next_data=next_data, prods_cnt=int(prods_cnt)))
 
 
 def process_prodlist_sort(data, context, session):
@@ -87,7 +87,7 @@ def process_prodlist_sort(data, context, session):
     offset = context.get('offset', 0) + 30
     if offset < context['prods_cnt']:
         options = """--compressed -X POST  --data-raw 'vals={data}&skip={offset}&view=&sort=rating+desc'""".format(data=context['next_data'], offset=offset)
-        session.queue(Request('https://hintaseuranta.fi/facet/listmore', options=options, use='curl', force_charset='utf-8'), process_prodlist, dict(context, offset=offset))
+        session.do(Request('https://hintaseuranta.fi/facet/listmore', options=options, use='curl', force_charset='utf-8', max_age=0), process_prodlist_sort, dict(context, offset=offset))
 
 
 def process_product(data, context, session):
@@ -123,24 +123,12 @@ def process_product(data, context, session):
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = 0.0
-        if rev.xpath('.//i[@class="stars normal width-78 height-13 pos-y-m113 pos-x-m0"]'):
-            grade_overall = 5.0
-        elif rev.xpath('.//i[@class="stars normal width-78 height-13 pos-y-m113 pos-x-m13"]'):
-            grade_overall = 4.5
-        elif rev.xpath('.//i[@class="stars normal width-78 height-13 pos-y-m113 pos-x-m26"]'):
-            grade_overall = 4.0
-        elif rev.xpath('.//i[@class="stars normal width-78 height-13 pos-y-m113 pos-x-m39"]'):
-            grade_overall = 3.5
-        elif rev.xpath('.//i[@class="stars normal width-78 height-13 pos-y-m113 pos-x-m52"]'):
-            grade_overall = 3.0
-        elif rev.xpath('.//i[@class="stars normal width-78 height-13 pos-y-m113 pos-x-m78"]'):
-            grade_overall = 2.0
-        elif rev.xpath('.//i[@class="stars normal width-78 height-13 pos-y-m113 pos-x-m104"]'):
-            grade_overall = 1.0
-
+        grade_overall = rev.xpath('.//i[contains(@class, "stars")]/@class').string()
         if grade_overall:
-            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+            grade_overall = grade_overall.split('pos-x-m')[-1]
+            if grade_overall.isdigit():
+                grade_overall = (130 - int(grade_overall)) / 26.
+                review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
         is_recommended = rev.xpath('.//div[contains(., "SUOSITTELEN")]')
         if is_recommended:

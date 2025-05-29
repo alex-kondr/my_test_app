@@ -89,12 +89,12 @@ def process_reviews(data, context, session):
             excerpt = title
 
         if excerpt:
-            grade_overall = re.search('\\d+\\.?\\d/\\d+', excerpt)
+            grade_overall = re.search(r' \d+\.?\d/\\d+|\d+\.?\d/\d+ ', excerpt)
             if grade_overall:
                 grade_overall, grade_best = grade_overall.group(0).split('/')
                 review.grades.append(Grade(type='overall', value=float(grade_overall), best=float(grade_best)))
 
-            excerpt = re.sub('\\d+\\.?\\d/\\d+', '', excerpt)
+            excerpt = re.sub(r' \d+\.?\d/\d+|\d+\.?\d/\d+ ', '', excerpt)
             review.add_property(type='excerpt', value=excerpt)
 
             review.ssid = review.digest() if author else review.digest(excerpt)

@@ -93,11 +93,17 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//div[@class="product__excerpt"]/p//text()[not(regexp:test(., "Les plus :|Les moins :"))]').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+
     if conclusion:
         conclusion =conclusion.replace('\uFEFF', '').replace('﻿', '').replace('Verdict :', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="article__content"]/p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="article__content"]/p//text()').string(multiple=True)
+
     if excerpt:
         excerpt = excerpt.replace('\uFEFF', '').replace('﻿', '').strip()
         review.add_property(type='excerpt', value=excerpt)

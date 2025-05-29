@@ -1,10 +1,11 @@
 from agent import *
 from models.products import *
+import re
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
-    session.queue(Request('https://gamecritics.com/reviews', use='curl', force_charset='utf-8'), process_revlist, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.queue(Request('https://gamecritics.com/tag/game-reviews/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -21,7 +22,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('SVG REVIEW:', '').replace(' Review', '').strip()
+    product.name = context['title'].replace('SVG REVIEW:', '').replace('PREVIEW ', '').replace(' Review', '').replace(' review', '').strip(' –.')
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = 'Tech'
@@ -46,8 +47,11 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//p[contains(., "Rating")]//text()').string(multiple=True)
     if grade_overall:
-        grade_overall = grade_overall.split(':')[-1].strip().split()[0]
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+        grade_overall = re.search(r'Rating.+\d+\.?\d?', grade_overall)
+        if grade_overall:
+            grade_overall = grade_overall.group(0).replace('Rating', '').split(':', 1)[-1].strip().split()[0].split('/')[0].replace(',', '.')
+            if grade_overall and grade_overall[0].isdigit():
+                review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     summary = data.xpath('//h2[@class="wp-block-heading"]//text()').string(multiple=True)
     if summary:
@@ -57,8 +61,11 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//p[count(preceding-sibling::hr)=1]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="entry-content"]//p[count(preceding-sibling::hr) < 2 and not(b[regexp:test(., "HIGH|LOW|WTF|:")] or strong[regexp:test(., "HIGH|LOW|WTF|:")] or @class or @style or preceding-sibling::p[contains(., "Disclosures")] or contains(., "Disclosures"))]//text()').string(multiple=True)
     if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

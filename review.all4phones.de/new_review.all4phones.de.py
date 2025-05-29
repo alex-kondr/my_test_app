@@ -48,21 +48,34 @@ def process_review(data, context, session):
         grade_overall, grade_best = grade_overall.split(' von ')
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=float(grade_best)))
 
-    pros = data.xpath('//span[span[@style="color: darkgreen"] or b/span[@style="color: darkgreen"]]//text()[not(contains(., "+"))][normalize-space(.)]')
+    pros = data.xpath('//span[span[@style="color: darkgreen"] or b/span[@style="color: darkgreen"] or b[contains(text(), "-")] or starts-with(text(), "-")][not(preceding::*[contains(., "Negativ :")])]//text()')
     for pro in pros:
-        pro = pro.string(multiple=True)
+        pro = pro.string(multiple=True).strip(' +-*.')
         if len(pro) > 1:
             review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//span[span[contains(text(), "(-)")] or b/span[contains(text(), "(-)")]]/text()[normalize-space(.)]')
+    if not cons:
+        cons = data.xpath('//*[contains(text(), "Negativ :")]/following::*[starts-with(normalize-space(.), "-")]//text()')
+
     for con in cons:
-        con = con.string(multiple=True)
+        con = con.string(multiple=True).strip(' +-*.')
         if len(con) > 1:
             review.add_property(type='cons', value=con)
 
-    excerpt = data.xpath('''(//div[@class="bbWrapper"])[1]/span/span/i/i[not(span[contains(., "Fazit:")])]/text()[not(contains(., "Specs:"))]|//span[@style="font-family: 'Franklin Gothic Medium'"]/span//text()[not(contains(., "IFRAME"))]''').string(multiple=True)
+    conclusion = data.xpath('//span[contains(., "Fazit:")]/following-sibling::text()[normalize-space(.)][not(starts-with(., "-"))]').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//*[contains(., "Fazit:")]/following-sibling::text()[not(starts-with(normalize-space(.), "-"))]').string(multiple=True)
+
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('(//div[@class="bbWrapper"])[1]/span/span/*[not(self::b)]//text()[not(preceding::*[regexp:test(., "Fazit:|Positiv :|Negativ :")] or regexp:test(., "Fazit:|Positiv :|Negativ :"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('''(//div[@class="bbWrapper"])[1]/span/span/i/i[not(span[contains(., "Fazit:")])]/text()[not(contains(., "Specs:"))]|//span[@style="font-family: 'Franklin Gothic Medium'"]/span//text()[not(contains(., "IFRAME"))]''').string(multiple=True)
+
     if excerpt:
-        if 'fazit:' in excerpt.lower():
+        if 'fazit:' in excerpt.lower() and not conclusion:
             conclusion = re.split('Fazit:', excerpt, flags=re.IGNORECASE, maxsplit=1)[-1]
             conclusion = re.split('Positiv :', conclusion, flags=re.IGNORECASE)[0]
             conclusion = re.split('Negativ :', conclusion, flags=re.IGNORECASE)[0]
@@ -70,9 +83,11 @@ def process_review(data, context, session):
 
         excerpt = re.split('Fazit:', excerpt, flags=re.IGNORECASE)[0]
         excerpt = re.split('Positiv :', excerpt, flags=re.IGNORECASE)[0]
-        excerpt = re.split('Negativ :', excerpt, flags=re.IGNORECASE)[0]
-        review.add_property(type='excerpt', value=excerpt.strip())
+        excerpt = re.split('Negativ :', excerpt, flags=re.IGNORECASE)[0].strip()
 
-        product.reviews.append(review)
+        if len(excerpt) > 2:
+            review.add_property(type='excerpt', value=excerpt)
 
-        session.emit(product)
+            product.reviews.append(review)
+
+            session.emit(product)

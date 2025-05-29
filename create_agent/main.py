@@ -12,15 +12,15 @@ from create_agent.agent import AgentForm, ProcessRun
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="5891"
+    agent_id="7713"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.projectorreviews.com/projector-categories/',
-    next_func=ProcessRun.frontpage.name,
+    url='https://cybershack.com.au/category/reviews/',
+    next_func=ProcessRun.revlist.name,
     new_parser=False,
-    breakers=3000,
+    breakers=0,
     # curl=True
 )
 # agent.create_frontpage(
@@ -28,23 +28,23 @@ agent.create_run(
 #     name_xpath='text()',
 #     url_xpath='@href'
 # )
-# agent.create_revlist(
-#     revs_xpath='//h3[contains(@class, "title")]//a',
-#     name_title="title",
-#     name_title_xpath='text()',
-#     url_xpath='@href',
-#     prod_rev="review",
-#     next_url_xpath='//link[rel="next"]/@href',
-# )
-# agent.create_review(
-#     date_xpath='/',
-#     author_xpath='/',
-#     author_url_xpath='/',
-#     grade_overall_xpath='/',
-#     pros_xpath='/',
-#     cons_xpath='/',
-#     summary_xpath='/',
-#     conclusion_xpath='/',
-#     excerpt_with_concl_xpath='/',
-#     excerpt_xpath='/'
-# )
+agent.create_revlist(
+    revs_xpath='//h2[contains(@class, "title")]/a',
+    name_title="title",
+    name_title_xpath='text()',
+    url_xpath='@href',
+    prod_rev="review",
+    next_url_xpath='//link[@rel="next"]/@href',
+)
+agent.create_review(
+    date_xpath='/',
+    author_xpath='/',
+    author_url_xpath='/',
+    grade_overall_xpath='/',
+    pros_xpath='/',
+    cons_xpath='/',
+    summary_xpath='/',
+    conclusion_xpath='/',
+    excerpt_with_concl_xpath='/',
+    excerpt_xpath='/'
+)

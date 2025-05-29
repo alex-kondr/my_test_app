@@ -75,13 +75,20 @@ def process_review(data, context, session):
             review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//h3[regexp:test(text(), "Final Thoughts|CONCLUSION")]/following::p[not(regexp:test(normalize-space(text()), "^\+|^\-") or @style or strong[regexp:test(text(), "pros|cons", "i")])]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[regexp:test(., "summary", "i")]/following::p[not(regexp:test(normalize-space(text()), "^\+|^\-") or @style or strong[regexp:test(text(), "pros|cons", "i")])]//text()').string(multiple=True)
+
     if conclusion:
         conclusion = conclusion.replace('�', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//p[not(regexp:test(normalize-space(text()), "^\+|^\-") or @style or strong[regexp:test(text(), "pros|cons", "i")] or preceding::h3[regexp:test(text(), "Final Thoughts|CONCLUSION")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//p[not(regexp:test(normalize-space(text()), "^\+|^\-") or (a and contains(., " | ")) or @style or strong[regexp:test(text(), "pros|cons", "i")] or preceding::h3[regexp:test(text(), "Final Thoughts|CONCLUSION")])]//text()').string(multiple=True)
     if excerpt:
         excerpt = excerpt.replace('�', '').strip()
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

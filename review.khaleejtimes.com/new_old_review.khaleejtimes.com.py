@@ -77,6 +77,9 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//p[.//strong[contains(., "Verdict")]]/following-sibling::p[not(preceding-sibling::p[contains(., "ALSO READ")] or contains(., "ALSO READ"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h3[contains(., "Verdict")]/following-sibling::p[not(preceding-sibling::p[contains(., "ALSO READ")] or contains(., "ALSO READ"))]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
@@ -84,7 +87,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//p[contains(., "Misses")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[regexp:test(@class, "inner|recent")]/p[not(@class or contains(., "For more information"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[regexp:test(@class, "inner|recent")]/p[not(@class or contains(., "For more information") or .//strong[regexp:test(., "\w+:")] or preceding::h3[contains(., "Verdict")])]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
