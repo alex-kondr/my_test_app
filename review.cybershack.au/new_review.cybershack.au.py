@@ -15,6 +15,9 @@ def process_revlist(data, context, session):
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
+    if not next_url:
+        next_url = data.xpath('//a[contains(@class, "next ")]/@href').string()
+
     if next_url:
         session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
 
@@ -50,7 +53,7 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = re.search(r'\d+\.?\d?/\d+', data.xpath('//div[contains(@class, "content")]/p//text()').string(multiple=True))
+    grade_overall = re.search(r'\d+\.?\d?/\d+', data.xpath('//h3[regexp:test(text(), " rating", "i")]/following-sibling::p[not(preceding-sibling::p[strong[contains(text(), "Pro") or contains(text(), "Con")]] or strong[contains(text(), "Pro")])]//text()').string(multiple=True))
     if grade_overall:
         grade_overall, grade_best = grade_overall.group(0).split('/')
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=float(grade_best)))
