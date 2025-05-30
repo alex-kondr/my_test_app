@@ -4,11 +4,11 @@ import re
 
 
 XCAT = ['Editors Choice', 'Reviews', 'reviews', 'Featured']
-XCAT_ = ['Uncategorized', 'Deals', 'News']
+XCAT_2 = ['Uncategorized', 'Deals', 'News']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
     session.queue(Request("https://phandroid.com/category/reviews/", use="curl", force_charset='utf-8'), process_revlist, dict())
 
 
@@ -35,7 +35,7 @@ def process_review(data, context, session):
     cats = data.xpath('//div[@class="single-content"]/a[contains(@class, "post__cat")]/text()').strings()
     product.category = '|'.join([cat for cat in cats if cat not in XCAT])
 
-    if re.search(r'|'.join(XCAT_), product.category):
+    if re.search(r'|'.join(XCAT_2), product.category):
         return
 
     product.url = data.xpath('(//a[contains(@class, "product")]|//a[contains(., "Buy")])/@href').string()
