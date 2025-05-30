@@ -64,6 +64,9 @@ def process_review(data, context, session):
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     pros = data.xpath('//div[p[contains(., "Pros")]]/ul/li')
+    if not pros:
+        pros = data.xpath('//p[contains(., "LIKE")]/following-sibling::p[not(preceding-sibling::p[regexp:test(., "NO LIKE")] or regexp:test(., "NO LIKE"))]')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -72,6 +75,9 @@ def process_review(data, context, session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[p[contains(., "Cons")]]/ul/li')
+    if not cons:
+        cons = data.xpath('//p[contains(., "NO LIKE")]/following-sibling::p[not(preceding-sibling::p[regexp:test(., "Should .+ Buy .+?", "i")] or regexp:test(., "Should .+ Buy .+?", "i"))]')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -84,12 +90,15 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//div[contains(@class, "review")]//p[contains(@class, "text-lg")]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('(//h3|//p)[regexp:test(., "Should .+ Buy .+?", "i")]/following-sibling::p[not(preceding-sibling::h4 or preceding-sibling::*[contains(., "Specs")] or regexp:test(., "https:|Specs"))]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    # excerpt = data.xpath('/').string(multiple=True)
-    # if not excerpt:
-    excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h3|//p)[regexp:test(., "Should .+ Buy .+?", "i")]/preceding-sibling::p[not(preceding-sibling::p[regexp:test(., "LIKE|NO LIKE")] or regexp:test(., "LIKE|NO LIKE"))][not(@class)]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(@class)]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

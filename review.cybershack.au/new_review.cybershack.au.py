@@ -78,6 +78,15 @@ def process_review(data, context, session):
             grade_val = grade_val.split('/')[0]
             review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
+    if not grades:
+        grades = data.xpath('//p[regexp:test(., "\d+\.?\d? stars out of \d+")]')
+        for grade in grades:
+            grade = grade.xpath('.//text()').string(multiple=True)
+            grade_val = float(grade.split('stars out of')[0])
+            grade_best = float(grade.split('stars out of')[-1].split('for')[0])
+            grade_name = grade.split('for')[-1].strip()
+            review.grades.append(Grade(name=grade_name, value=grade_val, best=grade_best))
+
     pro = data.xpath('//p[strong[contains(., "Pro")]]/text()[preceding-sibling::strong[1][contains(., "Pro")] and not(regexp:test(normalize-space(.), "^Pro|^Con"))]').string()
     if pro:
         review.add_property(type='pros', value=pro)
@@ -92,7 +101,7 @@ def process_review(data, context, session):
         for pro in pros:
             pro = pro.xpath('.//text()').string(multiple=True)
             if pro:
-                pro = pro.replace('\uFEFF', '').strip(' +-*.;•–')
+                pro = pro.replace(u'\uFEFF', '').strip(' +-*.;•–')
                 if len(pro) > 1:
                     review.add_property(type='pros', value=pro)
 
@@ -110,7 +119,7 @@ def process_review(data, context, session):
         for con in cons:
             con = con.xpath('.//text()').string(multiple=True)
             if con:
-                con = con.replace('\uFEFF', '').strip(' +-*.;•–')
+                con = con.replace(u'\uFEFF', '').strip(' +-*.;•–')
                 if len(con) > 1:
                     review.add_property(type='cons', value=con)
 
@@ -119,17 +128,17 @@ def process_review(data, context, session):
         conclusion = data.xpath('//h3[regexp:test(text(), " rating", "i")]/following-sibling::p[not(preceding-sibling::p[strong[contains(text(), "Pro") or contains(text(), "Con")]] or strong[contains(text(), "Pro")])]//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = re.sub(r'\d+\.?\d?/5|\d+\.?/10|\d+\.?\d?/20|\d+\.?\d?/100', '', conclusion).replace('\uFEFF', '').strip()
+        conclusion = re.sub(r'\d+\.?\d?/5|\d+\.?/10|\d+\.?\d?/20|\d+\.?\d?/100', '', conclusion).replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h4[contains(., "Would I buy it?")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//h3[regexp:test(text(), " rating", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(@class or preceding-sibling::p[strong[contains(text(), "Pro") or contains(text(), "Con")]] or strong[contains(text(), "Pro")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(@class or preceding-sibling::p[strong[regexp:test(text(), "Pro|Con|Our Score:")]] or strong[regexp:test(text(), "Pro|Con|Our Score:")])]//text()').string(multiple=True)
 
     if excerpt:
-        excerpt = excerpt.replace('\uFEFF', '').strip()
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

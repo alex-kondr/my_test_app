@@ -66,7 +66,6 @@ def process_review(data, context, session):
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 
-        review.add_property(type='excerpt', value=excerpt)
 
         pages = data.xpath('//div[@id="article-index"]//a[not(contains(@href, "showall="))]')
         if pages:
@@ -75,9 +74,11 @@ def process_review(data, context, session):
                 url = page.xpath("@href").string()
                 review.add_property(type="pages", value=dict(url=url, title=title))
 
-            session.do(Request(url, use='curl', force_charset='utf-8'), process_lastpage, dict(context, review=review, product=product))
+            session.do(Request(url, use='curl', force_charset='utf-8'), process_lastpage, dict(context, review=review, product=product, excerpt=excerpt))
 
         else:
+            review.add_property(type='excerpt', value=excerpt)
+
             product.reviews.append(review)
 
             session.emit(product)
@@ -86,11 +87,17 @@ def process_review(data, context, session):
 def process_lastpage(data, context, session):
     review = context['review']
 
-    conclusion = data.xpath('//div[@class="itemFullText"]/p[not(contains(., "Conclusion"))]//text()[not(regexp:test(., "customers can get |Amazon"))]').string(multiple=True)
+    conclusion = data.xpath('//div[@class="itemFullText"]//p//text()[not(regexp:test(., "customers can get |Amazon"))]').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('(//div[@class="itemFullText"]|//div[@class="itemFullText"]/strong)/text()').string(multiple=True)
 
     if conclusion:
+        if 'Conclusion' in conclusion:
+            context['excerpt'] += conclusion.split('Conclusion')[0]
+            review.add_property(type='excerpt', value=context['excerpt'])
+
+            conclusion = conclusion.split('Conclusion')[-1].strip(' +-:')
+
         review.add_property(type='conclusion', value=conclusion)
 
 
