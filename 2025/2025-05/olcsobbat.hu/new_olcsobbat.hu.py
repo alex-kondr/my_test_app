@@ -2,14 +2,27 @@ from agent import *
 from models.products import *
 
 
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('http://www.olcsobbat.hu/', use='curl', force_charset='utf-8'), process_frontpage, dict())
     session.queue(Request('https://www.olcsobbat.hu/ruhazat_kellekek/?order_by=ertekeles', use='curl', force_charset='utf-8'), process_prodlist, dict(cat='Divat és ruházat'))
 
 
 def process_frontpage(data, context, session):
+    strip_namespace(data)
+
     cats = data.xpath('//div[@class="menu"]/li')
     for cat in cats:
         name = cat.xpath('span/a/text()').string()
@@ -27,6 +40,8 @@ def process_frontpage(data, context, session):
 
 
 def process_prodlist(data, context, session):
+    strip_namespace(data)
+
     prods = data.xpath('//div[@class="datasheetListWidget list"]/div')
     for prod in prods:
         name = prod.xpath('.//h2/a/text()').string()
@@ -44,6 +59,8 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
+    strip_namespace(data)
+
     product = Product()
     product.name = context['name']
     product.url = context['url']
@@ -61,12 +78,12 @@ def process_product(data, context, session):
         if ean.isdigit() and len(ean) > 10:
             product.add_property(type='id.ean', value=ean)
 
-    revs = data.xpath('//div[@class="review" and div[@class="row"]]')
+    revs = data.xpath('//div[@class="review" and @id and div[@class="row"]]')
     for rev in revs:
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review.ssid - rev.xpath('@id').string().replace('review_', '')
+        review.ssid = rev.xpath('@id').string().split('_')[-1]
         review.date = rev.xpath('.//meta[@itemprop="datePublished"]/@content').string()
 
         author = rev.xpath('.//div[@class="author"]/text()').string()
@@ -75,7 +92,7 @@ def process_product(data, context, session):
 
         grade_overall = rev.xpath('.//span[@class="ratingWidget"]/@title').string()
         if grade_overall:
-            grade_overall = grade_overall.replace('Értékelés:', '').replace('csillag')
+            grade_overall = grade_overall.replace('Értékelés:', '').replace('csillag', '')
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
         is_verified_buyer = rev.xpath('.//img[contains(@src, "review-authentic")]')
@@ -94,9 +111,11 @@ def process_product(data, context, session):
 
         excerpt = rev.xpath('.//p[@itemprop="reviewBody"]//text()').string(multiple=True)
         if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = excerpt.strip(' +-')
+            if len(excerpt) > 2:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)

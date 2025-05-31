@@ -94,14 +94,15 @@ def process_lastpage(data, context, session):
     if conclusion:
         if 'Conclusion' in conclusion:
             context['excerpt'] += conclusion.split('Conclusion')[0]
-            review.add_property(type='excerpt', value=context['excerpt'])
 
             conclusion = conclusion.split('Conclusion')[-1].strip(' +-:')
 
         review.add_property(type='conclusion', value=conclusion)
 
+    if context['excerpt']:
+        review.add_property(type='excerpt', value=context['excerpt'])
 
-    product = context['product']
-    product.reviews.append(review)
+        product = context['product']
+        product.reviews.append(review)
 
-    session.emit(product)
+        session.emit(product)
