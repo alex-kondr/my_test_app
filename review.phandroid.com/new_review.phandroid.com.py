@@ -80,6 +80,8 @@ def process_review(data, context, session):
     pros = data.xpath('//div[@class="mnmd-review__pros"]//span')
     if not pros:
         pros = data.xpath('//div[@class="pros"]//li')
+    if not pros:
+        pros = data.xpath('//h3[contains(., "Pros")]/following-sibling::ol[1]/li')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True).strip(' +-*.')
@@ -89,6 +91,8 @@ def process_review(data, context, session):
     cons = data.xpath('//div[@class="mnmd-review__cons"]//span')
     if not cons:
         cons = data.xpath('//div[@class="cons"]//li')
+    if not cons:
+        cons = data.xpath('//h3[contains(., "Cons")]/following-sibling::ol[1]/li')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True).strip(' +-*.')
