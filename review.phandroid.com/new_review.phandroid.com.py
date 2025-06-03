@@ -3,8 +3,8 @@ from models.products import *
 import re
 
 
-XCAT = ['Editors Choice', 'Reviews', 'reviews', 'Featured']
-XCAT_2 = ['Uncategorized', 'Deals', 'News']
+XCAT = ['Editors Choice', 'Reviews', 'reviews', 'Featured', 'Podcasts', 'Tips & Tricks']
+XCAT_2 = ['Uncategorized', 'Deals', 'News', 'Podcasts', 'Tips & Tricks']
 
 
 def run(context, session):
@@ -35,7 +35,7 @@ def process_review(data, context, session):
     cats = data.xpath('//div[@class="single-content"]/a[contains(@class, "post__cat")]/text()').strings()
     product.category = '|'.join([cat for cat in cats if cat not in XCAT])
 
-    if re.search(r'|'.join(XCAT_2), product.category):
+    if re.search(r'|'.join(XCAT_2), product.category) or not product.category:
         return
 
     product.url = data.xpath('(//a[contains(@class, "product")]|//a[contains(., "Buy")])/@href').string()
@@ -103,14 +103,14 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(., "conclusion", "i") or regexp:test(., "final thoughts", "i")]//following-sibling::p[not(regexp:test(., "Note:|Disclaimer:"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "conclusion|final thoughts|Verdict", "i")]/following-sibling::p[not(regexp:test(., "Note:|Disclaimer:"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[regexp:test(., "conclusion", "i") or regexp:test(., "final thoughts", "i")]//following-sibling::div[@class="pros-cons-container"]//p[not(regexp:test(., "Note:|Disclaimer:"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[regexp:test(., "conclusion|final thoughts|Verdict", "i")]//following-sibling::div[@class="pros-cons-container"]//p[not(regexp:test(., "Note:|Disclaimer:"))]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[contains(@class, "entry-content")]//p[not(img)][not(.//strong[contains(., "Read:")])][not(preceding::h2[regexp:test(., "conclusion", "i") or regexp:test(., "final thoughts", "i")])][not(regexp:test(., "\[via", "i"))][not(regexp:test(., "Note:|Disclaimer:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[contains(@class, "entry-content")]//p[not(img)][not(.//strong[contains(., "Read:")])][not(preceding::h2[regexp:test(., "conclusion|final thoughts|Verdict", "i")])][not(regexp:test(., "\[via", "i"))][not(regexp:test(., "Note:|Disclaimer:"))]//text()').string(multiple=True)
     if excerpt:
         excerpt = excerpt.replace('\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
