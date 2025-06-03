@@ -19,7 +19,7 @@ def process_revlist(data, context, session):
         url = rev.xpath('.//h3/a/@href').string()
 
         cat = rev.xpath('.//a[contains(@class, "cat-theme")]/text()').string()
-        if not any([cat in XCAT, re.search(r'^\d+ Best| Deal| Newest |^Best |^Top ', title)]) and 'review' in title.lower():
+        if title and not any([cat in XCAT, re.search(r'^\d+ Best| Deal| Newest |^Best |^Top ', title)]) and 'review' in title.lower():
             session.queue(Request(url, use="curl", force_charset='utf-8'), process_review, dict(title=title, url=url, cat=cat))
 
     next_url = data.xpath('//a[span[contains(@class, "next")]]/@href').string()
