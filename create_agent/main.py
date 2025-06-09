@@ -12,20 +12,20 @@ from create_agent.agent import AgentForm, ProcessRun
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="16914"
+    agent_id="808"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.eteknix.com/',
+    url='https://www.macitynet.it/category/recensioni/',
     next_func=ProcessRun.frontpage.name,
     new_parser=False,
-    breakers=0,
+    breakers=10000,
     # curl=True
 )
 agent.create_frontpage(
-    cats_xpath='//li[a[contains(text(), "Reviews")]]//ul//a[not(contains(., "All"))]',
-    name_xpath='text()',
+    cats_xpath='//ul[@class="menu" or not(@class)]/li[contains(@class, "menu-item")]//a',
+    name_xpath='.//text()',
     url_xpath='@href'
 )
 agent.create_revlist(
