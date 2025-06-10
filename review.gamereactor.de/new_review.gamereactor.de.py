@@ -19,7 +19,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
     session.queue(Request('https://www.gamereactor.de/', use='curl', force_charset='utf-8'), process_frontpage, dict())
     session.queue(Request('https://www.gamereactor.de/Kritiken/', use='curl', force_charset='utf-8'), process_revlist, dict())
     session.queue(Request('https://www.gamereactor.de/Film/', use='curl', force_charset='utf-8'), process_revlist, dict(cat='Film'))
@@ -58,7 +58,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('', '').strip()
+    product.name = context['title'].replace(' Testbericht', '').replace(' Hardware-Review', '').replace(' - Multiplayer-Review', '').split(' Review')[0].replace(' im Dauertest', '').strip(' +-.')
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.manufacturer = data.xpath('//li[regexp:test(., "Verleih:|Entwickler:")]//text()[not(regexp:test(., "Verleih:|Entwickler:"))]').string(multiple=True)
@@ -88,7 +88,7 @@ def process_review(data, context, session):
         date = data.xpath('//li[@class="publishDateTime bullet"]/time/@datetime').string()
 
     if date:
-        review.date = date.split('CEST')[0]
+        review.date = date.split('CE')[0]
 
     author = data.xpath('//li[@class="publishAuthor bullet"]//a/text()').string()
     author_url = data.xpath('//li[@class="publishAuthor bullet"]//a/@href').string()
