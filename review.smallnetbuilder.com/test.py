@@ -12,7 +12,7 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.PHANDROID_US
+agent = agents.SMALLNETBUILDER
 # agent = agents.TEST
 reload = 1
 
