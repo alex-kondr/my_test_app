@@ -64,13 +64,17 @@ def process_review(data, context, session):
         if grade_name and grade_val > 0:
             review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
 
-    pros = data.xpath('(//h2|//h3)[.//span[@id="Pro" or normalize-space(text())="Pro"]]/following-sibling::ul[1]/li/text()')
+    pros = data.xpath('(//h2|//h3)[.//span[@id="Pro" or normalize-space(text())="Pro"]]/following-sibling::*[1]/li/text()')
     if not pros:
         pros = data.xpath('(//h2|//h3)[.//span[@id="Pro" or normalize-space(text())="Pro"]]/following-sibling::p[(preceding-sibling::h2[1]|preceding-sibling::h3[1])[.//span[@id="Pro" or normalize-space(text())="Pro"]]]/text()')
     if not pros:
         pros = data.xpath('//p[strong[normalize-space(text())="Pro" or normalize-space(text())="PRO"]]/following-sibling::*[1]/li/text()')
     if not pros:
         pros = data.xpath('//p[strong[normalize-space(text())="Pro" or normalize-space(text())="PRO"]]/following-sibling::*[1]/text()')
+    if not pros:
+        pros = data.xpath('//p[normalize-space(text())="PRO"]/following-sibling::*[1]/li/text()')
+    if not pros:
+        pros = data.xpath('//p[normalize-space(text())="Pro"]/following-sibling::*[1]/li/text()')
 
     for pro in pros:
         pro = pro.string(multiple=True)
@@ -79,13 +83,17 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('(//h2|//h3)[.//span[@id="Contro" or normalize-space(text())="Contro"]]/following-sibling::ul[1]/li/text()')
+    cons = data.xpath('(//h2|//h3)[.//span[@id="Contro" or normalize-space(text())="Contro"]]/following-sibling::*[1]/li/text()')
     if not cons:
         cons = data.xpath('(//h2|//h3)[.//span[@id="Contro" or normalize-space(text())="Contro"]]/following-sibling::p[(preceding-sibling::h2[1]|preceding-sibling::h3[1])[.//span[@id="Contro" or normalize-space(text())="Contro"]]]/text()')
     if not cons:
         cons = data.xpath('//p[strong[normalize-space(text())="Contro" or normalize-space(text())="CONTRO"]]/following-sibling::*[1]/li/text()')
     if not cons:
         cons = data.xpath('//p[strong[normalize-space(text())="Contro" or normalize-space(text())="CONTRO"]]/following-sibling::*[1]/text()')
+    if not cons:
+        cons = data.xpath('//p[normalize-space(text())="CONTRO"]/following-sibling::*[1]/li/text()')
+    if not cons:
+        cons = data.xpath('//p[normalize-space(text())="Contro"]/following-sibling::*[1]/li/text()')
 
     for con in cons:
         con = con.string(multiple=True)
@@ -94,22 +102,22 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[regexp:test(., "Conclusioni|Conclusione")]/following-sibling::p[not(.//@class="external" or strong[regexp:test(., "Pro|Contro|PRO|CONTRO")] or contains(., "•"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "Conclusioni|Conclusione")]/following-sibling::p[not(.//@class="external" or strong[regexp:test(., "Pro|Contro|PRO|CONTRO")] or contains(., "•"))]//text()[not(contains(., "<span"))]').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//p[strong[regexp:test(., "Conclusioni|Conclusione")]]/following-sibling::p[not(.//@class="external" or strong[regexp:test(., "Pro|Contro|PRO|CONTRO")] or contains(., "•"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//p[strong[regexp:test(., "Conclusioni|Conclusione")]]/following-sibling::p[not(.//@class="external" or strong[regexp:test(., "Pro|Contro|PRO|CONTRO")] or contains(., "•"))]//text()[not(contains(., "<span"))]').string(multiple=True)
 
     if conclusion:
-        conclusion = re.sub(r'<span[\w\d\s\”\=\_\-\:\’\/\;]+”>|\</span\>','', conclusion.replace(u'\uFEFF', '')).strip()
+        conclusion = re.sub(r'<span[\w\d\s\”\=\_\-\:\’\/\;]+”>|\</span\>','', conclusion).replace(u'\uFEFF', '').replace('  ', ' ').replace('\n', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "Conclusioni|Conclusione")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(., "Conclusioni|Conclusione")]/preceding-sibling::p//text()[not(contains(., "<span"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[strong[regexp:test(., "Conclusioni|Conclusione")]]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//p[strong[regexp:test(., "Conclusioni|Conclusione")]]/preceding-sibling::p//text()[not(contains(., "<span"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div/p[not(.//@class="external" or strong[regexp:test(., "Pro|Contro|PRO|CONTRO")] or contains(., "•"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div/p[not(.//@class="external" or strong[regexp:test(., "Pro|Contro|PRO|CONTRO")] or contains(., "•"))]//text()[not(contains(., "<span"))]').string(multiple=True)
 
     if excerpt:
-        excerpt = re.sub(r'<span[\w\d\s\”\=\_\-\:\’\/\;]+”>|\</span\>', '', excerpt.replace(u'\uFEFF', '')).strip()
+        excerpt = re.sub(r'<span[\w\d\s\”\=\_\-\:\’\/\;]+”>|\</span\>', '', excerpt).replace(u'\uFEFF', '').replace('  ', ' ').replace('\n', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

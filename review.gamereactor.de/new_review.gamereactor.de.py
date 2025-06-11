@@ -61,11 +61,11 @@ def process_review(data, context, session):
     product.name = context['title'].replace(' Testbericht', '').replace(' Hardware-Review', '').replace(' - Multiplayer-Review', '').split(' Review')[0].replace(' im Dauertest', '').strip(' +-.')
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    product.manufacturer = data.xpath('//li[regexp:test(., "Verleih:|Entwickler:")]//text()[not(regexp:test(., "Verleih:|Entwickler:"))]').string(multiple=True)
+    product.manufacturer = data.xpath('//li[regexp:test(., "Verleih:|Entwickler:|Hersteller:")]//text()[not(regexp:test(., "Verleih:|Entwickler:|Hersteller:"))]').string(multiple=True)
 
     category = context.get('cat', '')
 
-    platforme = data.xpath('//li[contains(., "Gespielt auf:")]/text()').string(multiple=True)
+    platforme = data.xpath('//li[regexp:test(., "Gespielt auf:|Kategorie:")]//text()[not(regexp:test(., "Gespielt auf:|Kategorie:"))]').string(multiple=True)
     if platforme:
         category += '|' + platforme.replace(', ', '/')
 
