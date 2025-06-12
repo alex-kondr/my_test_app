@@ -45,7 +45,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('Test af ', '').split(' - ')[0].split(' – ')[0].strip()
+    product.name = context['title'].replace('Test af ', '').replace('Test - ', '').split(' - ')[0].split(' – ')[0].strip()
     product.url = context['url']
     product.ssid = context['ssid']
     product.category = context['cat'] or "Tech"
@@ -68,6 +68,9 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     pros = data.xpath('(//h3[regexp:test(normalize-space(text()), "^Plusser:|^Fordele")]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('(//p[regexp:test(., "^Pros:|^Fordele")]/following-sibling::*)[1]/li')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -85,6 +88,9 @@ def process_review(data, context, session):
                     review.add_property(type='pros', value=pro)
 
     cons = data.xpath('(//h3[regexp:test(normalize-space(text()), "^Minuser:|^Ulemper")]/following-sibling::*)[1]/li')
+    if not cons:
+        cons = data.xpath('(//p[regexp:test(., "^Cons:|^Ulemper")]/following-sibling::*)[1]/li')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -102,10 +108,19 @@ def process_review(data, context, session):
                     review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('(//h3[contains(., "Konklusion")])[last()]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[contains(., "Opsummering:")][last()]/following-sibling::text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('(//p[strong[contains(., "Konklusion")]])[last()]/following-sibling::p[string-length(.)>10 and not(regexp:test(., "Pros:|Fordele|Plusser:|Minuser:|Ulemper|Cons:"))]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h3[contains(., "Konklusion")]/preceding-sibling::p[string-length(.)>10]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h2[contains(., "Opsummering:")][last()]/preceding-sibling::text()[not(regexp:test(., "^\s?.+: "))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[strong[contains(., "Konklusion")]]/preceding-sibling::p[string-length(.)>10]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//body/p[string-length(.)>10]//text()').string(multiple=True)
     if not excerpt:
