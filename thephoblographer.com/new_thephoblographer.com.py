@@ -31,7 +31,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' Review')[0].replace('Review: ', '').replace(' review', '').strip()
+    product.name = context['title'].split(' Review')[0].split(' Preview: ')[0].replace('Review:', '').replace(' review', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = context['cat']
 
@@ -57,6 +57,10 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
+    grade_overall = data.xpath('//div[@class="score"]//text()').string(multiple=True)
+    if grade_overall:
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
     pros = data.xpath('((//h3[regexp:test(normalize-space(text()), "Pros")]/following-sibling::*)[1]|(//h3[regexp:test(normalize-space(text()), "Likes")]/following-sibling::*)[1])/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -78,9 +82,11 @@ def process_review(data, context, session):
         summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(preceding-sibling::h3[regexp:test(., "Pros|Cons")])]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(preceding-sibling::h3[regexp:test(., "Pros|Cons")]) and (preceding-sibling::h2)[last()][contains(., "Conclusion")]]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@class="lets-review-block__conclusion"]//text()').string(multiple=True)
 
     if conclusion:
         conclusion = conclusion.replace(u'\uFEFF', '').strip()
