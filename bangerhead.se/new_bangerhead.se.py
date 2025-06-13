@@ -108,15 +108,19 @@ def process_reviews(data, context, session):
 
         pros = rev.get('content', {}).get('pros', [])
         for pro in pros:
-            pro = remove_emoji(pro).strip(' +-*.;•–')
-            if len(pro) > 1:
-                review.add_property(type='pros', value=pro)
+            pros_ = pro.split('•')
+            for pro in pros_:
+                pro = remove_emoji(pro).replace('\t', '').strip(' +-*.;•–')
+                if len(pro) > 1:
+                    review.add_property(type='pros', value=pro)
 
         cons = rev.get('content', {}).get('cons', [])
         for con in cons:
-            con = remove_emoji(con).strip(' +-*.;•–')
-            if len(con) > 1:
-                review.add_property(type='cons', value=con)
+            cons_ = con.split('•')
+            for con in cons_:
+                con = remove_emoji(con).replace('\t', '').strip(' +-*.;•–')
+                if len(con) > 1:
+                    review.add_property(type='cons', value=con)
 
         is_verified_buyer = rev.get('isVerified')
         if is_verified_buyer:
@@ -132,14 +136,14 @@ def process_reviews(data, context, session):
 
         title = rev.get('content', {}).get('title')
         excerpt = rev.get('content', {}).get('text')
-        if excerpt and len(remove_emoji(excerpt).replace('\n', ' ').replace('  ', ' ').strip(' +-*.')) > 2:
+        if excerpt and len(remove_emoji(excerpt).replace('\t', '').replace('\n', ' ').replace('  ', ' ').strip(' +-*.')) > 2:
             if title:
-                review.title = remove_emoji(title).replace('\n', ' ').replace('  ', ' ').strip(' +-*.')
+                review.title = remove_emoji(title).replace('\t', '').replace('\n', ' ').replace('  ', ' ').strip(' +-*.')
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = remove_emoji(excerpt).replace('\n', ' ').replace('  ', ' ').strip(' +-*.')
+            excerpt = remove_emoji(excerpt).replace('\t', '').replace('\n', ' ').replace('  ', ' ').strip(' +-*.')
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
