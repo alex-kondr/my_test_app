@@ -119,7 +119,7 @@ def process_reviews(data, context, session):
             cons_ = con.split('•')
             for con in cons_:
                 con = remove_emoji(con).replace('\t', '').strip(' +-*.;•–')
-                if len(con) > 1:
+                if len(con) > 1 and con.lower() != "no":
                     review.add_property(type='cons', value=con)
 
         is_verified_buyer = rev.get('isVerified')
