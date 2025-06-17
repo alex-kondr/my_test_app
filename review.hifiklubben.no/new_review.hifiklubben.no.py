@@ -4,7 +4,7 @@ import simplejson
 import re
 
 
-XCATS = ['Kablar', 'Välkommen till Vinyl', 'Hur använder jag vinylspelaren?', 'Projektordukar', 'Märken', 'Inspiration', 'Nyheter', 'Erbjudanden', 'Outlet']
+XCATS = ['Kabler', 'Velkommen til Vinyl', 'Hvordan bruker jeg vinylspilleren?', 'Projektorlerret', 'Merker', 'Inspirasjon', 'Nyheter', 'Tilbud', 'Outlet']
 
 
 def strip_namespace(data):
@@ -45,8 +45,8 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('https://www.hifiklubben.se', use='curl', force_charset="utf-8", max_age=0), process_frontpage, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.queue(Request('https://www.hifiklubben.no', use='curl', force_charset="utf-8", max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -80,7 +80,7 @@ def process_prodlist(data, context, session):
     prods = data.xpath('//article[@class]/a[.//div[@data-count="true"]]')
     for prod in prods:
         url = prod.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset="utf-8", max_age=0), process_prodlist, dict(context, url=url))
+        session.queue(Request(url, use='curl', force_charset="utf-8", max_age=0), process_product, dict(context, url=url))
 
     prods_cnt = context.get('prods_cnt', prods_cnt)
     if prods_cnt:
@@ -120,7 +120,7 @@ def process_product(data, context, session):
     if sku:
         sku = sku.split('skuCode\\":\\"', 1)[-1].split('\\')[0]
 
-        revs_url = 'https://www.hifiklubben.se/api/v2/ratings?productId={sku}&host=www.hifiklubben.se'.format(sku=sku)
+        revs_url = 'https://www.hifiklubben.no/api/v2/ratings?productId={sku}&host=www.hifiklubben.no'.format(sku=sku)
         session.do(Request(revs_url, use='curl', force_charset="utf-8", max_age=0), process_reviews, dict(context, product=product))
 
 
@@ -133,7 +133,7 @@ def process_reviews(data, context, session):
 
     for rev in revs_json:
         market_id = rev.get('marketId')
-        if market_id.upper() != 'SE':
+        if market_id.upper() != 'NO':
             continue
 
         review = Review()
@@ -167,3 +167,5 @@ def process_reviews(data, context, session):
 
     if product.reviews:
         session.emit(product)
+
+# no next page
