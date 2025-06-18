@@ -4,7 +4,7 @@ from models.products import *
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('http://indianexpress.com/section/technology/tech-reviews/', use='curl', force_charset='utf-8'), process_revlist, dict())
+    session.queue(Request('http://indianexpress.com/section/technology/tech-reviews/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -16,12 +16,12 @@ def process_revlist(data, context, session):
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' review:')[0].split(' Review:')[0].split(':')[0].strip()
+    product.name = context['title'].split(' review:')[0].split(' review :')[0].split(' Review:')[0].split(':')[0].strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].split('-')[-1]
     product.category = 'Tech'
@@ -59,6 +59,9 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[contains(@class, "content") or contains(@id, "content")]/p//text()').string(multiple=True)
     if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

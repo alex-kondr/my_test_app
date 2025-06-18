@@ -16,13 +16,12 @@ def process_frontpage(data, context, session):
 
         if name not in XCAT:
             sub_cats = cat.xpath('ul[@class="sub-menu"]/li/a')
-            if sub_cats:
-                for sub_cat in sub_cats:
-                    sub_name = sub_cat.xpath('text()').string()
-                    url = cat.xpath('@href').string()
-                    session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name+'|'+sub_name))
+            for sub_cat in sub_cats:
+                sub_name = sub_cat.xpath('text()').string()
+                url = sub_cat.xpath('@href').string()
+                session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name+'|'+sub_name))
             else:
-                url = cat.xpath('a/@href').sring()
+                url = cat.xpath('a/@href').string()
                 session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name))
 
 
@@ -66,7 +65,7 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//span[contains(@class, "review-total")]/text()//text()').string()
+    grade_overall = data.xpath('//span[contains(@class, "review-total")]/text()').string()
     if grade_overall:
         grade_overall = grade_overall.replace('%', '').strip()
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
@@ -95,6 +94,7 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[contains(@class, "text_element")]/p/span[@class="bold_text"]//text()').string(multiple=True)
     if summary:
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//div[h3[contains(., "Conclusion")]]/p//text()').string(multiple=True)
@@ -102,10 +102,12 @@ def process_review(data, context, session):
         conclusion = data.xpath('//div[@class="review-desc"]/p[not(@class)]//text()').string(multiple=True)
 
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[contains(@class, "thrv_wrapper") and not(.//span[@class="bold_text"] or .//div[@class="review-desc"] or .//h3[@style])]//p//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
