@@ -6,7 +6,7 @@ XCAT = ['News']
 
 
 def run(context, session):
-    session.queue(Request('https://soundvisionreview.com/', use='curl', force_charset='utf-8'), process_frontpage, dict())
+    session.queue(Request('https://soundvisionreview.com/', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -16,13 +16,14 @@ def process_frontpage(data, context, session):
 
         if name not in XCAT:
             sub_cats = cat.xpath('ul[@class="sub-menu"]/li/a')
-            for sub_cat in sub_cats:
-                sub_name = sub_cat.xpath('text()').string()
-                url = sub_cat.xpath('@href').string()
-                session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name+'|'+sub_name))
+            if sub_cats:
+                for sub_cat in sub_cats:
+                    sub_name = sub_cat.xpath('text()').string()
+                    url = sub_cat.xpath('@href').string()
+                    session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(cat=name+'|'+sub_name))
             else:
                 url = cat.xpath('a/@href').string()
-                session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name))
+                session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
@@ -30,16 +31,16 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict(context))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace(' Review', '').strip()
+    product.name = context['title'].replace('Sports Headphones Group Test:', '').replace('BoomBox Group Test:', '').replace(' Review', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = context['cat']
 
@@ -56,14 +57,6 @@ def process_review(data, context, session):
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
     if date:
         review.date = date.split('T')[0]
-
-    author = data.xpath('//a[contains(@href, "https://soundvisionreview.com/author/") and not(@href="https://soundvisionreview.com/author/soundvisionteam/")]//text()').string()
-    author_url = data.xpath('//a[contains(@href, "https://soundvisionreview.com/author/") and not(@href="https://soundvisionreview.com/author/soundvisionteam/")]/@href').string()
-    if author and author_url:
-        author_ssid = author_url.split('/')[-2]
-        review.authors.append(Person(name=author, ssid=author_ssid))
-    elif author:
-        review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//span[contains(@class, "review-total")]/text()').string()
     if grade_overall:
@@ -108,6 +101,10 @@ def process_review(data, context, session):
     excerpt = data.xpath('//div[contains(@class, "thrv_wrapper") and not(.//span[@class="bold_text"] or .//div[@class="review-desc"] or .//h3[@style])]//p//text()').string(multiple=True)
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').strip()
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

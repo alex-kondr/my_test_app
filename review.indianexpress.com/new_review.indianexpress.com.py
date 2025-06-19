@@ -12,7 +12,9 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
+
+        if 'weeklong review' not in title:
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -57,10 +59,17 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('//div[contains(@class, "content") or contains(@id, "content")]/p//text()').string(multiple=True)
+    conclusion = data.xpath('//p[.//strong[contains(., "Verdict")]]/following-sibling::p//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//div[contains(@class, "content") or contains(@id, "content")]/p[not(.//strong[contains(., "Verdict")])]//text()').string(multiple=True)
     if excerpt:
         if summary:
             excerpt = excerpt.replace(summary, '').strip()
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
 
         review.add_property(type='excerpt', value=excerpt)
 
