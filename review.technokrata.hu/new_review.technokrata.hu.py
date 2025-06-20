@@ -1,10 +1,8 @@
 from agent import *
 from models.products import *
-import re
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.technokrata.hu/tesztek/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -13,8 +11,6 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('h2/text()').string()
         url = rev.xpath('a/@href').string()
-
-        # if re.search(r'teszteltük|Technokrata teszt', title):
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
@@ -24,7 +20,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('', '').strip()
+    product.name = context['title'].replace('Teszt:', '').strip()
     product.url = context['url']
     product.category = data.xpath('//h3[contains(@class, "post-cat")]//text()').string() or 'Technika'
 
@@ -49,10 +45,15 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h3[contains(., "Összességében")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[contains(., "Verdict")]/following-sibling::p//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h3[contains(., "Összességében")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[contains(., "Verdict")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//body/p//text()').string(multiple=True)
 
