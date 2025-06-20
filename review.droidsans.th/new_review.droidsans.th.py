@@ -3,6 +3,9 @@ from models.products import *
 import re
 
 
+name_clearing = re.compile(r'Preview.?:|Review.?:|\[.+\]|Preview |Review |Blind Test.?:| Review', flags=re.I)
+
+
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://droidsans.com/category/reviews/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
@@ -24,10 +27,15 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split('|')[-1].replace('Review :','').replace('REVIEW :', '').replace('[Preview] : ', '').split(':')[0].replace('REVIEW ', '').replace('[Preview]', '').replace('[Review]', '').replace('[สเปคและราคา]', '').replace('[ประกาศผล]', '').replace('Review ', '').strip(' –')
+    product.name = name_clearing.sub('', context['title'].split('|')[-1]).split(' Test :')[-1].strip(' –')
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    product.category = data.xpath('//a[@rel="tag" and not(contains(., "review"))]/text()').string() or 'Tech'
+
+    category = data.xpath('//a[@rel="tag" and not(contains(., "review"))]/text()').string()
+    if category:
+        product.category = category.replace(' Test', '').replace(' Review', '').strip()
+    else:
+        product.category = 'Tech'
 
     review = Review()
     review.type = 'pro'

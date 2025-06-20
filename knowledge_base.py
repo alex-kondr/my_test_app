@@ -34,3 +34,5 @@ def strip_namespace(data):
         out.write(line + "\n")
     out.close()
     os.rename(tmp, data.content_file)
+
+name_clearing = re.compile(r'Preview.?:|Review.?:|\[.+\]|Preview |Review |Blind Test.?:| Review|\(.+\)', flags=re.I)
