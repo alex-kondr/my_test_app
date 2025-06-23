@@ -3,6 +3,9 @@ from models.products import *
 import re
 
 
+XCAT = ['News & Announcements', 'News']
+
+
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=7000)]
     session.queue(Request('https://www.theaterbyte.com/', use='curl', force_charset='utf-8'), process_frontpage, dict())
@@ -17,7 +20,9 @@ def process_frontpage(data, context, session):
         for sub_cat in sub_cats:
             sub_name = sub_cat.xpath('div/text()').string().replace(name, '').strip()
             url = sub_cat.xpath('a/@href').string()
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name + '|' + sub_name))
+
+            if sub_name not in XCAT:
+                session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name + '|' + sub_name))
 
 
 def process_revlist(data, context, session):
@@ -34,7 +39,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = re.compile(r'Preview.?:|Review.?:|\[.+\]|Preview |Review |Blind Test.?:| Review|\(.+\)', flags=re.I).sub('', context['title'].split('Review –')[0].split(' Review:')[0].split(' – ')[0]).strip()
+    product.name = re.compile(r'Preview.?:|Review.?:|\[.+\]|Preview |Review |Blind Test.?:| Review|\(.+\)|Baka & Test:', flags=re.I).sub('', context['title'].split('Review –')[0].split(' – ')[0]).strip()
     product.ssid = context['url'].split('/')[-2]
     product.category = context['cat']
 
@@ -76,7 +81,10 @@ def process_review(data, context, session):
             for i, grade in enumerate(grades, start=1):
                 if i % 2 == 0:
                     grade_val = grade.split(':')[-1].split('/')[0].strip()
-                    review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
+                    try:
+                        review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
+                    except:
+                        pass
                 else:
                     grade_name = grade.strip()
 
@@ -114,17 +122,20 @@ def process_review(data, context, session):
         summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(@class, "final|verdict") or regexp:test(., "Final|Verdict")]/following-sibling::p[not(contains(@class, "block"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(@class, "final|verdict") or regexp:test(., "Final|Verdict")]/following-sibling::p[not(contains(@class, "block") or (.//a[contains(@href, "amzn.to")] and contains(., "Purchase")))]//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(@class, "final|verdict") or regexp:test(., "Final|Verdict")][1]/preceding-sibling::p[not(contains(@class, "block"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(@class, "final|verdict") or regexp:test(., "Final|Verdict")][1]/preceding-sibling::p[not(contains(@class, "block") or (.//a[contains(@href, "amzn.to")] and contains(., "Purchase")))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "block-inner")]/p[not(contains(@class, "block") or @style or regexp:test(., "\[amazon|BestBuy.com:|Shop for more|Amazon.com|Rating:", "i") or (regexp:test(., "\w:") and string-length(.)<20))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "block-inner")]/p[not(contains(@class, "block") or @style or regexp:test(., "\[amazon|BestBuy.com:|Shop for more|Amazon.com|Rating:", "i") or (regexp:test(., "\w:") and string-length(.)<20) or (.//a[contains(@href, "amzn.to")] and contains(., "Purchase")))]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').strip()
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
