@@ -79,7 +79,8 @@ def process_prodlist(data, context, session):
 
         revs = prod.xpath('.//div[@class="price-rating" and div[@style="visibility: visible;" or @style="visibility:visible;"]]')
         if revs:
-            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_product, dict(context, name=name, url=url))
+            options = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Cookie: __consent=31' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Priority: u=0, i'"""
+            session.do(Request(url, use='curl', force_charset='utf-8', options=options, max_age=0), process_product, dict(context, name=name, url=url))
         else:
             return
 
