@@ -12,6 +12,11 @@ class ProcessRun(Enum):
     prodlist = auto()
 
 
+class TypeAgent(Enum):
+    product = "name"
+    review = "title"
+
+
 class AgentForm:
     def __init__(self, agent_id: int):
         self.agent_id = agent_id
@@ -19,6 +24,7 @@ class AgentForm:
         self.agent_dir = Path(self.name)
         self.agent_dir.mkdir(exist_ok=True)
         self.file_path = self.agent_dir / Path("new_" + self.name + ".py")
+        self.new_parser = False
         self.funcs = {
             "frontpage": self.create_frontpage,
             "revlist": self.create_revlist,
@@ -39,16 +45,24 @@ class AgentForm:
         # curl: bool
         ):
 
+        self.new_parser = new_parser
         html = get_old_agent(self.agent_id)
         name_agent_for_test = get_agent_name(html)
         self.create_test_file(name_agent_for_test, self.agent_id)
 
-        text = (
-            "from agent import *\n"
-            "from models.products import *\n\n\n"
-            "def run(context, session):\n"
-        )
+        text = "from agent import *\nfrom models.products import *\n\n\n"
+        text += """def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\\n")
+    out.close()
+    os.rename(tmp, data.content_file)\n\n\n""" if new_parser else ""
 
+        text += "def run(context, session):\n"
         text += "    session.browser.use_new_parser = True\n" if new_parser else ""
         text += f"    session.sessionbreakers = [SessionBreak(max_requests={breakers})]\n" if breakers else ""
         text += """    session.queue(Request('{url}', use='curl', force_charset='utf-8'), process_{next_func}, dict())\n""".format(url=url, next_func=next_func)
@@ -67,8 +81,11 @@ class AgentForm:
         name_xpath: str,
         url_xpath: str
         ):
-        text = (
-            "\n\ndef process_frontpage(data, context, session):\n"
+        text = "\n\ndef process_frontpage(data, context, session):\n"
+
+        text += "    strip_namespace(data)\n\n" if self.new_parser else ""
+
+        text += (
             f"    cats = data.xpath('{cats_xpath}')\n"
             "    for cat in cats:\n"
             f"        name = cat.xpath('{name_xpath}').string()\n"
@@ -93,8 +110,9 @@ class AgentForm:
 
         # text = "\n\ndef process_prodlist"
 
-        text = (
-            "\n\ndef process_revlist(data, context, session):\n"
+        text = "\n\ndef process_revlist(data, context, session):\n"
+        text += "    strip_namespace(data)\n\n" if self.new_parser else ""
+        text += (
             f"    revs = data.xpath('{revs_xpath}')\n"
             "    for rev in revs:\n"
             f"        {name_title} = rev.xpath('{name_title_xpath}').string()\n"
@@ -116,8 +134,9 @@ class AgentForm:
         mpn_xpath = input("mpn_xpath?: ")
         ean_xpath = input("ean_xpath?: ")
 
-        text = (
-            "\n\ndef process_product(data, context, session):\n"
+        text = "\n\ndef process_product(data, context, session):\n"
+        text += "    strip_namespace(data)\n\n" if self.new_parser else ""
+        text += (
             "    product = Product()\n"
             "    product.name = context['name']\n"
             "    product.url = context['url']\n"
@@ -166,8 +185,9 @@ class AgentForm:
         excerpt_xpath: str,
         ):
 
-        text = (
-            "\n\ndef process_review(data, context, session):\n"
+        text = "\n\ndef process_review(data, context, session):\n"
+        text += "    strip_namespace(data)\n\n" if self.new_parser else ""
+        text += (
             "    product = Product()\n"
             "    product.name = context['title'].replace('', '').strip()\n"
             "    product.url = context['url']\n"
@@ -261,8 +281,9 @@ class AgentForm:
         excerpt_xpath = input("excerpt_xpath: ")
         rev_ssid_xpath = input("rev_ssid_xpath: ")
 
-        text = (
-            "\n\ndef process_reviews(data, context, session):\n"
+        text = "\n\ndef process_reviews(data, context, session):\n"
+        text += "    strip_namespace(data)\n\n" if self.new_parser else ""
+        text += (
             "    product = context['product']\n"
             f"\n    revs = data.xpath('{revs_xpath}')\n"
             "    for rev in revs:\n"

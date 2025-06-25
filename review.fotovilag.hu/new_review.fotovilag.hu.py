@@ -3,37 +3,42 @@ from models.products import *
 
 
 def run(context, session):
-    session.queue(Request('https://fotovilag.hu/content/index/cat/2', use='curl'), process_revlist, {})
+    session.queue(Request('https://fotovilag.hu/content/index/cat/2', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
-    revs = data.xpath("//div/a[@class='more']")
+    revs = data.xpath('//div/a[@class="more"]')
     for rev in revs:
-        url = rev.xpath("@href").string()
-        session.queue(Request(url, use='curl'), process_review, dict(context, url=url))
+        url = rev.xpath('@href').string()
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(url=url))
 
-    nexturl = data.xpath("//ul[@class='pagination']/li[@class='active']/following-sibling::li[1]/a/@href").string()
-    if nexturl:
-        session.queue(Request(nexturl, use='curl'), process_revlist, dict(context))
+    next_url = data.xpath('//li[@title="kovetkezo"]/a/@href').string()
+    if next_url:
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = data.xpath("(//div[@class='rb_content']//h1)[1]//text()").string()
-    product.ssid = context['url'].split('/')[-1].replace('.html', '')
-    product.category = data.xpath("//div[@class='rb_content']//p/a[@id='pl-gallery-trigger']//text()").string() or 'Technika'
+    product.name = data.xpath('(//div[@class="rb_content"]//h1)[1]//text()').string()
     product.url = context['url']
+    product.ssid = product.url.split('/')[-1]
+    product.category = 'Blog'
 
     review = Review()
-    review.title = product.name
-    review.date = data.xpath("//div[@class='rb_content']//span[@class='mod-date']//text()").string()
-    review.ssid = product.ssid
     review.type = 'pro'
-    review.url = context['url']
+    review.title = product.name
+    review.url = product.url
+    review.ssid = product.ssid
+    review.date = data.xpath('//span[@class="mod-date"]/text()').string()
 
-    excerpt = data.xpath("//div[@class='rb_content']//p//text()").string(multiple=True)
+    summary = data.xpath('//h2//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    excerpt = data.xpath('(//div[contains(@class, "content")]//p|//div[contains(@class, "content")]//blockquote)//text()').string(multiple=True)
     if excerpt:
-        review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
+        review.add_property(type='excerpt', value=excerpt)
 
-    product.reviews.append(review)
-    session.emit(product)
+        product.reviews.append(review)
+
+        session.emit(product)

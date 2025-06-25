@@ -7,34 +7,34 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 
 
-from create_agent.agent import AgentForm, ProcessRun
+from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="5645"
+    agent_id="11878"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.gamekapocs.hu/cikkek/tesztek',
+    url='https://fotovilag.hu/content/index/cat/2',
     next_func=ProcessRun.revlist.name,
     new_parser=False,
-    breakers=10000,
+    breakers=0,
     # curl=True
 )
 # agent.create_frontpage(
-#     cats_xpath='//ul[contains(@class, "global-navigation")]/li[contains(@class, "item-element")]//a',
-#     name_xpath='.//text()',
+#     cats_xpath='(//li[a[contains(., "Testy")]])[1]/ul/li[not(contains(@class, "nested"))]/a[not(img)]',
+#     name_xpath='text()',
 #     url_xpath='@href'
 # )
 agent.create_revlist(
-    revs_xpath='//h1/a',
-    name_title="title",
-    name_title_xpath='text()',
-    url_xpath='@href',
-    prod_rev="review",
-    next_url_xpath='//li[@class="right"]/a[contains(@href, "https://www.gamekapocs.hu/cikkek/tesztek")]/@href',
+    revs_xpath='//div[contains(@class, "content-list")]',
+    name_title=TypeAgent.review.value,
+    name_title_xpath='h2/text()',
+    url_xpath='.//a/@href',
+    prod_rev=TypeAgent.review.name,
+    next_url_xpath='//li[@title="kovetkezo"]/a/@href',
 )
 agent.create_review(
     date_xpath='//meta[@property="article:published_time"]/@content',

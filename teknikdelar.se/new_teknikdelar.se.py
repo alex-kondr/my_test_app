@@ -128,8 +128,8 @@ def process_product(data, context, session):
 
         excerpt = rev.xpath('.//div[@class="content"]/text()').string()
         if excerpt:
-            excerpt = remove_emoji(excerpt).replace('\n', '').replace('\t', '').strip(' +-*.;•–')
-            if len(excerpt) > 1:
+            excerpt = remove_emoji(excerpt).replace('\n', '').replace('\t', '').replace('\r', '').strip(' +-*.;•–')
+            if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
                 review.ssid = review.digest() if author else review.digest(excerpt)
@@ -168,8 +168,8 @@ def process_reviews(data, context, session):
 
         excerpt = rev.get('review')
         if excerpt:
-            excerpt = remove_emoji(excerpt).replace('\n', '').replace('\t', '').strip(' +-*.;•–')
-            if len(excerpt) > 1:
+            excerpt = remove_emoji(excerpt).replace('\n', '').replace('\t', '').replace('\r', '').strip(' +-*.;•–')
+            if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
                 product.reviews.append(review)
