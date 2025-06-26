@@ -124,7 +124,7 @@ def process_review_last(data, context, session):
             review.add_property(type='conclusion', value=conclusion)
 
     if context['excerpt']:
-        review.add_property(type='excdrpt', value=context['excerpt'])
+        review.add_property(type='excerpt', value=context['excerpt'])
 
         product = context['product']
         product.reviews.append(review)
