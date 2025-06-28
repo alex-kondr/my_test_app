@@ -10,8 +10,9 @@ def run(context, session):
 def process_revlist(data, context, session):
     revs = data.xpath('//td[@class="listItem"]/a')
     for rev in revs:
+        title = rev.xpath('.//text()').string(multiple=True)
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//a[contains(text(), "Next")]/@href').string()
     if next_url:
@@ -22,7 +23,7 @@ def process_review(data, context, session):
     title = data.xpath('//td[@class="title"]//text()').string(multiple=True)
 
     product = Product()
-    product.name = title.split('//')[-1].replace(' - Student Review', '').strip()
+    product.name = (title or context['title']).split('//')[-1].replace(' - Student Review', '').strip()
     product.ssid = context['url'].split('/')[-1]
     product.manufacturer = data.xpath('//div[contains(., "Developer")]/text()[contains(., "Developer")]/following-sibling::b[1]//text()').string()
 
@@ -37,7 +38,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = title
+    review.title = title or context['title']
     review.url = context['url']
     review.ssid = product.ssid
 
