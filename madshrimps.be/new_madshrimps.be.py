@@ -44,7 +44,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.madshrimps.be/', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 
@@ -108,10 +108,10 @@ def process_review(data, context, session):
 
     context['excerpt'] = data.xpath('//div[contains(@class, "entry-content")]/p//text()').string(multiple=True)
 
-    pages = data.xpath('(//form[@class="multipage-dropdown-form"])[1]//options')
+    pages = data.xpath('(//form[@class="multipage-dropdown-form"])[1]//option')
     for page in pages:
         title = page.xpath('text()').string()
-        url = page.xpath('@value')
+        url = page.xpath('@value').string()
         review.add_property(type="pages", value=dict(url=url, title=title))
 
     context['review'] = review
@@ -128,8 +128,30 @@ def process_review_last(data, context, session):
 
     review = context['review']
 
+    pros = data.xpath('//h2[contains(., "Pros")]/following-sibling::p[not(preceding::h2[contains(., "Cons")])]')
+    if not pros:
+        pros = data.xpath('(//p[.//strong[regexp:test(., "Pros", "i")]]/following-sibling::ul)[1]/li')
+
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.;•–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//h2[contains(., "Cons")]/following-sibling::p[preceding-sibling::h2[1][contains(., "Cons")]][starts-with(normalize-space(.), "-")]')
+    if not cons:
+        cons = data.xpath('(//p[.//strong[regexp:test(., "Cons", "i")]]/following-sibling::ul)[1]/li')
+
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.;•–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
     if context.get('pages'):
-        conclusion = data.xpath('//div[contains(@class, "entry-content")]/p//text()').string(multiple=True)
+        conclusion = data.xpath('//div[contains(@class, "entry-content")]/p[not(.//strong[regexp:test(., "Pros|Cons")] or preceding-sibling::p[.//strong[regexp:test(., "Pros|Cons")]])]//text()').string(multiple=True)
         if conclusion:
             conclusion = remove_emoji(conclusion)
             review.add_property(type='conclusion', value=conclusion)

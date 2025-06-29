@@ -62,6 +62,9 @@ def process_review(data, context, session):
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
     pros = data.xpath('((//h3[regexp:test(normalize-space(text()), "Pros")]/following-sibling::*)[1]|(//h3[regexp:test(normalize-space(text()), "Likes")]/following-sibling::*)[1])/li')
+    if not pros:
+        pros = data.xpath('//h3[regexp:test(normalize-space(text()), "^Pros|Likes")]/following-sibling::p[preceding-sibling::h3[1][regexp:test(normalize-space(text()), "^Pros|Likes")]]')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -70,6 +73,9 @@ def process_review(data, context, session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('((//h3[regexp:test(normalize-space(text()), "^Cons")]/following-sibling::*)[1]|(//h3[regexp:test(normalize-space(text()), "Dislikes")]/following-sibling::*)[1])/li')
+    if not cons:
+        cons = data.xpath('//h3[regexp:test(normalize-space(text()), "^Cons|^Dislikes")]/following-sibling::p[preceding-sibling::h3[1][regexp:test(normalize-space(text()), "^Cons|^Dislikes")] and starts-with(normalize-space(text()), "–")]')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -84,7 +90,7 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(preceding-sibling::h3[regexp:test(., "Pros|Cons")]) and (preceding-sibling::h2)[last()][contains(., "Conclusion")]]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(starts-with(normalize-space(text()), "–") or contains(., "Also, please follow us"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="lets-review-block__conclusion"]//text()').string(multiple=True)
 
@@ -92,7 +98,7 @@ def process_review(data, context, session):
         conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="entry-content"]/p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="entry-content"]/p[not(@class or contains(., "Also, please follow us") or starts-with(normalize-space(text()), "–") or preceding-sibling::h2[contains(., "Conclusion")])]//text()').string(multiple=True)
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').strip()
 

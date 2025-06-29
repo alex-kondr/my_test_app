@@ -42,7 +42,7 @@ def process_review(data, context, session):
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
     if not date:
-        date = date.xpath('//div[@class="entry-header"]/div/span[contains(@class, "date meta-item")]/text()').string()
+        date = data.xpath('//div[@class="entry-header"]/div/span[contains(@class, "date meta-item")]/text()').string()
 
     if date:
         review.date = date.split('T')[0]
@@ -57,6 +57,7 @@ def process_review(data, context, session):
 
     context['conclusion'] = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
     if context['conclusion']:
+        context['conclusion'] = context['conclusion'].replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=context['conclusion'])
 
     context['excerpt'] = data.xpath('//div[contains(@class, "content")]/p//text()').string(multiple=True)
@@ -87,7 +88,7 @@ def process_review_last(data, context, session):
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.strip(' +-*.;•–')
+            pro = pro.replace(u'\uFEFF', '').strip(' +-*.;•–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -95,16 +96,19 @@ def process_review_last(data, context, session):
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.strip(' +-*.;•–')
+            con = con.replace(u'\uFEFF', '').strip(' +-*.;•–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
     if context.get('pages'):
         context['conclusion'] = data.xpath('//div[contains(@class, "content")]/p//text()').string(multiple=True)
         if context['conclusion']:
+            context['conclusion'] = context['conclusion'].replace(u'\uFEFF', '').strip()
             review.add_property(type='conclusion', value=context['conclusion'])
 
     if context['excerpt']:
+        context['excerpt'] = context['excerpt'].replace(u'\uFEFF', '').strip()
+
         if context['conclusion']:
             context['excerpt'] = context['excerpt'].replace(context['conclusion'], '').strip()
 
