@@ -71,7 +71,7 @@ def process_product(data, context, session):
     prod_info = data.xpath('//script[@type="application/ld+json"]/text()').string()
     if prod_info and '"mpn": "' in prod_info:
         mpn = prod_info.split('"mpn": "', 1)[-1].split('", "')[0].strip()
-        if mpn:
+        if mpn and len(mpn) > 4:
             product.add_property(type='id.manufacturer', value=mpn)
 
     options = "-H 'X-GMF-Merchant-Id: 8182'"

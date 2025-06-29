@@ -26,7 +26,7 @@ def process_review(data, context, session):
     product.name = context['title'].replace(' review', '').replace('Reviewed:', '').replace(': Review', '').replace(' Review', '').split(':')[-1].strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
 
-    product.url = data.xpath('//a[contains(., "Buy")]/@href').string()
+    product.url = data.xpath('//a[contains(., "Buy") or @aria-label="view-offer"]/@href').string()
     if not product.url:
         product.url = context['url']
 

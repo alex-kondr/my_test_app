@@ -66,7 +66,7 @@ def process_review(data, context, session):
 
     product.url = data.xpath('//a[contains(., "at Amazon")]/@href').string()
     if not product.url:
-        product.url = data.xpath('//a[contains(@class, "product-link") and contains(., "Buy")]/@href').string()
+        product.url = data.xpath('//a[contains(@class, "product-link")]/@href').string()
     if not product.url:
         product.url = context['url']
 
@@ -116,7 +116,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h2[regexp:test(., "Who should buy|verdict", "i")]/preceding::p[contains(@class, "emevuu60")]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "body")]/p[contains(@class, "emevuu60")]//text()').string(multiple=True)
+        excerpt = data.xpath('''//div[contains(@class, "body")]/p[contains(@class, "emevuu60") and not(preceding::div[contains(., "What everyone's reading")])]//text()''').string(multiple=True)
 
     if excerpt:
         excerpt = excerpt.replace('RW Verdict:', '').strip()

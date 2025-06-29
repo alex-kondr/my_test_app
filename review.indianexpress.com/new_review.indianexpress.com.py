@@ -46,7 +46,7 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//div[@class="hide_rating"]//text()').string()
+    grade_overall = data.xpath('//div[@class="hide_rating"]//text()').string(multiple=True)
     if grade_overall:
         grade_overall = grade_overall.replace('Rating:', '').split('out of')[0].strip()
         if grade_overall:
