@@ -3,9 +3,6 @@ from models.products import *
 import simplejson
 
 
-XCAT = ['Inspiration', 'Marken', '%Sale%', '% Sale', 'Aktionen', 'Neuheiten', 'Beratung', 'Inspiration & Themen', 'Premium-Marken', "Levi's®", 'Tommy Hilfiger', 'Nachhaltige Artikel', 'adidas', 'Nike', 'LeGer Home by Lena Gercke', '']
-
-
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"
     out = file(tmp, "w")
@@ -44,43 +41,30 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.otto.de/', use='curl', force_charset='utf-8'), process_frontpage, dict())
-    session.queue(Request('https://www.otto.de/damen/', use='curl', force_charset='utf-8'), process_catlist, dict(cat='Damen'))
-
-
-def process_frontpage(data, context, session):
-    strip_namespace(data)
-
-    cats = data.xpath('//ul[contains(@class, "global-navigation")]/li[contains(@class, "item-element")]//a')
-    for cat in cats:
-        name = cat.xpath('.//text()').string(multiple=True)
-        url = cat.xpath('@href').string()
-
-        if name not in XCAT:
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_catlist, dict(cat=name))
+    session.queue(Request('https://www.otto.de/babys/', use='curl', force_charset='utf-8'), process_catlist, dict(cat='Babymode'))
+    session.queue(Request('https://www.otto.de/spielzeug/', use='curl', force_charset='utf-8'), process_catlist, dict(cat='Spielzeug'))
+    session.queue(Request('https://www.mytoys.de/mode-schuhe/?sortiertnach=bewertung', use='curl', force_charset='utf-8'), process_prodlist, dict(cat='Bekleidung'))
+    session.queue(Request('https://www.otto.de/diy/bastelbedarf/bastelzubehoer/?altersgruppe=kinder', use='curl', force_charset='utf-8'), process_catlist, dict(cat='Basteln'))
+    session.queue(Request('https://www.otto.de/diy/malen/malvorlagen/malbuecher/?s=teenager&sortiertnach=bewertung', use='curl', force_charset='utf-8'), process_prodlist, dict(cat='Teenager Malbücher'))
+    session.queue(Request('https://www.otto.de/moebel/kindermoebel/', use='curl', force_charset='utf-8'), process_catlist, dict(cat='Kinderzimmer'))
+    session.queue(Request('https://www.otto.de/garten/gartenmoebel/gartenmoebel-sets/?altersgruppe=kinder', use='curl', force_charset='utf-8'), process_catlist, dict(cat='Kinder Gartenmöbel-Sets'))
 
 
 def process_catlist(data,context, session):
     strip_namespace(data)
 
-    cats = data.xpath('//div[@class="nav_local-category"]')
-    for cat in cats:
-        name = cat.xpath('.//li[@class="nav_local-link nav_link-headline"]/a/span[@class="nav_link-title"]/text()').string()
+    sub_cats = data.xpath('//div[@class="nav_local-category"]//li[contains(@class, "nav_local-link")]/a')
+    for sub_cat in sub_cats:
+        sub_name = sub_cat.xpath('span[@class="nav_link-title"]/text()').string()
+        url = sub_cat.xpath('@href').string()
 
-        if name and name not in XCAT:
-            sub_cats = cat.xpath('.//li[@class="nav_local-link "]/a')
-            for sub_cat in sub_cats:
-                sub_name = sub_cat.xpath('span[@class="nav_link-title"]/text()').string()
-                url = sub_cat.xpath('@href').string()
+        if not sub_name.lower().startswith('alle'):
+            if '/?' in url:
+                prods_url = url + '&sortiertnach=bewertung'
+            else:
+                prods_url = url + '?sortiertnach=bewertung'
 
-                if not sub_name.lower().startswith('alle'):
-                    if '/?' in url:
-                        prods_url = url + '&sortiertnach=bewertung'
-                    else:
-                        prods_url = url + '?sortiertnach=bewertung'
-
-                    session.queue(Request(prods_url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + name + '|' + sub_name, cat_url=url))
+            session.queue(Request(prods_url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + sub_name, cat_url=url))
 
 
 def process_prodlist(data, context, session):

@@ -67,9 +67,9 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    pros = data.xpath('(//h3[regexp:test(normalize-space(text()), "^Plusser:|^Fordele")]/following-sibling::*)[1]/li')
+    pros = data.xpath('(//h3[regexp:test(normalize-space(text()), "Plusser:|Fordele")]/following-sibling::*)[1]/li')
     if not pros:
-        pros = data.xpath('(//p[regexp:test(., "^Pros:|^Fordele")]/following-sibling::*)[1]/li')
+        pros = data.xpath('(//p[regexp:test(., "Pros:|Fordele")]/following-sibling::*)[1]/li')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -87,9 +87,9 @@ def process_review(data, context, session):
                 if len(pro) > 1:
                     review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('(//h3[regexp:test(normalize-space(text()), "^Minuser:|^Ulemper")]/following-sibling::*)[1]/li')
+    cons = data.xpath('(//h3[regexp:test(normalize-space(text()), "Minuser:|Ulemper")]/following-sibling::*)[1]/li')
     if not cons:
-        cons = data.xpath('(//p[regexp:test(., "^Cons:|^Ulemper")]/following-sibling::*)[1]/li')
+        cons = data.xpath('(//p[regexp:test(., "Cons:|Ulemper")]/following-sibling::*)[1]/li')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
@@ -115,6 +115,12 @@ def process_review(data, context, session):
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
+
+    pages = data.xpath('//ul[contains(@class, "dropdown-list")]/li')
+    if len(pages) > 1:
+        for page in pages:
+            title = page.xpath('.//text()').string(multiple=True)
+            review.add_property(type='pages', value=dict(title=title, url=data.response_url))
 
     excerpt = data.xpath('//h3[contains(., "Konklusion")]/preceding-sibling::p[string-length(.)>10]//text()').string(multiple=True)
     if not excerpt:

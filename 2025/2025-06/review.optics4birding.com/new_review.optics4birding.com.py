@@ -52,10 +52,13 @@ def process_review(data, context, session):
     review.ssid = product.ssid
 
     conclusion = data.xpath('//div[@id="conclusions"]/p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="Review Topics"]/div[@class and not(@id="conclusions")]//p//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="Review Topics"]/div[@class and not(@id="conclusions")]//p[not(preceding-sibling::h2[contains(., "Conclusion")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

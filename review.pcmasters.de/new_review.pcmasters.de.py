@@ -60,7 +60,7 @@ def process_review(data, context, session):
             grade_val = float(grade_val.replace('%', ''))
             review.grades.append(Grade(name=grade_name, value=grade_val, best=100.0))
 
-    pros = data.xpath('(//h2[@id="pro" or contains(text(), "Pro")]/following-sibling::*)[1]/li')
+    pros = data.xpath('((//h2|//h3)[@id="pro" or normalize-space(text())="Pro"]/following-sibling::*)[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -68,7 +68,7 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('(//h2[@id="contra" or contains(text(), "Contra")]/following-sibling::*)[1]/li')
+    cons = data.xpath('((//h2|//h3)[@id="contra" or normalize-space(text())="Contra"]/following-sibling::*)[1]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:

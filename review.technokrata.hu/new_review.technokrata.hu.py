@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.queue(Request('https://www.technokrata.hu/tesztek/', use='curl', force_charset='utf-8'), process_revlist, dict())
+    session.queue(Request('https://www.technokrata.hu/tesztek/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -11,11 +11,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('h2/text()').string()
         url = rev.xpath('a/@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
@@ -46,14 +46,18 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//h3[contains(., "Összességében")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//p[contains(., "Verdict")]/following-sibling::p//text()').string(multiple=True)
+        conclusion = data.xpath('//p[regexp:test(., "Verdict|Végítélet")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[strong[contains(., "Összegzés")]]//text()[not(contains(., "Összegzés"))]').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h3[contains(., "Összességében")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[contains(., "Verdict")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//p[regexp:test(., "Verdict|Végítélet")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[strong[contains(., "Összegzés")]]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//body/p//text()').string(multiple=True)
 

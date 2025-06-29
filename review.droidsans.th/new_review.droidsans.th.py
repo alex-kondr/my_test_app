@@ -77,15 +77,15 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[regexp:test(., "สรุปการใช้งาน|สรุปการใช้งาน|สรุปส่งท้ายและราคา")]/following-sibling::p[not(preceding::p[regexp:test(., "จุดเด่นของ|ราคาแ")] or regexp:test(., "จุดเด่นของ|ราคาแ")) and preceding::h2[1][regexp:test(., "สรุปการใช้งาน|สรุปการใช้งาน")]]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "สรุปการใช้งาน|สรุปการใช้งาน|สรุปส่งท้าย")]/following-sibling::p[not(preceding::p[regexp:test(., "จุดเด่นของ|ราคาแ")] or regexp:test(., "จุดเด่นของ|ราคาแ|วางจำหน่ายในประเทศจีนที")) and preceding::h2[1][regexp:test(., "สรุปการใช้งาน|สรุปการใช้งาน|สรุปส่งท้าย")]]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[regexp:test(., "สรุปการใช้งาน|สรุปการใช้งาน|สรุปส่งท้ายและราคา")]/following-sibling::p//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[regexp:test(., "สรุปการใช้งาน|สรุปการใช้งาน|สรุปส่งท้าย")]/following-sibling::p//text()').string(multiple=True)
 
     if conclusion:
         conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "สรุปการใช้งาน|สรุปการใช้งาน|สรุปส่งท้ายและราคา")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(., "สรุปการใช้งาน|สรุปการใช้งาน|สรุปส่งท้าย")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="left-content"]/p[not(preceding::p[contains(., "จุดเด่นของ")] or contains(., "จุดเด่นของ") or preceding::h2[contains(., "ราคาแ")])]//text()').string(multiple=True)
 

@@ -75,15 +75,10 @@ def process_product(data, context, session):
     product.category = context['cat']
     product.manufacturer = data.xpath('//div[@id="prodDetails"]/a/text()').string()
 
-    revs_cnt = data.xpath('//meta[@itemprop="reviewCount"]/@content').string() or 0
     revs = data.xpath('//div[@itemprop="review"]')
-    
-    if int(revs_cnt) != len(revs):
-        raise ValueError("!!!")
-    
     for rev in revs:
         review = Review()
-        review.type = 'pro'
+        review.type = 'user'
         review.url = product.url
         review.date = rev.xpath('//div[@class="reviewAge"]/text()').string()
 
