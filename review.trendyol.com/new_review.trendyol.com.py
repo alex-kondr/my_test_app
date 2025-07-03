@@ -54,58 +54,51 @@ def process_catlist(data, context, session):
             sub_cats1 = sub_cat.get('children', [])
             for sub_cat1 in sub_cats1:
                 sub_name1 = sub_cat1.get('title')
-                url = 'https://www.trendyol.com' + sub_cat1.get('webUrl') + '?sst=MOST_RATED'
-                session.queue(Request(url, use='curl', options=OPTIONS, max_age=0), process_prodlist, dict(cat=name+'|'+sub_name+'|'+sub_name1))
+                url = 'https://apigw.trendyol.com/discovery-web-searchgw-service/v2/api/infinite-scroll' + sub_cat1.get('webUrl') + '?sst=MOST_RATED'
+                session.queue(Request(url, use='curl', max_age=0), process_prodlist, dict(cat=name+'|'+sub_name+'|'+sub_name1))
 
 
 def process_prodlist(data, context, session):
-    resp = simplejson.loads(data.content)
+    prods_json = simplejson.loads(data.content).get('result', {})
 
-    prods = resp.get('result', {}).get('products', [])
+    prods = prods_json.get('products', [])
     for prod in prods:
         product = Product()
-        product.name = prod['name']
-        product.manufacturer = prod.get('brand', {}).get('name')
-        product.url = 'https://www.trendyol.com' + prod['url']
-        product.category = prod.get('categoryHierarchy', '').replace('/', '|') or context['cat']
-        product.ssid = str(prod['id'])
+        product.name = prod.get('name')
+        product.url = 'https://www.trendyol.com' + prod.get('url')
+        product.ssid = str(prod.get('id'))
         product.sku = product.ssid
-
-        # 'https://www.trendyol.com/sayina/kadin-siyah-straplez-cift-halkali-lastik-detayli-astarli-yuksek-bel-sik-deniz-havuz-bikini-takimi-p-715890548/yorumlar?boutiqueId=61&merchantId=381608&sav=true'
+        product.category =  context['cat']
+        product.manufacturer = prod.get('brand', {}).get('name')
 
         revs_cnt = prod.get('ratingScore', {}).get('totalCount')
         if revs_cnt and revs_cnt > 0:
-                        # 'https://apigw.trendyol.com/discovery-web-websfxsocialreviewrating-santral/product-reviews-detailed?&sellerId=381608&contentId=715890548'
-            revs_url = 'https://apigw.trendyol.com/discovery-sfint-social-service/api/review/reviews/%s?page=0&pageSize=20' % product.ssid
-            session.do(Request(revs_url, use='curl', options=OPTIONS, max_age=0), process_reviews, dict(product=product))
+            sellerId = prod.get('merchantId')
+            revs_url = 'https://apigw.trendyol.com/discovery-web-websfxsocialreviewrating-santral/product-reviews-detailed?&sellerId={sellerId}&contentId={ssid}'.format(ssid=product.ssid, sellerId=sellerId)
+            session.do(Request(revs_url, use='curl', max_age=0), process_reviews, dict(product=product, sellerId=sellerId))
+        else:
+            return
 
-    prods_cnt = resp.get('result', {}).get('totalCount', 0)
+    prods_cnt = prods_json.get('totalCount', 0)
     offset = context.get('offset', 0) + 24
     if prods_cnt and offset < int(prods_cnt):
         next_page = context.get('page', 1) + 1
         next_url = data.response_url.split('&pi=')[0] + '&pi=' + str(next_page)
-        session.queue(Request(next_url, use='curl', options=OPTIONS, max_age=0), process_prodlist, dict(context, offset=offset, page=next_page))
+        session.queue(Request(next_url, use='curl', max_age=0), process_prodlist, dict(context, offset=offset, page=next_page))
 
 
 def process_reviews(data, context, session):
     product = context['product']
 
-    revs_json = simplejson.loads(data.content).get('productReviews', {})
+    revs_json = simplejson.loads(data.content).get('result', {}).get('productReviews', {})
 
     revs = revs_json.get('content', [])
     for rev in revs:
-        if rev.get('language') != 'tr':
-            continue
-
         review = Review()
         review.type = 'user'
         review.url = product.url
         review.ssid = str(rev.get('id'))
         review.date = rev.get('commentDateISOType')
-
-        title = rev.get('commentTitle')
-        if title:
-            review.title = h.unescape(remove_emoji(title)).strip(' ,*_-+\n\t')
 
         author_name = rev.get('sellerName', rev.get('userFullName'))
         if author_name:
@@ -116,6 +109,10 @@ def process_reviews(data, context, session):
             elif author_name:
                 review.authors.append(Person(name=author_name, ssid=author_name))
 
+        grade_overall = rev.get('rate')
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
         is_verified = rev.get('trusted')
         if is_verified:
             review.add_property(type='is_verified_buyer', value=True)
@@ -124,23 +121,27 @@ def process_reviews(data, context, session):
         if hlp_yes and hlp_yes > 0:
             review.add_property(type='helpful_votes', value=int(hlp_yes))
 
-        grade_overall = rev.get('rate')
-        if grade_overall:
-            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
-
+        title = rev.get('commentTitle')
         excerpt = rev.get('comment')
+        if excerpt and len(h.unescape(remove_emoji(excerpt)).strip(' ,*_-+\n\t')) > 2:
+            if title:
+                review.title = h.unescape(remove_emoji(title)).strip(' ,*_-+\n\t')
+        else:
+            excerpt = title
+
         if excerpt:
             excerpt = h.unescape(remove_emoji(excerpt)).strip(' ,*_-+\n\t')
-            if excerpt:
+            if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
+
                 product.reviews.append(review)
 
     revs_cnt = revs_json.get('totalElements', 0)
-    offset = context.get('offset', 0) + 20
+    offset = context.get('offset', 0) + 30
     if offset < revs_cnt:
         next_page = context.get('page', 0) + 1
-                #    'https://apigw.trendyol.com/discovery-web-websfxsocialreviewrating-santral/product-reviews-detailed?&sellerId=381608&contentId=715890548&page=0
-        next_url = 'https://apigw.trendyol.com/discovery-sfint-social-service/api/review/reviews/%s?page=%s&pageSize=20' % (product.ssid, next_page)
-        session.do(Request(next_url, use='curl', options=OPTIONS, max_age=0), process_reviews, dict(product=product, offset=offset, page=next_page))
+        next_url = 'https://apigw.trendyol.com/discovery-web-websfxsocialreviewrating-santral/product-reviews-detailed?&sellerId={sellerId}&contentId={ssid}&page={page}'.format(sellerId=context['sellerId'], ssid=product.ssid, page=next_page)
+        session.do(Request(next_url, use='curl', options=OPTIONS, max_age=0), process_reviews, dict(context, product=product, offset=offset, page=next_page))
+
     elif product.reviews:
         session.emit(product)

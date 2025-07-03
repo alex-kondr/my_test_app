@@ -1,0 +1,104 @@
+from agent import *
+from models.products import *
+
+
+def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.queue(Request('https://www.pcworld.com/', use='curl', force_charset='utf-8'), process_frontpage, dict())
+
+
+def process_frontpage(data, context, session):
+    cats = data.xpath('//li[a[contains(., "Reviews")]]/ul//a')
+    for cat in cats:
+        name = cat.xpath('text()').string()
+        url = cat.xpath('@href').string()
+        session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name))
+
+
+def process_revlist(data, context, session):
+    revs = data.xpath('//h3/a')
+    for rev in revs:
+        title = rev.xpath('text()').string()
+        url = rev.xpath('@href').string()
+        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
+
+    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
+    if next_url:
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict(context))
+
+
+def process_review(data, context, session):
+    product = Product()
+    product.ssid = context['url'].split('/')[-1].replace('.html', '').replace('-review', '')
+    product.category = context['cat']
+
+    name = data.xpath('//h3[@class="review-best-price"]/text()').string()
+    if name:
+        product.name = name.split(':')[-1].strip()
+    else:
+        product.name = context['title'].split(' review:')[0].replace('', '').strip()
+
+    product.url = data.xpath('//a[contains(., "View Deal")]/@href').string()
+    if not product.url:
+        product.url = context['url']
+
+    review = Review()
+    review.type = 'pro'
+    review.title = context['title']
+    review.url = context['url']
+    review.ssid = product.ssid
+
+    date = data.xpath('//span[@class="posted-on"]/text()').string()
+    if date:
+        review.date = date.split(' am ')[0].rsplit(' ', 1)[0]
+
+    author = data.xpath('//span[@class="author vcard"]/a/text()').string()
+    author_url = data.xpath('//span[@class="author vcard"]/a/@href').string()
+    if author and author_url:
+        author_ssid = author_url.split('/')[-1]
+        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    grade_overall = data.xpath('//div[@class="starRating"]/@style').string()
+    if grade_overall:
+        grade_overall = float(grade_overall.split()[-1].strip(' ;'))
+        review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+
+    pros = data.xpath('//div[h3[contains(text(), "Pros")]]/ul/li')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.;•–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//div[h3[contains(text(), "Cons")]]/ul/li')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.;•–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
+    summary = data.xpath('//div[@class="subheadline"]//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    conclusion = data.xpath('//h2[regexp:test(@id, "should-.+-buy") or regexp:test(text(), "Should .+ buy|It has a fan", "i")]/following-sibling::p[contains(., "How we test")])]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h3[@id="our-verdict"]/following-sibling::p[not(regexp:test(., "Price When Reviewed|This value will show the geolocated pricing text for product undefined|Best Pricing Today"))]//text()').string(multiple=True)
+
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//h2[regexp:test(@id, "should-.+-buy") or regexp:test(text(), "Should .+ buy|It has a fan", "i")]/preceding-sibling::p[string-length(.)>10]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//body/p[string-length(.)>10]//text()').string(multiple=True)
+
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
