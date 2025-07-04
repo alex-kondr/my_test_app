@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 def run(context, session):
@@ -19,7 +20,7 @@ def process_revlist(data, context, session):
     revs = data.xpath('//h3/a')
     for rev in revs:
         title = rev.xpath('text()').string()
-        url = rev.xpath('@href').string()
+        url = rev.xpath('@href').string().rsplit('/', 1)[0]
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
@@ -29,14 +30,9 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.ssid = context['url'].split('/')[-1].replace('.html', '').replace('-review', '')
+    product.name = re.sub(r'Tested: ', '', context['title'].split(' preview: ')[0].split(' review:')[0].split(' tested: ')[0]).strip()
+    product.ssid = context['url'].split('/')[-1]
     product.category = context['cat']
-
-    name = data.xpath('//h3[@class="review-best-price"]/text()').string()
-    if name:
-        product.name = name.split(':')[-1].strip()
-    else:
-        product.name = context['title'].split(' review:')[0].replace('', '').strip()
 
     product.url = data.xpath('//a[contains(., "View Deal")]/@href').string()
     if not product.url:
@@ -52,7 +48,7 @@ def process_review(data, context, session):
     if date:
         review.date = date.split(' am ')[0].rsplit(' ', 1)[0]
 
-    author = data.xpath('//span[@class="author vcard"]/a/text()').string()
+    author = data.xpath('//span[@class="author vcard"]//text()').string(multiple=True)
     author_url = data.xpath('//span[@class="author vcard"]/a/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
@@ -85,18 +81,28 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(@id, "should-.+-buy") or regexp:test(text(), "Should .+ buy|It has a fan", "i")]/following-sibling::p[contains(., "How we test")])]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(@id, "should-.+-buy") or regexp:test(text(), "Should .+ buy|It has a fan|conclusion|Final thoughts", "i")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h3[@id="our-verdict"]/following-sibling::p[not(regexp:test(., "Price When Reviewed|This value will show the geolocated pricing text for product undefined|Best Pricing Today"))]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(@id, "should-.+-buy") or regexp:test(text(), "Should .+ buy|It has a fan", "i")]/preceding-sibling::p[string-length(.)>10]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(@id, "should-.+-buy") or regexp:test(text(), "Should .+ buy|It has a fan|conclusion|Final thoughts", "i")]/preceding-sibling::p[string-length(.)>10]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//body/p[string-length(.)>10]//text()').string(multiple=True)
+        excerpt = data.xpath('(//body/p[string-length(.)>10]|//div[contains(@class, "content")])//text()[string-length(.)>10]').string(multiple=True)
 
     if excerpt:
+        if not conclusion and 'Overall, ' in excerpt:
+            excerpt, conclusion = excerpt.rsplit('Overall, ', 1)
+
+            conclusion = conclusion.strip().title()
+            review.add_property(type='conclusion', value=conclusion)
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '')
+
+        excerpt = excerpt.strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
