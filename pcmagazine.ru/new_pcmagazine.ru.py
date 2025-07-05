@@ -4,7 +4,6 @@ import re
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://uk.pcmag.com/article/review', use='curl', force_charset='utf-8'), process_catlist, dict())
 
 
@@ -33,13 +32,13 @@ def process_revlist(data, context, session):
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
 
-        if not re.search(r'These.+Memorial Day|the best', title, flags=re.I) :
+        if not re.search(r'These.+Memorial Day|the best|Our Best-Reviewed', title, flags=re.I) :
             session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].replace(' Preview', '').replace(' Review', '').strip()
     product.ssid = context['url'].split('/')[-1]
     product.category = context['cat']
 
@@ -90,14 +89,14 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//div[contains(@id, "bottomline")]//text()').string(multiple=True)
+    conclusion = data.xpath('//p[b[regexp:test(., "verdict", "i")]]//text()[not(regexp:test(., "verdict", "i"))]').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[contains(@id, "bottomline")]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//div[@id="id_text"]|//body)/p//text()').string(multiple=True)
-    # if not excerpt:
-    #     excerpt = data.xpath('//text()').string(multiple=True)
-
+    excerpt = data.xpath('(//div[@id="id_text"]|//body)/p[not(@class or regexp:test(., "verdict", "i"))]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
