@@ -12,9 +12,9 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.WWW_PCWORLD_COM
+agent = agents.PCMAGAZINE_RU
 # agent = agents.TEST
-reload = 0
+reload = 1
 
 
 if __name__ == "__main__":

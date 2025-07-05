@@ -19,7 +19,7 @@ def process_frontpage(data, context, session):
 def process_revlist(data, context, session):
     revs = data.xpath('//h3/a')
     for rev in revs:
-        title = rev.xpath('text()').string()
+        title = rev.xpath('text()').string().replace('&amp', '&')
         url = rev.xpath('@href').string().rsplit('/', 1)[0]
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
@@ -30,7 +30,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = re.sub(r'Tested: ', '', context['title'].split(' preview: ')[0].split(' review:')[0].split(' tested: ')[0]).strip()
+    product.name = re.sub(r'Tested: |Test: |Reviewed: | review', '', re.split(r' preview: | review: | tested: ', context['title'], flags=re.I)[0]).strip()
     product.ssid = context['url'].split('/')[-1]
     product.category = context['cat']
 
@@ -90,7 +90,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h2[regexp:test(@id, "should-.+-buy") or regexp:test(text(), "Should .+ buy|It has a fan|conclusion|Final thoughts", "i")]/preceding-sibling::p[string-length(.)>10]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//body/p[string-length(.)>10]|//div[contains(@class, "content")])//text()[string-length(.)>10]').string(multiple=True)
+        excerpt = data.xpath('(//body/p[string-length(.)>10]|//div[contains(@class, "content")])[not(preceding-sibling::h3[1][@class="review-price"])]//text()[not(parent::span[contains(@class, "price")])][string-length(normalize-space(.))>10]').string(multiple=True)
 
     if excerpt:
         if not conclusion and 'Overall, ' in excerpt:

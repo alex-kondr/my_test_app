@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 XCAT = ['Recommended', 'Brands', 'Firmware Updates']
@@ -92,35 +93,17 @@ def process_review(data, context, session):
 
     grades = data.xpath('//h4[contains(., "Rating")]/following-sibling::ul[1]/li')
     for grade in grades:
-        grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).split(':')
-        grade_val = grade_val.split(';')[0].split()[-1].strip()
-        review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
+        grade = grade.xpath('.//text()').string(multiple=True)
+        grade_name = re.split(r'\d+\.?\d?', grade)[0].strip(' +-*.;:•–')
+        grade_val = re_search_once(r'\d+\.?\d?', grade)
+        if grade_val and 'overall' not in grade.lower():
+            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
-    # pros = data.xpath('/li')
-    # for pro in pros:
-    #     pro = pro.xpath('.//text()').string(multiple=True)
-    #     if pro:
-    #         pro = pro.strip(' +-*.;•–')
-    #         if len(pro) > 1:
-    #             review.add_property(type='pros', value=pro)
-
-    # cons = data.xpath('/li')
-    # for con in cons:
-    #     con = con.xpath('.//text()').string(multiple=True)
-    #     if con:
-    #         con = con.strip(' +-*.;•–')
-    #         if len(con) > 1:
-    #             review.add_property(type='cons', value=con)
-
-    summary = data.xpath('//p[preceding-sibling::h4[1][normalize-space(text())="In summary"]]//text()').string(multiple=True)
+    summary = data.xpath('//p[preceding-sibling::h4[1][contains(., "In summary")]]//text()[not(contains(., "[more]"))]').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    # conclusion = data.xpath('//text()').string(multiple=True)
-    # if conclusion:
-    #     review.add_property(type='conclusion', value=conclusion)
-
-    excerpt = data.xpath('//p[not(preceding-sibling::h4[1][normalize-space(text())="In summary"] or @class or preceding::p[strong[normalize-space(text())="Conclusion"]] or strong[normalize-space(text())="Conclusion"])]//text()').string(multiple=True)
+    excerpt = data.xpath('//p[not(preceding-sibling::h4[1][contains(., "In summary")] or @class or preceding::p[strong[normalize-space(text())="Conclusion"]] or strong[normalize-space(text())="Conclusion"] or preceding::h4[contains(., "Specifications")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

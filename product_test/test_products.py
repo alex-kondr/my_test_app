@@ -414,6 +414,6 @@ class TestProduct:
             self.error_excerpt.append(properties)
 
     def save(self, file: list, type_err: str) -> None:
-        file_path = self.path / f"{self.agent_name}-{type_err}.json"
+        file_path = self.path / f"{type_err}.json"
         with open(file_path, "w", encoding="utf-8") as fd:
             json.dump(file, fd, indent=2, ensure_ascii=False)
