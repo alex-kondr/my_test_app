@@ -30,7 +30,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = re.sub(r'Tested: |Test: |Reviewed: | review|Review: ', '', re.split(r' preview: | review: | tested: ', context['title'], flags=re.I)[0]).strip()
+    product.name = re.sub(r'Tested: |Test: |Reviewed: | review|: How We Test|Review: | Review| Tests|Book Review – | review: ', '', re.split(r' preview: | review: | tested: | in test: | speed test: | re-review: ', context['title'], flags=re.I)[0]).strip()
     product.ssid = context['url'].split('/')[-1]
     product.category = context['cat']
 
