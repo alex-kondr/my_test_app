@@ -43,7 +43,7 @@ def process_catlist(data, context, session):
     if not cats_json:
         return
 
-    cats = simplejson.loads(cats_json.split('__ = ')[-1]).get('items', [])
+    cats = simplejson.loads(cats_json.split('__ = ')[-1].strip(' ;')).get('items', [])
     for cat in cats:
         name = cat.get('title')
 
@@ -75,7 +75,7 @@ def process_prodlist(data, context, session):
         if revs_cnt and revs_cnt > 0:
             sellerId = prod.get('merchantId')
             revs_url = 'https://apigw.trendyol.com/discovery-web-websfxsocialreviewrating-santral/product-reviews-detailed?&sellerId={sellerId}&contentId={ssid}'.format(ssid=product.ssid, sellerId=sellerId)
-            session.do(Request(revs_url, use='curl', max_age=0), process_reviews, dict(product=product, sellerId=sellerId))
+            session.do(Request(revs_url, use='curl', options=OPTIONS, max_age=0), process_reviews, dict(product=product, sellerId=sellerId))
         else:
             return
 

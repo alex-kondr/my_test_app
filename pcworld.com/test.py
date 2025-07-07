@@ -14,7 +14,7 @@ import product_test.list_of_agents as agents
 
 agent = agents.WWW_PCWORLD_COM
 # agent = agents.TEST
-reload = 0
+reload = 1
 
 
 if __name__ == "__main__":

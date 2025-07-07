@@ -103,7 +103,11 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('//p[not(preceding-sibling::h4[1][contains(., "In summary")] or @class or preceding::p[strong[normalize-space(text())="Conclusion"]] or strong[normalize-space(text())="Conclusion"] or preceding::h4[contains(., "Specifications")])]//text()').string(multiple=True)
+    conclusion = data.xpath('(//p[contains(., "Conclusion")]|//p[contains(., "Conclusion")]/following-sibling::p[not(@class or preceding::h4[regexp:test(., "Specifications|SPECS")])])//text()[not(contains(., "Conclusion"))]').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//p[not(preceding-sibling::h4[1][contains(., "In summary")] or @class or preceding::p[contains(., "Conclusion")] or contains(., "Conclusion") or preceding::h4[regexp:test(., "Specifications|SPECS")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
