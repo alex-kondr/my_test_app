@@ -1,10 +1,11 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.hardwarezone.com.sg/_plat/api/teaser/latest?tags=editors-picks&ignoreIds=6805939%2C6973865%2C6972363%2C6959661%2C6806311%2C6805736%2C6805333%2C6805809%2C6805305%2C6805172%2C6805372%2C6805500%2C6823897&from=0&size=8&storyTypes=reviewStory', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
@@ -14,7 +15,7 @@ def process_revlist(data, context, session):
         ssid = str(rev.get('id'))
         title = rev.get('title')
         url = 'https://www.hardwarezone.com.sg' + rev.get('path')
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(ssid=ssid, title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(ssid=ssid, title=title, url=url))
 
     if revs:
         offset = context.get('offset', 0) + 8
@@ -24,7 +25,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' review: ')[0].replace('', '').strip()
+    product.name = re.sub(r'[\s]?[P]?review[ed]{0,2}[ -:]{0,3}', '', re.split(r' [p]?Review[ed]{0,2}[ :-]{1,3}', context['title'], flags=re.I)[0], flags=re.I).strip()
     product.url = context['url']
     product.ssid = context['ssid']
     product.category = data.xpath('//div[h1[contains(@class, "title")]]/div[contains(@class, "label")]//div[contains(@class, "label")]/a/text()').join('|')
@@ -51,13 +52,28 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('//div[contains(@class, "body")]/p[not(regexp:test(., "Image:|Our articles may contain| is available now on "))]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
+    conclusion = data.xpath('(//h3[regexp:test(., "Final thoughts|Conclusion")]|//p[regexp:test(., "Final thoughts|Conclusion")])/following-sibling::p[not(regexp:test(., "Image:|Our articles may contain| is available now on |Note: ") or contains(@class, "imageCaption"))]//text()').string(multiple=True)
+    if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
+        review.add_property(type='conclusion', value=conclusion)
 
-    rev_id = data.xpath('//script[contains(., "__staticRouterHydrationData ")]/text()').string().split('%2Fcontent%2F')[-1].split('%22', 1)[0]
-    next_url = 'https://www.hardwarezone.com.sg/_plat/api/product/reviewById?id={}'.format(rev_id)
-    session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(excerpt=excerpt, review=review, product=product))
+    excerpt = data.xpath('(//h3[regexp:test(., "Final thoughts|Conclusion")]|//p[regexp:test(., "Final thoughts|Conclusion")])/preceding-sibling::p[not(regexp:test(., "Image:|Our articles may contain| is available now on |Note: ") or contains(@class, "imageCaption"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "body")]/p[not(regexp:test(., "Image:|Our articles may contain| is available now on |Note: ") or contains(@class, "imageCaption"))]//text()').string(multiple=True)
+
+    rev_id = data.xpath('//script[contains(., "__staticRouterHydrationData ")]/text()').string()
+    if '%2Fcontent%2F' in rev_id:
+        rev_id = rev_id.split('%2Fcontent%2F')[-1].split('%22', 1)[0]
+        next_url = 'https://www.hardwarezone.com.sg/_plat/api/product/reviewById?id={}'.format(rev_id)
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(excerpt=excerpt, review=review, product=product))
+
+    elif excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
 
 
 def process_review_next(data, context, session):
@@ -69,7 +85,7 @@ def process_review_next(data, context, session):
     for grade in grades:
         grade_name = grade.get('key').title()
         grade_val = grade.get('value')
-        if grade_name == 'overall':
+        if grade_name.lower() == 'overall':
             review.grades.append(Grade(type='overall', value=float(grade_val), best=10.0))
         else:
             review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
@@ -91,6 +107,7 @@ def process_review_next(data, context, session):
                 review.add_property(type='cons', value=con)
 
     if context['excerpt']:
+        context['excerpt'] = context['excerpt'].replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=context['excerpt'])
 
         product = context['product']
