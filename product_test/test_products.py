@@ -146,12 +146,13 @@ class TestProduct:
             self.test_product_id_manufacturer()
             self.test_product_ean_gtin()
             self.test_review_title(xreview_title)
+            self.test_review_date()
             self.test_review_grade()
             self.test_review_author()
             self.test_review_award()
             self.test_review_pros_cons()
             self.test_review_conclusion(xreview_conclusion)
-            self.test_review_excerpt(xreview_excerpt, len_chank=100, len_excerpt=3)
+            self.test_review_excerpt(xreview_excerpt, len_chank=100, len_excerpt=3, not_xrev_excerpt=not_xproduct_name)
 
         # EXECUTOR.shutdown()
 
@@ -362,8 +363,10 @@ class TestProduct:
             property["error_name"] = xreview_conclusion
             self.error_conclusion.append(properties)
 
-    def test_review_excerpt(self, xreview_excerpt: list[str] = [], len_chank: int = 100, len_excerpt: int = 10) -> None:
+    def test_review_excerpt(self, xreview_excerpt: list[str] = [], len_chank: int = 100, len_excerpt: int = 10, not_xrev_excerpt: str|None = None) -> None:
         xreview_excerpts = self.xreview_excerpt + xreview_excerpt
+        if not_xrev_excerpt:
+            xreview_excerpts.remove(not_xrev_excerpt)
 
         properties = self.product.get("review", {}).get("properties", [])
         conclusion = [property.get("value") for property in properties if property.get("type") == "conclusion"]
