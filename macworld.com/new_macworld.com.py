@@ -87,6 +87,8 @@ def process_review(data, context, session):
     excerpt = data.xpath('//h2[regexp:test(., "Should You Buy|Conclusion")]/preceding-sibling::p[not(regexp:test(., "^\$\d+"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//body/p[not(regexp:test(., "^\$\d+|Check out the"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(regexp:test(., "^\$\d+|Check out the"))]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
