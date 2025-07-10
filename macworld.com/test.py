@@ -17,6 +17,10 @@ agent = agents.WWW_MACWORLD_COM
 reload = 1
 
 
+# name: 44
+# exc: 219
+
+
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
     print(product.result)

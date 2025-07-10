@@ -16,6 +16,10 @@ agent = agents.WWW_SILENTPCREVIEW_COM
 # agent = agents.TEST
 reload = 1
 
+# name: 59
+# cat: 129
+# exc: 130
+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

@@ -320,8 +320,8 @@ class TestProduct:
         cons = [property.get("value") for property in property_cons]
 
         for i, pro in enumerate(pros):
-            if pro and len(pro) < 3:
-                property_pros[i]["error_len"] = "< 3"
+            if pro and len(pro) < 2:
+                property_pros[i]["error_len"] = "< 2"
                 temp_pros_cons = properties
             if pro in cons:
                 property_pros[i]["error_in_con"] = f"Pro: '{pro}' in cons"
@@ -331,17 +331,17 @@ class TestProduct:
                     property_pros[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
                     temp_pros_cons = properties
 
-            for i, con in enumerate(cons):
-                if con and len(con) < 3:
-                    property_cons[i]["error_len"] = "< 3"
+        for i, con in enumerate(cons):
+            if con and len(con) < 3:
+                property_cons[i]["error_len"] = "< 3"
+                temp_pros_cons = properties
+            if con in pros:
+                property_cons[i]["error_in_pro"] = f"Con: '{con}' in pros"
+                temp_pros_cons = properties
+            for xreview_pros_cons in self.xreview_pros_cons:
+                if con and (con.lower().startswith(xreview_pros_cons) or con.lower().endswith(xreview_pros_cons)):
+                    property_cons[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
                     temp_pros_cons = properties
-                if con in pros:
-                    property_cons[i]["error_in_pro"] = f"Con: '{con}' in pros"
-                    temp_pros_cons = properties
-                for xreview_pros_cons in self.xreview_pros_cons:
-                    if con and (con.lower().startswith(xreview_pros_cons) or con.lower().endswith(xreview_pros_cons)):
-                        property_cons[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
-                        temp_pros_cons = properties
 
         if temp_pros_cons:
             self.error_pros_cons.append(temp_pros_cons)

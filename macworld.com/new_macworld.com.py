@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 def run(context, session):
@@ -21,8 +22,8 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' review: ')[0].replace('', '').strip()
-    product.ssid = context['url'].split('/')[-1].replace('.html', '')
+    product.name = re.sub(r'[\s]?[P]?review[ed]{0,2}[ -–:]{0,2}|Tested: |,? tested', '', re.split(r' [p]?Review[ed]{0,2}[ :-–]{1,3}| tests: ', context['title'].replace('O6 review:', '').replace('Lab tested: ', ''), flags=re.I)[0], flags=re.I).strip()
+    product.ssid = context['url'].split('/')[-1].replace('.html', '').replace('-review', '')
 
     product.url = data.xpath('//a[contains(., "View Deal")]/@href').string()
     if not product.url:
@@ -77,14 +78,14 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(., "Should You Buy|Conclusion")]/following-sibling::p[not(regexp:test(., "^\$\d+|Check out the"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "Should You Buy|Conclusion|Verdict", "i")]/following-sibling::p[not(regexp:test(., "^\$\d+|Check out the"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h3[contains(., "Our Verdict ")]/following-sibling::p[not(regexp:test(., "Price When Reviewed|This value will show the geolocated|Best Pricing Today"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h3[contains(., "Our Verdict")]/following-sibling::p[not(regexp:test(., "Price When Reviewed|This value will show the geolocated|Best Pricing Today"))]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "Should You Buy|Conclusion")]/preceding-sibling::p[not(regexp:test(., "^\$\d+"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(., "Should You Buy|Conclusion|Verdict", "i")]/preceding-sibling::p[not(regexp:test(., "^\$\d+"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//body/p[not(regexp:test(., "^\$\d+|Check out the"))]//text()').string(multiple=True)
     if not excerpt:
