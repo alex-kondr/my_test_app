@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://stereo.ru/tests', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -12,7 +12,9 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('span[contains(@class, "title")]/text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
+
+        if title:
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
@@ -22,7 +24,7 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     product = Product()
     product.name = context['title']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = context['url'].split('/')[-1]
     product.category = data.xpath('//a[contains(@class, "relation_channel")]/text()').string() or 'Tech'
 
     product.url = data.xpath('//div[label[contains(., "Официальный сайт")]]//a/@href').string()
@@ -32,7 +34,7 @@ def process_review(data, context, session):
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content|//time/@datetime').string()
@@ -47,33 +49,33 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    pros = data.xpath('/li')
+    pros = data.xpath('//div[label[contains(., "Достоинства")]]/div/p')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
             pro = pro.strip(' +-*.:;•–')
-            if len(pro) > 1:
+            if len(pro) > 1 and pro != 'нет':
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('/li')
+    cons = data.xpath('//div[label[contains(., "Недостатки")]]/div/p')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
             con = con.strip(' +-*.:;•–')
-            if len(con) > 1:
+            if len(con) > 1 and con != 'нет':
                 review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//text()').string(multiple=True)
+    summary = data.xpath('//div[@itemprop="description"]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2[contains(., "Выводы")]|//p[strong[contains(., "Выводы")]])/following-sibling::p[not(preceding-sibling::h2[contains(., "Музыкальный материал")])]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2[contains(., "Выводы")]|//p[strong[contains(., "Выводы")]])/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="app__body"]/p[not(preceding-sibling::h2[contains(., "Музыкальный материал")])]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
