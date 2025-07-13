@@ -17,7 +17,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('https://www.eurogamer.de/reviews', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -39,14 +39,14 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' im Test ')[0].split(' im Test: ')[0].split(' - Test: ')[0].split(' Test - ')[0].strip()
+    product.name = re.sub(r' im Vergleichstest|Test zu | im Test|Test: | - Test', '', re.split(r' im Test:? | [-–] Test: | Test [-–] | Test: | im Review - ', context['title'])[0]).strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('-review', '')
     product.category = 'Spiele'
 
-    platforms = data.xpath('//li[contains(., "Plattformen:")]//text()').string(multiple=True)
+    platforms = data.xpath('//li[regexp:test(., "Plattformen:|Erhältlich für:")]//text()').string(multiple=True)
     if platforms:
-        product.category += '|' + re.sub(r'\(.+\)', '', platforms.replace('Plattformen:', '').strip().replace(', ', '/')).strip()
+        product.category += '|' + re.sub(r'\(.+\)', '', platforms.replace('Plattformen:', '').replace('Erhältlich für:', '').strip().replace(', ', '/')).strip()
 
     manufacturer = data.xpath('//li[regexp:test(., "Entwickler:|Hersteller:")]//text()').string(multiple=True)
     if manufacturer:
@@ -126,6 +126,8 @@ def process_review(data, context, session):
 
 
 def process_review_next(data, context, session):
+    strip_namespace(data)
+
     review = context['review']
 
     page = context.get('page', 1)
