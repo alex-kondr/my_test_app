@@ -16,6 +16,9 @@ agent = agents.GINJFO_FR
 # agent = agents.TEST
 reload = 1
 
+# name: 237
+# exc: 88
+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

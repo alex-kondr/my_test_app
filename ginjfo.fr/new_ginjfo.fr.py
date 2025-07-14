@@ -41,6 +41,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.ginjfo.com/dossiers', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 

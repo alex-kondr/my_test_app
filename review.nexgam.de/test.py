@@ -16,6 +16,12 @@ agent = agents.NEXGAM_DE
 # agent = agents.TEST
 reload = 1
 
+# name: 30
+# pros/cons: 10
+# concl: 46
+# exc: 70
+# error: 2
+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

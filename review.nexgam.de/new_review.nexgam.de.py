@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 def strip_namespace(data):
@@ -38,7 +39,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' - ')[0].replace(' im Test', '').strip()
+    product.name = re.sub(r' im.+Review| im Test| [P]?review[s]?', '', context['title'], flags=re.I).strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
     product.category = 'Spiele'
@@ -99,7 +100,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//section[@class="review-content"]/p//text()').string(multiple=True)
+    excerpt = data.xpath('//section[@class="review-content"]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
