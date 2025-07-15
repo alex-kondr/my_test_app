@@ -77,7 +77,7 @@ def process_review(data, context, session):
     product.name = context['title'].replace('Test ', '').split(', ')[0].split(' : ')[0].strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    product.category = context['cat'].split(' (', '')[0].strip()
+    product.category = context['cat'].split(' (')[0].strip()
     product.manufacturer = data.xpath('//tr[contains(., "Fabricant")]/td[not(contains(., "Fabricant"))]//text()').string()
 
     review = Review()

@@ -45,13 +45,13 @@ def process_revlist_next(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = re.sub(r'Review: |\[.+\]| im Test', '', re.split(r'Review ?\([\w\-\s]+\)[ :|]?', context['title'].split(' - ')[0].split('/ Review')[0].split(': Review')[0], flags=re.UNICODE)[-1], flags=re.UNICODE).strip()
+    product.name = re.sub(r'Review: |\[.+\]| im Test|Review-Event ?\([\w\s/]+\)[ :|]?|Review Steelseries:|Review zur ', '', re.split(r'Review ?\([\w\s/\(]+\)[ :|]?', context['title'].split(' - Review')[0].split('/ Review')[0].split(': Review')[0], flags=re.UNICODE)[-1], flags=re.UNICODE).strip()
     product.url = context['url']
     product.ssid = product.url.split('-')[-1].replace('.html', '')
 
-    category = re_search_once(r'\(.+\)', context['title'])
+    category = re.search(r'\(.+\)', context['title'])
     if category:
-        product.category = category[0].strip('( )')
+        product.category = category.group().strip('( )')
     else:
         product.category = 'Technik'
 

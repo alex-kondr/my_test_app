@@ -12,13 +12,9 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.GINJFO_FR
+agent = agents.PC_GAMER
 # agent = agents.TEST
 reload = 1
-
-# name: 51
-# cat: 31
-# exc: 137
 
 
 if __name__ == "__main__":

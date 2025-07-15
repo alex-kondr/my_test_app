@@ -39,11 +39,14 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = re.sub(r' im.+Review| im Test| [P]?review[s]?', '', context['title'], flags=re.I).strip()
+    product.name = re.sub(r' im.+Review| im Test| [P]?review[s]?|\[.+\] neXGam:|\[.+\]|\(.+\)', '', context['title'], flags=re.I|re.U).strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
     product.category = 'Spiele'
-    product.manufacturer = data.xpath('//tr[contains(., "Vermarkter")]/td[not(contains(., "Vermarkter"))]/text()').string()
+
+    manufacturer = data.xpath('//tr[contains(., "Vermarkter")]/td[not(contains(., "Vermarkter"))]/text()').string()
+    if manufacturer and manufacturer.strip(' +-*.:;•–'):
+        product.manufacturer = manufacturer.strip(' +-*.:;•–')
 
     platforms = data.xpath('//img[contains(@src, "https://www.nexgam.de/media/cache/nexgam/consoles/")]/@title').join('/')
     if platforms:
@@ -52,6 +55,8 @@ def process_review(data, context, session):
     genres = data.xpath('//tr[contains(., "Genre")]/td[not(contains(., "Genre"))]/text()').string()
     if genres:
         product.category += '|' + genres.replace(', ', '/')
+
+    product.category = product.category.strip(' +-*.:;•–|')
 
     review = Review()
     review.type = 'pro'
@@ -63,7 +68,8 @@ def process_review(data, context, session):
     author = data.xpath('//h2[@class="fazit-userh2"]/text()').string()
     if author:
         author = author.replace('meint:', '').strip()
-        review.authors.append(Person(name=author, ssid=author))
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//span[@class="rating green"]//text()').string(multiple=True)
     if grade_overall:
@@ -102,7 +108,14 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//section[@class="review-content"]//text()').string(multiple=True)
     if excerpt:
-        review.add_property(type='excerpt', value=excerpt)
+        if 'Mein Fazit:' in excerpt:
+            excerpt, conclusion = excerpt.rsplit('Mein Fazit:', 1)
+            review.add_property(type='conclusion', value=conclusion.strip())
+        elif 'Fazit:' in excerpt and not conclusion:
+            excerpt, conclusion = excerpt.rsplit('Fazit:', 1)
+            review.add_property(type='conclusion', value=conclusion.strip())
+
+        review.add_property(type='excerpt', value=excerpt.strip())
 
         product.reviews.append(review)
 

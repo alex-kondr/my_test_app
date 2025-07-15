@@ -16,6 +16,9 @@ agent = agents.GAMESASYLUM_COM
 # agent = agents.TEST
 reload = 1
 
+# name: 6
+# exc: 31
+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

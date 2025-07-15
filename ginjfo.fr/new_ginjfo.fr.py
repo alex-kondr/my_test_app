@@ -41,7 +41,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
     session.queue(Request('https://www.ginjfo.com/dossiers', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
@@ -63,9 +63,14 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('Test ', '').strip()
+    product.name = re.sub(r'Test[s]? |, le test.+|, test complet|, découverte et test en vidéo', '', context['title']).strip()
     product.ssid = context['url'].split('-')[-1]
-    product.category = data.xpath('//a[contains(@class, "post-cat") and not(contains(., "Trucs et astuces"))]/text()').string()
+
+    category = data.xpath('//a[contains(@class, "post-cat") and not(regexp:test(., "Trucs et astuces|Tests"))]/text()').string()
+    if category:
+        product.category = category.title().split(' – ')[0]
+    else:
+        product.category = 'Technologie'
 
     product.url = data.xpath('//a[regexp:test(@href, "amzn.to/|tidd.ly/")]/@href').string()
     if not product.url:
@@ -91,14 +96,16 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//div[@class="review-final-score"]//span/@style').string()
     if grade_overall:
-        grade_overall = float(grade_overall.split(':')[-1].replace('%', '')) / 20
-        review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+        context['grade_overall'] = True
+        grade_overall = float(grade_overall.split(':')[-1].replace('%', '')) / 10
+        review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
 
     grades = data.xpath('//div[@class="review-item"]')
     for grade in grades:
-        grade_name = grade.xpath('h5//text()').string()
-        grade_val = float(grade.xpath('.//span/@style').string().split(':')[-1].replace('%', '')) / 20
-        review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
+        context['grades'] = True
+        grade_name = grade.xpath('.//h5//text()').string(multiple=True).split(' - ')[0].strip()
+        grade_val = float(grade.xpath('.//span/@style').string().split(':')[-1].replace('%', '')) / 10
+        review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
 
     awards = data.xpath('//figure[@class="gallery-item"]')
     if not awards:
@@ -116,7 +123,7 @@ def process_review(data, context, session):
         summary = remove_emoji(summary).strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "Conclusion", "i")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="review-short-summary"]/p//text()').string(multiple=True)
 
@@ -124,7 +131,7 @@ def process_review(data, context, session):
         conclusion = remove_emoji(conclusion).strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    context['excerpt'] = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
+    context['excerpt'] = data.xpath('//h2[regexp:test(., "Conclusion", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not context['excerpt']:
         context['excerpt'] = data.xpath('//div[contains(@class, "entry-content")]/p//text()').string(multiple=True)
 
@@ -157,15 +164,18 @@ def process_review_next(data, context, session):
             context['product'].url = prod_url
 
         grade_overall = data.xpath('//div[@class="review-final-score"]//span/@style').string()
-        if grade_overall:
-            grade_overall = float(grade_overall.split(':')[-1].replace('%', '')) / 20
-            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+        if grade_overall and not context.get('grade_overall'):
+            context['grade_overall'] = True
+            grade_overall = float(grade_overall.split(':')[-1].replace('%', '')) / 10
+            review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
 
-        grades = data.xpath('//div[@class="review-item"]')
-        for grade in grades:
-            grade_name = grade.xpath('h5//text()').string()
-            grade_val = float(grade.xpath('.//span/@style').string().split(':')[-1].replace('%', '')) / 20
-            review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
+        if not context.get('grades'):
+            grades = data.xpath('//div[@class="review-item"]')
+            for grade in grades:
+                context['grade_overall'] = True
+                grade_name = grade.xpath('h5//text()').string()
+                grade_val = float(grade.xpath('.//span/@style').string().split(':')[-1].replace('%', '')) / 10
+                review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
 
         awards = data.xpath('//figure[@class="gallery-item"]')
         if not awards:
@@ -178,7 +188,7 @@ def process_review_next(data, context, session):
             if title and 'Top' in title:
                 review.add_property(type='awards', value=dict(title=title, img=img))
 
-        conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[regexp:test(., "Conclusion", "i")]/following-sibling::p//text()').string(multiple=True)
         if not conclusion:
             conclusion = data.xpath('//div[@class="review-short-summary"]/p//text()').string(multiple=True)
 
@@ -186,11 +196,13 @@ def process_review_next(data, context, session):
             conclusion = remove_emoji(conclusion).strip()
             review.add_property(type='conclusion', value=conclusion)
 
-        excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[regexp:test(., "Conclusion", "i")]/preceding-sibling::p//text()').string(multiple=True)
         if not excerpt:
             excerpt = data.xpath('//div[contains(@class, "entry-content")]/p//text()').string(multiple=True)
 
         if excerpt:
+            if conclusion:
+                excerpt = excerpt.replace(conclusion, '').strip()
             context['excerpt'] += ' ' + excerpt
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
@@ -198,8 +210,10 @@ def process_review_next(data, context, session):
         session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, review=review, page=page+1))
 
     elif context['excerpt']:
-        context['excerpt'] = remove_emoji(context['excerpt']).strip()
-        review.add_property(type='excerpt', value=context['excerpt'])
+        excerpt = context['excerpt']
+        excerpt = remove_emoji(excerpt).strip()
+
+        review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
         product.reviews.append(review)

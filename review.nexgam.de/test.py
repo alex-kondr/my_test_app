@@ -16,10 +16,10 @@ agent = agents.NEXGAM_DE
 # agent = agents.TEST
 reload = 1
 
-# name: 30
-# pros/cons: 10
-# concl: 46
-# exc: 70
+# name: 51
+# pros/cons: 24
+# concl: 108
+# exc: 115
 # error: 2
 
 
