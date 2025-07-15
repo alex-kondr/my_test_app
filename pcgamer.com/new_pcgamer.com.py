@@ -32,6 +32,8 @@ def process_review(data, context, session):
 
     product.url = data.xpath('//a[regexp:test(., "Check Amazon")]/@href').string()
     if not product.url:
+        product.url = data.xpath('//a[@data-merchant-name="Amazon"]/@href').string()
+    if not product.url:
         product.url = data.xpath('//a[contains(., "Official site")]/@href').string()
     if not product.url:
         product.url = data.xpath('//strong[contains(., "Link")]/following-sibling::a[1]/@href').string()
