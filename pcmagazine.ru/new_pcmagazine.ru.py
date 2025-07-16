@@ -5,6 +5,7 @@ import re
 
 def run(context, session):
     session.queue(Request('https://uk.pcmag.com/article/review', use='curl', force_charset='utf-8'), process_catlist, dict())
+    session.queue(Request('https://uk.pcmag.com/security', use='curl', force_charset='utf-8'), process_subcatlist, dict(cat='Security'))
 
 
 def process_catlist(data, context, session):
