@@ -39,7 +39,7 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     product = Product()
     product.name = context['title'].replace(' Preview', '').replace(' Review', '').strip()
-    product.ssid = context['url'].split('/')[-1]
+    product.ssid = context['url'].split('/')[-2]
     product.category = context['cat']
 
     product.url = data.xpath('//td[contains(@class, "buybutton")]/a/@href').string()
@@ -96,7 +96,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//div[@id="id_text"]|//body)/p[not(@class or regexp:test(., "verdict", "i"))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//div[@id="id_text"]|//body)/p[not(@class or regexp:test(., "verdict", "i") or .//span[@class="Article_subtitle"])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

@@ -95,9 +95,10 @@ def process_review(data, context, session):
     for grade in grades:
         grade = grade.xpath('.//text()').string(multiple=True)
         grade_name = re.split(r'\d+\.?\d?', grade)[0].strip(' +-*.;:•–')
-        grade_val = re_search_once(r'\d+\.?\d?', grade)
+        grade_val = re.search(r'\d+\.?\d?', grade)
         if grade_val and 'overall' not in grade.lower():
-            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
+            grade_val = float(grade_val.group())
+            review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
 
     summary = data.xpath('//p[preceding-sibling::h4[1][contains(., "In summary")]]//text()[not(contains(., "[more]"))]').string(multiple=True)
     if summary:

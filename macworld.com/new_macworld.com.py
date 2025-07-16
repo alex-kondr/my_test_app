@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-import re
 
 
 def run(context, session):
@@ -22,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = re.sub(r'[\s]?[P]?review[ed]{0,2}[ -–:]{0,2}|Tested: |,? tested', '', re.split(r' [p]?Review[ed]{0,2}[ :-–]{1,3}| tests: ', context['title'].replace('O6 review:', '').replace('Lab tested: ', ''), flags=re.I)[0], flags=re.I).strip()
+    product.name = context['title'].replace('O6 review:', '').replace('Lab tested: ', '').split(' Preview :')[0].split(' Preview:')[0].split(' Preview -')[0].split(' Preview –')[0].split(' Review:')[0].split(' Reviewed ')[0].replace('Preview ', '').replace('Review ', '').replace('Reviewed ', '').strip()
     product.ssid = context['url'].split('/')[-1].replace('.html', '').replace('-review', '')
 
     product.url = data.xpath('//a[contains(., "View Deal")]/@href').string()
@@ -43,7 +42,7 @@ def process_review(data, context, session):
 
     date = data.xpath('//span[@class="posted-on"]/text()').string()
     if date:
-        review.date = date.split(' am ')[0].strip().rsplit(' ', 1)[0].strip()
+        review.date = date.split(' am ')[0].split(' pm ')[0].strip().rsplit(' ', 1)[0].strip()
 
     author = data.xpath('//span[@class="author vcard"]//text()').string()
     author_url = data.xpath('//span[@class="author vcard"]/a/@href').string()
