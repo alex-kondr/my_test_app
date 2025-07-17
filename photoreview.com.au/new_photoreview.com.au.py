@@ -97,7 +97,7 @@ def process_review(data, context, session):
         grade_name = re.split(r'\d{1,2}\.\d$|: \d{1,2}$', grade)[0].strip(' +-*.;:•–')
         grade_val = re.search(r'\d{1,2}\.\d$|: \d{1,2}$', grade)
         if grade_val and 'overall' not in grade.lower():
-            grade_val = float(grade_val.group())
+            grade_val = float(grade_val.group().strip(' :'))
             review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
 
     if not grades:

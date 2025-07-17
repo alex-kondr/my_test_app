@@ -23,7 +23,10 @@ def process_review(data, context, session):
     product.url = context['url']
     product.ssid = product.url.split('-')[-1].replace('.html', '')
     product.category = 'Spiele'
+
     product.manufacturer = data.xpath('//tr[contains(., "Entwickler")]/td[not(contains(., "Entwickler"))]/text()').string()
+    if not product.manufacturer:
+        product.manufacturer = data.xpath('//strong[contains(., "Entwickler:")]/following-sibling::text()[normalize-space(.)]').string()
 
     platfoms = data.xpath('//tr[contains(., "Plattformen")]/td[not(contains(., "Plattformen"))]/text()').string()
     if platfoms:
