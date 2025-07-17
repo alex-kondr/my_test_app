@@ -7,7 +7,7 @@ OPTIONS = "-H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) G
 
 
 def run(context, session):
-    session.queue(Request('https://www.ixbt.com/mobilepc/', use='curl', force_charset='utf-8', options=OPTIONS), process_catlist, dict())
+    session.queue(Request('https://www.ixbt.com/mobilepc/', use='curl', force_charset='utf-8', options=OPTIONS, max_age=0), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -17,7 +17,7 @@ def process_catlist(data, context, session):
         url = cat.xpath('@href').string()
 
         if name not in XCAT:
-            session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS), process_revlist, dict(cat=name))
+            session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS, max_age=0), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
@@ -25,11 +25,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS, max_age=0), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//a[text()="»"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', options=OPTIONS), process_revlist, dict(context))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', options=OPTIONS, max_age=0), process_revlist, dict(context))
 
 
 def process_review(data, context, session):

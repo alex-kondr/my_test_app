@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 def run(context, session):
@@ -22,7 +23,7 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split(' : ')[0].replace('Test ', '').strip()
-    product.ssid = context['url'].split('test-produit-')[-1].split('-')[0]
+    product.ssid = re.search(r'-\d+-', context['url'].split('/')[-1]).group().strip(' -')
     product.category = data.xpath('//ul[@id="breadcrumb-list"]/li[last()]//text()').string()
 
     product.url = data.xpath('//div[h2[contains(., "Meilleurs prix")]]//a[@class="un-styled-linked"]/@href').string()
@@ -57,7 +58,7 @@ def process_review(data, context, session):
         grade_val = grade.xpath('span/text()').string()
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
-    pros = data.xpath('//div[div[contains(text(), "Les plus")]]//ul/li')
+    pros = data.xpath('(//div[div[contains(text(), "Les plus")]]//ul)[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -65,7 +66,7 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[div[contains(text(), "Les moins")]]//ul/li')
+    cons = data.xpath('(//div[div[contains(text(), "Les moins")]]//ul)[1]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:

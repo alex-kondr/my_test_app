@@ -91,7 +91,7 @@ def process_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    grades = data.xpath('//h4[contains(., "Rating")]/following-sibling::ul[1]/li')
+    grades = data.xpath('//h4[contains(., "Rating")]/following-sibling::ul[1]/li[regexp:test(normalize-space(.), "\d{1,2}\.\d$|: \d{1,2}$")]')
     for grade in grades:
         grade = grade.xpath('.//text()').string(multiple=True)
         grade_name = re.split(r'\d+\.?\d?', grade)[0].strip(' +-*.;:•–')
@@ -99,6 +99,14 @@ def process_review(data, context, session):
         if grade_val and 'overall' not in grade.lower():
             grade_val = float(grade_val.group())
             review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
+
+    if not grades:
+        grades = data.xpath('//h4[contains(., "Rating")]/following-sibling::table[1]//tr[regexp:test(normalize-space(.), "\d{1,2}\.\d$")]')
+        for grade in grades:
+            grade_name = grade.xpath('td[1]//text()').string(multiple=True)
+            grade_val = grade.xpath('td[2]//text()').string(multiple=True)
+            if grade_val and 'overall' not in grade_name.lower():
+                review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
     summary = data.xpath('//p[preceding-sibling::h4[1][contains(., "In summary")]]//text()[not(contains(., "[more]"))]').string(multiple=True)
     if summary:

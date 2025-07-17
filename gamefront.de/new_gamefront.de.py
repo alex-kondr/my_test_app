@@ -46,8 +46,11 @@ def process_review(data, context, session):
         product.category += '|' + platforme.split('System:')[-1].strip()
 
     manufacturer = data.xpath('(//p|//td)[contains(., "Entwickler:")]/text()[contains(., "Entwickler:")]').string()
+    if not manufacturer:
+        manufacturer = data.xpath('//b[contains(., "Entwickler")]/following-sibling::text()[1]').string()
+
     if manufacturer:
-        product.manufacturer = manufacturer.split('Entwickler:')[-1].strip()
+        product.manufacturer = manufacturer.split('Entwickler:')[-1].strip(' :')
 
     review = Review()
     review.type = 'pro'

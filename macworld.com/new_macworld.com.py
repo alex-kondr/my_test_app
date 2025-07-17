@@ -21,8 +21,8 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('O6 review:', '').replace('Lab tested: ', '').split(' Preview :')[0].split(' Preview:')[0].split(' Preview -')[0].split(' Preview –')[0].split(' Review:')[0].split(' Reviewed ')[0].replace('Preview ', '').replace('Review ', '').replace('Reviewed ', '').strip()
-    product.ssid = context['url'].split('/')[-1].replace('.html', '').replace('-review', '')
+    product.name = context['title'].replace('O6 review:', '').replace('Lab tested: ', '').split(' Preview :')[0].split(' Preview:')[0].split(' Preview -')[0].split(' Preview –')[0].split(' Review:')[0].split(' Reviewed ')[0].split(' review: ')[0].split(' preview: ')[0].split(' tested: ')[0].split(' benchmarks: ')[0].replace('Preview ', '').replace('Review ', '').replace('Reviewed ', '').replace('Review: ', '').replace(' review', '').replace(' Review', '').replace(' preview', '').replace('Tested: ', '').strip()
+    product.ssid = context['url'].split('/')[-1].replace('.html', '').replace('-review', '').replace('-preview', '')
 
     product.url = data.xpath('//a[contains(., "View Deal")]/@href').string()
     if not product.url:

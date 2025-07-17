@@ -39,7 +39,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = re.sub(r' im Vergleichstest|Test zu | im Test|Test: | - Test', '', re.split(r' im Test:? | [-–] Test: | Test [-–] | Test: | im Review - ', context['title'])[0]).strip()
+    product.name = re.sub(r' im Vergleichstest|Test zu | im Test|Test: | - Test', '', re.split(r' im Test:? | [-–] Test: | Test [-–] | Test: | im Review - ', context['title'].split(' – Test: ')[-1])[0]).strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('-review', '')
     product.category = 'Spiele'
@@ -54,11 +54,11 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = data.xpath('//h1[@class="title"]//text()').string(multiple=True)
     review.url = product.url
     review.ssid = product.ssid
 
-    date = data.xpath('//meta[@property="article:published_time"]/@content').string()
+    date = data.xpath('//meta[@property="article:published_time"]/@content').string(multiple=True)
     if date:
         review.date = date.split('T')[0]
 
@@ -97,9 +97,6 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//p[strong[regexp:test(., "Conclusion|Fazit")]]|//h2[regexp:test(., "Conclusion|Fazit")])/following-sibling::p//text()').string(multiple=True)
-    if not conclusion:
-        conclusion = data.xpath('//section[@class="synopsis"]/div//text()').string(multiple=True)
-
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 

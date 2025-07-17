@@ -45,9 +45,13 @@ def process_revlist_next(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = re.sub(r'Review: |\[.+\]| im Test|Review-Event ?\([\w\s/]+\)[ :|]?|Review Steelseries:|Review zur ', '', re.split(r'Review ?\([\w\s/\(]+\)[ :|]?', context['title'].split(' - Review')[0].split('/ Review')[0].split(': Review')[0], flags=re.UNICODE)[-1], flags=re.UNICODE).strip()
+    product.name = re.sub(r'Review: |\[.+\]| im Test|Review-Event ?\([\w\s/]+\)[ :|]?|Review Steelseries:|Review zur ', '', re.split(r'Review ?\([\w\s/\(]+\)[ :|]?', context['title'].split(' - Review')[0].split('/ Review')[0].split(': Review')[0], flags=re.UNICODE)[-1], flags=re.UNICODE).strip(' :')
     product.url = context['url']
     product.ssid = product.url.split('-')[-1].replace('.html', '')
+
+    product.manufacturer = data.xpath('//tr[contains(., "Entwickler")]/td//text()[normalize-space(.)]').string()
+    if not product.manufacturer:
+        product.manufacturer = data.xpath('//strong[contains(., "Entwickler:")]/following-sibling::text()[normalize-space(.)]').string()
 
     category = re.search(r'\(.+\)', context['title'])
     if category:

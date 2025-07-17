@@ -17,7 +17,8 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('.//h3[@class="article-name"]//text()').string()
         url = rev.xpath('.//a[@class="article-link"]/@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, title=title, url=url))
+        if title and url:
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, title=title, url=url))
 
     next_url = 'https://www.pcgamer.com/reviews/page/{}/'.format(page+1)
     session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context, page=page+1))

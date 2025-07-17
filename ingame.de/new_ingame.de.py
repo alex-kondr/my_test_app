@@ -41,7 +41,7 @@ def process_review(data, context, session):
 
     date = data.xpath('//meta[@property="article:published_time"]/@content|//time/@datetime').string()
     if date:
-        review.date = date.split('T')[0]
+        review.date = date.split()[0]
 
     author = data.xpath('//a[@class="id-Story-authors-link lp_west_author"]/text()').string()
     author_url = data.xpath('//a[@class="id-Story-authors-link lp_west_author"]/@href').string()

@@ -1,6 +1,10 @@
 from agent import *
 from models.products import *
 import re
+import HTMLParser
+
+
+h = HTMLParser.HTMLParser()
 
 
 def run(context, session):
@@ -11,7 +15,7 @@ def run(context, session):
 def process_revlist(data, context, session):
     revs = data.xpath('//h2[contains(@class, "title")]/a')
     for rev in revs:
-        title = rev.xpath('text()').string().replace(u'Ã©', 'e').replace(u'Ã¡', 'a').replace(u'â€“', '').replace(u'â€˜', "’").replace(u'â€¦', '').replace(u'â€œ', '').replace(u'â€�', '').replace(u'Ð±', '').replace(u'Ð°', '').replace(u'Ð½', '').replace(u'Ðº', '').replace(u'Ð²', '').replace(u'Ñ�', '').replace(u'ÑŽ', '').replace(u'Ñ€', '').replace(u'Ñƒ', '').replace(u'Ã¶', '').replace(u'Ã¼', '').replace(u'Ãœ', '').replace(u'Ã§', '').replace(u'Ã±', '').strip()
+        title = h.unescape(rev.xpath('text()').string()).strip().replace(u'Ã©', 'e').replace(u'Ã¡', 'a').replace(u'â€“', '').replace(u'â€˜', "’").replace(u'â€¦', '').replace(u'â€œ', '').replace(u'â€�', '').replace(u'Ð±', '').replace(u'Ð°', '').replace(u'Ð½', '').replace(u'Ðº', '').replace(u'Ð²', '').replace(u'Ñ�', '').replace(u'ÑŽ', '').replace(u'Ñ€', '').replace(u'Ñƒ', '').replace(u'Ã¶', '').replace(u'Ã¼', '').replace(u'Ãœ', '').replace(u'Ã§', '').replace(u'Ã±', '').strip()
         url = rev.xpath('@href').string()
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
@@ -22,7 +26,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = re.sub(r'–?[  â€“¦œ�]+review( \(.+\))?|\(.+\)| review|\[.+\]', '', context['title'], flags=re.I|re.U).strip()
+    product.name = re.sub(r'–?[  â€“¦œ�]+review( \(.+\))?|\(.+\)| review|\[.+\]', '', context['title'], flags=re.I|re.U).strip(' –')
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
 
@@ -56,7 +60,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[@class="entry-content"]/p//text()').string(multiple=True)
     if excerpt:
-        excerpt = excerpt.replace(u'Ã©', 'e').replace(u'Ã¡', 'a').replace(u'â€“', '').replace(u'â€˜', "’").replace(u'â€¦', '').replace(u'â€œ', '').replace(u'â€�', '').replace(u'Ð±', '').replace(u'Ð°', '').replace(u'Ð½', '').replace(u'Ðº', '').replace(u'Ð²', '').replace(u'Ñ�', '').replace(u'ÑŽ', '').replace(u'Ñ€', '').replace(u'Ñƒ', '').replace(u'Ã¶', '').replace(u'Ã¼', '').replace(u'Ãœ', '').replace(u'Ã§', '').replace(u'Ã±', '').strip()
+        excerpt = h.unescape(excerpt).strip().replace(u'Ã©', 'e').replace(u'Ã¡', 'a').replace(u'â€“', '').replace(u'â€˜', "’").replace(u'â€¦', '').replace(u'â€œ', '').replace(u'â€�', '').replace(u'Ð±', '').replace(u'Ð°', '').replace(u'Ð½', '').replace(u'Ðº', '').replace(u'Ð²', '').replace(u'Ñ�', '').replace(u'ÑŽ', '').replace(u'Ñ€', '').replace(u'Ñƒ', '').replace(u'Ã¶', '').replace(u'Ã¼', '').replace(u'Ãœ', '').replace(u'Ã§', '').replace(u'Ã±', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
