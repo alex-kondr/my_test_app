@@ -12,12 +12,11 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.VOOKS
+agent = agents.DEFUNCT_GAMES
 # agent = agents.TEST
 reload = 1
 
-# name: 2
-
+# name: 40
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

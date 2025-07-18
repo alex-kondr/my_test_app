@@ -16,7 +16,7 @@ def strip_namespace(data):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.vooks.net/category/nintendo-switch/', use='curl', force_charset='utf-8'), process_revlist, dict(cat='Switch'))
     session.queue(Request('https://www.vooks.net/category/switch-2/', use='curl', force_charset='utf-8'), process_revlist, dict(cat='Switch 2'))
 
@@ -29,7 +29,7 @@ def process_revlist(data, context, session):
         title = rev.xpath('.//h2[@class="article-title"]//text()').string(multiple=True)
         url = rev.xpath('a/@href').string()
 
-        if 'review' in title.lower():
+        if title and 'review' in title.lower():
             session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
@@ -41,7 +41,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = re.sub(r'\(.+\)', '', context['title']).replace(' Review', '').strip()
+    product.name = re.sub(r'\(.+\)', '', context['title']).split(' – ')[0].replace(' accessories reviewed', '').replace(' Review', '').replace(' Review', '').replace(' reviewed', '').replace('Preview: ', '').replace(' Preview', '').replace(' review', '').replace('Review: ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = context['cat']
@@ -105,6 +105,9 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[contains(@id, "content")]/p[not(@class or contains(., "Rating") or preceding-sibling::hr)]//text()').string(multiple=True)
     if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
