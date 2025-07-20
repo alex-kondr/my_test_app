@@ -19,8 +19,9 @@ reload = 1
 # name: 127
 # pros/cons: 2 - norm
 #  concl: 1
-# exc: 108
-# log: 20
+# exc: 105
+# log: 0
+# date: 179
 
 
 if __name__ == "__main__":

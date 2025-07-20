@@ -62,9 +62,9 @@ def process_review(data, context, session):
     review.url = product.url
     review.ssid = product.ssid
 
-    date = data.xpath('//time/@datetime[normalize-space(.)]').string()
+    date = data.xpath('//time[@datetime]/text()').string()
     if date:
-        review.date = date.split('T')[0]
+        review.date = date.replace('Testé le', '').split(' à ')[0].strip()
 
     author = data.xpath('//meta[@property="nrbi:authors"]/@content[not(contains(., "CNET France"))]').string()
     if author:
