@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 def strip_namespace(data):
@@ -37,7 +38,9 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
+
+        if not re.search(r'qui est le meilleur|Meilleur', title, flags=re.I):
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -48,10 +51,10 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('Test ', '').split(': ')[0].strip()
+    product.name = context['title'].replace('Test : ', '').replace('Test ', '').split(': ')[0].replace('On a testé le ', '').strip().capitalize()
     product.url = context['url']
     product.ssid = product.url.split('-')[-1].replace('.htm', '')
-    product.category = context['cat']
+    product.category = context['cat'].replace(' / ', '/')
 
     review = Review()
     review.type = 'pro'
