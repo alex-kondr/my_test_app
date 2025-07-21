@@ -56,6 +56,9 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//strong[regexp:test(text(), "^\d/\d") and not(regexp:test(., "date|MB/s"))]/text()').string(multiple=True)
+    if not grade_overall:
+        grade_overall = data.xpath('//h5[contains(@class, "rating")]/span[not(contains(., "/"))]/text()').string()
+
     if grade_overall:
         grade_overall = float(grade_overall.split('/')[0])
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
@@ -71,9 +74,6 @@ def process_review(data, context, session):
                 grades = True
                 grade_val = float(grade_val.split('/')[0])
                 review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
-
-    if not grade_overall and not grades:
-        return
 
     pros = data.xpath('//div[@class="pros"]/ul/li')
     for pro in pros:
@@ -114,7 +114,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('(//body|//div[@class="elementor-widget-container"])/p[not(@align or @id or span[contains(@id, "more-")])]//text()').string(multiple=True)
 
-    if excerpt:
+    if excerpt and any([grade_overall, grades, pros, cons, conclusion]):
         excerpt = re.sub(r'^\d/\d', '', excerpt).strip(' :')
         review.add_property(type='excerpt', value=excerpt)
 

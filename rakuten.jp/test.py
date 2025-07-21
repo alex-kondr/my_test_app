@@ -12,16 +12,9 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.CNET_FR
+agent = agents.楽天市場_JP
 # agent = agents.TEST
 reload = 1
-
-# name: 127
-# pros/cons: 2 - norm
-# concl: 0
-# exc: 105
-# log: 0
-# date: 0
 
 
 if __name__ == "__main__":

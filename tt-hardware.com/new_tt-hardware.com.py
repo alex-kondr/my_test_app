@@ -2,6 +2,9 @@ from agent import *
 from models.products import *
 
 
+XCAT = ['News', 'Jeux vidéo', 'Internet', 'Software']
+
+
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"
     out = file(tmp, "w")
@@ -27,15 +30,13 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('a/text()').string()
 
-        sub_cats = cat.xpath('ul//a')
-        if sub_cats:
-            for sub_cat in sub_cats:
-                sub_name = sub_cat.xpath('text()').string()
-                url = sub_cat.xpath('@href').string()
-                session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name + '|' + sub_name))
-        else:
-            url = cat.xpath('a/@href').string()
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name))
+        if name not in XCAT:
+            sub_cats = cat.xpath('ul//a')
+            if sub_cats:
+                for sub_cat in sub_cats:
+                    sub_name = sub_cat.xpath('text()').string()
+                    url = sub_cat.xpath('@href').string()
+                    session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name + '|' + sub_name))
 
 
 def process_revlist(data, context, session):
@@ -46,7 +47,7 @@ def process_revlist(data, context, session):
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
 
-        if 'Test du ' in title or 'Review du ' in title:
+        if 'les ' not in title.lower() and 'meilleurs ' not in title.lower():
             session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
 #  no next page
@@ -54,6 +55,9 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     strip_namespace(data)
+
+    if len(data.xpath('//div[@class="i2-pros"]//ul')) > 1:
+        return
 
     product = Product()
     product.name = context['title'].replace('Test du ', '').replace('Review du ', '').split(':')[0].strip()
@@ -88,6 +92,9 @@ def process_review(data, context, session):
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     pros = data.xpath('(//h3[contains(text(), "Les +")]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('//div[@class="i2-pros"]//ul/li')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -96,6 +103,9 @@ def process_review(data, context, session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('(//h3[contains(text(), "Les –")]/following-sibling::*)[1]/li')
+    if not cons:
+        cons = data.xpath('//div[@class="i2-cons"]//ul/li')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -104,14 +114,19 @@ def process_review(data, context, session):
                 review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//h3[contains(text(), "Résumé ")]/following-sibling::p[not(preceding::*[regexp:test(., "Note globale|Les \+|Les –")])]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[contains(text(), "conclusion")]/following-sibling::p[not(preceding::*[regexp:test(., "Note globale|Les \+|Les –")])]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h3[contains(text(), "Résumé ")]/preceding-sibling::p[not(.//span[contains(@style, "text-decoration:")])]//text()').string(multiple=True)
     if not excerpt:
+        excerpt = data.xpath('//h2[contains(text(), "conclusion")]/preceding-sibling::p[not(.//span[contains(@style, "text-decoration:")])]//text()').string(multiple=True)
+    if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(.//span[contains(@style, "text-decoration:")] or preceding::*[regexp:test(., "Note globale|Les \+|Les –")])]//text()').string(multiple=True)
 
-    if excerpt:
+    if excerpt and any([grade_overall, pros, cons, conclusion]):
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
