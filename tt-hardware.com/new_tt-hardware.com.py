@@ -19,7 +19,6 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://tt-hardware.com/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -94,6 +93,8 @@ def process_review(data, context, session):
     pros = data.xpath('(//h3[contains(text(), "Les +")]/following-sibling::*)[1]/li')
     if not pros:
         pros = data.xpath('//div[@class="i2-pros"]//ul/li')
+    if not pros:
+        pros = data.xpath('(//p[contains(., "Points forts")]/following-sibling::*)[1]/li')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -105,6 +106,8 @@ def process_review(data, context, session):
     cons = data.xpath('(//h3[contains(text(), "Les –")]/following-sibling::*)[1]/li')
     if not cons:
         cons = data.xpath('//div[@class="i2-cons"]//ul/li')
+    if not cons:
+        cons = data.xpath('(//p[contains(., "Points faibles")]/following-sibling::*)[1]/li')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)

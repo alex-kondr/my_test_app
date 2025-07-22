@@ -1,7 +1,18 @@
 from agent import *
 from models.products import *
 import simplejson
+import HTMLParser
 import re
+
+
+h = HTMLParser.HTMLParser()
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def strip_namespace(data):
@@ -16,34 +27,10 @@ def strip_namespace(data):
     os.rename(tmp, data.content_file)
 
 
-def remove_emoji(string):
-    emoji_pattern = re.compile("["
-                               u"\U0001F600-\U0001F64F"  # emoticons
-                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
-                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-                               u"\U00002500-\U00002BEF"  # chinese char
-                               u"\U00002702-\U000027B0"
-                               u"\U00002702-\U000027B0"
-                               u"\U000024C2-\U0001F251"
-                               u"\U0001f926-\U0001f937"
-                               u"\U00010000-\U0010ffff"
-                               u"\u2640-\u2642"
-                               u"\u2600-\u2B55"
-                               u"\u200d"
-                               u"\u23cf"
-                               u"\u23e9"
-                               u"\u231a"
-                               u"\ufe0f"  # dingbats
-                               u"\u3030"
-                               "]+", flags=re.UNICODE)
-    return emoji_pattern.sub(r'', string)
-
-
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.rakuten.co.jp/category/?l-id=top_normal_gmenu_d_list', use='curl'), process_catlist, dict())
+    session.queue(Request('https://www.rakuten.co.jp/category/?l-id=top_normal_gmenu_d_list', force_charset='utf-8', use='curl'), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -57,7 +44,7 @@ def process_catlist(data, context, session):
         for sub_cat in sub_cats:
             sub_name = sub_cat.xpath('text()').string()
             url = sub_cat.xpath('@href').string()
-            session.queue(Request(url, use='curl'), process_prodlist, dict(cat=name + '|' + sub_name))
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
 def process_prodlist(data, context, session):
@@ -66,7 +53,7 @@ def process_prodlist(data, context, session):
     prods = data.xpath('//div[@data-id]')
     for prod in prods:
         product = Product()
-        product.name = prod.xpath('.//h2[contains(@class, "title")]/a/text()').string()
+        product.name = prod.xpath('.//h2[contains(@class, "title")]/a/text()').string(multiple=True)
         product.url = prod.xpath('div/a[img]/@href').string()
         product.ssid = prod.xpath('@data-id').string()
         product.sku = product.ssid
@@ -75,16 +62,13 @@ def process_prodlist(data, context, session):
         rating = prod.xpath('.//span[@class="score"]')
         if rating:
             shop_id = prod.xpath('@data-shop-id').string()
-            options = """-X POST -H 'Accept-Encoding: deflate' -H 'Content-Type: application/json; charset=UTF-8' -H 'authkey: isrlPcMjUuXCVBUTVh91ZcHEfoI45CmPR' --data-raw '{"common":{"params":{"device":"pc"},"include":["itemReviewList"]},"features":{"itemReviewList":{"params":{"shopId":{""" + shop_id + """},"itemId":{""" + product.ssid + """},"page":"1","hits":30}}}}'"""
-            
-            print('options=', options)
-            
+            options = """-X POST -H 'Accept-Encoding: deflate' -H 'Content-Type: application/json; charset=UTF-8' -H 'authkey: isrlPcMjUuXCVBUTVh91ZcHEfoI45CmPR' --data-raw '{"common":{"params":{"device":"pc"},"include":["itemReviewList"]},"features":{"itemReviewList":{"params":{"shopId":""" + shop_id + ""","itemId":""" + product.ssid + ""","page":"1","hits":30}}}}'"""
             revs_url = 'https://web-gateway.rakuten.co.jp/review/itemshopreviewlist/get/v1'
             session.do(Request(revs_url, use='curl', force_charset='utf-8', options=options, max_age=0), process_reviews, dict(product=product, shop_id=shop_id))
 
     next_url = data.xpath('//a[contains(@class, "nextPage")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl'), process_prodlist, dict(context))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_prodlist, dict(context))
 
 
 def process_reviews(data, context, session):
@@ -92,18 +76,16 @@ def process_reviews(data, context, session):
 
     product = context['product']
 
-    revs_json = simplejson.loads(data.content).get('body', {}).get('itemReviewList', {}).get('data', {})
+    try:
+        revs_json = simplejson.loads(h.unescape(data.content)).get('body', {}).get('itemReviewList', {}).get('data', {})
+    except:
+        return
 
     revs = revs_json.get('reviews', [])
-    
-    print('revs=', revs)
-    
-    
     for rev in revs:
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review.ssid = rev.get('key')
         review.date = rev.get('postDate')
 
         author = rev.get('nickname')
@@ -120,23 +102,27 @@ def process_reviews(data, context, session):
 
         title = rev.get('title')
         excerpt = rev.get('body')
-        if excerpt and len(remove_emoji(excerpt).strip()) > 2:
+        if excerpt and len(remove_emoji(excerpt).replace('\n', '').replace('\t', '').strip()) > 2:
             if title:
-                review.title = remove_emoji(title).strip()
+                review.title = remove_emoji(title)
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = remove_emoji(excerpt).strip()
+            excerpt = remove_emoji(excerpt).replace('\n', '').replace('\t', '').strip()
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
+
+                review.ssid = rev.get('key')
+                if not review.ssid:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
 
                 product.reviews.append(review)
 
     next_page = revs_json.get('hasNextPage', False)
     if next_page:
         next_page = context.get('page', 1) + 1
-        options = """-X POST -H 'Accept-Encoding: deflate' -H 'Content-Type: application/json; charset=UTF-8' -H 'authkey: isrlPcMjUuXCVBUTVh91ZcHEfoI45CmPR' --data-raw '{"common":{"params":{"device":"pc"},"include":["itemReviewList"]},"features":{"itemReviewList":{"params":{"shopId":{""" + context['shop_id'] + """},"itemId":{""" + product.ssid + """},"page":""" + str(next_page) + ""","hits":30}}}}'"""
+        options = """-X POST -H 'Accept-Encoding: deflate' -H 'Content-Type: application/json; charset=UTF-8' -H 'authkey: isrlPcMjUuXCVBUTVh91ZcHEfoI45CmPR' --data-raw '{"common":{"params":{"device":"pc"},"include":["itemReviewList"]},"features":{"itemReviewList":{"params":{"shopId":""" + context['shop_id'] + ""","itemId":""" + product.ssid + ""","page":""" + str(next_page) + ""","hits":30}}}}'"""
         revs_url = 'https://web-gateway.rakuten.co.jp/review/itemshopreviewlist/get/v1'
         session.do(Request(revs_url, use='curl', force_charset='utf-8', options=options, max_age=0), process_reviews, dict(context, product=product, page=next_page))
 

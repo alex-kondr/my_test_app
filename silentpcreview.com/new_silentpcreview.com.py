@@ -108,11 +108,11 @@ def process_review(data, context, session):
         conclusion = re.sub(r'^\d/\d', '', conclusion).strip(' :')
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//p[contains(., "FINAL THOUGHTS")]/preceding-sibling::p[not(@align or @id or span[contains(@id, "more-")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//p[contains(., "FINAL THOUGHTS")]/preceding-sibling::p[not(@align or @id or span[contains(@id, "more-")] or b[i[contains(text(), " by ")]])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[regexp:test(., "Conclusion|Verdict", "i")]/preceding-sibling::p[not(@align or @id or span[contains(@id, "more-")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[regexp:test(., "Conclusion|Verdict", "i")]/preceding-sibling::p[not(@align or @id or span[contains(@id, "more-")] or b[i[contains(text(), " by ")]])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//body|//div[@class="elementor-widget-container"])/p[not(@align or @id or span[contains(@id, "more-")])]//text()').string(multiple=True)
+        excerpt = data.xpath('(//body|//div[@class="elementor-widget-container"])/p[not(@align or @id or span[contains(@id, "more-")] or b[i[contains(text(), " by ")]])]//text()').string(multiple=True)
 
     if excerpt and any([grade_overall, grades, pros, cons, conclusion]):
         excerpt = re.sub(r'^\d/\d', '', excerpt).strip(' :')
