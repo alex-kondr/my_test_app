@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 def strip_namespace(data):
@@ -14,9 +15,33 @@ def strip_namespace(data):
     os.rename(tmp, data.content_file)
 
 
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
+
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
     session.queue(Request('https://www.hartware.de/category/reviews/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -38,7 +63,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace(' im Test', '').strip()
+    product.name = context['title'].split(' im ')[0].strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-im-test', '')
 
@@ -66,6 +91,7 @@ def process_review(data, context, session):
 
     summary = data.xpath('//h2//text()').string(multiple=True)
     if summary:
+        summary = remove_emoji(summary)
         review.add_property(type='summary', value=summary)
 
     excerpt = data.xpath('//div[@class="entry-inner"]/p//text()').string(multiple=True)
@@ -80,6 +106,7 @@ def process_review(data, context, session):
         session.do(Request(page_url, use='curl', force_charset='utf-8'), process_review_last, dict(excerpt=excerpt, review=review, product=product))
 
     elif excerpt:
+        excerpt = remove_emoji(excerpt)
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
@@ -113,6 +140,7 @@ def process_review_last(data, context, session):
         conclusion = data.xpath('//div[@class="entry-inner"]/p[not(regexp:test(., "Positiv|Negativ"))]//text()').string(multiple=True)
 
     if conclusion:
+        conclusion = remove_emoji(conclusion)
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p//text()').string(multiple=True)
@@ -120,6 +148,7 @@ def process_review_last(data, context, session):
         context['excerpt'] += ' ' + excerpt
 
     if context['excerpt']:
+        context['excerpt'] = remove_emoji(context['excerpt'])
         review.add_property(type='excerpt', value=context['excerpt'])
 
         product = context['product']

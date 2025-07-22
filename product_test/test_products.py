@@ -68,7 +68,7 @@ class Product:
         else:
             self.file = self.open_file()
 
-        self.agent_name = self.file["meta"]["agent_name"]
+        self.agent_name = self.file["meta"]["agent_name"].strip()
 
     def generate_file(self) -> dict[list[dict]]:
         content = load_file(agent_id=self.agent_id, type_file="yaml")

@@ -16,6 +16,10 @@ agent = agents.HARTWARE__
 # agent = agents.TEST
 reload = 1
 
+# name: 53
+# concl: 122
+# exc: 91
+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
