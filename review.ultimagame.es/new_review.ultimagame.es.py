@@ -59,7 +59,8 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     next_page = data.xpath('//a[@title="Información Wiki"]/@href').string()
-    session.do(Request(next_page), process_review_next, dict(review=review, product=product))
+    if next_page:
+        session.do(Request(next_page), process_review_next, dict(review=review, product=product))
 
 
 def process_review_next(data, context, session):
@@ -68,9 +69,6 @@ def process_review_next(data, context, session):
     review = context['review']
 
     excerpt = data.xpath('//div[@class="intronoticia"]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
-
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

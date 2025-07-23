@@ -12,12 +12,12 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.TECHSPOT_COM
+agent = agents.LEAK_PT
 # agent = agents.TEST
 reload = 1
 
-# name: 1
-# exc: 4
+# name: 8
+# exc: 1
 # log: 0
 
 if __name__ == "__main__":

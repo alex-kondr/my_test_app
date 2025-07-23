@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.techspot.com/reviews/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
@@ -23,7 +23,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace(' Review', '').replace(' Tested', '').strip()
+    product.name = context['title'].split(' Re-Review:')[0].split(': The Fastest')[0].replace(' Review', '').replace(' Put to the Test', '').replace(' Tested', '').replace(' Tested', '').replace('Testing ', '').replace(' Testing', '').replace(' Test', '').replace(' Re-Review', '').split(' review: ')[0].replace(' review', '').replace(' Mini-Review', '').split(': Fastest ')[0].replace('Tested: ', '').replace(' Preview', '').strip()
     product.ssid = context['url'].split('/')[-2]
     product.category = data.xpath('//ul[@class="category-chicklets"]/li[not(contains(., "Review"))]//text()').string(multiple=True) or 'Tech'
 
@@ -44,7 +44,7 @@ def process_review(data, context, session):
     author = data.xpath('//span[@class="author"]//text()').string(multiple=True)
     author_url = data.xpath('//span[@class="author"]/a/@href').string()
     if author and author_url:
-        author_ssid = author_url.split('/')[-2].split('.')[-1]
+        author_ssid = author_url.split('/')[-2].split('.')[-1] if 'https://www.techspot.com' in author_url else author_url.replace('https://', '').split('.')[0]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
@@ -58,10 +58,12 @@ def process_review(data, context, session):
         if ' vs ' in summary or ' vs. ' in summary:
             return
 
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[regexp:test(text(), "Wrap Up|Recommendations|What We Learned", "i")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[regexp:test(text(), "Wrap Up|Recommendations|What We Learned", "i")]/preceding-sibling::p//text()').string(multiple=True)
@@ -69,6 +71,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[@class="articleBody"]/p//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

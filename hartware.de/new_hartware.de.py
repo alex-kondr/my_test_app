@@ -52,7 +52,9 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
+
+        if ' Preview' not in title:
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
@@ -63,9 +65,9 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' im ')[0].strip()
+    product.name = context['title'].split(' im ')[0].replace('Test: ', '').replace(' Kurztest', '').replace(' Test Bench', '').replace('Kurztest: ', '').replace('Praxistest: ', '').replace('User-Review: ', '').replace('Kurztest ', '').replace(' Extremtest', '').replace('Nachtest des ', '').replace(' Nachtest', '').replace(' angetestet', '').replace(' Review', '').split(' – ')[0].strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2].replace('-im-test', '')
+    product.ssid = product.url.split('/')[-2].split('-im-')[0]
 
     product.category = data.xpath('(//a[@rel="category tag"])[1][not(regexp:test(., "Reviews|Sonstiges"))]/text()').string()
     if not product.category:
@@ -96,7 +98,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[@class="entry-inner"]/p//text()').string(multiple=True)
 
-    pages = data.xpath('//ul[@id="toc_review"]//a')
+    pages = data.xpath('(//ul[@id="toc_review"])[1]//a')
     for page in pages:
         title = page.xpath('.//text()').string(multiple=True)
         page_url = page.xpath('@href').string()
@@ -135,9 +137,9 @@ def process_review_last(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(regexp:test(., "Positiv|Negativ"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(regexp:test(., "Positiv|Negativ|Neutral"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//div[@class="entry-inner"]/p[not(regexp:test(., "Positiv|Negativ"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//div[@class="entry-inner"]/p[not(regexp:test(., "Positiv|Negativ|Neutral"))]//text()').string(multiple=True)
 
     if conclusion:
         conclusion = remove_emoji(conclusion)
