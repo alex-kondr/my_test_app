@@ -26,7 +26,7 @@ def process_revlist(data, context, session):
 
     revs = data.xpath('//h1[contains(@class, "title")]/a')
     for rev in revs:
-        title = rev.xpath('text()').string()
+        title = rev.xpath('.//text()').string(multiple=True)
         url = rev.xpath('@href').string()
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
@@ -39,7 +39,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('Review – ', '').replace('Review – ', '').replace('Review- ', '').replace('Review — ', '').replace(' – Review', '').replace('REVIEW – ', '').replace('REVIEW ', '').replace('Reseña: ', '').replace('Review: ', '').replace('Review – ', '').replace('REVIEW — ', '').replace('Videoreseña – ', '').replace('Review– ', '').replace('REVIEW- ', '').replace(' reviews', '').replace('REVIEW: ', '').replace('Video review – ', '').replace('Reseña – ', '').replace('Reseña Indie: ', '').replace('RESEÑA: ', '').replace('RESEÑA – ', '').strip()
+    product.name = context['title'].replace('Review – ', '').replace('Review – ', '').replace('Review- ', '').replace('Review — ', '').replace(' – Review', '').replace('REVIEW – ', '').replace('REVIEW ', '').replace('Reseña: ', '').replace('Review: ', '').replace('Review – ', '').replace('REVIEW — ', '').replace('Videoreseña – ', '').replace('Review– ', '').replace('REVIEW- ', '').replace(' reviews', '').replace('REVIEW: ', '').replace('Video review – ', '').replace('Reseña – ', '').replace('Reseña Indie: ', '').replace('RESEÑA: ', '').replace('RESEÑA – ', '').replace('Reseña de ', '').replace('Videoreseña: ', '').replace('Video reseña: ', '').replace('Videoreseña DLC: ', '').replace('¿Reseña? ', '').replace('Reseña. ', '').replace(' (Reseña)', '').replace('Reseña — ', '').replace('Reseña-Biblia: ', '').replace('Reseña escrita: ', '').replace('Reseña/DLC: ', '').replace('Reseña y ', '').replace('Reseña ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('review-', '')
     product.category = 'Juegos'

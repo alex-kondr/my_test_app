@@ -25,13 +25,14 @@ def process_catlist(data, context, session):
 
     cats = data.xpath('//div[contains(@class, "entry-content")]/p[strong]|//div[contains(@class, "entry-content")]/strong')
     for cat in cats:
-        cat_name = cat.xpath('.//text()').string().strip(' :')
+        cat_name = cat.xpath('.//text()').string()
 
-        revs = cat.xpath('(following-sibling::ul)[1]/li/a')
-        for rev in revs:
-            title = rev.xpath('text()').string()
-            url = rev.xpath('@href').string()
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(cat=cat_name, title=title, url=url))
+        if cat_name:
+            revs = cat.xpath('(following-sibling::ul)[1]/li/a')
+            for rev in revs:
+                title = rev.xpath('text()').string()
+                url = rev.xpath('@href').string()
+                session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(cat=cat_name.strip(' :'), title=title, url=url))
 
 
 def process_review(data, context, session):
@@ -73,10 +74,6 @@ def process_review(data, context, session):
             con = con.strip(' +-*.:;•,–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
-
-    summary = data.xpath('//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//h2[regexp:test(., "CONCLUSIONE", "i")]/following-sibling::p|//h2[regexp:test(., "CONCLUSIONE", "i")]/following-sibling::blockquote)//text()').string(multiple=True)
     if not conclusion:

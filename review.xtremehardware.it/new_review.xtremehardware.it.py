@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 XCAT = ['English Articles']
@@ -38,7 +39,7 @@ def process_frontpage(data, context, session):
                     url = sub_cat.xpath('@href').string()
                     session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name + '|' + sub_name, cat_url=url))
             else:
-                url = cat.xpath('@href').string()
+                url = cat.xpath('a/@href').string()
                 session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name, cat_url=url))
 
 
@@ -102,7 +103,7 @@ def process_review(data, context, session):
         grade_desc = grade.xpath('.//p[not(strong or img)]/text()').string(multiple=True) or grade.xpath('td/text()').string()
         grade_val = grade.xpath('.//img/@alt').string()
         if grade_val:
-            grade_val = grade_val.split()[0].replace(',', '.')
+            grade_val = re.search(r'\d+[,\.]?\d?', grade_val).group().replace(',', '.')
             review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0, description=grade_desc))
 
     pros = data.xpath('(//p[strong[contains(text(), "Pro")]]/following-sibling::*)[1]/li')

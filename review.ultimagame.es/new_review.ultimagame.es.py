@@ -40,7 +40,7 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.split('/')[-1]
     product.category = 'Juegos'
     product.manufacturer = data.xpath('//span[@itemprop="author"]//span[@itemprop="name"]//text()').string(multiple=True)
 
@@ -58,9 +58,14 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    next_page = data.xpath('//a[@title="Información Wiki"]/@href').string()
-    if next_page:
-        session.do(Request(next_page), process_review_next, dict(review=review, product=product))
+    pages = data.xpath('//ul[@class="wiki"]/li[not(div)]/a')
+    for page in pages:
+        title = page.xpath('text()').string()
+        page_url = page.xpath('@href').string()
+        review.add_property(type='pages', value=dict(title=title, url=page_url))
+
+    if pages:
+        session.do(Request(page_url), process_review_next, dict(review=review, product=product))
 
 
 def process_review_next(data, context, session):

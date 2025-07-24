@@ -16,6 +16,7 @@ agent = agents.ULTIMA_GAME_COM_ES
 # agent = agents.TEST
 reload = 1
 
+# exc: 1
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
