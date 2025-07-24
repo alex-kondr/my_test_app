@@ -20,7 +20,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.xtremehardware.com/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -67,7 +67,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = title.split(': ')[0].replace('', '').strip()
+    product.name = title.replace('Preview: ', '').replace('Recensione: ', '').split(': ')[0].replace(' - Recensione', '').replace('Recensione ', '').replace(', La Recensione', '').replace(' La Recensione', '').replace(', la nostra recensione', '').replace(', la recensione', '').replace('[Preview] ', '').replace(' – Recensione', '').replace('Videorecensione ', '').replace(' - La recensione!', '').split(', preview del')[0].replace(' Beta Testing', '').replace(', recensione/review', '').replace(', la videorecensione', '').replace('[VideoRecensione] ', '').replace('Review ', '').replace(', LA RECENSIONE', '').split(' Review, ')[0].replace(' - la recensione!', '').replace(' - La recensione', '').replace('La videorecensione di ', '').replace(' - RECENSIONE', '').replace(' recensione', '').strip().capitalize()
     product.ssid = context['url'].split('/')[-1].split('-')[0]
     product.category = context['cat']
 
@@ -89,7 +89,7 @@ def process_review(data, context, session):
     if author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//tr[contains(., "Complessivo")]//img/@alt').string()
+    grade_overall = data.xpath('//tr[contains(., "Complessivo")]//img/@alt[regexp:test(., "\d+")]').string()
     if grade_overall:
         grade_overall = grade_overall.split()[0].replace(',', '.')
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
@@ -99,12 +99,19 @@ def process_review(data, context, session):
         grades = data.xpath('//p[.//strong[contains(., "Conclusioni")]]/following-sibling::table//tr[not(contains(., "Complessivo"))]')
 
     for grade in grades:
-        grade_name = grade.xpath('.//strong/text()').string()
+        grade_name = grade.xpath('.//strong/text()').string() or grade.xpath('td/b/text()').string()
         grade_desc = grade.xpath('.//p[not(strong or img)]/text()').string(multiple=True) or grade.xpath('td/text()').string()
-        grade_val = grade.xpath('.//img/@alt').string()
+        grade_val = grade.xpath('(.//img/@alt|.//img/@src)[regexp:test(., "\d+")]').string()
         if grade_val:
             grade_val = re.search(r'\d+[,\.]?\d?', grade_val).group().replace(',', '.')
-            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0, description=grade_desc))
+            if grade_desc and grade_name:
+                review.grades.append(Grade(name=grade_name.strip(' :'), value=float(grade_val), best=5.0, description=grade_desc))
+            else:
+                if not grade_name:
+                    grade_name = grade.xpath('td//text()').string(multiple=True)
+
+                if grade_name:
+                    review.grades.append(Grade(name=grade_name.strip(' :'), value=float(grade_val), best=5.0))
 
     pros = data.xpath('(//p[strong[contains(text(), "Pro")]]/following-sibling::*)[1]/li')
     for pro in pros:
@@ -131,6 +138,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('//p[.//strong[contains(., "Conclusioni")]]/following-sibling::p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
 
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     pages = data.xpath('//select[@class="form-control"]/option')
@@ -146,6 +154,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//section[contains(@class, "article-content")]/p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

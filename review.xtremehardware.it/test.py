@@ -16,6 +16,10 @@ agent = agents.XTREME_HARDWARE_IT
 # agent = agents.TEST
 reload = 1
 
+# name: 14
+# pros/cons: 1
+# conc: 232
+# exc: 132
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

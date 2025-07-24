@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 def strip_namespace(data):
@@ -14,9 +15,32 @@ def strip_namespace(data):
     os.rename(tmp, data.content_file)
 
 
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
+
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.binomania.it/recensioni-binomania/', use='curl', force_charset='utf-8'), process_catlist, dict())
 
 
@@ -39,7 +63,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('Video recensione del ', '').replace('Recensione del ', '').replace('Recensione ', '').strip().capitalize()
+    product.name = context['title'].replace('Video recensione dello ', '').replace('Video recensione del ', '').replace('Videorecensione del ', '').replace(' video e recensione', '').replace('Video e recensione del ', '').replace('Video e recensione dei ', '').replace('Recensione del ', '').replace('Recensione ', '').split(' – ')[0].replace('Preview dei ', '').replace(' videorecensione', '').split('- preview')[0].split(': recensione')[0].replace(' preview', '').replace('Test approfondito:', '').replace('Video recensione ', '').split('- preview')[0].replace(' video e recensione', '').replace(' preview', '').replace(' videorecensione', '').replace('RECENSIONE DEL ', '').replace('Video recensione ', '').replace('Preview ', '').split(': prestazioni')[0].replace('. la video recensione', '').replace('RECENSIONE DELLA ', '').replace('Videorecensione della ', '').strip().capitalize()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('recensione-', '')
     product.category = context['cat']
@@ -80,6 +104,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('//h2[regexp:test(., "In sintesi", "i")]/following-sibling::p[not(regexp:test(., "Pregi:|Difetti:"))]//text()').string(multiple=True)
 
     if conclusion:
+        conclusion = remove_emoji(conclusion).strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[regexp:test(., "CONCLUSIONE", "i")]/preceding-sibling::p[not(regexp:test(., "Pregi:|Difetti:"))]//text()').string(multiple=True)
@@ -89,6 +114,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(regexp:test(., "Pregi:|Difetti:"))]//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = remove_emoji(excerpt).strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

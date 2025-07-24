@@ -12,12 +12,10 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.BINOMANIA_IT
+agent = agents.GAME_OVER_ONLINE
 # agent = agents.TEST
 reload = 1
 
-# name: 27
-# exc: 60
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
