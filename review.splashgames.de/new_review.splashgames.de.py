@@ -69,20 +69,20 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//img[contains(@alt, "Wertung:")]/@alt').string()
     if grade_overall:
-        grade_overall = grade_overall.split(':')[-1].split('.')[0].strip()
+        grade_overall = float(grade_overall.split(':')[-1].split('.')[0].strip(' :.'))
         if grade_overall:
             review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
 
     grades = data.xpath('//td[img[contains(@alt, "Wertung:")]]/text()[not(contains(., "Wertung:"))][normalize-space(.)]')
     for grade in grades:
         grade_name, grade_val = grade.string().split(':')
-        if grade_val.strip():
-            grade_val = float(grade_val)
+        grade_val = float(grade_val.strip(' :.'))
+        if grade_val:
             best = 10.0
             if grade_val > 10:
-                best = int(float(grade_val)) + 1
+                best = float(int(grade_val) + 1)
 
-            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=float(best)))
+            review.grades.append(Grade(name=grade_name, value=grade_val, best=best))
 
     pros = data.xpath('((//tbody[tr/td/img[@alt="Pluspunkte"]]/tr)[2]/td)[2]//li')
     for pro in pros:

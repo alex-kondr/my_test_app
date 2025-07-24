@@ -107,9 +107,14 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[@class="KonaBody"]/p//text()').string(multiple=True)
 
     if excerpt:
-        if 'Overall, ' in excerpt:
-            excerpt, conclusion = excerpt.split('Overall, ')
-            review.add_property(type='conclsuion', value=conclusion.strip().capitalize())
+        if 'Conclusion ' in excerpt:
+            excerpt, conclusion = excerpt.rsplit('Conclusion ', 1)
+            conclusion = conclusion.strip(' -').capitalize()
+            review.add_property(type='conclsuion', value=conclusion)
+        elif 'Overall, ' in excerpt:
+            excerpt, conclusion = excerpt.rsplit('Overall, ', 1)
+            conclusion = conclusion.strip(' -').capitalize()
+            review.add_property(type='conclsuion', value=conclusion)
 
         review.add_property(type='excerpt', value=excerpt.strip())
 
