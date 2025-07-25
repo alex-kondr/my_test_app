@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 def strip_namespace(data):
@@ -87,8 +88,9 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//strong[contains(text(), "Rating:")]/text()|//td[img[@alt="Overall Rating"]]/following-sibling::td/font/text()').string()
     if grade_overall:
-        grade_overall = grade_overall.split(':')[-1].strip(' %')
+        grade_overall = re.search(r'\d+[\.,]?\d?', grade_overall)
         if grade_overall:
+            grade_overall = grade_overall.group()
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
     pro = data.xpath('//strong[contains(text(), "The Good")]/following-sibling::text()[1]').string(multiple=True)
