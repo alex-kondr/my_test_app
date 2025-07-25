@@ -3,10 +3,11 @@ from models.products import *
 
 
 XCAT = ['Аналитика и полезная информация']
+OPTIONS = "--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Cookie: _ym_debug=0; __ddg1_=n7n11DTOjupvygmgtrJZ; __eventn_id=b27955e8-ab5d-4f04-bca7-b3b2dd9db935; _ix=v3ndcdo767rih1etqstr4b7e31qr63pa; style=null; auth_param=; cookie_accept=1' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Priority: u=0, i'"
 
 
 def run(context, session):
-    session.queue(Request('https://www.ixbt.com/mobilepc/', use='curl', force_charset='utf-8', max_age=0), process_catlist, dict())
+    session.queue(Request('https://www.ixbt.com/mobilepc/', use='curl', force_charset='utf-8', options=OPTIONS, max_age=0), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -16,7 +17,7 @@ def process_catlist(data, context, session):
         url = cat.xpath('@href').string()
 
         if name not in XCAT:
-            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(cat=name))
+            session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS, max_age=0), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
@@ -24,11 +25,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS, max_age=0), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//a[text()="»"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', options=OPTIONS, max_age=0), process_revlist, dict(context))
 
 
 def process_review(data, context, session):

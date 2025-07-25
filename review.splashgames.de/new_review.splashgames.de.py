@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 def strip_namespace(data):
@@ -14,9 +15,33 @@ def strip_namespace(data):
     os.rename(tmp, data.content_file)
 
 
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
+
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('http://www.splashgames.de/php/rezensionen/alle', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -38,7 +63,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].replace(' of the fittest', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.manufacturer = data.xpath('//b[contains(., "Entwickler:")]/following-sibling::a[1]/text()').string()
@@ -69,15 +94,16 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//img[contains(@alt, "Wertung:")]/@alt').string()
     if grade_overall:
-        grade_overall = float(grade_overall.split(':')[-1].split('.')[0].strip(' :.'))
+        grade_overall = grade_overall.split(':')[-1].split('.')[0].strip(' :.')
         if grade_overall:
-            review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     grades = data.xpath('//td[img[contains(@alt, "Wertung:")]]/text()[not(contains(., "Wertung:"))][normalize-space(.)]')
     for grade in grades:
         grade_name, grade_val = grade.string().split(':')
-        grade_val = float(grade_val.strip(' :.'))
+        grade_val = grade_val.strip(' :.')
         if grade_val:
+            grade_val = float(grade_val)
             best = 10.0
             if grade_val > 10:
                 best = float(int(grade_val) + 1)
@@ -102,12 +128,12 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//b[contains(., "Fazit:")]/following-sibling::text()|//b[contains(., "Fazit:")]/following-sibling::*[not(self::b)]//text()').string(multiple=True)
     if conclusion:
-        conclusion = conclusion.replace(u'\uFEFF', '').replace('�', '').strip()
+        conclusion = remove_emoji(conclusion).replace(u'\uFEFF', '').replace('�', '').replace("Ollie's Fazit: ", '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//b[contains(., "Inhalt:")]/following-sibling::text()|//b[contains(., "Inhalt:")]/following-sibling::*[not(preceding-sibling::b[contains(., "Fazit:")] or self::b)]//text()').string(multiple=True)
+    excerpt = data.xpath('(//b[contains(., "Inhalt:")]/following-sibling::text()|//b[contains(., "Inhalt:")]/following-sibling::*[not(self::b)]//text())[not(contains(., "&amp") or preceding::b[contains(., "Fazit:")] or contains(., "Fazit:"))]').string(multiple=True)
     if excerpt:
-        excerpt = excerpt.replace(u'\uFEFF', '').replace('�', '').strip()
+        excerpt = remove_emoji(excerpt).replace(u'\uFEFF', '').replace('�', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

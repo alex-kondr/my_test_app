@@ -87,8 +87,9 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//strong[contains(text(), "Rating:")]/text()|//td[img[@alt="Overall Rating"]]/following-sibling::td/font/text()').string()
     if grade_overall:
-        grade_overall = float(grade_overall.split(':')[-1].strip(' %'))
-        review.grades.append(Grade(type='overall', value=grade_overall, best=100.0))
+        grade_overall = grade_overall.split(':')[-1].strip(' %')
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
     pro = data.xpath('//strong[contains(text(), "The Good")]/following-sibling::text()[1]').string(multiple=True)
     if pro:
