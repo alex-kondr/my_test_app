@@ -63,7 +63,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('Test : ', '').split(' : ')[0].split(' : ')[0].replace('Test du ', '').replace('Test ', '').replace('Preview ', '').replace(' Preview', '').replace('[Test]', '').replace('[TEST]', '').strip()
+    product.name = context['title'].replace('Mini test :', '').replace('Test : ', '').replace('Test: ', '').replace('Test du ', '').replace('Test ', '').replace('Preview ', '').replace(' Preview', '').replace('[Test]', '').replace('[TEST]', '').replace('[Preview]', '').replace(u'On a testé ', '').replace('[Historicotest]', '').replace('[Sans les Mains]', '').replace('[Weebot Hoverboard]', '').replace('[Interview-test]', '').replace('[Campagno-Test]', '').replace('[Gonzo-test]', '').replace(u'[Testé et approuvé]', '').replace('[Gonzo-Test]', '').replace('[Gonzo-TEST]', '').replace(u'[Épopée-Test]', '').replace(u'[Téléréali-test]', '').replace('[Micro Test]', '').replace('[Comparo Test]', '').replace('[Impressions]', '').replace('[MiniTest]', '').replace('[Test-boucherie]', '').replace('[Mini test]', '').strip()
     product.ssid = context['url'].split('/')[-2]
     product.category = data.xpath('//p[@class="post-tags"]/a[not(regexp:test(., "Test|preview|Home", "i"))]/text()').string() or 'Technologie'
 
@@ -120,12 +120,12 @@ def process_review(data, context, session):
         conclusion = data.xpath('//div[h2[contains(., "Notre avis")]]//div[@class="flex-1"]//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = remove_emoji(re.sub(r'\[nextpage title=”[^\[\]]+”\]', '', conclusion, flags=re.UNICODE)).strip()
+        conclusion = re.sub(r'\[nextpage.+title=[^\[\]]+\]', '', remove_emoji(conclusion), flags=re.UNICODE).strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(@class or preceding-sibling::h2[regexp:test(., "Prix|Verdict")])]//text()').string(multiple=True)
     if excerpt:
-        excerpt = remove_emoji(re.sub(r'\[nextpage title=”[^\[\]]+”\]', '', excerpt, flags=re.UNICODE)).strip()
+        excerpt = re.sub(r'\[nextpage.+title=[^\[\]]+\]', '', remove_emoji(excerpt), flags=re.UNICODE).strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
