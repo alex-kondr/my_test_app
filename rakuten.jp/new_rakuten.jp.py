@@ -29,22 +29,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.rakuten.co.jp/category/?l-id=top_normal_gmenu_d_list', force_charset='utf-8', use='curl'), process_catlist, dict())
-
-
-def process_catlist(data, context, session):
-    strip_namespace(data)
-
-    cats = data.xpath('//div[@class="gtc-genreUnit"]')
-    for cat in cats:
-        name = cat.xpath('a/div[contains(@class, "title")]/text()').string()
-
-        sub_cats = cat.xpath('ul/li/a')
-        for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath('text()').string()
-            url = sub_cat.xpath('@href').string()
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name))
+    session.queue(Request('https://search.rakuten.co.jp/search/mall/meta+quest/', force_charset='utf-8', use='curl'), process_prodlist, dict())
 
 
 def process_prodlist(data, context, session):
@@ -57,7 +42,7 @@ def process_prodlist(data, context, session):
         product.url = prod.xpath('div/a[img]/@href').string()
         product.ssid = prod.xpath('@data-id').string()
         product.sku = product.ssid
-        product.category = context['cat']
+        product.category = 'Meta Quest'
 
         rating = prod.xpath('.//span[@class="score"]')
         if rating:

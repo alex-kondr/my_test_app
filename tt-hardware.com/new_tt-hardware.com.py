@@ -116,9 +116,9 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h3[contains(text(), "Résumé ")]/following-sibling::p[not(preceding::*[regexp:test(., "Note globale|Les \+|Les –")])]//text()').string(multiple=True)
+    conclusion = data.xpath('//h3[contains(text(), "Résumé ")]/following-sibling::p[not(preceding::*[regexp:test(., "Note globale|Les \+|Les –")] or regexp:test(., "Points forts|Points faibles"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(text(), "conclusion")]/following-sibling::p[not(preceding::*[regexp:test(., "Note globale|Les \+|Les –")])]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(text(), "conclusion")]/following-sibling::p[not(preceding::*[regexp:test(., "Note globale|Les \+|Les –")] or regexp:test(., "Points forts|Points faibles"))]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
@@ -127,7 +127,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//h2[contains(text(), "conclusion")]/preceding-sibling::p[not(.//span[contains(@style, "text-decoration:")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(.//span[contains(@style, "text-decoration:")] or preceding::*[regexp:test(., "Note globale|Les \+|Les –")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(.//span[contains(@style, "text-decoration:")] or preceding::*[regexp:test(., "Note globale|Les \+|Les –")] or regexp:test(., "Points forts|Points faibles"))]//text()').string(multiple=True)
 
     if excerpt and any([grade_overall, pros, cons, conclusion]):
         review.add_property(type='excerpt', value=excerpt)

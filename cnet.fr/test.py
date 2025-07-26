@@ -16,12 +16,14 @@ agent = agents.CNET_FR
 # agent = agents.TEST
 reload = 1
 
-# name: 128
+# name: 246
 # pros/cons: 2+
 # concl: 0
 # exc: 151
 # log: 0
 # date: 0
+# grade:6879
+# author: 2672
 
 
 if __name__ == "__main__":

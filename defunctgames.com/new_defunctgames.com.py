@@ -93,10 +93,9 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//div[@class="score-bar-inner"]/@style').string()
     if grade_overall:
-        grade_name = data.xpath('//li[@class="review-score-grade"]/a/text()').string()
         grade_overall = grade_overall.split()[-1].strip(' %')
         if grade_overall:
-            review.grades.append(Grade(type='overall', name=grade_name, value=float(grade_overall), best=100.0))
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
     excerpt = data.xpath('//div[@class="review__text" and not(.//b[contains(., "Warning")])]//text()').string(multiple=True)
     if excerpt:

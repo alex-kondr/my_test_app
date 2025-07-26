@@ -51,7 +51,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('Test : ', '').replace('Test ', '').split(': ')[0].replace('On a testé le ', '').strip().capitalize()
+    product.name = context['title'].replace('Test : ', '').replace('Test ', '').replace('On a testé le ', '').strip().capitalize()
     product.url = context['url']
     product.ssid = product.url.split('-')[-1].replace('.htm', '')
     product.category = context['cat'].replace(' / ', '/')
@@ -119,13 +119,13 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(text(), "Notre")]/following-sibling::p[not(.//img)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(text(), "Notre|Conclusion")]/following-sibling::p[not(.//img)]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(text(), "Notre")]/preceding-sibling::p[not(.//img)]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(text(), "Notre|Conclusion")]/preceding-sibling::p[not(.//img or regexp:test(., "Les plus|Les moins|Note :|Note:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(.//img)]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(.//img or regexp:test(., "Les plus|Les moins|Note :|Note:"))]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

@@ -16,9 +16,9 @@ agent = agents.GAME_OVER_ONLINE
 # agent = agents.TEST
 reload = 1
 
-# name: 14
-# exc: 4
-# log: 6
+# name: 13
+# exc: 7
+# log: 0
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

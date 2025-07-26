@@ -65,7 +65,11 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].replace('Mini test :', '').replace('Test : ', '').replace('Test: ', '').replace('Test du ', '').replace('Test ', '').replace('Preview ', '').replace(' Preview', '').replace('[Test]', '').replace('[TEST]', '').replace('[Preview]', '').replace(u'On a testé ', '').replace('[Historicotest]', '').replace('[Sans les Mains]', '').replace('[Weebot Hoverboard]', '').replace('[Interview-test]', '').replace('[Campagno-Test]', '').replace('[Gonzo-test]', '').replace(u'[Testé et approuvé]', '').replace('[Gonzo-Test]', '').replace('[Gonzo-TEST]', '').replace(u'[Épopée-Test]', '').replace(u'[Téléréali-test]', '').replace('[Micro Test]', '').replace('[Comparo Test]', '').replace('[Impressions]', '').replace('[MiniTest]', '').replace('[Test-boucherie]', '').replace('[Mini test]', '').strip()
     product.ssid = context['url'].split('/')[-2]
-    product.category = data.xpath('//p[@class="post-tags"]/a[not(regexp:test(., "Test|preview|Home", "i"))]/text()').string() or 'Technologie'
+    product.category = 'Technologie'
+
+    category = data.xpath('//p[@class="post-tags"]/a[not(regexp:test(., "Test|preview|Home", "i"))]/text()').string()
+    if category:
+        product.category = category.capitalize()
 
     product.url = data.xpath('//a[contains(@href, "https://shop.journaldugeek.com/go")]/@href').string()
     if not product.url:
@@ -120,12 +124,12 @@ def process_review(data, context, session):
         conclusion = data.xpath('//div[h2[contains(., "Notre avis")]]//div[@class="flex-1"]//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = re.sub(r'\[nextpage.+title=[^\[\]]+\]', '', remove_emoji(conclusion), flags=re.UNICODE).strip()
+        conclusion = re.sub(r'\[nextpage.{1}title=[^\[\]]+\]', '', remove_emoji(conclusion), flags=re.UNICODE).strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(@class or preceding-sibling::h2[regexp:test(., "Prix|Verdict")])]//text()').string(multiple=True)
     if excerpt:
-        excerpt = re.sub(r'\[nextpage.+title=[^\[\]]+\]', '', remove_emoji(excerpt), flags=re.UNICODE).strip()
+        excerpt = re.sub(r'\[nextpage.{1}title=[^\[\]]+\]', '', remove_emoji(excerpt), flags=re.UNICODE).strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

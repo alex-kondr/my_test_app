@@ -16,11 +16,11 @@ agent = agents.JOURNALDUGEEK_FR
 # agent = agents.TEST
 reload = 1
 
-# name: 60
+# name: 63
 # cat: 0
 # pros/cons: 5
 # concl: 4
-# exc: 1299
+# exc: 1618
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
