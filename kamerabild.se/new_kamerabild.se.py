@@ -53,7 +53,7 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//a[@rel="author"]//text()').string()
+    author = data.xpath('//a[@rel="author"]//text()').string(multiple=True)
     author_url = data.xpath('//a[@rel="author"]/@href').string()
     if author and author_url:
         author_ssid = author_url.replace('mailto:', '').split('@')[0]
@@ -67,7 +67,8 @@ def process_review(data, context, session):
 
     if grade_overall:
         grade_overall = float(grade_overall.split()[-1].replace(',', '.'))
-        review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+        best = 100.0 if grade_overall > 5 else 5.0
+        review.grades.append(Grade(type='overall', value=grade_overall, best=best))
 
     grades = data.xpath('//h3[contains(text(), "Betyg")]/following-sibling::p[not(contains(., "TOTALT:"))]/text()[contains(., ": ")]')
     if not grades:
@@ -76,14 +77,16 @@ def process_review(data, context, session):
     for grade in grades:
         grade_name, grade_val = grade.string().split(':')
         grade_val = float(grade_val.replace(',', '.'))
-        review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
+        best = 100.0 if grade_val > 5 else 5.0
+        review.grades.append(Grade(name=grade_name, value=grade_val, best=best))
 
     if not grades:
-        grades = data.xpath('//h3[contains(text(), "Betyg")]/following-sibling::p[@class="no-indent" and contains(., ":")]')
+        grades = data.xpath('//h3[contains(text(), "Betyg")]/following-sibling::p[@class="no-indent" and contains(., ":") and not(contains(., "TOTALT"))]')
         for grade in grades:
             grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).split(':')
             grade_val = float(grade_val.replace(',', '.'))
-            review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
+            best = 100.0 if grade_val > 5 else 5.0
+            review.grades.append(Grade(name=grade_name, value=grade_val, best=best))
 
     pros = data.xpath('//h2[contains(text(), "Plus")]/following-sibling::div/p/text()')
     for pro in pros:

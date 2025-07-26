@@ -74,6 +74,17 @@ def process_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
+    if not grade_overall:
+        grade = data.xpath('//div[h1]//div[contains(@class, "rtg__inr")]/@class').string()
+        if grade:
+            grade_overall = re.search(r'\d+', grade)
+            if grade_overall:
+                grade_overall = float(grade_overall.group())
+                if 'half' in grade:
+                    grade_overall += .5
+
+                review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+
     pros = data.xpath('//div[h2[contains(text(), "Les plus")]]/ul/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -82,6 +93,13 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
+    if not pros:
+        pros = data.xpath('//div[h2[contains(text(), "Les plus")]]/text()[normalize-space(.)]').string(multiple=True)
+        if pros:
+            pros = pros.strip(' +-*.:;•–')
+            if len(pros) > 1:
+                review.add_property(type='pros', value=pros)
+
     cons = data.xpath('//div[h2[contains(text(), "Les moins")]]/ul/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
@@ -89,6 +107,13 @@ def process_review(data, context, session):
             con = con.strip(' +-*.:;•–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
+
+    if not cons:
+        cons = data.xpath('//div[h2[contains(text(), "Les moins")]]/text()[normalize-space(.)]').string(multiple=True)
+        if cons:
+            cons = cons.strip(' +-*.:;•–')
+            if len(cons) > 1:
+                review.add_property(type='cons', value=cons)
 
     summary = data.xpath('//main[@id="content"]/article/p//text()').string(multiple=True)
     if summary:

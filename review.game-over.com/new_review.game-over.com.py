@@ -18,8 +18,8 @@ def strip_namespace(data):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=6000)]
-    session.queue(Request('https://www.game-over.com/content/category/reviews/', use='curl', force_charset='utf-8'), process_revlist, dict())
-    session.queue(Request('https://www.game-over.com/review/gamereview.php', use='curl', force_charset='utf-8'), process_catlist, dict())
+    session.queue(Request('https://www.game-over.com/content/category/reviews/', use='curl'), process_revlist, dict())
+    session.queue(Request('https://www.game-over.com/review/gamereview.php', use='curl'), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -29,7 +29,7 @@ def process_catlist(data, context, session):
     for cat in cats:
         name = cat.xpath('.//text()').string(multiple=True)
         url = cat.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_category, dict(cat=name))
+        session.queue(Request(url, use='curl'), process_category, dict(cat=name))
 
 
 def process_category(data, context, session):
@@ -38,7 +38,7 @@ def process_category(data, context, session):
     months = data.xpath('//td[h3[contains(., "Review Archives")]]/a/@href')
     for month in months:
         url = month.string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(context))
+        session.queue(Request(url, use='curl'), process_revlist, dict(context))
 
 
 def process_revlist(data, context, session):
@@ -48,11 +48,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('.//text()').string(multiple=True)
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url, use='curl'), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
+        session.queue(Request(next_url, use='curl'), process_revlist, dict())
 
 
 def process_review(data, context, session):
@@ -97,7 +97,7 @@ def process_review(data, context, session):
     for grade in grades:
         grade_name, grade_val = grade.xpath('text()').string().split()
         grade_val, grade_best = grade_val.strip('( :)').split('/')
-        review.grades.append(Grade(name=grade_name, value=float(grade_overall), best=float(grade_best)))
+        review.grades.append(Grade(name=grade_name, value=float(grade_val), best=float(grade_best)))
 
     pro = data.xpath('//strong[contains(text(), "The Good")]/following-sibling::text()[1]').string(multiple=True)
     if pro:

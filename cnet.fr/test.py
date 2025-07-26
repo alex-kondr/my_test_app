@@ -16,10 +16,10 @@ agent = agents.CNET_FR
 # agent = agents.TEST
 reload = 1
 
-# name: 127
-# pros/cons: 2 - norm
-# concl: 0
-# exc: 105
+# name: 51
+# pros/cons: 8 - norm
+# concl: 109
+# exc: 116
 # log: 0
 # date: 0
 
