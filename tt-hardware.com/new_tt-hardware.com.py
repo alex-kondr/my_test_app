@@ -47,7 +47,7 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
 
         if 'les ' not in title.lower() and 'meilleurs ' not in title.lower():
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, title=title, url=url))
 
 #  no next page
 

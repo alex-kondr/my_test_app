@@ -56,8 +56,8 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//a[@itemprop="author"]//text()').string()
-    author_url = data.xpath('//a[@itemprop="author"]/@href').string()
+    author = data.xpath('(//span[@class="author"]/a|//a[@itemprop="author"])//text()').string()
+    author_url = data.xpath('(//span[@class="author"]/a|//a[@itemprop="author"])/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-2]
         review.authors.append(Person(name=author, ssid=author_ssid))

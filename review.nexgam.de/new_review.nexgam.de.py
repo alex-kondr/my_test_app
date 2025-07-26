@@ -60,7 +60,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = data.xpath('//h1[@itemprop="name"]/text()').string() or context['title']
     review.url = product.url
     review.ssid = product.ssid
     review.date = data.xpath('//time[@itemprop="datePublished"]/@datetime').string()
@@ -102,7 +102,7 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//div[@class="user-comment"]/p//text()').string(multiple=True)
+    conclusion = data.xpath('(//div[@class="user-comment"]/p|//div[@class="user-comment"]/div)//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 

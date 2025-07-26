@@ -64,7 +64,7 @@ def process_review(data, context, session):
 
     date = data.xpath('//time[@datetime]/text()').string()
     if date:
-        review.date = date.replace('Testé le', '').split(' à ')[0].strip()
+        review.date = date.split(' le', 1)[-1].split(' à ')[0].strip()
 
     author = data.xpath('//meta[@property="nrbi:authors"]/@content[not(contains(., "CNET France"))]').string()
     if author:
@@ -89,6 +89,10 @@ def process_review(data, context, session):
             con = con.strip(' +-*.:;•–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
+
+    summary = data.xpath('//main[@id="content"]/article/p//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[contains(text(), "Notre")]/following-sibling::p[not(.//img)]//text()').string(multiple=True)
     if conclusion:

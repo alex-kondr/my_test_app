@@ -17,10 +17,10 @@ agent = agents.NEXGAM_DE
 reload = 1
 
 # name: 51
-# pros/cons: 24
+# pros/cons: 8
 # concl: 108
 # exc: 115
-# error: 2
+# error: 0
 
 
 if __name__ == "__main__":

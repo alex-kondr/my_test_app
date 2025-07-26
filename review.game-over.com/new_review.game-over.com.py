@@ -17,7 +17,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
     session.queue(Request('https://www.game-over.com/content/category/reviews/', use='curl', force_charset='utf-8'), process_revlist, dict())
     session.queue(Request('https://www.game-over.com/review/gamereview.php', use='curl', force_charset='utf-8'), process_catlist, dict())
 
@@ -59,7 +59,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].replace(' Review', '').replace(' Hands-On Preview', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = context.get('cat') or 'Games'
@@ -93,6 +93,12 @@ def process_review(data, context, session):
             grade_overall = grade_overall.group()
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
+    grades = data.xpath('//b[regexp:test(text(), "\w+ \(\d+/\d+\)")]')
+    for grade in grades:
+        grade_name, grade_val = grade.xpath('text()').string().split()
+        grade_val, grade_best = grade_val.strip('( :)').split('/')
+        review.grades.append(Grade(name=grade_name, value=float(grade_overall), best=float(grade_best)))
+
     pro = data.xpath('//strong[contains(text(), "The Good")]/following-sibling::text()[1]').string(multiple=True)
     if pro:
         pro = pro.strip(' +-*:;•,–')
@@ -110,14 +116,19 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[@class="KonaBody"]/p//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace('�', '').strip()
         if 'Conclusion ' in excerpt:
             excerpt, conclusion = excerpt.rsplit('Conclusion ', 1)
             conclusion = conclusion.strip(' -').capitalize()
-            review.add_property(type='conclsuion', value=conclusion)
+            review.add_property(type='conclusion', value=conclusion)
         elif 'Overall, ' in excerpt:
             excerpt, conclusion = excerpt.rsplit('Overall, ', 1)
             conclusion = conclusion.strip(' -').capitalize()
-            review.add_property(type='conclsuion', value=conclusion)
+            review.add_property(type='conclusion', value=conclusion)
+        elif 'Summary:' in excerpt:
+            excerpt, conclusion = excerpt.rsplit('Summary:', 1)
+            conclusion = conclusion.strip(' -').capitalize()
+            review.add_property(type='conclusion', value=conclusion)
 
         review.add_property(type='excerpt', value=excerpt.strip())
 
