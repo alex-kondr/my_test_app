@@ -4,7 +4,6 @@ import re
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('http://es.gizmodo.com/tag/analisis', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -22,8 +21,11 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.url = context['url']
-    product.ssid = product.url.split('-')[-1]
+    product.ssid = context['url'].split('-')[-1]
+
+    product.url = data.xpath('//a[contains(text(), "Amazon")]/@href').string()
+    if not product.url:
+        product.url = context['url']
 
     name = data.xpath('//div[contains(@class, "review")]//p[contains(@class, "text-main")]/text()').string()
     if not name:
@@ -41,24 +43,20 @@ def process_review(data, context, session):
     review = Review()
     review.type = 'pro'
     review.title = data.xpath('//meta[@property="article:published_time"]/@content').string(multiple=True)
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content|//time/@datetime').string()
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//div[contains(@class, "author vcard")]//a[@rel="author"]/text()').string()
+    author = data.xpath('//div[contains(@class, "author vcard")]//span[contains(@class, "text-lg")]//text()[last()]').string(multiple=True)
     author_url = data.xpath('//div[contains(@class, "author vcard")]//a[@rel="author"]/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
-
-    grade_overall = data.xpath('count(//i[@class="fas fa-star"]) + count(//i[contains(@class, "fa-star-half")]) div 2')
-    if grade_overall:
-        review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     pros = data.xpath('//li[p[contains(text(), "Nos gusta")]]/p[not(contains(text(), "Nos gusta"))]')
     for pro in pros:
@@ -76,15 +74,11 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//div[contains(@class, "post-excerpt")]//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
     conclusion = data.xpath('(//h3|//p)[regexp:test(., "En resumen", "i")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h3|//p)[regexp:test(., "En resumen", "i")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('((//h3|//p)[regexp:test(., "En resumen", "i")])[1]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(@class)]//text()').string(multiple=True)
 
