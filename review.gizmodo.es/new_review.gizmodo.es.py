@@ -52,6 +52,9 @@ def process_review(data, context, session):
 
     author = data.xpath('//div[contains(@class, "author vcard")]//span[contains(@class, "text-lg")]//text()[last()]').string(multiple=True)
     author_url = data.xpath('//div[contains(@class, "author vcard")]//a[@rel="author"]/@href').string()
+    if not author:
+        author = data.xpath('//div[main[@id="main"]]/div/div[time]/span//text()').string(multiple=True)
+
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
