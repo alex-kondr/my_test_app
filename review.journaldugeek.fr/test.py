@@ -21,6 +21,7 @@ reload = 1
 # pros/cons: 5
 # concl: 4
 # exc: 1618
+# https://www.journaldugeek.com/test/test-super-mario-odyssey-une-aventure-homerique-nintendo-switch/
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
