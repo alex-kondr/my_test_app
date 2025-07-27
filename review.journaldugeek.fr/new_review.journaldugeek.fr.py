@@ -119,7 +119,11 @@ def process_review(data, context, session):
         summary = remove_emoji(summary).strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Verdict")]/following-sibling::p[not(@class or preceding-sibling::h2[regexp:test(., "Prix")])]//text()').string(multiple=True)
+    # conclusion = data.xpath('//h2[regexp:test(., "Verdict|Conclusion")]/following-sibling::p[not(contains(., "[nextpage") or preceding-sibling::h2[regexp:test(., "Prix")])]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "Verdict|Conclusion")]/following-sibling::p[not(preceding-sibling::h2[regexp:test(., "Prix")])]//text()').string(multiple=True)
+    if not conclusion:
+        # conclusion = data.xpath('(//p[regexp:test(., "Verdict|Conclusion")])[last()]/following-sibling::p[not(contains(., "[nextpage") or preceding-sibling::h2[regexp:test(., "Prix")])]//text()').string(multiple=True)
+        conclusion = data.xpath('(//p[regexp:test(., "Verdict|Conclusion")])[last()]/following-sibling::p[not(preceding-sibling::h2[regexp:test(., "Prix")])]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[h2[contains(., "Notre avis")]]//div[@class="flex-1"]//text()').string(multiple=True)
 
@@ -127,7 +131,8 @@ def process_review(data, context, session):
         conclusion = re.sub(r'\[nextpage.{1}title=[^\[\]]+\]', '', remove_emoji(conclusion), flags=re.UNICODE).strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(@class or preceding-sibling::h2[regexp:test(., "Prix|Verdict")])]//text()').string(multiple=True)
+    # excerpt = data.xpath('(//div[contains(@class, "entry-content")]/p|//div[contains(@class, "entry-content")]/div)[not((preceding-sibling::h2|preceding-sibling::p)[regexp:test(., "Prix|Verdict|Conclusion")] or regexp:test(., "\[nextpage|Prix|Verdict|Conclusion"))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//div[contains(@class, "entry-content")]/p|//div[contains(@class, "entry-content")]/div)[not((preceding-sibling::h2|preceding-sibling::p)[regexp:test(., "Prix|Verdict|Conclusion")] or regexp:test(., "Prix|Verdict|Conclusion"))]//text()').string(multiple=True)
     if excerpt:
         excerpt = re.sub(r'\[nextpage.{1}title=[^\[\]]+\]', '', remove_emoji(excerpt), flags=re.UNICODE).strip()
         review.add_property(type='excerpt', value=excerpt)

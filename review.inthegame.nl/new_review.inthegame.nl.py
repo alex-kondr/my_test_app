@@ -52,6 +52,13 @@ def process_review(data, context, session):
             grade_overall = float(grade_overall.split('/')[0])
             review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
 
+    summary = data.xpath('(//div[contains(@class, "the_content")]/p)[1]//strong//text()').string(multiple=True)
+    if not summary:
+        summary = data.xpath('(//div[contains(@class, "the_content")]/h4)[1]//text()').string(multiple=True)
+
+    if summary:
+        review.add_property(type='summary', value=summary)
+
     conclusion = data.xpath('(//h2|//p)[regexp:test(., "Verdict|Tot slot")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="review-desc"]/p[not(@class)]//text()').string(multiple=True)
@@ -64,6 +71,9 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[contains(@class, "the_content")]/p[not(@class)]//text()').string(multiple=True)
 
     if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

@@ -16,11 +16,11 @@ agent = agents.JOURNALDUGEEK_FR
 # agent = agents.TEST
 reload = 1
 
-# name: 63
+# name: 64
 # cat: 0
-# pros/cons: 5
-# concl: 4
-# exc: 1618
+# pros/cons: 8
+# concl: 7
+# exc: 1594
 # https://www.journaldugeek.com/test/test-super-mario-odyssey-une-aventure-homerique-nintendo-switch/
 
 if __name__ == "__main__":

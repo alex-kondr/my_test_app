@@ -1,6 +1,7 @@
 from agent import *
 from models.products import *
 import re
+import simplejson
 
 
 def strip_namespace(data):
@@ -17,22 +18,27 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('https://atomix.vg/seccion/resenas/', use='curl', force_charset='utf-8'), process_revlist, dict())
+    session.queue(Request('atomix.vg/funcionalidades/search/indexitems.aspx?page=1&seccion=resenas', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
     strip_namespace(data)
 
-    revs = data.xpath('//h1[contains(@class, "title")]/a')
-    for rev in revs:
-        title = rev.xpath('.//text()').string(multiple=True)
-        url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
+    revs_json = simplejson.loads(data.content)
 
-    next_url = data.xpath('//link[@rel="next"]/@href').string()
-    if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
+    revs = revs_json.get('items', [])
+    if revs:
+        for rev in revs:
+            ssid = rev.get('IdNota')
+            title = rev.get('Titulo')
+            url = 'https://atomix.vg' + rev.get('url')
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, ssid=ssid, url=url))
+
+    next_page = revs_json.get('next')
+    if next_page:
+        next_page = context.get('page', 1) + 1
+        next_url = 'https://atomix.vg/funcionalidades/search/indexitems.aspx?page={}&seccion=resenas'.format(next_page)
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(page=next_page))
 
 
 def process_review(data, context, session):
@@ -41,13 +47,13 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].replace('Review – ', '').replace('Review – ', '').replace('Review- ', '').replace('Review — ', '').replace(' – Review', '').replace('REVIEW – ', '').replace('REVIEW ', '').replace('Reseña: ', '').replace('Review: ', '').replace('Review – ', '').replace('REVIEW — ', '').replace('Videoreseña – ', '').replace('Review– ', '').replace('REVIEW- ', '').replace(' reviews', '').replace('REVIEW: ', '').replace('Video review – ', '').replace('Reseña – ', '').replace('Reseña Indie: ', '').replace('RESEÑA: ', '').replace('RESEÑA – ', '').replace('Reseña de ', '').replace('Videoreseña: ', '').replace('Video reseña: ', '').replace('Videoreseña DLC: ', '').replace('¿Reseña? ', '').replace('Reseña. ', '').replace(' (Reseña)', '').replace('Reseña — ', '').replace('Reseña-Biblia: ', '').replace('Reseña escrita: ', '').replace('Reseña/DLC: ', '').replace('Reseña y ', '').replace('Reseña ', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2].replace('review-', '')
+    product.ssid = context['ssid']
     product.category = 'Juegos'
     product.manufacturer = data.xpath('//span[h1[normalize-space(text())="DESARROLLADOR"]]/p/text()').string()
 
     platforms = data.xpath('//span[h1[normalize-space(text())="PLATAFORMA"]]/p/text()').string()
     if platforms:
-        product.category += '|' + platforms.replace(', ', '/')
+        product.category += '|' + platforms.replace(', ', '/').strip(' ,.:')
 
     review = Review()
     review.type = 'pro'
@@ -56,8 +62,11 @@ def process_review(data, context, session):
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
+    if not date:
+        date = data.xpath('//span[contains(@class, "date")]/text()').string()
+
     if date:
-        review.date = date.split('T')[0]
+        review.date = date.split('T')[0].split()[0]
 
     author = data.xpath('//a[@rel="author"]/text()').string()
     author_url = data.xpath('//a[@rel="author"]/@href').string()
@@ -67,11 +76,14 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//img[contains(@alt, "score")]/@alt').string()
+    grade_overall = data.xpath('//img[regexp:test(@alt, "score", "i")]/@alt').string()
+    if not grade_overall:
+        grade_overall = data.xpath('//img[regexp:test(@src, "score", "i")]/@src').string()
+
     if grade_overall:
-        grade_overall = re.search(r'\d+', grade_overall)
+        grade_overall = re.search(r'\d{1,2}', grade_overall.split('/')[-1])
         if grade_overall:
-            grade_overall = grade_overall.group()[:2]
+            grade_overall = grade_overall.group()
             if len(grade_overall) == 1:
                 review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
             else:
@@ -81,7 +93,9 @@ def process_review(data, context, session):
     if not conclusion:
         conclusion = data.xpath('(//p[contains(., "En conclusión,")]|//p[contains(., "En conclusión,")]/following-sibling::p)[not(iframe[contains(@src, "https://www.youtube.com")])]//text()[not(contains(., "En conclusión,"))]').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('(//p[.//img[contains(@alt, "score")]]|//p[.//img[contains(@alt, "score")]]/following-sibling::p)[not(iframe[contains(@src, "https://www.youtube.com")])]//text()').string(multiple=True)
+        conclusion = data.xpath('(//p[.//img[regexp:test(@alt, "score", "i")]]|//p[.//img[regexp:test(@alt, "score", "i")]]/following-sibling::p)[not(iframe[contains(@src, "https://www.youtube.com")])]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('(//p[.//img[regexp:test(@src, "score", "i")]]|//p[.//img[regexp:test(@src, "score", "i")]]/following-sibling::p)[not(iframe[contains(@src, "https://www.youtube.com")])]//text()').string(multiple=True)
 
     if conclusion:
         conclusion = conclusion.replace(u'\uFEFF', '').strip()
@@ -91,7 +105,9 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//p[contains(., "En conclusión,")]/preceding-sibling::p[not(iframe[contains(@src, "https://www.youtube.com")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[.//img[contains(@alt, "score")]]/preceding-sibling::p[not(iframe[contains(@src, "https://www.youtube.com")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//p[.//img[regexp:test(@alt, "score", "i")]]/preceding-sibling::p[not(iframe[contains(@src, "https://www.youtube.com")])]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[.//img[regexp:test(@src, "score", "i")]]/preceding-sibling::p[not(iframe[contains(@src, "https://www.youtube.com")])]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "post-text")]/p[@data-end and not(@data-is-only-node="")][not(iframe[contains(@src, "https://www.youtube.com")])]//text()').string(multiple=True)
     if not excerpt:

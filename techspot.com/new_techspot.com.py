@@ -61,14 +61,14 @@ def process_review(data, context, session):
         summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(text(), "Wrap Up|Recommendations|What We Learned", "i")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2|//h3)[regexp:test(text(), "Wrap Up|Recommendations|What We Learned|Conclusion", "i")]/following-sibling::p[not(contains(., "Shopping shortcuts"))]//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(text(), "Wrap Up|Recommendations|What We Learned", "i")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2|//h3)[regexp:test(text(), "Wrap Up|Recommendations|What We Learned|Conclusion", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="articleBody"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="articleBody"]/p[not(contains(., "Shopping shortcuts"))]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').strip()
