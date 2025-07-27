@@ -17,7 +17,7 @@ agent = agents.GIZMODO_ES
 reload = 1
 
 # exc: 0
-# author: 10
+# author: 0
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

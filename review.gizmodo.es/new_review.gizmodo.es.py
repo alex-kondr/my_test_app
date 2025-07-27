@@ -10,7 +10,7 @@ def run(context, session):
 def process_revlist(data, context, session):
     revs = data.xpath('//li[contains(@class, "first")]')
     for rev in revs:
-        cat = rev.xpath('.//span[contains(@class, "text-main")]/text()[not(contains(., "Reviews"))]').string()
+        cat = rev.xpath('.//span[contains(@class, "text-main")]/text()[not(regexp:test(., "Reviews|Noticias"))]').string()
         url = rev.xpath('.//a[@class="block"]/@href').string()
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(cat=cat, url=url))
 
