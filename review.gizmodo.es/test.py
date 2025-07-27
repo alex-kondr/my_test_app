@@ -12,16 +12,10 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.JOURNALDUGEEK_FR
+agent = agents.GIZMODO_ES
 # agent = agents.TEST
 reload = 1
 
-# name: 64
-# cat: 0
-# pros/cons: 8
-# concl:11
-# exc: 1362
-# https://www.journaldugeek.com/test/test-super-mario-odyssey-une-aventure-homerique-nintendo-switch/
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
