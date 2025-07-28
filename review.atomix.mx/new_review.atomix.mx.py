@@ -4,6 +4,9 @@ import re
 import simplejson
 
 
+OPTIONS = "--compressed -X POST -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0' -H 'Accept: */*' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Cookie: ASP.NET_SessionId=j1pqssyxudjvzioal4vq1axn'"
+
+
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"
     out = file(tmp, "w")
@@ -18,7 +21,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.queue(Request('atomix.vg/funcionalidades/search/indexitems.aspx?page=1&seccion=resenas', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+    session.queue(Request('https://atomix.vg/funcionalidades/search/indexitems.aspx?page=1&seccion=resenas', use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -32,13 +35,13 @@ def process_revlist(data, context, session):
             ssid = rev.get('IdNota')
             title = rev.get('Titulo')
             url = 'https://atomix.vg' + rev.get('url')
-            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, ssid=ssid, url=url))
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_review, dict(title=title, ssid=ssid, url=url))
 
     next_page = revs_json.get('next')
     if next_page:
         next_page = context.get('page', 1) + 1
         next_url = 'https://atomix.vg/funcionalidades/search/indexitems.aspx?page={}&seccion=resenas'.format(next_page)
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(page=next_page))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_revlist, dict(page=next_page))
 
 
 def process_review(data, context, session):
