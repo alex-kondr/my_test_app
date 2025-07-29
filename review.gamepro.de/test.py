@@ -16,10 +16,10 @@ agent = agents.GAMEPRO_DE
 # agent = agents.TEST
 reload = 1
 
-# name: 22
+# name: 8
 # pros/cons: 1+
 # concl: 24
-# exc: 1306
+# exc: 88
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
