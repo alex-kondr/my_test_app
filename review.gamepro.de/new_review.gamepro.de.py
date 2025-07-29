@@ -39,16 +39,16 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = data.xpath('//div[@class="media-body"]/p/a/text()').string() or context['title'].split(' im Test')[0].replace('', '').strip()
+    product.name = data.xpath('//div[@class="media-body"]/p/a/text()').string() or context['title'].split(' im Test')[0].split(' - Test')[0].split(' -Test')[0].replace(' - Review', '').replace('Anime-Review: ', '').replace(' - Beta-Test', '').strip()
     product.url = context['url']
     product.ssid = product.url.split(',')[-1].replace('.html', '')
     product.category = 'Spiele'
 
-    platform = data.xpath('//p[@class="info" and contains(., "Release:")]/text()').string()
-    if platform:
-        platform = re.search(r'\(.+\)', platform)
-        if platform:
-            product.category += '|' + platform.group().strip('( )').replace(',', '/')
+    platforms = data.xpath('//p[@class="info" and contains(., "Release:")]/text()').string()
+    if platforms:
+        platforms = re.findall(r'\(.+\)', platforms)
+        if platforms:
+            product.category += '|' + '/'.join([platform.strip('( )') for platform in platforms]).replace(', ', '/')
 
     genre = data.xpath('//p[@class="info" and contains(., "Genre:")]/text()').string()
     if genre:
@@ -64,13 +64,15 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//p[contains(@class, "publication-info")]/*/text()').string()
-    author_url = data.xpath('//p[contains(@class, "publication-info")]/a/@href').string()
-    if author and author_url:
-        author_ssid = author_url.split('/')[-2].split(',')[-1]
-        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
-    elif author:
-        review.authors.append(Person(name=author, ssid=author))
+    authors = data.xpath('//p[contains(@class, "publication-info")]/*[normalize-space(.)]')
+    for author in authors:
+        author = data.xpath('//p[contains(@class, "publication-info")]/*/text()').string()
+        author_url = data.xpath('//p[contains(@class, "publication-info")]/a/@href').string()
+        if author and author_url:
+            author_ssid = author_url.split('/')[-2].split(',')[-1]
+            review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+        elif author:
+            review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//span[@class="points responsive"]/text()').string()
     if grade_overall:
@@ -103,13 +105,13 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(@class)]//text()[not(contains(., "@"))][string-length()>2]').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p[not(@class)]//text()[not(contains(., "@"))][string-length()>2]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="article-content"]/p[not(@class)]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="article-content"]/p[not(@class)]//text()[not(contains(., "@"))][string-length()>2]').string(multiple=True)
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -131,7 +133,10 @@ def process_review_next(data, context, session):
     review = context['review']
 
     page =context.get('page', 2)
-    title = review.title + ' - Pagina ' + str(page)
+    title = data.xpath('//h1[@class="article"]//text()').string(multiple=True)
+    if title == review.title:
+        title = review.title + ' - Pagina ' + str(page)
+
     review.add_property(type='pages', value=dict(title=title, url=data.response_url))
 
     grade_overall = data.xpath('//span[@class="points responsive"]/text()').string()
@@ -161,13 +166,13 @@ def process_review_next(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(@class)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(@class)]//text()[not(contains(., "@"))][string-length()>2]').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//div[@class="article-content"]/p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p[not(@class)]//text()[not(contains(., "@"))][string-length()>2]').string(multiple=True)
+    if not excerpt and not conclusion:
+        excerpt = data.xpath('//div[@class="article-content"]/p[not(@class)]//text()[not(contains(., "@"))][string-length()>2]').string(multiple=True)
 
     if excerpt:
         context['excerpt'] += ' ' + excerpt

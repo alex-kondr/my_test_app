@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 def strip_namespace(data):
@@ -16,8 +17,9 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=9000)]
     session.queue(Request('https://www.gamesaktuell.de/Artikel-Archiv/Tests/', use='curl', force_charset='utf-8', max_age=0), process_catlist, dict())
+    session.queue(Request('https://www.gamesaktuell.de/Artikel-Archiv/Tests/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -47,9 +49,13 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or context['title'].split(' im Test')[0].replace('', '').strip()
+    product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or re.sub(r'\(.+\)', '', context['title']).split(' im Test')[0].replace('Test/Review: ', '').replace('Review: ', '').strip()
     product.ssid = context['url'].split('/')[-2].split('-')[-1]
-    product.category = data.xpath('//ul[@id="productNavigation"]//button/text()').string() or 'Technik'
+    product.category = 'Technik'
+
+    platforms = data.xpath('//ul[@id="productNavigation"]//button/text()').join('/')
+    if platforms:
+        product.category =  'Spiele|' + platforms
 
     product.url = data.xpath('//a[.//button[contains(., "ZUM ANGEBOT")]]/@href').string()
     if not product.url:
@@ -57,7 +63,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = data.xpath('//h1[@class="articleTitle"]/text()').string()
     review.url = context['url']
     review.ssid = product.ssid
 
@@ -77,6 +83,22 @@ def process_review(data, context, session):
     if grade_overall:
         grade_overall = grade_overall.replace(',', '.')
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+
+    pros = data.xpath('//div[div/span[contains(text(), "Pro & Contra")]]//span[contains(@class, "ratingPro")]')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//div[div/span[contains(text(), "Pro & Contra")]]//span[contains(@class, "ratingContra")]')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
 
     summary = data.xpath('//p[contains(@class, "artIntro")]//text()').string(multiple=True)
     if summary:
@@ -117,6 +139,22 @@ def process_review_next(data, context, session):
     if grade_overall:
         grade_overall = grade_overall.replace(',', '.')
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+
+    pros = data.xpath('//div[div/span[contains(text(), "Pro & Contra")]]//span[contains(@class, "ratingPro")]')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//div[div/span[contains(text(), "Pro & Contra")]]//span[contains(@class, "ratingContra")]')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//div[contains(@class, "rating")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
