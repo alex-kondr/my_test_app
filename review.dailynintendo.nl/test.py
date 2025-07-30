@@ -16,6 +16,9 @@ agent = agents.DAILY_NINTENDO_NL
 # agent = agents.TEST
 reload = 1
 
+# name: 72
+# exc: 3
+# log: 0
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

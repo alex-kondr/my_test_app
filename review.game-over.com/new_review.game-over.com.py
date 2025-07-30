@@ -18,7 +18,7 @@ def strip_namespace(data):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=6000)]
-    session.queue(Request('https://www.game-over.com/content/category/reviews/', use='curl'), process_revlist, dict())
+    session.queue(Request('https://www.game-over.com/content/category/reviews/', use='curl'), process_revlist, dict(cat='Tech'))
     session.queue(Request('https://www.game-over.com/review/gamereview.php', use='curl'), process_catlist, dict())
 
 
@@ -52,7 +52,7 @@ def process_revlist(data, context, session):
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl'), process_revlist, dict())
+        session.queue(Request(next_url, use='curl'), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
@@ -61,8 +61,11 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].replace(' Review', '').replace(' Hands-On Preview', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
-    product.category = context.get('cat') or 'Games'
+    product.category = context.get('cat')
+
+    product.ssid = product.url.split('/')[-1].replace('.html', '')
+    if not product.ssid:
+        product.ssid = product.url.split('/')[-2]
 
     manufacturer = data.xpath('//strong[contains(text(), "Publisher:")]/text()|//td[img[@alt="Game & Publisher"]]/following-sibling::td//a//text()').string()
     if manufacturer:
@@ -117,19 +120,6 @@ def process_review(data, context, session):
 
     if excerpt:
         excerpt = excerpt.replace('�', '').strip()
-        if 'Conclusion ' in excerpt:
-            excerpt, conclusion = excerpt.rsplit('Conclusion ', 1)
-            conclusion = conclusion.strip(' -').capitalize()
-            review.add_property(type='conclusion', value=conclusion)
-        elif 'Overall, ' in excerpt:
-            excerpt, conclusion = excerpt.rsplit('Overall, ', 1)
-            conclusion = conclusion.strip(' -').capitalize()
-            review.add_property(type='conclusion', value=conclusion)
-        elif 'Summary:' in excerpt:
-            excerpt, conclusion = excerpt.rsplit('Summary:', 1)
-            conclusion = conclusion.strip(' -').capitalize()
-            review.add_property(type='conclusion', value=conclusion)
-
         review.add_property(type='excerpt', value=excerpt.strip())
 
         product.reviews.append(review)

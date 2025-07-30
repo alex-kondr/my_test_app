@@ -4,7 +4,7 @@ import re
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://www.destructoid.com/reviews/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -22,10 +22,18 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' – ')[0].replace('', '').strip()
+    product.name = context['title'].replace('Review – ', '').split(' – ')[0].split(' Review: ')[0].replace(' review', '').replace('Review: ', '').replace('Preview: ', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
-    product.category = 'Tech'
+    product.ssid = product.url.split('/')[-2].replace('-review', '').replace('review-', '')
+    product.category = 'Games'
+
+    platforms = data.xpath('(//p[@data-injectable and regexp:test(., ".+\(.+(PC)|(PS)|(Xbox)|(Nintendo)[^\(\)]+\)")]|//b[regexp:test(., ".+\(.+(PC)|(PS)|(Xbox)|(Nintendo)[^\(\)]+\)")])//text()').string(multiple=True)
+    if platforms:
+        product.category += '|' + re.sub(r'[  ]?\[[^\[\]]*reviewed[^\[\]]*\]|[  ]?\[tested\]|\[Review\]', '', platforms, flags=re.I).replace('and ', '').split('(')[-1].split(')')[0].strip('( )').replace(', ', '/').replace(', ', '/').replace(' /', '/')
+
+    manufacturer = data.xpath('(//b|//strong)[contains(., "Developer:")]/text()[contains(., "Developer:")]').string(multiple=True)
+    if manufacturer:
+        product.manufacturer = manufacturer.replace('Developer:', '').strip()
 
     review = Review()
     review.type = 'pro'
@@ -39,20 +47,18 @@ def process_review(data, context, session):
         if date:
             review.date = date.group()
 
-# //div[contains(@class, "author-drawer__author")]
-    author = data.xpath('/text()').string()
-    author_url = data.xpath('/@href').string()
-    if author and author_url:
-        author_ssid = author_url.split('/')[-1]
-        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+    author = data.xpath('//div[contains(@class, "author-drawer__author")][normalize-space(.)]/text()').string()
+    author_ssid = data.xpath('//div[contains(@class, "author-drawer__author")][normalize-space(.)]/@data-author').string()
+    if author and author_ssid:
+        review.authors.append(Person(name=author, ssid=author_ssid))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//text()').string()
+    grade_overall = data.xpath('//div[contains(@class, "summary__number-rating")]/text()').string()
     if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    pros = data.xpath('/li')
+    pros = data.xpath('//div[div[contains(text(), "Pros")]]/ul/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -60,7 +66,7 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('/li')
+    cons = data.xpath('//div[div[contains(text(), "Cons")]]/ul/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -72,15 +78,19 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//text()').string(multiple=True)
-    if conclusion:
-        review.add_property(type='conclusion', value=conclusion)
-
-    excerpt = data.xpath('//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
-
+    excerpt = data.xpath('//div[contains(@class, "article-content")]/p[not(regexp:test(., "Developer:|Publisher:|Released:|MSRP:") or sub)]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
+
+        if 'Overall, ' in excerpt:
+            excerpt, conclusion = excerpt.rsplit('Overall, ', 1)
+            conclusion = conclusion.strip().capitalize()
+            review.add_property(type='conclusion', value=conclusion)
+        else:
+            conclusion = data.xpath('//div[contains(@class, "review-summary__text")]/p//text()').string(multiple=True)
+            if conclusion:
+                review.add_property(type='conclusion', value=conclusion)
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

@@ -129,7 +129,7 @@ def process_review(data, context, session):
         conclusion = re.sub(r'\[nextpage.title=[^\[\]]+\]', '', remove_emoji(conclusion), flags=re.UNICODE).strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//div[contains(@class, "entry-content")]/p|//div[contains(@class, "entry-content")]/div)[not((preceding-sibling::h2|preceding-sibling::p)[regexp:test(., "Prix|Verdict|Conclusion")] or regexp:test(., "Prix|Verdict|Conclusion") or contains(@class, "text-right") or contains(., ", disponible sur "))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//div[contains(@class, "entry-content")]/p|//div[contains(@class, "entry-content")]/div)[not((preceding-sibling::h2|preceding-sibling::p)[regexp:test(., "Prix|Verdict|Conclusion")] or regexp:test(., "Prix|Verdict|Conclusion|©|au prix de") or contains(@class, "text-right") or contains(., ", disponible sur ") or @class="comp-p not-prose")]//text()').string(multiple=True)
     if excerpt:
         excerpt = re.sub(r'\[nextpage.title=[^\[\]]+\]', '', remove_emoji(excerpt), flags=re.UNICODE).strip()
         review.add_property(type='excerpt', value=excerpt)
