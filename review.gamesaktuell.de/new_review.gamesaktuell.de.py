@@ -36,9 +36,8 @@ def process_revlist(data, context, session):
 
     revs = data.xpath('//h3/a')
     for rev in revs:
-        title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(url=url))
 
     next_url = data.xpath('//a[contains(@class, "lpPagination_right")]/@href').string()
     if next_url:
@@ -48,8 +47,10 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     strip_namespace(data)
 
+    title = data.xpath('//h1[@class="articleTitle"]/text()').string()
+
     product = Product()
-    product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or re.sub(r'\(.+\)', '', context['title']).split(' im Test')[0].replace('Test/Review: ', '').replace('Review: ', '').strip()
+    product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or re.sub(r'\(.+\)', '', title).split(' im Test')[0].replace('Test/Review: ', '').replace('Review: ', '').strip()
     product.ssid = context['url'].split('/')[-2].split('-')[-1]
     product.category = 'Technik'
 
@@ -63,7 +64,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = data.xpath('//h1[@class="articleTitle"]/text()').string()
+    review.title = title
     review.url = context['url']
     review.ssid = product.ssid
 
@@ -108,7 +109,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[contains(@class, "rating")]/preceding-sibling::p[not(contains(., "Test-Update vom"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[contains(@class, "rating")]/preceding-sibling::p[not(regexp:test(., "Test-Update vom|Anzeige"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="textContainer"]/p//text()').string(multiple=True)
 

@@ -27,7 +27,7 @@ def process_review(data, context, session):
     product.ssid = product.url.split('/')[-2].replace('-review', '').replace('review-', '')
     product.category = 'Games'
 
-    platforms = data.xpath('(//p[@data-injectable and regexp:test(., ".+\(.+(PC)|(PS)|(Xbox)|(Nintendo)[^\(\)]+\)")]|//b[regexp:test(., ".+\(.+(PC)|(PS)|(Xbox)|(Nintendo)[^\(\)]+\)")])//text()').string(multiple=True)
+    platforms = data.xpath('(//p[@data-injectable and regexp:test(., ".+\(.*[(PC)(PS)(Xbox)(Nintendo)][^\(\)]+\)")]|//b[regexp:test(., ".+\(.*[(PC)(PS)(Xbox)(Nintendo)][^\(\)]+\)")])//text()').string(multiple=True)
     if platforms:
         product.category += '|' + re.sub(r'[  ]?\[[^\[\]]*reviewed[^\[\]]*\]|[  ]?\[tested\]|\[Review\]', '', platforms, flags=re.I).replace('and ', '').split('(')[-1].split(')')[0].strip('( )').replace(', ', '/').replace(', ', '/').replace(' /', '/')
 

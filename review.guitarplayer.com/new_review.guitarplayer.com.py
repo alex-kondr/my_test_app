@@ -80,12 +80,14 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('((//p|//h2|//h3)[contains(., "Conclusion")])[last()]/following-sibling::p[not(regexp:test(., "SPECIFICATIONS", "i") or preceding::p[regexp:test(., "SPECIFICATIONS", "i")] or preceding::h2[regexp:test(., "SPECIFICATIONS", "i")])]//text()').string(multiple=True)
     if not conclusion:
+        conclusion = data.xpath('(//h2[regexp:test(., "VERDICT", "i")])[last()]/following-sibling::p[not(contains(., "for more information"))]//text()').string(multiple=True)
+    if not conclusion:
         conclusion = data.xpath('//div[@class="pretty-verdict__verdict"]/p//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('((//p|//h2|//h3)[contains(., "Conclusion")])[last()]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('((//p|//h2|//h3)[regexp:test(., "Conclusion|VERDICT", "i")])[last()]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@id="article-body"]/p[not(regexp:test(., "SPECIFICATIONS", "i") or preceding::p[regexp:test(., "SPECIFICATIONS", "i")] or preceding::h2[regexp:test(., "SPECIFICATIONS", "i")])]//text()').string(multiple=True)
 

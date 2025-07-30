@@ -41,7 +41,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://dailynintendo.nl/category/reviews/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
@@ -63,7 +63,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = re.sub(r'\([^\(\)]+\)', '', context['title']).split(' – ')[0].replace('[Review]', '').replace('[REVIEW]', '').replace('[REVIEW ]', '').replace('[Preview]', '').replace('[PREVIEW]', '').replace('[SWITCH REVIEW]', '').replace('[N3DS REVIEW]', '').replace('[Gamescom] Preview:', '').replace('[Gamescom] Preview', '').replace('[Gamescom] ', '').replace(' Preview', '').replace('3DS Review: ', '').replace('3DS eShop Review: ', '').replace('Wii Review: ', '').replace('3DS Video Review: ', '').replace('DS Review: ', '').replace('Wii/3DS review: ', '').replace('Wii U eShop Review: ', '').replace('Wii U eshop review: ', '').replace('Wii U Review: ', '').replace('New 3DS review: ', '').replace('Review: ', '').strip()
+    product.name = re.sub(r'\([^\(\)]+\)', '', context['title']).split(' – ')[0].replace('[Review]', '').replace('[REVIEW]', '').replace('[REVIEW ]', '').replace('[Preview]', '').replace('[PREVIEW]', '').replace('[SWITCH REVIEW]', '').replace('[N3DS REVIEW]', '').replace('[Gamescom] Preview:', '').replace('[Gamescom] Preview', '').replace('[Gamescom] ', '').replace(' Preview', '').replace('3DS Review: ', '').replace('3DS eShop Review:', '').replace('Wii Review: ', '').replace('3DS Video Review: ', '').replace('DS Review: ', '').replace('Wii/3DS review: ', '').replace('Wii U eShop Review: ', '').replace('Wii U eshop review: ', '').replace('Wii U Review: ', '').replace('New 3DS review: ', '').replace('Review: ', '').replace('[Mini-Review]', '').replace('Wii U review:', '').replace('“Review”:', '').replace(' review online!', '').replace('[3DS XL review]', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('review-', '')
     product.category = 'Techniek'

@@ -42,7 +42,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = data.xpath('//meta[@property="article:published_time"]/@content').string(multiple=True)
+    review.title = data.xpath('//h1[contains(@class, "entry-title")]//text()').string(multiple=True)
     review.url = context['url']
     review.ssid = product.ssid
 
