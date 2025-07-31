@@ -16,7 +16,7 @@ agent = agents.DAILY_NINTENDO_NL
 # agent = agents.TEST
 reload = 1
 
-# name: 32
+# name: 23
 # exc: 3
 # log: 0
 

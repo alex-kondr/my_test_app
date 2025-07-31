@@ -48,6 +48,8 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     title = data.xpath('//h1[@class="articleTitle"]/text()').string()
+    if not title:
+        return
 
     product = Product()
     product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or re.sub(r'\(.+\)', '', title).split(' im Test')[0].replace('Test/Review: ', '').replace('Review: ', '').strip()

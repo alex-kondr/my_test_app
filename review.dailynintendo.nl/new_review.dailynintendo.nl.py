@@ -96,7 +96,7 @@ def process_review(data, context, session):
     if not grade_overall:
         grade_overall = data.xpath('//li[regexp:test(., "Eindcijfer.+\d+|Totaal.+\d+")]/text()').string()
     if not grade_overall:
-        grade_overall = data.xpath('//h2[contains(., "DN-Score:")]/text()').string()
+        grade_overall = data.xpath('(//h2|//p)[regexp:test(., "DN-Score:", "i")]//text()').string()
 
     if grade_overall:
         try:
@@ -110,11 +110,11 @@ def process_review(data, context, session):
 
     grades = data.xpath('//li[@class="blocks-gallery-item"]//img/@alt')
     if not grades:
-        grades = data.xpath('(//strong|//p)[regexp:test(., "\w+: \d{1,2}[\.,]?/10?")]/text()')
+        grades = data.xpath('(//strong|//p)[regexp:test(., "\w+: \d{1,2}[\.,]?/10?") and not(regexp:test(., "Totaal|Eindcijfer|DN-scoer", "i"))]/text()')
     if not grades:
-        grades = data.xpath('//li[regexp:test(., "\w+ \d{1,2}[\.,]?/10") and not(regexp:test(., "Totaal|Eindcijfer"))]/text()')
+        grades = data.xpath('//li[regexp:test(., "\w+ \d{1,2}[\.,]?/10") and not(regexp:test(., "Totaal|Eindcijfer|DN-score", "i"))]/text()')
     if not grades:
-        grades = data.xpath('//strong[regexp:test(., ".+\d{1,2}[\.,]?(/10)?") and not(regexp:test(., "Totaal|Eindcijfer"))]/text()')
+        grades = data.xpath('//strong[regexp:test(., ".+\d{1,2}[\.,]?(/10)?") and not(regexp:test(., "Totaal|Eindcijfer|DN-score", "i"))]/text()')
 
     for grade in grades:
         grade = grade.string().replace('Review ', '').strip()

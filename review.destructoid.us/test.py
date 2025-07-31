@@ -17,7 +17,7 @@ agent = agents.DESTRUCTOID_US
 reload = 1
 
 # name: 2
-# cat: 20
+# cat: 21
 # grades: 2
 # exc: 5
 # log: 0

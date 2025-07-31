@@ -61,7 +61,7 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].replace(' Review', '').replace(' Hands-On Preview', '').strip()
     product.url = context['url']
-    product.category = context.get('cat')
+    product.category = context.get('cat').replace(' / ', '/')
 
     product.ssid = product.url.split('/')[-1].replace('.html', '')
     if not product.ssid:

@@ -52,6 +52,10 @@ def process_reviews(data, context, session):
         if is_verified_buyer:
             review.add_property(type='is_verified_buyer', value=True)
 
+        is_recommended = rev.xpath('.//span[contains(text(), "I recommend this tire")]')
+        if is_recommended:
+            review.add_property(type='is_recommended', value=True)
+
         title = rev.xpath('.//h3[contains(@class, "review-summary-title")]//text()').string(multiple=True)
         excerpt = rev.xpath('.//p[contains(@class, "review-summary-description")]//text()').string(multiple=True)
         if excerpt:

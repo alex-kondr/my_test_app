@@ -29,7 +29,7 @@ def process_review(data, context, session):
 
     platforms = data.xpath('(//p[@data-injectable and regexp:test(., ".+\(.*[(PC)(PS)(Xbox)(Nintendo)][^\(\)]+\)")]|//b[regexp:test(., ".+\(.*[(PC)(PS)(Xbox)(Nintendo)][^\(\)]+\)")])//text()').string(multiple=True)
     if platforms:
-        product.category += '|' + re.sub(r'[  ]?\[[^\[\]]*reviewed[^\[\]]*\]|[  ]?\[tested\]|\[Review\]', '', platforms, flags=re.I).replace('and ', '').split('(')[-1].split(')')[0].strip('( )').replace(', ', '/').replace(', ', '/').replace(' /', '/')
+        product.category += '|' + re.sub(r'[  ]?\[[^\[\]]*reviewed[^\[\]]*\]|[  ]?\[tested\]|\[Review\]', '', platforms, flags=re.I).replace('and ', '').split('(', 1)[-1].split(')')[0].strip('( )').replace(', ', '/').replace(', ', '/').replace(' /', '/')
 
     manufacturer = data.xpath('(//b|//strong)[contains(., "Developer:")]/text()[contains(., "Developer:")]').string(multiple=True)
     if manufacturer:
