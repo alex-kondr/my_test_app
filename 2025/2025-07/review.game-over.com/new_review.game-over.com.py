@@ -29,7 +29,7 @@ def process_catlist(data, context, session):
     for cat in cats:
         name = cat.xpath('.//text()').string(multiple=True)
         url = cat.xpath('@href').string()
-        session.queue(Request(url, use='curl'), process_category, dict(cat=name))
+        session.queue(Request(url, use='curl'), process_category, dict(cat='Games|' + name))
 
 
 def process_category(data, context, session):

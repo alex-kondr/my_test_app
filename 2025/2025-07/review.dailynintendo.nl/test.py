@@ -19,6 +19,9 @@ reload = 1
 # name: 23
 # exc: 3
 # log: 0
+# DN Score
+# https://dailynintendo.nl/review-dave-the-diver-als-een-vis-in-het-water/
+# https://dailynintendo.nl/review-persona-4-arena-ultimax-verrassend-goed-en-verrassend-compleet/
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

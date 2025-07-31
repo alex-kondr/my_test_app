@@ -16,7 +16,7 @@ agent = agents.MICHELIN_US
 # agent = agents.TEST
 reload = 1
 
-
+# 0
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

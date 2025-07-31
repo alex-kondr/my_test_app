@@ -82,8 +82,8 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//div[contains(@class, "post-author-name")]/a/text()').string()
-    author_url = data.xpath('//div[contains(@class, "post-author-name")]/a/@href').string()
+    author = data.xpath('//div[contains(@class, "post-author-name") and not(contains(., "DNredactie"))]/a/text()').string()
+    author_url = data.xpath('//div[contains(@class, "post-author-name") and not(contains(., "DNredactie"))]/a/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-2]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
@@ -96,7 +96,7 @@ def process_review(data, context, session):
     if not grade_overall:
         grade_overall = data.xpath('//li[regexp:test(., "Eindcijfer.+\d+|Totaal.+\d+")]/text()').string()
     if not grade_overall:
-        grade_overall = data.xpath('(//h2|//p)[regexp:test(., "DN-Score:", "i")]//text()').string()
+        grade_overall = data.xpath('(//h2|//p)[regexp:test(., "DN-Score:|DN-cijfer:|DN- Score:|DN Score|Cijfer", "i")]//text()').string()
 
     if grade_overall:
         try:
@@ -110,11 +110,11 @@ def process_review(data, context, session):
 
     grades = data.xpath('//li[@class="blocks-gallery-item"]//img/@alt')
     if not grades:
-        grades = data.xpath('(//strong|//p)[regexp:test(., "\w+: \d{1,2}[\.,]?/10?") and not(regexp:test(., "Totaal|Eindcijfer|DN-scoer", "i"))]/text()')
+        grades = data.xpath('(//strong|//p)[regexp:test(., "\w+: \d{1,2}[\.,]?/10?") and not(regexp:test(., "Totaal|Eindcijfer|DN-score|DN- Score:|DN Score|Cijfer", "i"))]/text()')
     if not grades:
-        grades = data.xpath('//li[regexp:test(., "\w+ \d{1,2}[\.,]?/10") and not(regexp:test(., "Totaal|Eindcijfer|DN-score", "i"))]/text()')
+        grades = data.xpath('//li[regexp:test(., "\w+ \d{1,2}[\.,]?/10") and not(regexp:test(., "Totaal|Eindcijfer|DN-score|DN- Score:|DN Score|Cijfer", "i"))]/text()')
     if not grades:
-        grades = data.xpath('//strong[regexp:test(., ".+\d{1,2}[\.,]?(/10)?") and not(regexp:test(., "Totaal|Eindcijfer|DN-score", "i"))]/text()')
+        grades = data.xpath('//strong[regexp:test(., ".+\d{1,2}[\.,]?(/10)?") and not(regexp:test(., "Totaal|Eindcijfer|DN-score|DN-cijfer:|DN- Score:|DN Score|Cijfer", "i"))]/text()')
 
     for grade in grades:
         grade = grade.string().replace('Review ', '').strip()
@@ -130,7 +130,7 @@ def process_review(data, context, session):
         except:
             pass
 
-    pros = data.xpath('//p[contains(@class, "has-vivid-green")]//text()')
+    pros = data.xpath('//p[contains(@class, "has-vivid-green") or .//*[@style="color: #339966;"]]//text()[normalize-space(.)]')
     for pro in pros:
         pro = pro.string(multiple=True)
         if pro:
@@ -138,7 +138,7 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//p[@style="color:#f93f3f"]//text()')
+    cons = data.xpath('//p[@style="color:#f93f3f" or contains(@class, "has-vivid-red-color") or .//*[@style="color: #ff0000;"]]//text()[normalize-space(.)]')
     for con in cons:
         con = con.string(multiple=True)
         if con:
@@ -146,7 +146,7 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('((//h2|//p)[regexp:test(., "conclusie", "i")])[last()]/following-sibling::p[not(regexp:test(., "Graphics|Gameplay|Eindcijfer|Beoordeling|Geluid|Speelduur|Totaal") or @class)]//text()').string(multiple=True)
+    conclusion = data.xpath('((//h2|//p|//h4)[regexp:test(., "conclusie", "i")])[last()]/following-sibling::p[not(regexp:test(., "Graphics|Gameplay|Eindcijfer|Beoordeling|Geluid|Speelduur|Totaal|Cijfer:|@") or @class or .//span[@style="color: #339966;" or @style="color: #ff0000;" or @style="color: #ff9900;"])]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[contains(@class, "review-summary-content")]//text()').string(multiple=True)
 
@@ -154,9 +154,9 @@ def process_review(data, context, session):
         conclusion = remove_emoji(conclusion).strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h2|//p)[regexp:test(., "conclusie", "i")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2|//p|//h4)[regexp:test(., "conclusie", "i")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(regexp:test(., "Graphics|Gameplay|Eindcijfer|Beoordeling|Geluid|Speelduur|Totaal") or @class)]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(regexp:test(., "Graphics|Gameplay|Eindcijfer|Beoordeling|Geluid|Speelduur|Totaal|Cijfer:|@") or @class or .//span[@style="color: #339966;" or @style="color: #ff0000;" or @style="color: #ff9900;"])]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = remove_emoji(excerpt).strip()

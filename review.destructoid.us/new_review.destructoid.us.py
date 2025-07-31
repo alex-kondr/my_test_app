@@ -25,11 +25,11 @@ def process_review(data, context, session):
     product.name = context['title'].replace('Review – ', '').split(' – ')[0].split(' Review: ')[0].replace(' review', '').replace('Review: ', '').replace('Preview: ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '').replace('review-', '')
-    product.category = 'Games'
+    product.category = 'Tech'
 
-    platforms = data.xpath('(//p[@data-injectable and regexp:test(., ".+\(.*[(PC)(PS)(Xbox)(Nintendo)][^\(\)]+\)")]|//b[regexp:test(., ".+\(.*[(PC)(PS)(Xbox)(Nintendo)][^\(\)]+\)")])//text()').string(multiple=True)
+    platforms = data.xpath('(//p[@data-injectable and regexp:test(., ".+\(.*PC[^\(\)]+\)|.+\(.*PS[^\(\)]+\)|.+\(.*Xbox[^\(\)]+\)|.+\(.*Nintendo[^\(\)]+\)")]|//b[regexp:test(., ".+\(.*PC[^\(\)]+\)|.+\(.*PS[^\(\)]+\)|.+\(.*Xbox[^\(\)]+\)|.+\(.*Nintendo[^\(\)]+\)")])[not(regexp:test(., "review|tests|tested|to test"))]//text()').string(multiple=True)
     if platforms:
-        product.category += '|' + re.sub(r'[  ]?\[[^\[\]]*reviewed[^\[\]]*\]|[  ]?\[tested\]|\[Review\]', '', platforms, flags=re.I).replace('and ', '').split('(', 1)[-1].split(')')[0].strip('( )').replace(', ', '/').replace(', ', '/').replace(' /', '/')
+        product.category = 'Games|' + re.sub(r'[  ]?\[[^\[\]]*reviewe?d[^\[\]]*\]|[  ]?\[tested\]|\[Review\]', '', platforms, flags=re.I).replace('and ', '').split('(', 1)[-1].split(')')[0].replace(' [played the first hours before saying screw this/it’s Doom/bought a review code for…]', '').replace(' [reviewed with PlayStation VR', '').replace(' [tested on both regular Pro]', '').replace(' [reviewed with PSVR', '').replace(' [reviewed[', '').replace(' (reviewed', '').replace(' – rig', '').strip('( )').replace(', ', '/').replace(', ', '/').replace(' /', '/')
 
     manufacturer = data.xpath('(//b|//strong)[contains(., "Developer:")]/text()[contains(., "Developer:")]').string(multiple=True)
     if manufacturer:

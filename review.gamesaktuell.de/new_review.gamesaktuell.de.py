@@ -19,7 +19,6 @@ def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=9000)]
     session.queue(Request('https://www.gamesaktuell.de/Artikel-Archiv/Tests/', use='curl', force_charset='utf-8', max_age=0), process_catlist, dict())
-    session.queue(Request('https://www.gamesaktuell.de/Artikel-Archiv/Tests/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_catlist(data, context, session):

@@ -3,8 +3,8 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('https://www.michelinman.com/auto/browse-tires/all-tires', use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.queue(Request('https://www.michelinman.com/auto/browse-tires/all-tires', max_age=0), process_prodlist, dict())
 
 
 def process_prodlist(data, context, session):
@@ -19,7 +19,7 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.xpath('.//span[contains(@class, "rating-stars-count")]')
         if revs_cnt:
-            session.queue(Request(product.url + '/reviews', use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+            session.do(Request(product.url + '/reviews', max_age=0), process_reviews, dict(product=product))
 
 # no next page
 
@@ -27,11 +27,11 @@ def process_prodlist(data, context, session):
 def process_reviews(data, context, session):
     product = context['product']
 
-    revs = data.xpath('//div[contains(@class, "reviews-list")]/div[contains(@class, "review svelte")]')
+    revs = data.xpath('//div[contains(@class, "reviews-list")]/div[@class="ts__rar-review"]')
     for rev in revs:
         review = Review()
         review.type = 'user'
-        review.url = product.url
+        review.url = data.response_url
 
         date = rev.xpath('.//div[contains(@class, "review-info-header__postedon")]/text()').string()
         if date:
@@ -72,7 +72,7 @@ def process_reviews(data, context, session):
 
     next_url = data.xpath('//a[contains(@class, "link-next available")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+        session.do(Request(next_url, max_age=0), process_reviews, dict(product=product))
 
     elif product.reviews:
         session.emit(product)
