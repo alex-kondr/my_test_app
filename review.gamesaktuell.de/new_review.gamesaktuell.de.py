@@ -51,7 +51,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or re.sub(r'\(.+\)', '', title).split(' im Test')[0].replace('Test/Review: ', '').replace('Review: ', '').strip()
+    product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or re.sub(r'\(.+\)', '', title).split(' im Test')[0].split(': Review ')[0].split(': Review ')[0].split(': Das Review ')[0].replace('Test/Review: ', '').replace('Review: ', '').replace(' - DVD-Test', '').replace('DVD-Test: ', '').strip()
     product.ssid = context['url'].split('/')[-2].split('-')[-1]
     product.category = 'Technik'
 
@@ -108,11 +108,12 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//div[contains(@class, "rating")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace('Film-Check: ', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[contains(@class, "rating")]/preceding-sibling::p[not(regexp:test(., "Test-Update vom|Anzeige"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[contains(@class, "rating")]/preceding-sibling::p[not(regexp:test(., "Test-Update vom|Anzeige"))]//text()[not(parent::span[@class="imgSrc"])]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="textContainer"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="textContainer"]/p//text()[not(parent::span[@class="imgSrc"])]').string(multiple=True)
 
     next_url = data.xpath('//a[@title="Nächste Seite"]/@href').string()
     if next_url:
@@ -160,6 +161,7 @@ def process_review_next(data, context, session):
 
     conclusion = data.xpath('//div[contains(@class, "rating")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace('Film-Check: ', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[contains(@class, "rating")]/preceding-sibling::p[not(contains(., "Test-Update vom"))]//text()').string(multiple=True)

@@ -2,7 +2,7 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['Gift Cards', 'Offers', 'Global Shopping', 'Top Brands', 'Branded Accessories', 'Bestsellers in Accessories']
+XCAT = ['Unboxed Phones', 'Refurbished Mobiles', 'Refurbished Accessories', 'Refurbished Desktops & Monitors', 'Refurbished Laptops', 'Mobiles by Brands', 'Sell Old/ Used Mobiles', 'Unboxed & Refurbished Laptops', 'Value Added Services', 'Data Cards', 'Gifts']
 
 
 def strip_namespace(data):
@@ -26,11 +26,24 @@ def run(context, session):
 def process_frontpage(data, context, session):
     strip_namespace(data)
 
-    cats = data.xpath('https://eisa.eu/?lang=fr')
+    cats = data.xpath('//div[@class="scfooter_Category"]/div/ul/li[@class]/a')
     for cat in cats:
-        name = cat.xpath('text()').string()
+        name = cat.xpath('text()').string().strip(' :')
         url = cat.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name))
+        session.queue(Request(url, use='curl', force_charset='utf-8'), process_catlist, dict(cat=name))
+
+
+def process_catlist(data, context, session):
+    strip_namespace(data)
+
+    sub_cats = data.xpath('//ul[@class="filter-category" and not(@id)]/li[@class="child-one"]/a')
+    for sub_cat in sub_cats:
+        sub_name = sub_cat.xpath('.//text()').string(multiple=True)
+        url = sub_cat.xpath('@href').string()
+
+        if sub_name not in XCAT:
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=context['cat'] + '|' + sub_name))
+
 
 
 def process_revlist(data, context, session):
@@ -40,7 +53,9 @@ def process_revlist(data, context, session):
     for rev in revs:
         name = rev.xpath('.//h2/text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(name=name, url=url))
+
+        if 'Refurbished' not in name:
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(name=name, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -74,9 +89,9 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//text()').string()
-    if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
+    # grade_overall = data.xpath('//text()').string()
+    # if grade_overall:
+    #     review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
 
     pros = data.xpath('/li')
     for pro in pros:
