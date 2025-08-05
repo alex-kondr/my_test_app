@@ -16,6 +16,8 @@ agent = agents.GP_SE
 # agent = agents.TEST
 reload = 1
 
+# name: 12
+# exc: 13
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

@@ -6,8 +6,8 @@ XCAT = ['Alle Tests']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.stereo.de/test/', use='curl', force_charset='utf-8'), process_catlist, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.queue(Request('https://www.stereo.de/test/', use='curl', force_charset='utf-8', max_age=0), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -17,14 +17,14 @@ def process_catlist(data, context, session):
         url = cat.xpath('@href').string()
 
         if name not in XCAT:
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_category, dict(cat=name))
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_category, dict(cat=name))
 
 
 def process_category(data, context, session):
     cat_id = data.xpath('//ol[contains(@id, "filter_ol")]//a[@class="nav-link term nodeko"]/@data-term').string()
     options = "--compressed -X POST --data-raw 'action=loop_filter_api&taxonomy={}&posts=&text=&template=tile&posts_per_page=1000&offset=0'".format(cat_id)
     url = 'https://www.stereo.de/wp-admin/admin-ajax.php'
-    session.do(Request(url, use='curl', options=options, force_charset='utf-8'), process_revlist, dict(context))
+    session.do(Request(url, use='curl', options=options, force_charset='utf-8', max_age=0), process_revlist, dict(context))
 
 
 def process_revlist(data, context, session):
@@ -32,7 +32,7 @@ def process_revlist(data, context, session):
     for rev in revs:
         name = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, name=name, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, name=name, url=url))
 
 # no next page
 
@@ -64,7 +64,7 @@ def process_review(data, context, session):
 
     next_page = data.xpath('//a[contains(., "Artikel online lesen")]/@href').string()
     if next_page:
-        session.do(Request(next_page, use='curl', force_charset='utf-8'), process_review_next, dict(review=review, product=product))
+        session.do(Request(next_page, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(review=review, product=product))
 
     elif excerpt:
         summary = data.xpath('//p[@class="lead"]//text()').string(multiple=True)
