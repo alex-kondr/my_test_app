@@ -16,9 +16,10 @@ agent = agents.FREDZONE_FR
 # agent = agents.TEST
 reload = 1
 
-# name: 70
+# name: 0
 # date: 0
 # author: 6
+# concl: 1
 # exc: 11
 # log: 0
 

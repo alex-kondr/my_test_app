@@ -5,7 +5,6 @@ import re
 
 def run(context, session):
     session.queue(Request('https://www.fredzone.org/', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
-    # https://www.fredzone.org/ticwatch-5-pro-test-avis-et-presentation-de-la-montre-connectee-rgf234/
 
 
 def process_frontpage(data, context, session):
@@ -30,7 +29,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' : Test')[0].split(' : Test')[0].replace('Test et avis du ', '').replace('Test complet du ', '').replace('Test des ', '').replace('Test de ', '').replace('TEST du ', '').replace('Test du ', '').replace('Test : ', '').replace('Review : ', '').replace('Test de la ', '').strip()
+    product.name = context['title'].split(' : Test')[0].split(' : Test')[0].replace('Test et avis de la chaise gaming ', '').replace('Test et avis du ', '').replace('Test complet du ', '').replace('Test des ', '').replace('Test de ', '').replace('TEST de ', '').replace('TEST du ', '').replace('Test du ', '').replace('TEST DU ', '').replace('Test : ', '').replace('Review : ', '').replace('Preview : ', '').replace('Test de la ', '').replace('Test (rapide) du capteur vidéo de ', '').replace(' : la review complète', '').replace(', la review complète', '').replace(' : le test complet', '').replace('(test des Deco X90)', '').replace('[Test Matos]', '').strip().capitalize()
     product.ssid = context['url'].split('/')[-2]
     product.category = context['cat']
 
@@ -63,10 +62,10 @@ def process_review(data, context, session):
             grade_overall = grade_overall.group().split('/')[0].replace(',', '.')
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    grades = data.xpath('//strong[regexp:test(., ".+\d{1,2},?\d?/10") and not(regexp:test(., "Note Globale", "i"))]')
+    grades = data.xpath('//strong[regexp:test(., ".+\d{1,2},?\d?/10|Design.+\d+|Performances.+\d+|Autonomie.+\d+|Rapport qualité/prix.+\d+") and not(regexp:test(., "Note Globale", "i"))]')
     for grade in grades:
         grade = grade.xpath('.//text()').string(multiple=True)
-        grade_name = re.split(r'\d{1,2},?\d?/10', grade)[0].strip()
+        grade_name = re.split(r'\d{1,2},?\d?/10', grade)[0].strip(' .:;-')
         grade_val = re.search(r'\d{1,2},?\d?/10', grade)
         if grade_val:
             grade_val = grade_val.group().split('/')[0].replace(',', '.').strip()
@@ -93,7 +92,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="entry-content"]/p[not(regexp:test(., "Points forts|Ponts faibles|Points faibles|Design :|Performances :|Rapport qualité/prix :|.+\d{1,2},?\d?/10", "i") or preceding::h2[contains(., "Conclusion")] or @style)]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="entry-content"]/p[not(regexp:test(., "Points forts|Ponts faibles|Points faibles|Design :|Performances :|Rapport qualité/prix :|Autonomie :|.+\d{1,2},?\d?/10", "i") or preceding::h2[contains(., "Conclusion")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
