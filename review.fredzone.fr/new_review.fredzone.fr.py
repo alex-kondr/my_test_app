@@ -5,6 +5,7 @@ import re
 
 def run(context, session):
     session.queue(Request('https://www.fredzone.org/', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
+    # https://www.fredzone.org/ticwatch-5-pro-test-avis-et-presentation-de-la-montre-connectee-rgf234/
 
 
 def process_frontpage(data, context, session):
