@@ -3,7 +3,7 @@ from enum import Enum, auto
 
 
 class Request:
-    def __init__(self, url, use=None, force_charset=None, max_age=None):...
+    def __init__(self, url, use=None, force_charset=None, max_age=None, options: Optional[str]=None):...
 
 
 class Session:
