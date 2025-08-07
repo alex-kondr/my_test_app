@@ -29,7 +29,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' : Test')[0].split(' : Test')[0].replace('Test et avis du ', '').replace('Test du ', '').replace('Test : ', '').replace('Review : ', '').replace('Test de la ', '').strip()
+    product.name = context['title'].split(' : Test')[0].split(' : Test')[0].replace('Test et avis du ', '').replace('Test complet du ', '').replace('Test des ', '').replace('Test de ').replace('TEST du ', '').replace('Test du ', '').replace('Test : ', '').replace('Review : ', '').replace('Test de la ', '').strip()
     product.ssid = context['url'].split('/')[-2]
     product.category = context['cat']
 
@@ -62,13 +62,15 @@ def process_review(data, context, session):
             grade_overall = grade_overall.group().split('/')[0].replace(',', '.')
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    grades = data.xpath('//strong[regexp:test(., ".+:.+\d{1,2},?\d?/10") and not(regexp:test(., "Note Globale", "i"))]')
+    grades = data.xpath('//strong[regexp:test(., ".+\d{1,2},?\d?/10") and not(regexp:test(., "Note Globale", "i"))]')
     for grade in grades:
-        grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).split(':')
-        grade_name = grade_name.strip()
-        grade_val = grade_val.split('/')[0].replace(',', '.').strip()
-        if grade_name and float(grade_val) > 0:
-            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
+        grade = grade.xpath('.//text()').string(multiple=True)
+        grade_name, grade_val = re.split(r'\d{1,2},?\d?/10', grade)[0].strip()
+        grade_val = re.search(r'\d{1,2},?\d?/10', grade)
+        if grade_val:
+            grade_val = grade_val.group().split('/')[0].replace(',', '.').strip()
+            if grade_name and float(grade_val) > 0:
+                review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
     pros = data.xpath('(//p[regexp:test(., "Points forts", "i")]/following-sibling::*)[1]/li')
     for pro in pros:
@@ -86,11 +88,11 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(regexp:test(., "Points forts|Ponts faibles|Design :|Performances :|Rapport qualité/prix :"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(regexp:test(., "Points forts|Ponts faibles|Design :|Performances :|Rapport qualité/prix :|.+\d{1,2},?\d?/10", "i"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="entry-content"]/p[not(regexp:test(., "Points forts|Ponts faibles|Design :|Performances :|Rapport qualité/prix :") or preceding::h2[contains(., "Conclusion")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="entry-content"]/p[not(regexp:test(., "Points forts|Ponts faibles|Points faibles|Design :|Performances :|Rapport qualité/prix :|.+\d{1,2},?\d?/10", "i") or preceding::h2[contains(., "Conclusion")] or @style)]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

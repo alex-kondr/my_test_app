@@ -17,10 +17,10 @@ agent = agents.FREDZONE_FR
 reload = 1
 
 # name: 70
-# date: 4
+# date: 0
 # author: 6
 # exc: 11
-# log: 1
+# log: 0
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
