@@ -16,8 +16,8 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.techguide.com.au/reviews/', use='curl', force_charset='utf-8'), process_revlist, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.queue(Request('https://www.techguide.com.au/reviews/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -27,20 +27,20 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
 
-    next_url = data.xpath('//link[@rel="next"]/@href').string()
+    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' review – ')[0].replace('', '').strip()
+    product.name = context['title'].split(' review – ')[0].split(' reviews – ')[0].split(' review — ')[0].split(' review: ')[0].split(' Review: ')[0].replace('Review: ', '').replace(' review', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = data.xpath('//a[@class="category term-color-361"]/text()').string() or 'Tech'
 
     review = Review()
@@ -61,11 +61,11 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//text()').string()
+    grade_overall = data.xpath('//div[@class="overall"]/span[@class="rate"]/text()').string()
     if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
-    pros = data.xpath('/li')
+    pros = data.xpath('//*[h5[contains(., "Pros")]]/ul/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -73,7 +73,7 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('/li')
+    cons = data.xpath('//*[h5[contains(., "Cons")]]/ul/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -81,17 +81,16 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
+    conclusion = data.xpath('//p[contains(., "VERDICT")]/following-sibling::p[not(.//a[contains(@href, "www.amazon.com")])]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@class="review-description"]/p//text()').string(multiple=True)
 
-    conclusion = data.xpath('//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//text()').string(multiple=True)
+    excerpt = data.xpath('//p[contains(., "VERDICT")]/preceding-sibling::p[not(.//a[contains(@href, "www.amazon.com")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(.//a[contains(@href, "www.amazon.com")])]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

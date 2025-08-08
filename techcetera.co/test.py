@@ -16,9 +16,9 @@ agent = agents.REVIEW_TECHCETERA_ES
 # agent = agents.TEST
 reload = 1
 
-# name: 23
-# date: 5
-# exc: 13
+# name: 2
+# date: 0
+# exc: 13+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

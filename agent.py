@@ -29,6 +29,8 @@ class Review:
 
     def add_property(self, type: str, value: str|dict):...
 
+    def digest(self, text: Optional[str] = None):...
+
 
 class Product:
     name: str
@@ -36,10 +38,10 @@ class Product:
     ssid: str
     sku: Optional[str] = None
     category: str
-    mpn: Optional[str] = None
-    ean: Optional[str] = None
+    manufacturer: Optional[str] = None
     reviews: List[Review] = []
 
+    def add_property(type: str, value: str):...
 
 
 session = Session()
