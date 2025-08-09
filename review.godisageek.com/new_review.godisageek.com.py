@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
     session.queue(Request('https://www.godisageek.com/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -16,7 +16,7 @@ def process_review(data, context, session):
     title = data.xpath('//h1//text()').string(multiple=True)
 
     product = Product()
-    product.name = title.replace(' review', '').strip()
+    product.name = title.replace(' review', '').replace(' Review', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = 'Tech'
@@ -63,10 +63,12 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//div[@class="bottomline"]/p//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[@class="clearfix"]/p//text()').string(multiple=True)
-    if excerpt:
+    if excerpt and 'Review #' not in title:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

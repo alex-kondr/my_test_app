@@ -16,6 +16,9 @@ agent = agents.GODISAGEEK_US
 # agent = agents.TEST
 reload = 1
 
+# name: 1465
+# concl: 1+
+# exc: 317+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
