@@ -81,7 +81,11 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//p[contains(., "VERDICT")]/following-sibling::p[not(.//a[contains(@href, "www.amazon.com")])]//text()').string(multiple=True)
+    summary = data.xpath('(//div[contains(@class, "post-content")]/p)[1]/strong//text()').string(multiple=True)
+    if summary:
+        review.add_property(type="summary", value=summary)
+
+    conclusion = data.xpath('//p[contains(., "VERDICT")]/following-sibling::p[not(.//a[contains(@href, "www.amazon.com")] or strong[regexp:test(., "PRICE:|Related Stories")] or contains(., "[taq_review]") or preceding::p/strong[contains(., "Related Stories")] or contains(., " is priced at "))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="review-description"]/p//text()').string(multiple=True)
 
@@ -90,9 +94,12 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//p[contains(., "VERDICT")]/preceding-sibling::p[not(.//a[contains(@href, "www.amazon.com")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(.//a[contains(@href, "www.amazon.com")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(.//a[contains(@href, "www.amazon.com")] or strong[regexp:test(., "PRICE:|Related Stories")] or contains(., "[taq_review]") or preceding::p/strong[contains(., "Related Stories")] or contains(., " is priced at "))]//text()').string(multiple=True)
 
     if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

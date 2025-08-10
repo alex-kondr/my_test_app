@@ -36,11 +36,11 @@ def process_review(data, context, session):
     if date:
         review.date = date.split(' - ')[0].split(', ')[-1].strip()
 
-    grade_overall = data.xpath('//div[@class="content"]/img/@src').string()
+    grade_overall = data.xpath('//div[@class="content"]/img/@src[regexp:test(., "goedgetest-|editorschoice-")]').string()
     if grade_overall:
-        grade_overall = re.search(r'editorschoice-\d{1,2}\.?\d?', grade_overall)
+        grade_overall = re.search(r'editorschoice-\d{1,2}\.?\d?|goedgetest-\d{1,2}\.?\d?', grade_overall)
         if grade_overall:
-            grade_overall = grade_overall.group().replace('editorschoice-', '').strip()
+            grade_overall = grade_overall.group().replace('editorschoice-', '').replace('goedgetest-', '').strip()
             if grade_overall and float(grade_overall) > 0:
                 review.grades.append(Grade(type='grade_overall', value=float(grade_overall), best=10.0))
 
@@ -52,19 +52,23 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    summary = data.xpath('//div[@class="field-lead-text rte-output"]/p//text()').string(multiple=True)
+    summary = data.xpath('//div[@class="field-lead-text rte-output"]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h3[contains(., "Conclusie")]/following-sibling::p[not(contains(., "Meer info"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h3[contains(., "Conclusie")]/following-sibling::p[not(contains(., "Meer info") or preceding::p/strong[regexp:test(., "Prijs:|Display:|Functionaliteiten:")] or strong[regexp:test(., "Prijs:|Display:|Functionaliteiten:")])]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Conclusie")]/preceding-sibling::p//text()|//div[contains(@class, "field-body")]/text()').string(multiple=True)
+    excerpt = data.xpath('//h3[contains(., "Conclusie")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "field-body")]/p[not(contains(., "Meer info"))]//text()|//div[contains(@class, "field-body")]/text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "field-body")]/p[not(contains(., "Meer info") or preceding::p/strong[regexp:test(., "Prijs:|Display:|Functionaliteiten:")] or strong[regexp:test(., "Prijs:|Display:|Functionaliteiten:")])]//text()').string(multiple=True)
 
     if excerpt:
+        excerpt_ = data.xpath('//div[contains(@class, "field-body")]/text()').string(multiple=True)
+        if excerpt_:
+            excerpt += ' ' + excerpt_
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
