@@ -124,11 +124,16 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[contains(., "Conclusão")]/following-sibling::p[not(@class or contains(., "Menor preço"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[regexp:test(., "Veredi\w?to", "i")]/following-sibling::p[not(@class or contains(., "Menor preço"))]//text()').string(multiple=True)
+
     if conclusion:
         conclusion = remove_emoji(conclusion).strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Conclusão")]/preceding-sibling::p[not(@class or contains(., "Menor preço"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h2[regexp:test(., "Veredi\w?to", "i")]/preceding-sibling::p[not(@class or contains(., "Menor preço"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="post-content"]//p[not(@class or contains(., "Menor preço"))]//text()').string(multiple=True)
 

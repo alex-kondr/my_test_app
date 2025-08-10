@@ -16,9 +16,9 @@ agent = agents.OFICINA_DA_NET_BR
 # agent = agents.TEST
 reload = 1
 
-# name: 63
-# concl: 2
-# exc: 53
+# name: 63+
+# concl: 4+
+# exc: 51+
 # log: 0
 
 if __name__ == "__main__":

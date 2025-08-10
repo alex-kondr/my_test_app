@@ -105,19 +105,25 @@ def process_review(data, context, session):
             author_name = author_name.strip(' ,.')
             review.authors.append(Person(name=author_name, ssid=author_name))
 
-    pros = data.xpath('//h3[contains(., "Vor- und Nachteile")]/following::p[contains(., "✅")]')
+    pros = data.xpath('//h3[contains(., "Vor- und Nachteile")]/following::p[contains(., "✅")]//text()')
+    if not pros:
+        pros = data.xpath('//h3[contains(., "Die Plus- und Minuspunkte")]/following-sibling::p//text()[starts-with(normalize-space(.), "+")]')
+
     for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
+        pro = pro.string(multiple=True)
         if pro:
             pro = pro.strip(' +-*.:;•,–✅')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('/li')
+    cons = data.xpath('//h3[contains(., "Vor- und Nachteile")]/following::p[regexp:test(., "❌|⛔️")]//text()')
+    if not cons:
+        cons = data.xpath('//h3[contains(., "Die Plus- und Minuspunkte")]/following-sibling::p//text()[starts-with(normalize-space(.), "-")]')
+
     for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
+        con = con.string(multiple=True)
         if con:
-            con = con.strip(' +-*.:;•,–❌')
+            con = con.strip(' +-*.:;•,–❌⛔️')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
@@ -126,15 +132,15 @@ def process_review(data, context, session):
         summary = remove_emoji(summary).strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h3[contains(., "Fazit")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h3[contains(., "Fazit")]/following::p[not(@class or regexp:test(., "Hier bestellen:|✅|❌|⛔️|Preis:|Fazit|Sprengung:|Gewicht:") or preceding::h3[regexp:test(., "Die Plus- und Minuspunkte|Vor- und Nachteile")])]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//div[p[contains(., "Fazit")]]/following-sibling::div/p[not(regexp:test(., "Hier bestellen:|✅|❌|Preis:|Fazit|Sprengung:|Gewicht:"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//div[p[contains(., "Fazit")]]/following-sibling::div/p[not(@class or regexp:test(., "Hier bestellen:|✅|❌|⛔️|Preis:|Fazit|Sprengung:|Gewicht:") or preceding::h3[regexp:test(., "Die Plus- und Minuspunkte|Vor- und Nachteile")])]//text()').string(multiple=True)
 
     if conclusion:
         conclusion = remove_emoji(conclusion).strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[contains(@class, "article-text")]/div/p[not(regexp:test(., "Hier bestellen:|✅|❌|Preis:|Fazit") or (preceding::h3|preceding::p)[regexp:test(., "Fazit|Die wichtigsten Daten")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[contains(@class, "article-text")]/div/p[not(@class or regexp:test(., "Hier bestellen:|✅|❌|⛔️|Preis:|Fazit") or preceding::h3[regexp:test(., "Fazit|Die wichtigsten Daten|Die Plus- und Minuspunkte|Vor- und Nachteile")] or preceding::p[strong[contains(., "Fazit")]])]//text()').string(multiple=True)
     if excerpt:
         excerpt = remove_emoji(excerpt).strip()
         review.add_property(type='excerpt', value=excerpt)

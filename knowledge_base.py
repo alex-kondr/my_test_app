@@ -41,4 +41,17 @@ def strip_namespace(data):
     out.close()
     os.rename(tmp, data.content_file)
 
-product.name = re.sub(r'[\s]?[P]?review[ed]{0,2}[ -–:]{0,3}', '', re.split(r' [p]?Review[ed]{0,2}[ :-–]{1,3}', context['title'], flags=re.I)[0], flags=re.I).strip()
+# product.name = re.sub(r'[\s]?[P]?review[ed]{0,2}[ -–:]{0,3}', '', re.split(r' [p]?Review[ed]{0,2}[ :-–]{1,3}', context['title'], flags=re.I)[0], flags=re.I).strip()
+
+# multiple JSONs
+# decoded HTML with many replaces
+# HTML in JSON
+# Bypassed authentication, codes in categories
+# Problem with HTML in JSON
+# problem with JSON and parsing from JavaScript
+# data for all processes from json with specific options
+# no prod id in data for request to revs, create custom url to get it
+# create new function of pagination of review, resolve many exceptions when pagination works incorrectly; resolve problem with Chinese brackets
+# problem with HTML
+# many exceptions in reviews, adjusting of multirevs and multipages functions
+# many exceptions in reviews, problem with api

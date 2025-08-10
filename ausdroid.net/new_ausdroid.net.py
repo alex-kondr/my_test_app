@@ -72,7 +72,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = data.xpath('//h1[@class="entry-title"]//text()').string(multiple=True)
     review.url = product.url
     review.ssid = product.ssid
 
@@ -119,6 +119,12 @@ def process_review(data, context, session):
     if not conclusion:
         conclusion = data.xpath('(//h3|//p)[contains(., "Should you ")][last()]/following-sibling::p[not(contains(., "You can purchase the "))]//text()').string(multiple=True)
     if not conclusion:
+        conclusion = data.xpath('//h3[contains(., "Closing thoughts")]/following-sibling::p[not(contains(., "You can purchase the "))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p[not(contains(., "You can purchase the ") or (contains(., "is available") and contains(., "website shop")))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h4[contains(., "Conclusion")]/following-sibling::p[not(contains(., "You can purchase the ") or (contains(., "is available") and contains(., "website shop")))]//text()').string(multiple=True)
+    if not conclusion:
         conclusion = data.xpath('//div[contains(@class, "review-summary-content")]//text()').string(multiple=True)
 
     if conclusion:
@@ -129,7 +135,13 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('(//h3|//p)[contains(., "Should you ")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(contains(., "You can purchase the "))]//text()').string(multiple=True)
+        excerpt = data.xpath('//h3[contains(., "Closing thoughts")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h4[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(contains(., "You can purchase the ") or (contains(., "is available") and contains(., "website shop")))]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = remove_emoji(excerpt).strip()
