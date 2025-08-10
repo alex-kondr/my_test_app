@@ -60,15 +60,11 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Conclusie")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h3[contains(., "Conclusie")]/preceding-sibling::p//text()|//div[contains(@class, "field-body")]/text()').string(multiple=True) if data.xpath('//h3[contains(., "Conclusie")]/preceding-sibling::p//text()').string(multiple=True) else ''
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "field-body")]/p[not(contains(., "Meer info") or preceding::p/strong[regexp:test(., "Prijs:|Display:|Functionaliteiten:")] or strong[regexp:test(., "Prijs:|Display:|Functionaliteiten:")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "field-body")]/p[not(contains(., "Meer info") or preceding::p/strong[regexp:test(., "Prijs:|Display:|Functionaliteiten:")] or strong[regexp:test(., "Prijs:|Display:|Functionaliteiten:")])]//text()|//div[contains(@class, "field-body")]/text()').string(multiple=True)
 
     if excerpt:
-        excerpt_ = data.xpath('//div[contains(@class, "field-body")]/text()').string(multiple=True)
-        if excerpt_:
-            excerpt += ' ' + excerpt_
-
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
