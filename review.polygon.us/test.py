@@ -16,6 +16,8 @@ agent = agents.POLYGON_COM
 # agent = agents.TEST
 reload = 1
 
+# nmae: 25+
+# exc: 1+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
