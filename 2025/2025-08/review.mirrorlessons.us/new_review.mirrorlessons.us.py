@@ -20,9 +20,9 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' review – ')[0].replace('Review of the ', '').replace('Review of ', '').replace(' Review for ', '').replace('Hands-On with the ', '').replace(' Review', '').replace(' review', '').strip()
+    product.name = context['title'].split(' review – ')[0].replace('Review of the ', '').replace('Review of ', '').replace(' Review for ', '').replace('Reviewing ', '').replace('Hands-On with the ', '').replace('Testing out the new ', '').replace('The Preview: ', '').replace(' Review', '').replace(' review', '').replace(' Test', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.split('/')[-2].replace('-full-review', '').replace('-review', '')
     product.category = context['cat']
 
     review = Review()
@@ -59,13 +59,18 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p[not(@style or regexp:test(., "What I like|What I don’t like") or starts-with(normalize-space(.), "["))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p[not(@style or regexp:test(., "What I like|What I don’t like|Main Specs|my other articles|You can download|You can also check") or starts-with(normalize-space(.), "["))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[.//strong[contains(., "Conclusion")]]/following-sibling::p[not(@style or regexp:test(., "What I like|What I don’t like|Main Specs|my other articles|You can download|You can also check") or starts-with(normalize-space(.), "["))]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p[not(contains(., "Main Specs") or starts-with(normalize-space(.), "["))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p[not(@style or contains(., "Main Specs") or starts-with(normalize-space(.), "["))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="entry-content"]/p[not(@style or regexp:test(., "What I like|What I don’t like") or contains(., "Main Specs") or starts-with(normalize-space(.), "["))]//text()').string(multiple=True)
+        excerpt = data.xpath('//p[.//strong[contains(., "Conclusion")]]/preceding-sibling::p[not(@style or regexp:test(., "What I like|What I don’t like|Main Specs|my other articles|You can download|You can also check") or starts-with(normalize-space(.), "["))]//text()').string(multiple=True)
+    if not excerpt:
+            excerpt = data.xpath('//div[@class="entry-content"]/p[not(@style or regexp:test(., "What I like|What I don’t like|Main Specs|my other articles|You can download|You can also check") or starts-with(normalize-space(.), "["))]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

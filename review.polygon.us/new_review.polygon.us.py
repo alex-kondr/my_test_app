@@ -47,7 +47,7 @@ def process_review(data, context, session):
 
     product.category = data.xpath('//ul[@class="article-tags-list"]/li[not(contains(., "Reviews"))]/div/text()').join('|')
     if not product.category:
-        product.category = 'Tech'
+        product.category = 'Games'
 
     review = Review()
     review.type = 'pro'
