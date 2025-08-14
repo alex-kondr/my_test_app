@@ -31,9 +31,9 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' Review: ')[0].split(' review: ')[0].replace(' Review', '').replace(' review', '').strip()
+    product.name = context['title'].split(' Review: ')[0].split(' review: ')[0].replace(' Review', '').replace(' review', '').replace('Review: ', '').replace(' - REVIEWS', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-1].replace('-review', '')
+    product.ssid = product.url.split('/')[-1].replace('-review', '').replace('review-', '')
     product.category = context['cat']
     product.manufacturer = data.xpath('//div[contains(@class, "brand")]/div/a/text()').string()
 
@@ -47,15 +47,20 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('(//address[@rel="author"]|//div[@class="col article-info"]//address)//text()').string(multiple=True)
-    author_url = data.xpath('//address[@rel="author"]/a/@href').string()
-    if author and author_url:
-        author_ssid = author_url.split('/')[-1]
-        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
-    elif author:
-        review.authors.append(Person(name=author, ssid=author))
+    authors = data.xpath('//div[@class="col article-info"]//address//text()[not(contains(., ","))]')
+    authors_url = data.xpath('//address[@rel="author"]/a/@href')
+    if authors and authors_url:
+        for author, author_url in zip(authors, authors_url):
+            author = author.string(multiple=True)
+            author_url = author_url.string()
+            author_ssid = author_url.split('/')[-1]
+            review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+    elif authors:
+        for author in authors:
+            author = author.string(multiple=True)
+            review.authors.append(Person(name=author, ssid=author))
 
-    pros = data.xpath('//div[contains(@class, "review-pros")]/div[@class="field-content"]//text()')
+    pros = data.xpath('//div[contains(@class, "review-pros")]/div[@class="field-content"]//text()[not(contains(., ":"))]')
     for pro in pros:
         pro = pro.string(multiple=True)
         if pro:
@@ -63,7 +68,7 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[contains(@class, "review-cons")]/div[@class="field-content"]//text()')
+    cons = data.xpath('//div[contains(@class, "review-cons")]/div[@class="field-content"]//text()[not(contains(., ":"))]')
     for con in cons:
         con = con.string(multiple=True)
         if con:
@@ -92,20 +97,24 @@ def process_review(data, context, session):
         if len(conclusion) > 2:
             review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "verdict", "i")]/preceding-sibling::p[not(regexp:test(., "Key Features|Buy it if:|Skip it if:|✅|❌|Watch our video review"))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2[regexp:test(., "verdict", "i")])[1]/preceding-sibling::p[not(regexp:test(., "Key Features|Buy it if:|Skip it if:|✅|❌|Watch our video review"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h3[regexp:test(., "verdict", "i")]/preceding-sibling::p[not(regexp:test(., "Key Features|Buy it if:|Skip it if:|✅|❌|Watch our video review"))]//text()').string(multiple=True)
+        excerpt = data.xpath('(//h3[regexp:test(., "verdict", "i")])[1]/preceding-sibling::p[not(regexp:test(., "Key Features|Buy it if:|Skip it if:|✅|❌|Watch our video review"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[regexp:test(., "Should you buy", "i")]/preceding-sibling::p[not(regexp:test(., "Key Features|Buy it if:|Skip it if:|✅|❌|Watch our video review"))]//text()').string(multiple=True)
+        excerpt = data.xpath('(//h2[regexp:test(., "Should you buy", "i")])[1]/preceding-sibling::p[not(regexp:test(., "Key Features|Buy it if:|Skip it if:|✅|❌|Watch our video review"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h3[regexp:test(., "Should you buy", "i")]/preceding-sibling::p[not(regexp:test(., "Key Features|Buy it if:|Skip it if:|✅|❌|Watch our video review"))]//text()').string(multiple=True)
+        excerpt = data.xpath('(//h3[regexp:test(., "Should you buy", "i")])[1]/preceding-sibling::p[not(regexp:test(., "Key Features|Buy it if:|Skip it if:|✅|❌|Watch our video review"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]/preceding-sibling::p[not(regexp:test(., "Key Features|Buy it if:|Skip it if:|✅|❌|Watch our video review"))]//text()').string(multiple=True)
+        excerpt = data.xpath('(//p[strong[regexp:test(., "verdict", "i")]])[1]/preceding-sibling::p[not(regexp:test(., "Key Features|Buy it if:|Skip it if:|✅|❌|Watch our video review"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('(//div[@class="body" and p])[1]/p[not(regexp:test(., "Key Features|Buy it if:|Skip it if:|✅|❌|Watch our video review"))]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = excerpt.replace(u'�', '').strip()
+
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
         if len(excerpt) > 2:
             review.add_property(type='excerpt', value=excerpt)
 

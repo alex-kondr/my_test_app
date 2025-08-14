@@ -16,11 +16,11 @@ agent = agents.GOLFMAGIC_COM
 # agent = agents.TEST
 reload = 1
 
-# name: 194
-# author: 665
-# pros/cons: 1
-# concl: 1:
-# exc: 648
+# name: 9
+# author: 104
+# pros/cons: 0
+# concl: 10
+# exc: 19
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
