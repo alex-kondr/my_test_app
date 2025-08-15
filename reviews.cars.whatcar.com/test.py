@@ -16,6 +16,8 @@ agent = agents.WHATCAR_COM
 # agent = agents.TEST
 reload = 1
 
+# log: 129
+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

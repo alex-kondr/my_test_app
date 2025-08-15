@@ -19,7 +19,6 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.whatcar.com/reviews', use='curl', force_charset='utf-8', options=OPTIONS), process_catlist, dict())
 
 
@@ -73,11 +72,14 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('count(//div[div[@id="introduction"]]/div[contains(@class, "Rating_rating")]/div[contains(@class, "Icon_red")])')
+    grade_overall = data.xpath('count((//div[div[@id="introduction"]]/div[contains(@class, "Rating_rating")])[1]/div[contains(@class, "Icon_red")])')
     if grade_overall:
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     grades = data.xpath('//div[@class="Grid_row___ZDUK"]/div/h3[contains(@class, "subChapterTitle")]')
+    if not grades:
+        grades = data.xpath('//div[@class="Grid_row___ZDUK"]/div/h2[contains(@class, "chapterMainTitle")]')
+
     for grade in grades:
         grade_name = grade.xpath('text()').string()
         grade_val = grade.xpath('count((following-sibling::div)[1][contains(@class, "Rating_rating")]/div[contains(@class, "Icon_red")])')
