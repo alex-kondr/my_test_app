@@ -16,6 +16,10 @@ agent = agents.MUSICRADAR_UK
 # agent = agents.TEST
 reload = 1
 
+# name: 6
+# pros/cons: 3
+# concl: 3
+# exc: 68
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

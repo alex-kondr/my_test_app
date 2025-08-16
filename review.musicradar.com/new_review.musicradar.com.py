@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.musicradar.com/reviews', use='curl', max_age=0), process_catlist, dict())
 
 
@@ -74,14 +74,14 @@ def process_review(data, context, session):
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.lstrip('…').strip(' +-')
+            pro = pro.lstrip('…').strip(' +-•')
             review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[@class="pretty-verdict__cons"]/ul//p')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.lstrip('…').strip(' +-')
+            con = con.lstrip('…').strip(' +-•')
             review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="header-sub-container"]/h2//text()').string(multiple=True)
@@ -98,11 +98,11 @@ def process_review(data, context, session):
         conclusion = conclusion.replace('MuscRadar verdict:', '').replace('MusicRadar verdict:', '')
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Verdict")]/preceding-sibling::p[not(contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h3[contains(., "Verdict")]/preceding-sibling::p[not(contains(., "★") or contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a))]//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(contains(., "★") or contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="article-body"]/p[not(contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a) or preceding-sibling::h3[contains(., "The web says")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="article-body"]/p[not(contains(., "★") or contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a) or preceding-sibling::h3[contains(., "The web says")])]//text()').string(multiple=True)
 
     if excerpt:
 
