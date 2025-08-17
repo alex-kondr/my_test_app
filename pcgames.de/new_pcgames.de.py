@@ -131,22 +131,24 @@ def process_review(data, context, session):
         review.add_property(type='pages', value=dict(title=title, url=page_url))
 
     if pages:
-        session.do(Request(page_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context, review=review, product=product))
+        session.do(Request(page_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, review=review, product=product))
 
     elif next_url:
         title = review.title + ' Pagina 1'
         review.add_property(type='pages', value=dict(title=title, url=data.response_url))
-        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context, page=2, review=review, product=product))
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, page=2, review=review, product=product))
 
     elif context['excerpt']:
-        review.add_property(type='excerpt', value=context['excerpt'])
+        excerpt = context['excerpt']
+        excerpt = excerpt.replace(u'\x96', '').replace(u'\x92', '').strip()
+        review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
 
         session.emit(product)
 
 
-def process_review_last(data, context, session):
+def process_review_next(data, context, session):
     strip_namespace(data)
 
     review = context['review']
@@ -188,7 +190,7 @@ def process_review_last(data, context, session):
 
     next_url = data.xpath('//a[contains(@class, "pagRight")]/@href').string()
     if next_url:
-        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context, page=page, review=review, product=product))
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, page=page, review=review, product=product))
 
     elif context['excerpt']:
         excerpt = context['excerpt']
