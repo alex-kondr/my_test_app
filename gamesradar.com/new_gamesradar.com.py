@@ -2,6 +2,9 @@ from agent import *
 from models.products import *
 
 
+XCAT = ['Open World']
+
+
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.gamesradar.com/reviews', use='curl', max_age=0), process_catlist, dict())
@@ -10,9 +13,11 @@ def run(context, session):
 def process_catlist(data, context, session):
     cats = data.xpath('//div[contains(@class, "subcategory-list")]/ul/li')
     for cat in cats:
-        name = cat.xpath('h3//text()').string(multiple=True)
-        url = cat.xpath('.//a/@href').string().replace('Reviews', '').strip()
-        session.queue(Request(url, use='curl', max_age=0), process_revlist, dict(cat=name, cat_url=url))
+        genre = cat.xpath('h3//text()').string(multiple=True).replace('Reviews', '').strip()
+        url = cat.xpath('.//a/@href').string()
+
+        if genre not in XCAT:
+            session.queue(Request(url, use='curl', max_age=0), process_revlist, dict(genre=genre, cat_url=url))
 
 
 def process_revlist(data, context, session):
@@ -34,12 +39,17 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split('review:')[0].split('Review:')[0].replace(' review', '').replace(' Review', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
-    product.category = 'Games|' + context['cat']
     product.manufacturer = data.xpath('//strong[contains(., "Developer:")]/following-sibling::text()[1]').string()
 
-    platforms = data.xpath('//strong[contains(., "Platform(s):")]/following-sibling::text()').string()
-    if platforms:
-        product.category += '|' + platforms.replace(', ', '/')
+    platforms = data.xpath('//strong[regexp:test(., "Platform")]/following-sibling::text()[1]').string()
+    if platforms and context['genre'] not in platforms:
+        product.category = 'Games|' + platforms.strip(' :').replace(', ', '/') + '|' + context['genre']
+    elif platforms:
+        product.category = 'Games|' + platforms.replace(', ', '/')
+    elif context['genre'] not in ['Tech', 'TV Shows', 'Games']:
+        product.category = 'Games|' + context['genre']
+    else:
+        product.category = context['genre']
 
     product.url = data.xpath('//a[@rel="sponsored noopener"]/@href').string()
     if not product.url:
@@ -89,7 +99,7 @@ def process_review(data, context, session):
     if summary and len(summary) > 2:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('(//h3[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")]|//h2[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")])/following-sibling::p[not(preceding-sibling::h2[contains(., "How we tested")])]//text()').string(multiple=True)
+    conclusion = data.xpath('(//h3[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")]|//h2[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")])/following-sibling::p[not(preceding-sibling::h2[contains(., "How we tested")] or preceding::p[@class="infoDisclaimer"])]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[.//strong[contains(., "Verdict")]]/following-sibling::p[not(contains(., "@") or preceding-sibling::h2[contains(., "How we tested")])]//text()').string(multiple=True)
 
@@ -102,7 +112,6 @@ def process_review(data, context, session):
             if summary and len(summary) > 2:
                 review.add_property(type='summary', value=summary)
 
-
     if not conclusion:
         conclusion = data.xpath('//div[@class="pretty-verdict__verdict"]/p//text()').string(multiple=True)
         if conclusion:
@@ -113,7 +122,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//p[.//strong[contains(., "Verdict")]]/preceding-sibling::p[not(preceding-sibling::h2[contains(., "How we tested")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="article-body"]/p[not(regexp:test(., "^For more") or preceding-sibling::h2[contains(., "How we tested")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="article-body"]/p[not(regexp:test(., "^For more") or preceding-sibling::h2[contains(., "How we tested")] or preceding::p[@class="infoDisclaimer"])]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

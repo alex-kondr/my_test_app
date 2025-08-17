@@ -56,9 +56,11 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or context['title'].replace('', '').strip()
     product.ssid = context['url'].split('/')[-2].split('-')[-1]
     product.category = 'Games'
+
+    product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or context['title'].split(': Blu-ray-Test ')[0].replace(' im Blu-ray-Test', '').repalce(' - Review/Filmkritik', '').replace(' --- Filmkritik / Review', '').replace(' (Review / Filmkritik)', '').repalce(' (Review/Filmkritik)', '').replace(' (Review/Fimkritik)', '').replace('(Filmkritik/Review)', '').replace(' - Kinokritik/Review', '').replace(' - Filmkritik/Review', '').repalce(' (Kinokritik/Review)', '').replace(' im Test', '').replace('Review: ', '').strip()
+    product.name = product.name.replace(u'\x96', '').replace(u'\x92', '').strip()
 
     product.url = data.xpath('//a[contains(., "ZUM ANGEBOT")]/@href').string()
     if not product.url:
@@ -88,33 +90,39 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//span[@class="ratingData"]/text()').string()
     if grade_overall:
+        grade_overall = float(grade_overall)
+        grade_overall = grade_overall / 10 if grade_overall > 10 else grade_overall
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    # pros = data.xpath('(//h3[contains(., "Pros")]/following-sibling::*)[1]/li')
-    # for pro in pros:
-    #     pro = pro.xpath('.//text()').string(multiple=True)
-    #     if pro:
-    #         pro = pro.strip(' +-*.:;•,–')
-    #         if len(pro) > 1:
-    #             review.add_property(type='pros', value=pro)
+    pros = data.xpath('//span[contains(@class, "ratingPro")]')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
 
-    # cons = data.xpath('(//h3[contains(., "Cons")]/following-sibling::*)[1]/li')
-    # for con in cons:
-    #     con = con.xpath('.//text()').string(multiple=True)
-    #     if con:
-    #         con = con.strip(' +-*.:;•,–')
-    #         if len(con) > 1:
-    #             review.add_property(type='cons', value=con)
+    cons = data.xpath('//span[contains(@class, "ratingContra")]')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
 
     summary = data.xpath('//p[contains(@class, "artIntro")]//text()').string(multiple=True)
     if summary:
+        summary = summary.replace(u'\x96', '').replace(u'\x92', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//div[@class="ratingBox"]/p//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\x96', '').replace(u'\x92', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    context['excerpt'] = data.xpath('//section[contains(@class, "articleMainTextModule")]/p[not(.//img or preceding::span[contains(., "Fazit")])]').string(multiple=True)
+    context['excerpt'] = data.xpath('//section[contains(@class, "articleMainTextModule")]/p[not(.//img or preceding::span[contains(., "Fazit")])]//text()').string(multiple=True)
+
+    next_url = data.xpath('//a[contains(@class, "pagRight")]/@href').string()
 
     pages = data.xpath('//ol[contains(@class, "pgnTitles")]/li/a')
     for page in pages:
@@ -124,6 +132,11 @@ def process_review(data, context, session):
 
     if pages:
         session.do(Request(page_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context, review=review, product=product))
+
+    elif next_url:
+        title = review.title + ' Pagina 1'
+        review.add_property(type='pages', value=dict(title=title, url=data.response_url))
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context, page=2, review=review, product=product))
 
     elif context['excerpt']:
         review.add_property(type='excerpt', value=context['excerpt'])
@@ -138,20 +151,49 @@ def process_review_last(data, context, session):
 
     review = context['review']
 
+    page = context.get('page', 0)
+    if page:
+        title = review.title + ' Pagina ' + str(page)
+        page += 1
+        review.add_property(type='pages', value=dict(title=title, url=data.response_url))
+
     grade_overall = data.xpath('//span[@class="ratingData"]/text()').string()
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
+    pros = data.xpath('//span[contains(@class, "ratingPro")]')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//span[contains(@class, "ratingContra")]')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
     conclusion = data.xpath('//div[@class="ratingBox"]/p//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\x96', '').replace(u'\x92', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//section[contains(@class, "articleMainTextModule")]/p[not(.//img or preceding::span[contains(., "Fazit")])]').string(multiple=True)
+    excerpt = data.xpath('//section[contains(@class, "articleMainTextModule")]/p[not(.//img or preceding::span[contains(., "Fazit")])]//text()').string(multiple=True)
     if excerpt:
         context['excerpt'] += ' ' + excerpt
 
-    if context['excerpt']:
-        review.add_property(type='excerpt', value=context['excerpt'])
+    next_url = data.xpath('//a[contains(@class, "pagRight")]/@href').string()
+    if next_url:
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context, page=page, review=review, product=product))
+
+    elif context['excerpt']:
+        excerpt = context['excerpt']
+        excerpt = excerpt.replace(u'\x96', '').replace(u'\x92', '').strip()
+        review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
         product.reviews.append(review)
