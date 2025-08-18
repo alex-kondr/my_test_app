@@ -56,10 +56,10 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.ssid = context['url'].split('/')[-2].split('-')[-1]
+    product.ssid = context['url'].split('/')[-2]
     product.category = 'Games'
 
-    product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or context['title'].split(': Blu-ray-Test ')[0].replace(' im Blu-ray-Test', '').repalce(' - Review/Filmkritik', '').replace(' --- Filmkritik / Review', '').replace(' (Review / Filmkritik)', '').repalce(' (Review/Filmkritik)', '').replace(' (Review/Fimkritik)', '').replace('(Filmkritik/Review)', '').replace(' - Kinokritik/Review', '').replace(' - Filmkritik/Review', '').repalce(' (Kinokritik/Review)', '').replace(' im Test', '').replace('Review: ', '').strip()
+    product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or context['title'].split(': Blu-ray-Test ')[0].replace(' im Blu-ray-Test', '').replace(' - Review/Filmkritik', '').replace(' --- Filmkritik / Review', '').replace(' (Review / Filmkritik)', '').replace(' (Review/Filmkritik)', '').replace(' (Review/Fimkritik)', '').replace('(Filmkritik/Review)', '').replace(' - Kinokritik/Review', '').replace(' - Filmkritik/Review', '').replace(' (Kinokritik/Review)', '').replace(' im Test', '').replace('Review: ', '').strip()
     product.name = product.name.replace(u'\x96', '').replace(u'\x92', '').strip()
 
     product.url = data.xpath('//a[contains(., "ZUM ANGEBOT")]/@href').string()
@@ -72,7 +72,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = context['title'] or data.xpath('//h1[@class="articleTitle"]//text()').string(multiple=True)
     review.url = context['url']
     review.ssid = product.ssid
 
@@ -116,11 +116,14 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//div[@class="ratingBox"]/p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@class="content txtMuted"]//text()').string(multiple=True)
+
     if conclusion:
         conclusion = conclusion.replace(u'\x96', '').replace(u'\x92', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    context['excerpt'] = data.xpath('//section[contains(@class, "articleMainTextModule")]/p[not(.//img or preceding::span[contains(., "Fazit")])]//text()').string(multiple=True)
+    context['excerpt'] = data.xpath('//section[contains(@class, "articleMainTextModule")]/p[not(.//img or preceding::span[contains(., "Fazit")])]//text()|//section[contains(@class, "articleMainTextModule")]/p/text()|//section[contains(@class, "articleMainTextModule")]/p/em/text()').string(multiple=True)
 
     next_url = data.xpath('//a[contains(@class, "pagRight")]/@href').string()
 
@@ -134,13 +137,12 @@ def process_review(data, context, session):
         session.do(Request(page_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, review=review, product=product))
 
     elif next_url:
-        title = review.title + ' Pagina 1'
+        title = review.title + ' - Pagina 1'
         review.add_property(type='pages', value=dict(title=title, url=data.response_url))
         session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, page=2, review=review, product=product))
 
     elif context['excerpt']:
-        excerpt = context['excerpt']
-        excerpt = excerpt.replace(u'\x96', '').replace(u'\x92', '').strip()
+        excerpt = context['excerpt'].replace(u'\x96', '').replace(u'\x92', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
@@ -155,7 +157,7 @@ def process_review_next(data, context, session):
 
     page = context.get('page', 0)
     if page:
-        title = review.title + ' Pagina ' + str(page)
+        title = review.title + ' - Pagina ' + str(page)
         page += 1
         review.add_property(type='pages', value=dict(title=title, url=data.response_url))
 
@@ -180,21 +182,23 @@ def process_review_next(data, context, session):
                 review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//div[@class="ratingBox"]/p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@class="content txtMuted"]//text()').string(multiple=True)
+
     if conclusion:
         conclusion = conclusion.replace(u'\x96', '').replace(u'\x92', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//section[contains(@class, "articleMainTextModule")]/p[not(.//img or preceding::span[contains(., "Fazit")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//section[contains(@class, "articleMainTextModule")]/p[not(.//img or preceding::span[contains(., "Fazit")])]//text()|//section[contains(@class, "articleMainTextModule")]/p/text()|//section[contains(@class, "articleMainTextModule")]/p/em/text()').string(multiple=True)
     if excerpt:
         context['excerpt'] += ' ' + excerpt
 
     next_url = data.xpath('//a[contains(@class, "pagRight")]/@href').string()
     if next_url:
-        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, page=page, review=review, product=product))
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, page=page, review=review))
 
     elif context['excerpt']:
-        excerpt = context['excerpt']
-        excerpt = excerpt.replace(u'\x96', '').replace(u'\x92', '').strip()
+        excerpt = context['excerpt'].replace(u'\x96', '').replace(u'\x92', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
