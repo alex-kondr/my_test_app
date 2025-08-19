@@ -16,11 +16,12 @@ agent = agents.PCGAMES_DE
 # agent = agents.TEST
 reload = 1
 
-# name: 913
-# grades: 560
-# author: 505
-# concl: 2
-# log: 9
+# name: 84
+# grades: 307
+# author: 811
+# concl: 7
+# exc: 101
+# log: 0
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
