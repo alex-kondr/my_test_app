@@ -58,10 +58,9 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//div[contains(@class, "verdict")]//span/@aria-label').string()
+    grade_overall = data.xpath('count(//div[contains(@class, "verdict")]//span[@class="icon icon-star"]) + count(//div[contains(@class, "verdict")]//span[@class="icon icon-star half"]) div 2')
     if grade_overall:
-        grade_overall = grade_overall.split(':')[-1].split('out')[0]
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+        review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     grades = data.xpath('//table[contains(., "Ratings")]/tbody/tr[not(contains(., "Overall"))]')
     for grade in grades:

@@ -4,7 +4,7 @@ from models.products import *
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request('https://www.mobiflip.de/thema/testberichte/', use='curl', force_charset='utf-8'), process_revlist, dict())
+    session.queue(Request('https://www.mobiflip.de/thema/testberichte/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -14,11 +14,11 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
 
         if ' vs. ' not in title:
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
@@ -52,7 +52,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h2[regexp:test(., "fazit", "i")]/preceding-sibling::p[not(.//span[@class="sharep-short-star"])]//text()[not(contains(., "tl;dr"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="content-short"]/p[not(.//span[@class="sharep-short-star"])]//text()[not(contains(., "tl;dr"))]').string(multiple=True)
+        excerpt = data.xpath('(//p|//li)[not(@class or @id or preceding::*[@id="comments"] or .//span[@class="sharep-short-star"])]/span[@class="post-info-text" and text()]//text()[not(contains(., "tl;dr"))]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

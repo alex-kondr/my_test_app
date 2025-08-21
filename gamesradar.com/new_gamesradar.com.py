@@ -1,5 +1,9 @@
 from agent import *
 from models.products import *
+import HTMLParser
+
+
+h = HTMLParser.HTMLParser()
 
 
 XCAT = ['Open World']
@@ -97,6 +101,7 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[@class="header-sub-container"]/h2//text()').string(multiple=True)
     if summary and len(summary) > 2:
+        summary = h.unescape(summary).replace('%26ndash;', '-').replace('%26rsquo;', "'").replace('%26ldquo;', '"').replace('%26rdquo;', '"').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//h3[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")]|//h2[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")])/following-sibling::p[not(preceding-sibling::h2[contains(., "How we tested")] or preceding::p[@class="infoDisclaimer"])]//text()').string(multiple=True)
@@ -104,18 +109,19 @@ def process_review(data, context, session):
         conclusion = data.xpath('//p[.//strong[contains(., "Verdict")]]/following-sibling::p[not(contains(., "@") or preceding-sibling::h2[contains(., "How we tested")])]//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = conclusion.replace('Verdict:', '').strip()
+        conclusion = h.unescape(conclusion).replace('%26ndash;', '-').replace('%26rsquo;', "'").replace('%26ldquo;', '"').replace('%26rdquo;', '"').replace('Verdict:', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
         if not summary:
             summary = data.xpath('//div[@class="pretty-verdict__verdict"]/p//text()').string(multiple=True)
             if summary and len(summary) > 2:
+                summary = h.unescape(summary).replace('%26ndash;', '-').replace('%26rsquo;', "'").replace('%26ldquo;', '"').replace('%26rdquo;', '"').strip()
                 review.add_property(type='summary', value=summary)
 
     if not conclusion:
         conclusion = data.xpath('//div[@class="pretty-verdict__verdict"]/p//text()').string(multiple=True)
         if conclusion:
-            conclusion = conclusion.replace('Verdict:', '').strip()
+            conclusion = h.unescape(conclusion).replace('Verdict:', '').replace('%26ndash;', '-').replace('%26rsquo;', "'").replace('%26ldquo;', '"').replace('%26rdquo;', '"').strip()
             review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h3[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")]|//h2[contains(., "Overall") or contains(., "should you buy") or contains(., "Should you buy")])/preceding-sibling::p[not(preceding-sibling::h2[contains(., "How we tested")])]//text()').string(multiple=True)
@@ -125,6 +131,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[@id="article-body"]/p[not(regexp:test(., "^For more") or preceding-sibling::h2[contains(., "How we tested")] or preceding::p[@class="infoDisclaimer"])]//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = h.unescape(excerpt).replace('%26ndash;', '-').replace('%26rsquo;', "'").replace('%26ldquo;', '"').replace('%26rdquo;', '"').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

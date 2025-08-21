@@ -78,14 +78,15 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following::p[not(@class)]//text()').string(multiple=True)
-    if not conclusion:
-        conclusion = data.xpath('//div[@class="review-desc"]//text()').string(multiple=True)
+    summary = data.xpath('//div[@class="review-desc"]//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
 
+    conclusion = data.xpath('//h2[regexp:test(., "Conclusion|Should you buy")]/following::p[not(@class)]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[contains(@class, "columns-holder")]/p[not(@class or preceding::h2[contains(., "Conclusion")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[contains(@class, "columns-holder")]/p[not(@class or preceding::h2[regexp:test(., "Conclusion|Should you buy")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
