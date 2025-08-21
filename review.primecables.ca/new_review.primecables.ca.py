@@ -43,10 +43,13 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
-    prod_content = simplejson.loads(data.xpath('//div/@data-origin-params').string())
+    prod_json = data.xpath('//div/@data-origin-params').string()
+    if not prod_json:
+        return
+
+    prod_content = simplejson.loads(prod_json)
 
     product = Product()
-
     product.name = context['name']
     product.url = context['url']
     product.category = context['cat']

@@ -18,7 +18,7 @@ reload = 1
 
 # name: 0
 # grades: 35+
-# exc: 73
+# exc: 3
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
