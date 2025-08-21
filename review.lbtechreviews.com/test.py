@@ -16,9 +16,9 @@ agent = agents.LBTECHREVIEWS_EN
 # agent = agents.TEST
 reload = 1
 
-# name: 2
+# name: 0
 # grades: 35+
-# exc: 77
+# exc: 73
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

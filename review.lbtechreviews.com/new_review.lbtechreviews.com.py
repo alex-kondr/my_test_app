@@ -99,6 +99,10 @@ def process_review(data, context, session):
     conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[b[contains(., "Conclusion")]]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[strong[contains(., "Conclusion")]]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[strong[contains(., "Conclusion")]]//text()[not(contains(., "Conclusion"))]').string(multiple=True)
 
     if conclusion:
         conclusion = h.unescape(conclusion).replace(u'\uFEFF', '').strip()
@@ -107,6 +111,8 @@ def process_review(data, context, session):
     excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//p[b[contains(., "Conclusion")]]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[strong[contains(., "Conclusion")]]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="thecontent"]/p//text()').string(multiple=True)
 
