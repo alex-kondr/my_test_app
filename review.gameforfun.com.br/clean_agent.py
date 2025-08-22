@@ -8,6 +8,6 @@ with open("review.gameforfun.com.br/agent.py", "w", encoding="utf-8") as file:
             "(data, context, session)"
         ).replace(
             "(context: dict[str, str], session: Session)",
-            "(data, context, session)"
+            "(context, session)"
         )
     )
