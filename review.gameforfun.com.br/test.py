@@ -16,6 +16,9 @@ agent = agents.GAMEFORFUN_BR
 # agent = agents.TEST
 reload = 1
 
+# name: 3
+# grades: 14
+# exc: 3
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

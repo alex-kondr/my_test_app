@@ -3,7 +3,6 @@ from models.products import *
 
 
 def run(context: dict[str, str], session: Session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://gameforfun.com.br/category/reviews/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
@@ -21,7 +20,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 
 def process_review(data: Response, context: dict[str, str], session: Session):
     product = Product()
-    product.name = context['title'].replace('Review ', '').strip()
+    product.name = context['title'].split(' Review: ')[0].replace('Review: ', '').replace('Review ', '').replace('Análise ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('review-', '')
     product.category = 'Games'
@@ -61,25 +60,12 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         grade_val = grade.xpath('@value').string()
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=100.0))
 
-    # pros = data.xpath('(//h3[contains(., "Pros")]/following-sibling::*)[1]/li')
-    # for pro in pros:
-    #     pro = pro.xpath('.//text()').string(multiple=True)
-    #     if pro:
-    #         pro = pro.strip(' +-*.:;•,–')
-    #         if len(pro) > 1:
-    #             review.add_property(type='pros', value=pro)
+    summary = data.xpath('//div[contains(@class, "post-excerpt")]/div//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
 
-    # cons = data.xpath('(//h3[contains(., "Cons")]/following-sibling::*)[1]/li')
-    # for con in cons:
-    #     con = con.xpath('.//text()').string(multiple=True)
-    #     if con:
-    #         con = con.strip(' +-*.:;•,–')
-    #         if len(con) > 1:
-    #             review.add_property(type='cons', value=con)
-
-
-    conclusion = data.xpath('(//h2|//h3)[contains(., "Conclusão")]/following-sibling::p//text()').string(multiple=True)
-    if conclusion:
+    conclusion = data.xpath('(//h2|//h3)[contains(., "Conclusão")]/following-sibling::p[not(contains(., "e está disponível para") and b)]//text()').string(multiple=True)
+    if conclusion and not summary:
         summary = data.xpath('//h2[contains(text(), "Nota")]/following::div[@class="elementor-widget-container"]/p//text()').string(multiple=True)
         if summary:
             review.add_property(type='summary', value=summary)
@@ -92,7 +78,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     excerpt = data.xpath('(//h2|//h3)[contains(., "Conclusão")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="AreaConteudo"]/div/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="AreaConteudo"]/div/p[not(contains(., "e está disponível para") and b)]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
