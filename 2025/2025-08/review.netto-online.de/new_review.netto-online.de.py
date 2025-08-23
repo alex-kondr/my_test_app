@@ -45,7 +45,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request("https://www.netto-online.de/", use='curl', options=OPTIONS, force_charset="utf-8"), process_frontpage, dict())
 
 
