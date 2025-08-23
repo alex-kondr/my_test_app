@@ -1,5 +1,10 @@
 from agent import *
 from models.products import *
+import HTMLParser
+
+
+h = HTMLParser.HTMLParser()
+
 
 
 def strip_namespace(data):
@@ -60,7 +65,7 @@ def process_review(data, context, session):
     product.category = 'Games'
 
     product.name = data.xpath('//span[contains(@class, "productTitle")]//text()').string(multiple=True) or context['title'].split(': Blu-ray-Test ')[0].replace(' im Blu-ray-Test', '').replace(' - Review/Filmkritik', '').replace(' --- Filmkritik / Review', '').replace(' (Review / Filmkritik)', '').replace(' (Review/Filmkritik)', '').replace(' (Review/Fimkritik)', '').replace('(Filmkritik/Review)', '').replace(' - Kinokritik/Review', '').replace(' - Filmkritik/Review', '').replace(' (Kinokritik/Review)', '').replace(' im Test', '').replace('Review: ', '').replace(' - Kinoreview & Trailer', '').replace(' - Großes Review', '').replace(' - Review', '').replace(' (Kinokritik / Review)', '').replace(' (Review/Kinokritik)', '').replace(': Kinokritik/Review', '').replace(' (Kino-Kritik/Review)', '').replace(' (Blu-ray-Kritik / Review)', '').replace(' (Kinokritik/ Review)', '').replace(' (Kritik / Review)', '').strip()
-    product.name = product.name.replace(u'\x96', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x84', '').replace(u'\x82', '').strip()
+    product.name = h.unescape(product.name).replace(u'\x91', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x96', '').replace(u'\x80', '').replace(u'\x82', '').replace(u'\x84', '').strip()
 
     product.url = data.xpath('//a[contains(., "ZUM ANGEBOT")]/@href').string()
     if not product.url:
@@ -112,7 +117,7 @@ def process_review(data, context, session):
 
     summary = data.xpath('//p[contains(@class, "artIntro")]//text()').string(multiple=True)
     if summary:
-        summary = summary.replace(u'\x96', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x84', '').replace(u'\x82', '').strip()
+        summary = h.unescape(summary).replace(u'\x91', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x96', '').replace(u'\x80', '').replace(u'\x82', '').replace(u'\x84', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//div[@class="ratingBox"]/p//text()').string(multiple=True)
@@ -120,7 +125,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('//div[@class="content txtMuted"]//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = conclusion.replace(u'\x96', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x84', '').replace(u'\x82', '').strip()
+        conclusion = h.unescape(conclusion).replace(u'\x91', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x96', '').replace(u'\x80', '').replace(u'\x82', '').replace(u'\x84', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     context['excerpt'] = data.xpath('//section[contains(@class, "articleMainTextModule")]/p[not(.//img or preceding::span[contains(., "Fazit")])]//text()|//section[contains(@class, "articleMainTextModule")]/p/text()|//section[contains(@class, "articleMainTextModule")]/p/em/text()').string(multiple=True)
@@ -142,7 +147,7 @@ def process_review(data, context, session):
         session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, page=2, review=review, product=product))
 
     elif context['excerpt']:
-        excerpt = context['excerpt'].replace(u'\x96', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x84', '').replace(u'\x82', '').strip()
+        excerpt = h.unescape(context['excerpt']).replace(u'\x91', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x96', '').replace(u'\x80', '').replace(u'\x82', '').replace(u'\x84', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
@@ -186,7 +191,7 @@ def process_review_next(data, context, session):
         conclusion = data.xpath('//div[@class="content txtMuted"]//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = conclusion.replace(u'\x96', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x84', '').replace(u'\x82', '').strip()
+        conclusion = h.unescape(conclusion).replace(u'\x91', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x96', '').replace(u'\x80', '').replace(u'\x82', '').replace(u'\x84', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//section[contains(@class, "articleMainTextModule")]/p[not(.//img or preceding::span[contains(., "Fazit")])]//text()|//section[contains(@class, "articleMainTextModule")]/p/text()|//section[contains(@class, "articleMainTextModule")]/p/em/text()').string(multiple=True)
@@ -198,7 +203,7 @@ def process_review_next(data, context, session):
         session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, page=page, review=review))
 
     elif context['excerpt']:
-        excerpt = context['excerpt'].replace(u'\x96', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x84', '').replace(u'\x82', '').strip()
+        excerpt = h.unescape(context['excerpt']).replace(u'\x91', '').replace(u'\x92', '').replace(u'\x93', '').replace(u'\x96', '').replace(u'\x80', '').replace(u'\x82', '').replace(u'\x84', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
