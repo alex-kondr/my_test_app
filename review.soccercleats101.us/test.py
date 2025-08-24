@@ -16,9 +16,9 @@ agent = agents.SOCCERCLEATS101_COM
 # agent = agents.TEST
 reload = 1
 
-# name: 5
-# concl: 74
-# exc: 59
+# name: 0
+# concl: 0
+# exc: 6
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
