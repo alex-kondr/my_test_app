@@ -1,8 +1,8 @@
-with open("{agent_path}/{agent_name}", "r", encoding="utf-8") as file:
+with open("review.soccercleats101.us/new_review.soccercleats101.us.py", "r", encoding="utf-8") as file:
     agent = file.read()
 
 
-with open("{agent_path}/agent.py", "w", encoding="utf-8") as file:
+with open("review.soccercleats101.us/agent.py", "w", encoding="utf-8") as file:
     file.write(agent.replace(
             "(data: Response, context: dict[str, str], session: Session)",
             "(data, context, session)"

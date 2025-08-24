@@ -17,7 +17,7 @@ class Session:
 
 class NodeSet:
     # returns another xpath nodeset
-    def xpath(self, exp: str) -> Union["NodeSet", List["NodeSet"]]:...
+    def xpath(self, exp: str) -> "NodeSet":...
     # returns a string representation.
     # if the nodeset is alist, returns string representation of first element.
     # Both strip and normalize_space is default set to True.
