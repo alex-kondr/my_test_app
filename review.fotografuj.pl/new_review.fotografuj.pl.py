@@ -37,7 +37,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' – ')[0].replace('TEST: ', '').strip()
+    product.name = context['title'].split(' – ')[0].replace('TEST: ', '').replace(u'\uFEFF', '').strip()
     product.ssid = context['url'].split('/')[-1]
     product.category = 'Technologia'
 
@@ -47,7 +47,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = context['title'].replace(u'\uFEFF', '').strip()
     review.url = context['url']
     review.ssid = product.ssid
 
@@ -60,7 +60,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.strip(' +-*.:;•,–')
+            pro = pro.replace(u'\uFEFF', '').strip(' +-*.:;•,–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -68,24 +68,29 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.strip(' +-*.:;•,–')
+            con = con.replace(u'\uFEFF', '').strip(' +-*.:;•,–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="article_header" and not(.//span[contains(@class, "title")])]//text()').string(multiple=True)
     if summary:
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     excerpt = data.xpath('(//div[@class="article_body_ramka_in"]|//div[@class="article_body_ramka_in"]/span[@class="bold"])/text()[not(preceding::span[@class="bold" and regexp:test(., "Cena:|Strona producenta")] or regexp:test(., "Cena:|Strona producenta|Plusy|Minusy|Zobacz także:"))]').string(multiple=True)
 
-    next_url = data.xpath('//a[contains(text(), "następna strona")]/@href').string()
-    if next_url:
-        next_url = next_url.split('#')[0]
-        title = review.title + ' - Pagina 1'
-        review.add_property("pages", value=dict(title=title, url=data.response_url))
-        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(excerpt=excerpt, review=review, product=product))
+    pages = data.xpath('(//td[span[@class="padPages"]])[1]/span')
+    for page in pages:
+        page_url = page.xpath('a/@href').string().split('#')[0] if page.xpath('a/@href') else data.response_url
+        page_num = page.xpath('.//text()').string(multiple=True)
+        title = review.title + ' - Pagina ' + str(page_num)
+        review.add_property("pages", value=dict(title=title, url=page_url))
+
+    if pages:
+        session.do(Request(page_url, use='curl', force_charset='utf-8', max_age=0), process_review_lastpage, dict(excerpt=excerpt, review=review, product=product))
 
     elif excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
@@ -93,18 +98,14 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         session.emit(product)
 
 
-def process_review_next(data: Response, context: dict[str, str], session: Session):
+def process_review_lastpage(data: Response, context: dict[str, str], session: Session):
     review = context['review']
-
-    page = context.get('page', 1) + 1
-    title = review.title + ' - Pagina ' + str(page)
-    review.add_property(type='pages', value=dict(title=title, url=data.response_url))
 
     pros = data.xpath('//span[contains(text(), "Plusy")]/following-sibling::*[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.strip(' +-*.:;•,–')
+            pro = pro.replace(u'\uFEFF', '').strip(' +-*.:;•,–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -112,7 +113,7 @@ def process_review_next(data: Response, context: dict[str, str], session: Sessio
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.strip(' +-*.:;•,–')
+            con = con.replace(u'\uFEFF', '').strip(' +-*.:;•,–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
@@ -120,13 +121,9 @@ def process_review_next(data: Response, context: dict[str, str], session: Sessio
     if excerpt:
         context['excerpt'] += ' ' + excerpt
 
-    next_url = data.xpath('//a[contains(text(), "następna strona")]/@href').string()
-    if next_url:
-        next_url = next_url.split('#')[0]
-        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, excerpt=excerpt, review=review, page=page))
-
-    elif context['excerpt']:
-        review.add_property(type='excerpt', value=context['excerpt'])
+    if context['excerpt']:
+        excerpt = context['excerpt'].replace(u'\uFEFF', '').strip()
+        review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
         product.reviews.append(review)
