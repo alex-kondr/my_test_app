@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.zeden.net/tests'), process_revlist, dict())
 
 
@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('ZeDen teste ', '').replace('Zeden teste ', '').strip()
+    product.name = context['title'].replace('ZeDen teste ', '').replace('Zeden teste ', '').replace('Test ZeDen : ', '').replace('Test Zeden : ', '').replace(' : Preview', '').replace('Preview : ', '').replace('Preview de ', '').replace(' : Test', '').replace('Test de ', '').replace('Test : ', '').replace('Mini-Preview de ', '').replace('[Test] ', '').strip().capitalize()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].split('-')[0]
     product.category = 'Technologie'
@@ -41,6 +41,18 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author_ssid))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
+
+    if data.xpath('//img[@src="https://www.zeden.net/design/icones_evaluation/tresbon.png"]'):
+        grade_overall = 5.0
+    elif data.xpath('//img[@src="https://www.zeden.net/design/icones_evaluation/bon.png"]'):
+        grade_overall = 4.0
+    elif data.xpath('//img[@src="https://www.zeden.net/design/icones_evaluation/moyen.png" or @src="https://www.zeden.net/design/icones_evaluation/mauvais.png"]'):
+        grade_overall = 3.0
+    else:
+        grade_overall = 0.0
+
+    if grade_overall:
+        review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     pros = data.xpath('//td[.//font[contains(text(), "Pour")]]/ul/li')
     for pro in pros:
@@ -62,7 +74,11 @@ def process_review(data, context, session):
     if is_recommended:
         review.add_property(value=True, type='is_recommended')
 
-    excerpt = data.xpath('//div[@class="zonePage" and not(.//@class="commentaires")]/div[@style]/text()|//div[@class="zonePage" and not(.//@class="commentaires")]/div[@style]/a//text()').string(multiple=True)
+    conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::text()|//h3[contains(., "Conclusion")]/following-sibling::a//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('(//div[@class="zonePage" and not(.//@class="commentaires")]/div[@style]/text()|//div[@class="zonePage" and not(.//@class="commentaires")]/div[@style]/a//text())[not(preceding::h3[contains(., "Conclusion")])]').string(multiple=True)
 
     pages = data.xpath('//div[@class="liste"]/ol/li/h2')
     for page in pages:
@@ -83,6 +99,18 @@ def process_review(data, context, session):
 
 def process_review_last(data, context, session):
     review = context['review']
+
+    if data.xpath('//img[@src="https://www.zeden.net/design/icones_evaluation/tresbon.png"]'):
+        grade_overall = 5.0
+    elif data.xpath('//img[@src="https://www.zeden.net/design/icones_evaluation/bon.png"]'):
+        grade_overall = 4.0
+    elif data.xpath('//img[@src="https://www.zeden.net/design/icones_evaluation/moyen.png" or @src="https://www.zeden.net/design/icones_evaluation/mauvais.png"]'):
+        grade_overall = 3.0
+    else:
+        grade_overall = 0.0
+
+    if grade_overall:
+        review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     pros = data.xpath('//td[.//font[contains(text(), "Pour")]]/ul/li')
     for pro in pros:
