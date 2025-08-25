@@ -17,8 +17,9 @@ agent = agents.ZEDEN_FR
 reload = 1
 
 # name: 14
-# concl: 3
-# exc: 13
+# grades: 114
+# concl: 4
+# exc: 12
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
