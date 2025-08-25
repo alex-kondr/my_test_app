@@ -2,9 +2,6 @@ from agent import *
 from models.products import *
 
 
-OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Cookie: XSRF-TOKEN=eyJpdiI6IlNIUlNJblwvREMzaktWWm9nT1RPVlV3PT0iLCJ2YWx1ZSI6IjUrcGxSOU4xMmtVeUdFeFJpVzBKRUxhcmJcL1J4UFZ6VWw3QXhGT292RWxhQ2t5cFZPWnpnVlNZR2pKbmd0WmdEIiwibWFjIjoiMmExZDg2ZDcwYmY3MGJiYzRlODQzZTkyOGJkMGY1NmM0ZDc3NTQwY2RmNzQxODU5MTk0MTgzODEwZTFmYTFjYiJ9; moviefone_session=eyJpdiI6ImcrQ2YrWHg2WnptVFZhdG5OcmxxRnc9PSIsInZhbHVlIjoiQzcrbW1Udk9URzNXRmZYWldqWEwxMmp3d0t5NVI3UURMZUVqRGxnYklqcHNLU003K01XMW1HNkh6UURNbXFVMCIsIm1hYyI6ImY2MTRlNmViYTFhOWYzODA4OTZjY2JmMzJkODUyYTA2NTBkODdlNWZkNjhjODMwODVjYTNjNjU0ZDlkOWY1NzEifQ%3D%3D' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"""
-
-
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"
     out = file(tmp, "w")
@@ -19,25 +16,22 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.queue(Request('https://www.moviefone.com/movies/reviews/', use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_revlist, {})
+    session.queue(Request('https://www.moviefone.com/movies/reviews/'), process_revlist, {})
 
 
 def process_revlist(data, context, session):
     strip_namespace(data)
-    
-    data.xpath('/').pretty()
-    
 
     revs = data.xpath('//div[@class="mf-movie-review" and not(.//h2/a[contains(@href, "/main/")])]')
     for rev in revs:
         title = rev.xpath('.//h2/a/strong/text()').string()
         url = rev.xpath('.//h2/a/@href').string()
-        grade_overall = rev.xpath('.//div[@class="score-bar-bar"]/text()').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_review, dict(title=title, grade_overall=grade_overall, url=url))
+        grade_user = rev.xpath('.//div[@class="score-bar-bar"]/text()').string()
+        session.queue(Request(url), process_review, dict(title=title, grade_user=grade_user, url=url))
 
     next_url = data.xpath('//a[@class="next-button"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_revlist, {})
+        session.queue(Request(next_url), process_revlist, {})
 
 
 def process_review(data, context, session):
@@ -48,10 +42,6 @@ def process_review(data, context, session):
     product.url = data.xpath('//a[contains(@class, "info-title")]/@href').string() or context['url']
     product.ssid = data.xpath('//article[contains(@id, "article-")]/@id').string().split('-')[-1]
     product.category = 'Movie'
-
-    genres = data.xpath('//a[contains(@class, "genre")]/text()').join('/')
-    if genres:
-        product.category += '|' + genres
 
     review = Review()
     review.title = data.xpath('//h1[contains(@class, "title")]/text()').string()
@@ -83,7 +73,7 @@ def process_review(data, context, session):
             if grade_overall:
                 review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    grade_user = context.get('grade')
+    grade_user = context.get('grade_user')
     if grade_user:
         review.grades.append(Grade(name='Audience Score', value=float(grade_user), best=100.0))
 
