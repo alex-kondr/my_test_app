@@ -16,6 +16,7 @@ agent = agents.GADZETOMANIA_PL
 # agent = agents.TEST
 reload = 1
 
+# name: 223
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
