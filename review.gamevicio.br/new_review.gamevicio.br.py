@@ -4,7 +4,6 @@ import re
 
 
 def run(context: dict[str, str], session: Session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.gamevicio.com/analises-de-jogos-games-controles-e-consoles/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -24,11 +23,13 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 
 def process_review(data: Response, context: dict[str, str], session: Session):
     product = Product()
-    product.name = context['title'].replace('Análise – ', '').replace('Análise | ', '').replace('#GV Review – ', '').strip()#.replace('Análise ', '')
+    product.name = context['title'].replace('Análise Completa do ', '').replace('Análise – ', '').replace('Análise | ', '').replace('Análise: ', '').replace('OPINIÃO: ', '').replace('OPINIÃO | ', '').replace('#GV Review – ', '').replace('Review | ', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('analise-', '')
     product.category = 'Tecnologia'
 
     product.url = data.xpath('//a[contains(@href, "https://amzn.to/")]/@href').string()
+    if not product.url:
+        product.url = data.xpath('//li[regexp:test(., "Loja Oficial:|Aliexress:")]//a/@href').string()
     if not product.url:
         product.url = context['url']
 
@@ -54,26 +55,50 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
+    pros = data.xpath('(//p[strong[regexp:test(., "Positivos:")]]/following-sibling::*)[1]/li')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('(//p[strong[regexp:test(., "Negativo:")]]/following-sibling::*)[1]/li')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
     summary = data.xpath('//div[contains(@class, "post-excerpt")]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//div[h2[contains(text(), "Conclusão")]]/following-sibling::p[not(contains(., "Disponível nas plataformas:") or preceding-sibling::hr)]//text()').string(multiple=True)
+    conclusion = data.xpath('//div[h2[contains(., "Conclusão")]]/following-sibling::p[not(contains(., "Disponível nas plataformas:") or preceding-sibling::hr or mark)]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h4[contains(text(), "Conclusão")]/following-sibling::p[not(contains(., "Disponível nas plataformas:"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h4[contains(., "Conclusão")]/following-sibling::p[not(contains(., "Disponível nas plataformas:") or mark)]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(text(), "Concluindo")]/following-sibling::p[not(contains(., "Disponível nas plataformas:"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Concluindo")]/following-sibling::p[not(contains(., "Disponível nas plataformas:") or mark)]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[contains(., "Conclusão")]/following-sibling::p[not(contains(., "Disponível nas plataformas:") or mark)]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('(//div[h2[contains(., "Considerações finais")]]|h2[contains(., "Considerações finais")])/following-sibling::p[not(contains(., "Disponível nas plataformas:") or strong[regexp:test(., "Positivos:|Negativo:")])]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[h2[contains(text(), "Conclusão")]]/preceding-sibling::p[not(preceding::h2[contains(text(), "Especificações Técnicas")])]//text()[not(starts-with(normalize-space(.), "–"))]').string(multiple=True)
+    excerpt = data.xpath('//div[h2[contains(., "Conclusão")]]/preceding-sibling::p[not(preceding::h2[contains(text(), "Especificações Técnicas")] or mark)]//text()[not(starts-with(normalize-space(.), "–"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h4[contains(text(), "Conclusão")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//h4[contains(., "Conclusão")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[contains(text(), "Concluindo")]/preceding-sibling::p//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Concluindo")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "post_content ")]/p[not(preceding::h2[contains(text(), "Especificações Técnicas")])]//text()[not(starts-with(normalize-space(.), "–") or contains(., "Disponível nas plataformas:"))]').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Conclusão")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('(//div[h2[contains(., "Considerações finais")]]|h2[contains(., "Considerações finais")])/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "post_content ")]/p[not(preceding::h2[contains(text(), "Especificações Técnicas")])]//text()[not(starts-with(normalize-space(.), "–") or contains(., "Disponível nas plataformas:") or mark)]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
