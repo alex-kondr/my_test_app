@@ -16,10 +16,10 @@ agent = agents.FUDZILLA_US
 # agent = agents.TEST
 reload = 1
 
-# name: 27
-# author: 29
-# concl: 8
-# exc: 31
+# name: 9
+# author: 30
+# concl: 0
+# exc: 34
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
