@@ -12,7 +12,9 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
+
+        if ' vs. ' not in title:
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     if revs:
         offset = context.get('offset', 0) + 5
@@ -22,7 +24,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' Review: ')[0].replace(' put to the test', '').replace(' previewed', '').replace(' reviewed', '').replace(' Reviewed', '').replace(' review', '').replace(' tested', '').strip()
+    product.name = context['title'].split(' Review: ')[0].split(' Review - ')[0].replace(' put to the test', '').replace(' previewed', '').replace(' reviewed', '').replace(' Reviewed', '').replace(' review', '').replace(' Sample Tested', '').replace(' tested', '').replace(' Preview', '').replace(' Review', '').replace(' getestet', '').replace(' im Test', '').replace('The fastest ', '').replace(', more tests', '').strip()
     product.ssid = context['url'].split('-')[0].split('/')[-1]
     product.category = 'Tech'
 
@@ -62,26 +64,24 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('(//div[@class="itemFullText"]|//div[@class="itemFullText"]/strong)/text()').string(multiple=True)
 
-    if excerpt:
-        if conclusion:
-            excerpt = excerpt.replace(conclusion, '').strip()
+    if excerpt and conclusion:
+        excerpt = excerpt.replace(conclusion, '').strip()
 
+    pages = data.xpath('//div[@id="article-index"]//a[not(contains(@href, "showall="))]')
+    for page in pages:
+        title = page.xpath("text()").string()
+        url = page.xpath("@href").string()
+        review.add_property(type="pages", value=dict(url=url, title=title))
 
-        pages = data.xpath('//div[@id="article-index"]//a[not(contains(@href, "showall="))]')
-        if pages:
-            for page in pages:
-                title = page.xpath("text()").string()
-                url = page.xpath("@href").string()
-                review.add_property(type="pages", value=dict(url=url, title=title))
+    if pages:
+        session.do(Request(url, use='curl', force_charset='utf-8', max_age=0), process_lastpage, dict(review=review, product=product, excerpt=excerpt))
 
-            session.do(Request(url, use='curl', force_charset='utf-8', max_age=0), process_lastpage, dict(context, review=review, product=product, excerpt=excerpt))
+    elif excerpt:
+        review.add_property(type='excerpt', value=excerpt)
 
-        else:
-            review.add_property(type='excerpt', value=excerpt)
+        product.reviews.append(review)
 
-            product.reviews.append(review)
-
-            session.emit(product)
+        session.emit(product)
 
 
 def process_lastpage(data, context, session):
@@ -89,13 +89,13 @@ def process_lastpage(data, context, session):
 
     conclusion = data.xpath('//div[@class="itemFullText"]//p//text()[not(regexp:test(., "customers can get |Amazon"))]').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('(//div[@class="itemFullText"]|//div[@class="itemFullText"]/strong)/text()').string(multiple=True)
+        conclusion = data.xpath('(//div[@class="itemFullText"]|//div[@class="itemFullText"]/strong)/text()[not(regexp:test(., "Test:"))]').string(multiple=True)
 
     if conclusion:
-        if 'Conclusion' in conclusion:
-            context['excerpt'] += conclusion.split('Conclusion')[0]
+        if 'Conclusion' in conclusion or 'Fazit:' in conclusion:
+            context['excerpt'] += conclusion.split('Conclusion')[0].split('Fazit:')[0]
 
-            conclusion = conclusion.split('Conclusion')[-1].strip(' +-:')
+            conclusion = conclusion.split('Conclusion')[-1].split('Fazit:')[-1].strip(' +-:')
 
         review.add_property(type='conclusion', value=conclusion)
 
