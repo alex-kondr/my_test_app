@@ -30,7 +30,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=6000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://www.belsimpel.nl/API/vergelijk/v1.4/WebSearch?resultaattype=hardware_only', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Handy', cat_id='hardware_only'))
     session.queue(Request('https://www.belsimpel.nl/API/vergelijk/v1.4/WebSearch?resultaattype=accessory_only', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Zubehör', cat_id='accessory_only'))
     session.queue(Request('https://www.belsimpel.nl/API/vergelijk/v1.4/WebSearch?resultaattype=tablet_only', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Tablets', cat_id='tablet_only'))
@@ -48,7 +48,7 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod['hardware'].get('review', {}).get('number_of_reviews', {}).get('raw')
         if revs_cnt and revs_cnt > 0:
-            session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS), process_product, dict(context, name=name, url=url, ssid=ssid))
+            session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS, max_age=0), process_product, dict(context, name=name, url=url, ssid=ssid))
 
     next_page = page_data.get('settings', {}).get('pagination', {}).get('convenience_pages', {}).get('next_page', {}).get('value')
     if next_page:
@@ -142,12 +142,13 @@ def process_reviews(data, context, session):
         title = rev.get('review', {}).get('title')
         excerpt = rev.get('review', {}).get('description')
         if excerpt:
-            review.title = title
+            if title:
+                review.title = remove_emoji(title).strip()
         elif title:
             excerpt = title
 
         if excerpt:
-            excerpt = remove_emoji(excerpt).strip()
+            excerpt = remove_emoji(excerpt).replace('\n', ''). replace('\r', '').strip()
             if excerpt:
                 review.add_property(type="excerpt", value=excerpt)
 
