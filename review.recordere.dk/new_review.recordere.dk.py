@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.queue(Request('https://www.recordere.dk/tests/'), process_revlist, dict())
+    session.queue(Request('https://www.recordere.dk/tests/', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -11,11 +11,12 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath("text()").string()
         url = rev.xpath("@href").string()
-        session.queue(Request(url), process_review, dict(title=title, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, url=url))
+
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(" – ")[0].replace('TEST: ', '').replace('Test: ', '').replace('test: ', '').replace('SLUT: ', '').replace('Spilanmeldelse: ', '').strip()
+    product.name = context['title'].split(" – ")[0].replace('MINI-TEST: ', '').replace('TEST: ', '').replace('Test: ', '').replace('test: ', '').replace('SLUT: ', '').replace('Spilanmeldelse: ', '').replace('TEST ', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('test-', '')
     product.category = 'Teknologi'
 
@@ -53,7 +54,7 @@ def process_review(data, context, session):
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.strip(' +-*.:;•,–')
+            pro = pro.replace('N/A', '').strip(' +-*.:;•,–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -61,7 +62,7 @@ def process_review(data, context, session):
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.strip(' +-*.:;•,–')
+            con = con.replace('N/A', '').strip(' +-*.:;•,–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
@@ -69,11 +70,11 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h4[regexp:test(., "Konklusion")]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h4[regexp:test(., "Konklusion")][last()]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h4[contains(., "Samlet set")]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h4[contains(., "Samlet set")][last()]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h3[regexp:test(., "Konklusion")]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h3[regexp:test(., "Konklusion")][last()]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d"))]//text()').string(multiple=True)
 
     if conclusion and not summary:
         summary = data.xpath('//div[@class="lets-review-block__conclusion"]//text()').string(multiple=True)

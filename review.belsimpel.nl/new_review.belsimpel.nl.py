@@ -3,7 +3,7 @@ from models.products import *
 import simplejson
 import re
 
-OPTIONS = "--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0' -H 'Accept: */*' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: deflate' -H 'Authorization: Bearer 8Xx6L7ihhWOMurLNFyTXbBdhugwkIkL+dknQOkmXbZKj9ylV7PdtBkWpoVF98jtTDxSuOfFI0r9GvfrI9EzAKKZ3pUWIeCUQImUClck3cAv6De+KbSYhNlR0yDgNl8/XNDoKSHtYd9gmuiLtLSdRyfuH/4QCor+Z4iLFsClLAXFGp4PTcLlNbagyzT/46+BuCDwa+8VMqotV03TpCV3HJj1Jp8qVDRpr2abK9j1GieR+k7t7uyUK4a9KBdSh7/qOhdufzRsGrNz+E63UJa+6SM6llpVEFU7JFLws60BcTWg72WNk4MBBS9ceSTyRCsmbl1aK8e0=' -H 'Cookie: PHPSESSID=4bde1dee360fc68f350ee5c05cbdac1b; ABST=ABST.68b069c557de23.61518738; ab_store=36770b6008803620afbaef246afe6897; pref=sentry%2Clanguage_and_country%2Cshopping_cart%2Cauthentication%2Cimages%2Cfavourites%2Cabs%2Cgoogle_analytics%2Cpixels%2Cgoogle_analytics_remarketing'"
+OPTIONS = "--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0' -H 'Accept: */*' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: deflate' -H 'Authorization: Bearer /ThRhan8cu7XSosr4xI3fjPMTtDpTjNHRh1gS2ZRpckECJAtDsrCSMwZCz6su9YIgea0r/JQI3/YsFnCE7vRm5ivzXTKNCClRx7/LiCgx4S2jUrzm9Rg+cD4zw+nNCdaaXYoxEkP7TjQRgF+ybWVo3auJXBXZEVWVOc8qAxlqnQlaFJCS25rtKvi6HFdgJG+ECzoF2vcIH7DUjzwKN5b6aOwsfM7szSkkYZYiwv2S9OCeCfTSUlbSszrwBp9RhN+1tdl6Uj6nvOVNFLzVISysMQ3cN4mjDZj554f5Q4uqF6qJM3TbokOMD+BUQWe/M2bhc5wvY0=' -H 'Cookie: PHPSESSID=4bde1dee360fc68f350ee5c05cbdac1b; ABST=ABST.68b069c557de23.61518738; ab_store=36770b6008803620afbaef246afe6897; pref=sentry%2Clanguage_and_country%2Cshopping_cart%2Cauthentication%2Cimages%2Cfavourites%2Cabs%2Cgoogle_analytics%2Cpixels%2Cgoogle_analytics_remarketing'"
 
 def remove_emoji(string):
     emoji_pattern = re.compile("["
@@ -30,7 +30,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
     session.queue(Request('https://www.belsimpel.nl/API/vergelijk/v1.4/WebSearch?resultaattype=hardware_only', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Handy', cat_id='hardware_only'))
     session.queue(Request('https://www.belsimpel.nl/API/vergelijk/v1.4/WebSearch?resultaattype=accessory_only', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Zubehör', cat_id='accessory_only'))
     session.queue(Request('https://www.belsimpel.nl/API/vergelijk/v1.4/WebSearch?resultaattype=tablet_only', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Tablets', cat_id='tablet_only'))

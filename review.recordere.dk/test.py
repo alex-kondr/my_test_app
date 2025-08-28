@@ -16,6 +16,9 @@ agent = agents.RECORDERE_DK_DK
 # agent = agents.TEST
 reload = 1
 
+# name: 4
+# pros/cons: 0
+# exc: 1
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
