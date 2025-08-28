@@ -21,7 +21,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.worldwidestereo.com/', max_age=0), process_frontpage, dict())
 
 
