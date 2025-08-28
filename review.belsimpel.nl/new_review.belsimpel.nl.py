@@ -3,7 +3,7 @@ from models.products import *
 import simplejson
 import re
 
-OPTIONS = "--compressed -H 'Accept: application/json, text/plain, */*' -H 'Accept-Encoding: deflate' -H 'Authorization: Bearer aIOLgoDmhm99twwcogk0kUM0WrUEYd5+gtP0IS+k+0CBJe8YyCn9r241PWzEOpd6bC/ZRjDqfk/n0H+g5zowMbu7wK5DqT2qxl2785RXPnjoE0X5ZsVHKXNmEb0L/HXGpNsduQ+CB/Tc/LY9UpIT2W4Vf3M+L2gsLKwidJl05YY9lTlKwjpGp6i/DyQvvtS4zYLNXAH5XBOkVI41c7pZPwQF9xh+Y9pnTlyKdyDJNBpSDYOVJC/7DIKS9qk5ALVuiia5z7EAZB0TkzR8VhfbwstQJ3Hu7hoSIgwa6RDo3ROz0pQPL7nD85P132KCoYc4QxtGams=' -H 'Cookie: PHPSESSID=4bde1dee360fc68f350ee5c05cbdac1b; ABST=ABST.68b069c557de23.61518738; ab_store=36770b6008803620afbaef246afe6897; pref=sentry%2Clanguage_and_country%2Cshopping_cart%2Cauthentication%2Cimages%2Cfavourites%2Cabs%2Cgoogle_analytics%2Cpixels%2Cgoogle_analytics_remarketing'"
+OPTIONS = "--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0' -H 'Accept: */*' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: deflate' -H 'Authorization: Bearer 8Xx6L7ihhWOMurLNFyTXbBdhugwkIkL+dknQOkmXbZKj9ylV7PdtBkWpoVF98jtTDxSuOfFI0r9GvfrI9EzAKKZ3pUWIeCUQImUClck3cAv6De+KbSYhNlR0yDgNl8/XNDoKSHtYd9gmuiLtLSdRyfuH/4QCor+Z4iLFsClLAXFGp4PTcLlNbagyzT/46+BuCDwa+8VMqotV03TpCV3HJj1Jp8qVDRpr2abK9j1GieR+k7t7uyUK4a9KBdSh7/qOhdufzRsGrNz+E63UJa+6SM6llpVEFU7JFLws60BcTWg72WNk4MBBS9ceSTyRCsmbl1aK8e0=' -H 'Cookie: PHPSESSID=4bde1dee360fc68f350ee5c05cbdac1b; ABST=ABST.68b069c557de23.61518738; ab_store=36770b6008803620afbaef246afe6897; pref=sentry%2Clanguage_and_country%2Cshopping_cart%2Cauthentication%2Cimages%2Cfavourites%2Cabs%2Cgoogle_analytics%2Cpixels%2Cgoogle_analytics_remarketing'"
 
 def remove_emoji(string):
     emoji_pattern = re.compile("["
