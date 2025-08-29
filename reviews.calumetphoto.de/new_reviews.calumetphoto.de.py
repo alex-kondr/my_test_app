@@ -76,7 +76,7 @@ def process_category(data, context, session):
 def process_prodlist(data, context, session):
     strip_namespace(data)
 
-    prods = data.xpath('//a[contains(@class, "card product-box")]')
+    prods = data.xpath('//a[contains(@class, "card")]')
     for prod in prods:
         name = prod.xpath('.//div[contains(@class, "product-name")]//text()').string()
         url = prod.xpath('@href').string()
