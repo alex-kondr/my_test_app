@@ -115,7 +115,7 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
         else:
             excerpt = title
 
-        if excerpt:
+        if excerpt and '(Ursprünglich erschienen auf influenster.com)' not in excerpt:
             excerpt = excerpt.replace('\n', '').replace('\r', '').replace('\t', '').strip()
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
