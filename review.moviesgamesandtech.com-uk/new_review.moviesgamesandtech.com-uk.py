@@ -112,6 +112,10 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
+    summary = data.xpath('//div[contains(@class, "single_subtitle")]/div[contains(@class, "block-inner")]/p//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
     conclusion = data.xpath('//h2[regexp:test(., "Conclusion|Verdict|Final Thoughts")]/following-sibling::p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[(strong|b)[regexp:test(., "Conclusion|Verdict|Final Thoughts")]]/following-sibling::p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
@@ -131,7 +135,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//p[contains(., "Conclusion:")]/preceding-sibling::p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "block-inner")]/p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "block-inner") and not(parent::div[contains(@class, "single_subtitle")])]/p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
 
     if excerpt:
         if conclusion:

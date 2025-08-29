@@ -3,7 +3,6 @@ from models.products import *
 import simplejson
 import re
 
-OPTIONS = "--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:142.0) Gecko/20100101 Firefox/142.0' -H 'Accept: */*' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: deflate' -H 'Authorization: Bearer sNwyPNK99inB57bez5vr9v0FcxBzkPXZjSUgbu+Aye90+BXkbeBUV0+YG2L/YFSMY7mGVQYxt1C3oRMtzzreTbZyl7gqFCaXfPboxH5niQxR4p/Be1giV/StJstZP+ktqaXpkt+Gva6Mt+nX+9N/2M3RoLPnYgt0uOmPezMfDy8NIC1pUBzLjeLhqhShf4ypgfEaMtva0e5nZzr7bfJu9aqi2L7N9tkEjxqvzobmwkMcoUfcXU3KJNzoMNpCpX5B3JwTW/UdGruOY26KtwdW6uFOo3KkwZ4Hfwl3RfMUamTiy3SkTWgF2L4TYzxYeZrWqfdYMHs=' -H 'Cookie: PHPSESSID=4bde1dee360fc68f350ee5c05cbdac1b; ABST=ABST.68b069c557de23.61518738; ab_store=36770b6008803620afbaef246afe6897; pref=sentry%2Clanguage_and_country%2Cshopping_cart%2Cauthentication%2Cimages%2Cfavourites%2Cabs%2Cgoogle_analytics%2Cpixels%2Cgoogle_analytics_remarketing; bs_viewed_product_ids=%7B%22162224%22%3A%7B%22id%22%3A162224%2C%22deleted%22%3Afalse%2C%22viewed%22%3A%5B1756443279669%5D%7D%2C%22172643%22%3A%7B%22id%22%3A172643%2C%22deleted%22%3Afalse%2C%22viewed%22%3A%5B1756443525123%2C1756444247391%5D%7D%7D'"
 
 def remove_emoji(string):
     emoji_pattern = re.compile("["
@@ -30,10 +29,20 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
-    session.queue(Request('https://www.belsimpel.nl/API/vergelijk/v1.4/WebSearch?resultaattype=hardware_only', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Handy', cat_id='hardware_only'))
-    session.queue(Request('https://www.belsimpel.nl/API/vergelijk/v1.4/WebSearch?resultaattype=accessory_only', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Zubehör', cat_id='accessory_only'))
-    session.queue(Request('https://www.belsimpel.nl/API/vergelijk/v1.4/WebSearch?resultaattype=tablet_only', use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Tablets', cat_id='tablet_only'))
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.queue(Request('https://www.gomibo.de/tablet', use='curl', force_charset='utf-8'), process_token, dict())
+
+
+def process_token(data, context, session):
+    auth_token = data.xpath('//script[contains(., "executeDataRequest")]/text()').string()
+    if auth_token:
+        auth_token = auth_token.split('executeDataRequest("')[-1].split(', "')[-1].split('");')[0]
+
+        options = "--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0' -H 'Authorization: Bearer {}'".format(auth_token)
+
+        session.queue(Request('https://www.gomibo.de/API/vergelijk/v1.4/WebSearch?resultaattype=hardware_only', use='curl', options=options, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Handy', cat_id='hardware_only', options=options))
+        session.queue(Request('https://www.gomibo.de/API/vergelijk/v1.4/WebSearch?resultaattype=accessory_only', use='curl', options=options, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Zubehör', cat_id='accessory_only', options=options))
+        session.queue(Request('https://www.gomibo.de/API/vergelijk/v1.4/WebSearch?resultaattype=tablet_only', use='curl', options=options, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Tablets', cat_id='tablet_only', options=options))
 
 
 def process_prodlist(data, context, session):
@@ -43,17 +52,17 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod['pretty_name']
         link = prod['hardware']['url_path']
-        url = 'https://www.belsimpel.nl' + link
+        url = 'https://www.gomibo.de' + link
         ssid = prod['hardware']['id']
 
         revs_cnt = prod['hardware'].get('review', {}).get('number_of_reviews', {}).get('raw')
         if revs_cnt and revs_cnt > 0:
-            session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS, max_age=0), process_product, dict(context, name=name, url=url, ssid=ssid))
+            session.queue(Request(url, use='curl', force_charset='utf-8', options=context['options']), process_product, dict(context, name=name, url=url, ssid=ssid))
 
     next_page = page_data.get('settings', {}).get('pagination', {}).get('convenience_pages', {}).get('next_page', {}).get('value')
     if next_page:
-        next_url = 'https://www.belsimpel.nl/API/vergelijk/v1.4/WebSearch?resultaattype={}&pagina={}'.format(context['cat_id'], next_page)
-        session.queue(Request(next_url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_prodlist, dict(context))
+        next_url = 'https://www.gomibo.de/API/vergelijk/v1.4/WebSearch?resultaattype={}&pagina={}'.format(context['cat_id'], next_page)
+        session.queue(Request(next_url, use='curl', options=context['options'], force_charset='utf-8', max_age=0), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -73,12 +82,15 @@ def process_product(data, context, session):
 
     mpn = prod_json.get('sku')
     if mpn:
-        product.add_property(type='id.manufacturer', value=mpn.strip(' \t'))
+        product.add_property(type='id.manufacturer', value=mpn)
 
-    revs_token = session.do(Request('https://www.belsimpel.nl/API/vergelijk/Exchange?response_type=token&client_id=nl.belsimpel.public.web&scope=Reviews', max_age=0), process_review_token, dict())
+    revs_token = session.do(Request('https://www.gomibo.de/API/vergelijk/Exchange?response_type=token&client_id=nl.belsimpel.public.web&scope=Reviews', max_age=0), process_review_token, dict())
     options = "-H 'Authorization: Bearer {}'".format(revs_token)
-    revs_url = 'https://www.belsimpel.nl/API/Reviews/v1.0/ProductReviews/{}?locale=nl_NL'.format(product.ssid)
+    revs_url = 'https://www.gomibo.de/API/Reviews/v1.0/ProductReviews/{}?locale=de_DE'.format(product.ssid)
     session.do(Request(revs_url, use='curl', force_charset='utf-8', options=options, max_age=0), process_reviews, dict(product=product, revs_url=revs_url, options=options))
+
+    if product.reviews:
+        session.emit(product)
 
 
 def process_reviews(data, context, session):
@@ -106,24 +118,6 @@ def process_reviews(data, context, session):
             if author:
                 review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = rev.get('review', {}).get('label', []).get('score', {}).get('raw')
-        if grade_overall:
-            review.grades.append(Grade(type="overall", value=float(grade_overall), best=10.0))
-
-        pros = rev.get('review', {}).get('plus_points', [])
-        if pros:
-            for pro in pros:
-                pro = remove_emoji(pro).strip(' \\.+-')
-                if pro:
-                    review.add_property(type='pros', value=pro)
-
-        cons = rev.get('review', {}).get('min_points', [])
-        if cons:
-            for con in cons:
-                con = remove_emoji(con).strip(' \\.+-')
-                if con:
-                    review.add_property(type='cons', value=con)
-
         is_recommended = rev.get('review', {}).get('is_would_recommend')
         if is_recommended:
             review.add_property(type='is_recommended', value=True)
@@ -136,6 +130,24 @@ def process_reviews(data, context, session):
         if hlp_no:
             review.add_property(type='not_helpful_votes', value=int(hlp_no))
 
+        pros = rev.get('review', {}).get('plus_points', [])
+        if pros:
+            for pro in pros:
+                pro = remove_emoji(pro).strip(' +-.*')
+                if pro and pro.lower() != 'siehe oben' and len(pro) > 2:
+                    review.add_property(type='pros', value=pro)
+
+        cons = rev.get('review', {}).get('min_points', [])
+        if cons:
+            for con in cons:
+                con = remove_emoji(con).strip(' +-.*')
+                if con and con.lower() != 'keiner' and len(con) > 2:
+                    review.add_property(type='cons', value=con)
+
+        grade_overall = rev.get('review', {}).get('label', []).get('score', {}).get('raw')
+        if grade_overall:
+            review.grades.append(Grade(type="overall", value=float(grade_overall), best=10.0))
+
         title = rev.get('review', {}).get('title')
         excerpt = rev.get('review', {}).get('description')
         if excerpt:
@@ -145,7 +157,7 @@ def process_reviews(data, context, session):
             excerpt = title
 
         if excerpt:
-            excerpt = remove_emoji(excerpt).replace('\n', ''). replace('\r', '').strip(' +-.')
+            excerpt = remove_emoji(excerpt).replace('\r\n', ' ').replace('  ', ' ').strip(' +-*.')
             if len(excerpt) > 2:
                 review.add_property(type="excerpt", value=excerpt)
 
@@ -154,11 +166,8 @@ def process_reviews(data, context, session):
     page = revs_json.get('data', {}).get('pagination', {}).get('page_current')
     last_page = revs_json.get('data', {}).get('pagination', {}).get('page_max')
     if page < last_page:
-        revs_url = context['revs_url'] + '&page={}'.format(page+1)
+        revs_url = context['revs_url'] + '&page={}'.format(str(page+1))
         session.do(Request(revs_url, use='curl', force_charset='utf-8', options=context['options'], max_age=0), process_reviews, dict(context))
-
-    elif product.reviews:
-        session.emit(product)
 
 
 def process_review_token(data, context, session):
