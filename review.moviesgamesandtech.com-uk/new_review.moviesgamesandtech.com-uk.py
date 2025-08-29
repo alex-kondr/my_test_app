@@ -122,7 +122,7 @@ def process_review(data, context, session):
     if not conclusion:
         conclusion = data.xpath('//p[(strong|b)[regexp:test(., "Conclusion|Verdict|Final Thoughts")]]/following-sibling::div/p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//div[contains(@class, "review-summary-content")]/p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
+        conclusion = data.xpath('//div[contains(@class, "review-summary-content")]/p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:|Rating:|Reviewed on the ", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[contains(., "Conclusion:")]/following-sibling::p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
 

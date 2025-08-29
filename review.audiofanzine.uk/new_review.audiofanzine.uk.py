@@ -48,7 +48,7 @@ def strip_namespace(data):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://en.audiofanzine.com/', max_age=0), process_frontpage, {})
+    session.queue(Request('https://en.audiofanzine.com/'), process_frontpage, {})
 
 
 def process_frontpage(data, context, session):
@@ -67,10 +67,10 @@ def process_frontpage(data, context, session):
                 for sub_cat1 in sub_cats1:
                     sub_name1 = sub_cat1.xpath('text()').string()
                     url = sub_cat1.xpath('@href').string()
-                    session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+                    session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
             else:
                 url = sub_cat.xpath('div/a/@href').string()
-                session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + sub_name))
+                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
 def process_prodlist(data, context, session):
@@ -83,11 +83,11 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.xpath('.//div[contains(@class, "rating")]//span[contains(@class, "count")]/text()').string() or prod.xpath('.//span[@class="mark"]/text()').string()
         if revs_cnt and int(revs_cnt.split()[0].strip('( )')) > 0:
-            session.queue(Request(url, max_age=0), process_product, dict(context, name=name, url=url))
+            session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, max_age=0), process_prodlist, dict(context))
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -100,13 +100,13 @@ def process_product(data, context, session):
     product.category = context['cat'].replace('…', '').replace('Other gear|', '')
     product.ssid = data.xpath('//input[@id="product_id"]/@value').string() or product.url.split('/')[-1]
 
-    user_revs = data.xpath('//div/a[contains(text(), "Reviews")]/@href').string()
+    user_revs = data.xpath('//div/a[contains(@title, "reviews")]/@href').string()
     if user_revs:
-        session.do(Request(user_revs, max_age=0), process_reviews, dict(product=product))
+        session.do(Request(user_revs), process_reviews, dict(product=product))
 
-    pro_revs = data.xpath('//div[contains(@class, "product-review ")]/a/@href').string()
+    pro_revs = data.xpath('//div[contains(@class, "product-review")]/a/@href').string()
     if pro_revs:
-        session.do(Request(pro_revs, max_age=0), process_review, dict(product=product))
+        session.do(Request(pro_revs), process_review, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -167,7 +167,7 @@ def process_reviews(data, context, session):
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.do(Request(next_url, max_age=0), process_reviews, dict(product=product))
+        session.do(Request(next_url), process_reviews, dict(product=product))
 
     elif product.reviews:
         session.emit(product)

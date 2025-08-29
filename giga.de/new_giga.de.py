@@ -94,6 +94,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     grades = data.xpath('(//*[regexp:test(text(), "^[^:]+: \d\d Prozent")][not(contains(., "@context") or contains(., "Gesamt"))]/parent::ul)[last()]/li//text()[not(contains(., "Gesamt:"))]').strings()
     if not grades:
         grades = data.xpath('//*[regexp:test(text(), "^[^:]+: \d\d Prozent")][not(contains(., "@context") or contains(., "Gesamt"))]/text()[not(contains(., "Gesamt:"))]').strings()
+
     for grade in grades:
         name, grade = grade.split(':')
         name = name.strip()
@@ -102,6 +103,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     if not grades:
         grades = data.xpath('//div[@class="table-responsive"]/table[contains(., "Kategorie")]/tr[not(contains(., "Kategorie"))]')
+        if not grades:
+            grades = data.xpath('//div[contains(@class, "table__responsive")]/table[contains(., "Kategorie")]/tr[not(contains(., "Kategorie"))]')
+
         for grade in grades:
             grade_name, grade_val = grade.xpath('.//text()').strings()
             if grade_name and grade_val and grade_val.strip().isdigit():
@@ -181,43 +185,43 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h3[contains(., "Persönliches Fazit:")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Spezifikationen") or contains(., "Facebook") or contains(., "Twitter") or figure or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+    conclusion = data.xpath('//h3[contains(., "Persönliches Fazit:")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Spezifikationen") or contains(., "Facebook") or contains(., "Twitter") or figure or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure or contains(., "wertung") or contains(., "US-Dollar") or contains(., "nicht gefallen") or contains(., "Wertung:") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure or contains(., "wertung") or contains(., "US-Dollar") or contains(., "nicht gefallen") or contains(., "Wertung:") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Fazit zur")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Fazit zur")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Testfazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or contains(., "Preis") or contains(., "Links") or contains(., "für die Unterstützung!") or figure or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Testfazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or contains(., "Preis") or contains(., "Links") or contains(., "für die Unterstützung!") or figure or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//div[@class="topic"]/p[not(contains(., "Wertung:") or contains(., "Pro:") or contains(., "Contra:") or contains(., "Gut zu wissen:") or contains(., "Vorteile:") or contains(., "Nachteile:") or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        conclusion = data.xpath('//div[@class="topic"]/p[not(contains(., "Wertung:") or contains(., "Pro:") or contains(., "Contra:") or contains(., "Gut zu wissen:") or contains(., "Vorteile:") or contains(., "Nachteile:") or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('(//p[contains(., "Fazit:")]|//p[contains(., "Fazit:")]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or contains(., "Disclosure:") or (contains(., "Gesamt") or .//strong[contains(., "Alles Weitere dazu")]))])//text()').string(multiple=True)
+        conclusion = data.xpath('(//p[contains(., "Fazit:")]|//p[contains(., "Fazit:")]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or contains(., "Disclosure:") or (contains(., "Gesamt") or .//strong[contains(., "Alles Weitere dazu")]) or @class="taboola-text")])//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="update"]/p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p/strong[contains(., "Mein persönliches Fazit")]/parent::p//text()').string(multiple=True)
 
-    excerpt = data.xpath('//h3[contains(., "Persönliches Fazit:")]/preceding-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or figure)]//text()').string(multiple=True)
+    excerpt = data.xpath('//h3[contains(., "Persönliches Fazit:")]/preceding-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or figure or @class="taboola-text")]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[contains(., "Fazit zur")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Fazit zur")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[contains(., "Testfazit")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Testfazit")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@data-init="toc-box"]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or em or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@data-init="toc-box"]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or em or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//p[contains(., "Fazit:")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="topic"]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or em or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="topic"]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or em or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="update"]/following-sibling::p[not(@class|figure|em or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="update"]/following-sibling::p[not(@class|figure|em or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[@class="p1"][not(contains(., "Nächste Seite:") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//p[@class="p1"][not(contains(., "Nächste Seite:") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//body//p[not(figure or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//body//p[not(figure or @class or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "alice-layout-article-body")]/p[not(figure or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or contains(., "Auf Seite") or contains(., "Vorteile:") or contains(., "Nachteile:") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "alice-layout-article-body")]/p[not(figure or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or contains(., "Auf Seite") or contains(., "Vorteile:") or contains(., "Nachteile:") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
 
     if excerpt and summary:
         excerpt = excerpt.replace(summary, '').strip()
@@ -293,6 +297,9 @@ def process_review_next(data, context, session):
 
         if not grades:
             grades = data.xpath('//div[@class="table-responsive"]/table[contains(., "Kategorie")]/tr[not(contains(., "Kategorie"))]')
+            if not grades:
+                grades = data.xpath('//div[contains(@class, "table__responsive")]/table[contains(., "Kategorie")]/tr[not(contains(., "Kategorie"))]')
+
             for grade in grades:
                 grade_name, grade_val = grade.xpath('.//text()').strings()
                 if grade_name and grade_val:
@@ -361,43 +368,43 @@ def process_review_next(data, context, session):
                 review.add_property(type='cons', value=con_)
 
         if not conclusion:
-            conclusion = data.xpath('//h3[contains(., "Persönliches Fazit:")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Spezifikationen") or contains(., "Facebook") or contains(., "Twitter") or figure or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            conclusion = data.xpath('//h3[contains(., "Persönliches Fazit:")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Spezifikationen") or contains(., "Facebook") or contains(., "Twitter") or figure or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not conclusion:
-            conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure or contains(., "wertung") or contains(., "US-Dollar") or contains(., "nicht gefallen") or contains(., "Wertung:") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            conclusion = data.xpath('//h2[contains(., "Fazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure or contains(., "wertung") or contains(., "US-Dollar") or contains(., "nicht gefallen") or contains(., "Wertung:") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not conclusion:
-            conclusion = data.xpath('//h2[contains(., "Fazit zur")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            conclusion = data.xpath('//h2[contains(., "Fazit zur")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or figure or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not conclusion:
-            conclusion = data.xpath('//h2[contains(., "Testfazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or contains(., "Preis") or contains(., "Links") or contains(., "für die Unterstützung!") or figure or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            conclusion = data.xpath('//h2[contains(., "Testfazit")]/following-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or contains(., "Facebook") or contains(., "Twitter") or contains(., "Preis") or contains(., "Links") or contains(., "für die Unterstützung!") or figure or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not conclusion:
-            conclusion = data.xpath('//div[@class="topic"]/p[not(contains(., "Wertung:") or contains(., "Pro:") or contains(., "Contra:") or contains(., "Gut zu wissen:") or contains(., "Vorteile:") or contains(., "Nachteile:") or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            conclusion = data.xpath('//div[@class="topic"]/p[not(contains(., "Wertung:") or contains(., "Pro:") or contains(., "Contra:") or contains(., "Gut zu wissen:") or contains(., "Vorteile:") or contains(., "Nachteile:") or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not conclusion:
-            conclusion = data.xpath('(//p[contains(., "Fazit:")]|//p[contains(., "Fazit:")]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or contains(., "Disclosure:") or (contains(., "Gesamt") or .//strong[contains(., "Alles Weitere dazu")]))])//text()').string(multiple=True)
+            conclusion = data.xpath('(//p[contains(., "Fazit:")]|//p[contains(., "Fazit:")]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or contains(., "Disclosure:") or (contains(., "Gesamt") or .//strong[contains(., "Alles Weitere dazu")]) or @class="taboola-text")])//text()').string(multiple=True)
         if not conclusion:
             conclusion = data.xpath('//div[@class="update"]/p//text()').string(multiple=True)
         if not conclusion:
             conclusion = data.xpath('//p/strong[contains(., "Mein persönliches Fazit")]/parent::p//text()').string(multiple=True)
 
-        excerpt = data.xpath('//h3[contains(., "Persönliches Fazit:")]/preceding-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or figure)]//text()').string(multiple=True)
+        excerpt = data.xpath('//h3[contains(., "Persönliches Fazit:")]/preceding-sibling::p[not(contains(., "Vorteile") or contains(., "Nachteile") or contains(., "Gesamt:") or contains(., "Einzelwertung") or figure or @class="taboola-text")]//text()').string(multiple=True)
         if not excerpt:
-            excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            excerpt = data.xpath('//h2[contains(., "Fazit")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not excerpt:
-            excerpt = data.xpath('//h2[contains(., "Fazit zur")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            excerpt = data.xpath('//h2[contains(., "Fazit zur")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not excerpt:
-            excerpt = data.xpath('//h2[contains(., "Testfazit")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            excerpt = data.xpath('//h2[contains(., "Testfazit")]/preceding-sibling::p[not(contains(., "Euro UVP") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not excerpt:
-            excerpt = data.xpath('//div[@data-init="toc-box"]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or em or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            excerpt = data.xpath('//div[@data-init="toc-box"]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or em or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not excerpt:
             excerpt = data.xpath('//p[contains(., "Fazit:")]/preceding-sibling::p//text()').string(multiple=True)
         if not excerpt:
-            excerpt = data.xpath('//div[@class="topic"]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or em or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            excerpt = data.xpath('//div[@class="topic"]/following-sibling::p[not(contains(., "Facebook") or contains(., "Twitter") or em or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not excerpt:
-            excerpt = data.xpath('//div[@class="update"]/following-sibling::p[not(@class|figure|em or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            excerpt = data.xpath('//div[@class="update"]/following-sibling::p[not(@class|figure|em or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not excerpt:
-            excerpt = data.xpath('//p[@class="p1"][not(contains(., "Nächste Seite:") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            excerpt = data.xpath('//p[@class="p1"][not(contains(., "Nächste Seite:") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not excerpt:
-            excerpt = data.xpath('//body//p[not(figure or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            excerpt = data.xpath('//body//p[not(figure or @class or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
         if not excerpt:
-            excerpt = data.xpath('//div[contains(@class, "alice-layout-article-body")]/p[not(figure or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or contains(., "Auf Seite") or contains(., "Vorteile:") or contains(., "Nachteile:") or .//strong[contains(., "Alles Weitere dazu")])]//text()').string(multiple=True)
+            excerpt = data.xpath('//div[contains(@class, "alice-layout-article-body")]/p[not(figure or contains(., "Gesamt") or contains(., "Facebook") or contains(., "Twitter") or contains(., "Auf Seite") or contains(., "Vorteile:") or contains(., "Nachteile:") or .//strong[contains(., "Alles Weitere dazu")] or @class="taboola-text")]//text()').string(multiple=True)
 
         if excerpt and len(excerpt) > 10:
             context['excerpt'] += ' ' + excerpt
