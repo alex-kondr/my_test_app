@@ -70,16 +70,18 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h4[regexp:test(., "Konklusion")][last()]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h4[regexp:test(., "Konklusion")][last()]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d") or preceding-sibling::h4[contains(., "Pris")])]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h4[contains(., "Samlet set")][last()]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h4[contains(., "Samlet set")][last()]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d") or preceding-sibling::h4[contains(., "Pris")])]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h3[regexp:test(., "Konklusion")][last()]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h3[regexp:test(., "Konklusion")][last()]/following-sibling::p[not(regexp:test(., "Karakter:|Pris:|Score \d") or preceding-sibling::h3[contains(., "Pris")])]//text()').string(multiple=True)
 
     if conclusion and not summary:
         summary = data.xpath('//div[@class="lets-review-block__conclusion"]//text()').string(multiple=True)
         if summary:
             review.add_property(type='summary', value=summary)
+
+            conclusion = conclusion.replace(summary, '').strip()
 
     if not conclusion:
         conclusion = data.xpath('//div[@class="lets-review-block__conclusion"]//text()').string(multiple=True)
