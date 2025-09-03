@@ -1,7 +1,7 @@
 from agent import *
 from models.products import *
 import simplejson
-from datetime import datetime
+import re
 
 
 XCAT = ['Our Services', 'Sales & Deals', 'Fun Reads']
@@ -17,6 +17,30 @@ def strip_namespace(data):
         out.write(line + "\n")
     out.close()
     os.rename(tmp, data.content_file)
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def run(context, session):
@@ -40,13 +64,13 @@ def process_frontpage(data, context, session):
                     cats3 = cat2.xpath('.//div[contains(@class, "submenu__row-linklist")][li[regexp:test(., "by type", "i")]]//a')
                 if not cats3:
                     cat_id = cat2.xpath('.//a[contains(@class, "view-all")]/@href').string().split('/')[-1]
-                    url = 'https://5949mp.a.searchspring.io/api/search/search.json?&domain=https%3A%2F%2Fwww.worldwidestereo.com%2Fcollections%2F{}&siteId=5949mp&resultsPerPage=500&resultsFormat=native&page=1'.format(cat_id)
+                    url = 'https://5949mp.a.searchspring.io/api/search/search.json?&domain=https%3A%2F%2Fwww.worldwidestereo.com%2Fcollections%2F{}&siteId=5949mp&resultsPerPage=24&resultsFormat=native&page=1'.format(cat_id)
                     session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name1+'|'+name2))
 
                 for cat3 in cats3:
                     name3 = cat3.xpath('span/text()').string()
                     cat_id = cat3.xpath('@href').string().split('/')[-1]
-                    url = 'https://5949mp.a.searchspring.io/api/search/search.json?&domain=https%3A%2F%2Fwww.worldwidestereo.com%2Fcollections%2F{}&siteId=5949mp&resultsPerPage=500&resultsFormat=native&page=1'.format(cat_id)
+                    url = 'https://5949mp.a.searchspring.io/api/search/search.json?&domain=https%3A%2F%2Fwww.worldwidestereo.com%2Fcollections%2F{}&siteId=5949mp&resultsPerPage=24&resultsFormat=native&page=1'.format(cat_id)
                     session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name1+'|'+name2+'|'+name3))
 
 
@@ -58,16 +82,15 @@ def process_prodlist(data, context, session):
         name = prod.get('name')
         brand = prod.get('brand')
         url = 'https://www.worldwidestereo.com' + prod.get('url')
-        ssid = str(prod['ss_id'])
         sku = str(prod.get('sku'))
 
         revs_cnt = prod.get('ratingCount')
         if revs_cnt and int(revs_cnt) > 0:
-            session.queue(Request(url, max_age=0), process_product, dict(context, name=name, url=url, brand=brand, ssid=ssid, sku=sku))
+            session.queue(Request(url, max_age=0), process_product, dict(context, name=name, url=url, brand=brand, sku=sku))
 
     prods_cnt = prods_json.get('pagination', {}).get('totalResults')
     if prods_cnt:
-        offset = context.get('offset', 0) + 500
+        offset = context.get('offset', 0) + 24
         if offset < prods_cnt:
             next_page = context.get("page", 1) + 1
             next_url = data.response_url + '&page=' + str(next_page)
@@ -79,11 +102,11 @@ def process_product(data, context, session):
 
     product = Product()
     product.name = context["name"]
-    product.manufacturer = context['brand']
-    product.category = context['cat']
     product.url = context['url']
-    product.ssid = context["ssid"]
+    product.ssid = data.xpath('//input[@name="product-id"]/@value').string()
     product.sku = context["sku"]
+    product.category = context['cat']
+    product.manufacturer = context['brand']
 
     mpn = data.xpath('//span[@class="variant-model"]/text()').string()
     if mpn:
@@ -95,8 +118,8 @@ def process_product(data, context, session):
         ean = ean.split()[-1]
         product.add_property(type='id.ean', value=ean)
 
-    revs_url = 'https://cdn-ws.turnto.com/v5/sitedata/Pc3PJ9gWzHTBZetsite/{}/d/review/en_US/0/10000/%7B%7D/true/false/?'.format(product.sku)
-    session.do(Request(revs_url, max_age=0), process_reviews, dict(context, product=product))
+    revs_url = 'https://fast.a.klaviyo.com/reviews/api/client_reviews/{}/?company_id=HPkiQj&limit=5&offset=0&sort=3&type=reviews'.format(product.ssid)
+    session.do(Request(revs_url, max_age=0, force_charset='utf-8'), process_reviews, dict(context, product=product))
 
 
 def process_reviews(data, context, session):
@@ -107,55 +130,45 @@ def process_reviews(data, context, session):
     revs = revs_json.get('reviews', [])
     for rev in revs:
         review = Review()
-        review.title = rev.get('title')
-        review.url = product.url
         review.type = 'user'
+        review.url = product.url
         review.ssid = str(rev['id'])
 
-        date = rev.get('dateCreatedMillis')
+        date = rev.get('created_at')
         if date:
-            date = int(date) / 1000
-            review.date = datetime.utcfromtimestamp(date).strftime("%Y-%m-%d")
+            review.date = date.split('T')[0]
 
-        author = rev.get('user')
+        author = rev.get('author')
         if author:
-            author_name = author.get('nickName')
-            if not author_name:
-                author_name = author.get('firstName', '') + ' ' + author.get('lastName', '')
-
-            author_ssid = author.get('id')
-            if author_name.strip() and author_ssid:
-                review.authors.append(Person(name=author_name, ssid=str(author_ssid)))
-            elif author_name.strip():
-                review.authors.append(Person(name=author_name, ssid=author_name))
+            review.authors.append(Person(name=author, ssid=author))
 
         grade_overall = rev.get('rating')
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        is_verified = rev.get('purchaseDateFormatted')
+        is_verified = rev.get('verified')
         if is_verified:
             review.add_property(type='is_verified_buyer', value=True)
 
-        is_recommended = rev.get('recommended')
-        if is_recommended:
-            review.add_property(value=True, type='is_recommended')
+        title = rev.get('title')
+        excerpt = rev.get('content')
+        if excerpt and remove_emoji(excerpt).strip() > 2:
+            review.title = title
+        else:
+            excerpt = title
 
-        hlp_yes = rev.get('upVotes')
-        if hlp_yes:
-            review.add_property(type='helpful_votes', value=int(hlp_yes))
-
-        hlp_no = rev.get('downVotes')
-        if hlp_no:
-            review.add_property(type='helpful_votes', value=int(hlp_no))
-
-        excerpt = rev.get('text')
         if excerpt:
-            excerpt = excerpt.replace('<br />', '').encode("ascii", errors="ignore").strip()
-            if excerpt:
+            excerpt = remove_emoji(excerpt).replace('<br />', '').strip()
+            if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
                 product.reviews.append(review)
 
-    if product.reviews:
+    revs_cnt = revs_json.get('filtered_count', 0)
+    offset = context.get('offset', 0) + 5
+    if offset < revs_cnt:
+        revs_url = 'https://fast.a.klaviyo.com/reviews/api/client_reviews/{ssid}/?company_id=HPkiQj&limit=5&offset={offset}&sort=3&type=reviews'.format(ssid=product.ssid, offset=offset)
+        session.do(Request(revs_url, max_age=0, force_charset='utf-8'), process_reviews, dict(product=product, offset=offset))
+
+    elif product.reviews:
         session.emit(product)

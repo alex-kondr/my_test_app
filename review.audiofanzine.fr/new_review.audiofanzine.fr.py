@@ -97,9 +97,9 @@ def process_product(data, context, session):
 
     product = Product()
     product.name = context['name']
-    product.ssid = data.xpath('//input[@id="product_id"]/@value').string() or product.url.split('/')[-1]
     product.url = context['url'].strip('/')
-    product.category = context['cat'].replace('…', '')
+    product.ssid = data.xpath('//input[@id="product_id"]/@value').string() or product.url.split('/')[-1]
+    product.category = context['cat'].replace('…', '').replace('...', '')
     product.manufacturer = data.xpath('//li//span[contains(., "Fabricant :")]/following-sibling::span/text()').string()
 
     user_revs = data.xpath('//a[contains(text(), "Avis")]/@href').string()
@@ -204,14 +204,20 @@ def process_pro_review(data, context, session):
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     pros = data.xpath('//ul[@class="plus"]/li/text()').strings()
+    if not pros:
+        pros = data.xpath('//p[contains(text(), "Les Plus")]/following-sibling::p[1][starts-with(normalize-space(.), "+")]//text()').strings()
+
     for pro in pros:
-        pro = remove_emoji(serialize_text(pro)).strip()
+        pro = remove_emoji(serialize_text(pro)).strip(' ….+-–')
         if pro:
             review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//ul[@class="minus"]/li/text()').strings()
+    if not cons:
+        cons = data.xpath('//p[contains(text(), "Les moins")]/following-sibling::p[1][starts-with(normalize-space(.), "-") or starts-with(normalize-space(.), "–")]//text()').strings()
+
     for con in cons:
-        con = remove_emoji(serialize_text(con)).strip()
+        con = remove_emoji(serialize_text(con)).strip(' ….+-–')
         if con:
             review.add_property(type='cons', value=con)
 
@@ -221,7 +227,7 @@ def process_pro_review(data, context, session):
         if summary:
             review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(@id, "conclusion")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(@id, "conclusion")]/following-sibling::p[not(regexp:test(., "Les Plus|Les moins") or starts-with(normalize-space(.), "+") or starts-with(normalize-space(.), "-") or starts-with(normalize-space(.), "–"))]//text()').string(multiple=True)
     if conclusion:
         conclusion = re.sub(r'<.*?>', '', (remove_emoji(serialize_text(conclusion)).strip()))
         if conclusion:
