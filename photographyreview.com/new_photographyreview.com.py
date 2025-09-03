@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('http://www.photographyreview.com/'), process_frontpage, {})
 
 
@@ -22,7 +22,7 @@ def process_prodlist(data, context, session):
         product.name = prod.xpath(".//li/a/text()").string()
         product.url = prod.xpath(".//li/a/@href").string()
         product.ssid = product.url.split('/')[-1].replace('.html', '')
-        product.category = context['cat'].capitalize()
+        product.category = context['cat'].title()
 
         revs_cnt = prod.xpath('.//li/font[contains(text(), " Reviews")]/text()').string()
         if revs_cnt and int(revs_cnt.replace(' Reviews', '')) > 0:
@@ -52,8 +52,8 @@ def process_reviews(data, context, session):
 
         grades = rev.xpath('.//tr[td[@class="rate"] and td[contains(., "RATING")]]')
         for grade in grades:
-            grade_name = grade.xpath('td[contains(., "RATING")]//text()').string(multiple=True).rsplit(' ', 1)[0].strip().capitalize()
-            grade_val = grade.xpath('td[@class="rate"]/text()').string()
+            grade_name = grade.xpath('td[contains(., "RATING")]//text()').string(multiple=True).replace('RATING', '').strip().title()
+            grade_val = grade.xpath('td[@class="rate"]//text()').string(multiple=True)
             if 'overall' in grade_name.lower():
                 review.grades.append(Grade(type='overall', value=float(grade_val), best=5.0))
             else:
@@ -64,6 +64,7 @@ def process_reviews(data, context, session):
             excerpt = rev.xpath('.//div[@class="user-review-header" and position() > 4]//text()').string(multiple=True)
 
         if excerpt:
+            excerpt = excerpt.replace(u'\uFEFF', '').strip()
             review.add_property(type='excerpt', value=excerpt)
 
             review.ssid = review.digest() if author else review.digest(excerpt)
