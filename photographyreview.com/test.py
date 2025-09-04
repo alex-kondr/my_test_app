@@ -16,6 +16,8 @@ agent = agents.PHOTOGRAPHYREVIEW
 # agent = agents.TEST
 reload = 1
 
+# name: 2+
+# exc: 10+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

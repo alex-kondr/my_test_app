@@ -17,10 +17,10 @@ agent = agents.AUDIOFANZINE_FR
 reload = 1
 
 # name: 2
-# cat: 20
-# pros/cons: 16
-# con: 1
-# exc: 166
+# cat: 0
+# pros/cons: 3
+# con: 0
+# exc: 169
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

@@ -16,6 +16,8 @@ agent = agents.WORLD_WIDE_STEREO_US
 # agent = agents.TEST
 reload = 1
 
+# name: 90
+# exc: 1
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

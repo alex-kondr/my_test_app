@@ -24,7 +24,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split('teszt')[0].split('beszámoló')[0].split('bemutató')[0].strip()
+    product.name = context['title'].split(' teszt ')[0].split(' beszámoló ')[0].split(' bemutató ')[0].strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = 'Technika'
@@ -52,7 +52,7 @@ def process_review(data, context, session):
         if grade != '' and re.search('^[0-9]*$', grade):
             review.grades.append(Grade(type='overall', value=float(grade), best=100.0))
 
-    pros = data.xpath("//p[contains(text(), 'Pro') or contains(text(), 'legjobb')]//following-sibling::ul[1]//li//text()")
+    pros = data.xpath("//p[regexp:test(b/text(), 'Pro|pozitívumai|legjobb')]//following-sibling::ul[1]//li//text()")
     if not pros:
         pros = data.xpath("//p//b[contains(text(), 'Pro') or contains(text(), 'legjobb')]//parent::p//following-sibling::ul[1]//li//text()")
     if not pros:
@@ -65,7 +65,7 @@ def process_review(data, context, session):
             if len(pro) > 2:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath("//p[contains(text(), 'Kontra') or contains(text(), 'leggyengébb')]//following-sibling::ul[1]//li//text()")
+    cons = data.xpath("//p[regexp:test(b/text(), 'Kontra|leggyengébb|negatívumai')]//following-sibling::ul[1]//li//text()")
     if not cons:
         cons = data.xpath("//p//b[contains(text(), 'Kontra') or contains(text(), 'leggyengébb')]//parent::p//following-sibling::ul[1]//li//text()")
     if not cons:
@@ -87,24 +87,24 @@ def process_review(data, context, session):
         summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath("//p[contains(.//text(), 'Összegzés:')]//following-sibling::p[1]//text()").string(multiple=True)
+    conclusion = data.xpath("//p[regexp:test(b/text(), 'Összegzés:|Összefoglalás')]//following-sibling::p[1]//text()").string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath("//p[contains(.//text(), 'Összegzés:')]//preceding-sibling::p//text()").string(multiple=True)
+    excerpt = data.xpath("//p[regexp:test(b/text(), 'Összegzés:|Összefoglalás')]//preceding-sibling::p[not(contains(., '[+]') or contains(., '[-]'))]//text()").string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath("//p[contains(text(), 'Pro') or contains(text(), 'legjobb')]//preceding-sibling::p//text()").string(multiple=True)
+        excerpt = data.xpath("//p[regexp:test(b/text(), 'Kontra|leggyengébb|negatívumai|Pro|pozitívumai|legjobb')]/preceding-sibling::p//text()").string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="content-body"]/p[not(regexp:test(., "Ami tetszett:|Ami nem tetszett:|Tételes értékelés:"))]//text()').string(multiple=True)
 
     pages = data.xpath('(//li[a[@data-toggle="dropdown"]])[1]/div/a')
-    for page in pages:
-        title = page.xpath(".//text()").string()
-        page_url = page.xpath("@href").string()
-        review.add_property(type='pages', value=dict(url=page_url, title=title))
+    if pages and len(pages) > 1:
+        for page in pages:
+            title = page.xpath(".//text()").string()
+            page_url = page.xpath("@href").string()
+            review.add_property(type='pages', value=dict(url=page_url, title=title))
 
-    if pages:
         session.do(Request(page_url), process_lastpage, dict(excerpt=excerpt, product=product, review=review))
 
     elif excerpt:
@@ -125,7 +125,7 @@ def process_lastpage(data, context, session):
         if grade != '' and re.search('^[0-9]*$', grade):
             review.grades.append(Grade(type='overall', value=float(grade), best=100.0))
 
-    pros = data.xpath("//p[contains(text(), 'Pro') or contains(text(), 'legjobb')]//following-sibling::ul[1]//li//text()")
+    pros = data.xpath("//p[regexp:test(b/text(), 'Pro|pozitívumai|legjobb')]//following-sibling::ul[1]//li//text()")
     if not pros:
         pros = data.xpath("//p//b[contains(text(), 'Pro') or contains(text(), 'legjobb')]//parent::p//following-sibling::ul[1]//li//text()")
     if not pros:
@@ -138,7 +138,7 @@ def process_lastpage(data, context, session):
             if len(pro) > 2:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath("//p[contains(text(), 'Kontra') or contains(text(), 'leggyengébb')]//following-sibling::ul[1]//li//text()")
+    cons = data.xpath("//p[regexp:test(b/text(), 'Kontra|leggyengébb|negatívumai')]//following-sibling::ul[1]//li//text()")
     if not cons:
         cons = data.xpath("//p//b[contains(text(), 'Kontra') or contains(text(), 'leggyengébb')]//parent::p//following-sibling::ul[1]//li//text()")
     if not cons:
@@ -155,12 +155,7 @@ def process_lastpage(data, context, session):
             if len(con) > 2:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath("//p[contains(.//text(), 'Összefoglalás')]//following-sibling::p[1]//text()").string(multiple=True)
-    if not conclusion:
-        conclusion = data.xpath("//div[@class='content-body']//p//text()").string(multiple=True)
-    if not conclusion:
-        conclusion = data.xpath('//div[@class="content-body"]/p[not(regexp:test(., "Ami tetszett:|Ami nem tetszett:|Tételes értékelés:"))]//text()').string(multiple=True)
-
+    conclusion = data.xpath('//div[@class="content-body"]/p[not(regexp:test(., "Ami tetszett:|Ami nem tetszett:|Tételes értékelés:"))]//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace('Pro:', '').replace('Kontra:', '').replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)

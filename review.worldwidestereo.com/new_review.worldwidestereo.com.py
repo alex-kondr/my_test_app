@@ -2,7 +2,10 @@ from agent import *
 from models.products import *
 import simplejson
 import re
+import HTMLParser
 
+
+h = HTMLParser.HTMLParser()
 
 XCAT = ['Our Services', 'Sales & Deals', 'Fun Reads']
 
@@ -59,19 +62,20 @@ def process_frontpage(data, context, session):
             cats2 = cat1.xpath('.//ul[contains(@class, "menu--second-level")]/li/details')
             for cat2 in cats2:
                 name2 = cat2.xpath('summary/span[contains(@class, "item-title")]/text()').string()
+
                 cats3 = cat2.xpath('.//li[regexp:test(., "shop by category", "i")]/following-sibling::ul[1]/li/a')
                 if not cats3:
                     cats3 = cat2.xpath('.//div[contains(@class, "submenu__row-linklist")][li[regexp:test(., "by type", "i")]]//a')
                 if not cats3:
                     cat_id = cat2.xpath('.//a[contains(@class, "view-all")]/@href').string().split('/')[-1]
-                    url = 'https://5949mp.a.searchspring.io/api/search/search.json?&domain=https%3A%2F%2Fwww.worldwidestereo.com%2Fcollections%2F{}&siteId=5949mp&resultsPerPage=24&resultsFormat=native&page=1'.format(cat_id)
-                    session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name1+'|'+name2))
+                    cat_url = 'https://5949mp.a.searchspring.io/api/search/search.json?&domain=https%3A%2F%2Fwww.worldwidestereo.com%2Fcollections%2F{}&siteId=5949mp&resultsPerPage=24&resultsFormat=native'.format(cat_id)
+                    session.queue(Request(cat_url, max_age=0), process_prodlist, dict(cat=name1+'|'+name2, cat_url=cat_url))
 
                 for cat3 in cats3:
                     name3 = cat3.xpath('span/text()').string()
                     cat_id = cat3.xpath('@href').string().split('/')[-1]
-                    url = 'https://5949mp.a.searchspring.io/api/search/search.json?&domain=https%3A%2F%2Fwww.worldwidestereo.com%2Fcollections%2F{}&siteId=5949mp&resultsPerPage=24&resultsFormat=native&page=1'.format(cat_id)
-                    session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name1+'|'+name2+'|'+name3))
+                    cat_url = 'https://5949mp.a.searchspring.io/api/search/search.json?&domain=https%3A%2F%2Fwww.worldwidestereo.com%2Fcollections%2F{}&siteId=5949mp&resultsPerPage=24&resultsFormat=native'.format(cat_id)
+                    session.queue(Request(cat_url, max_age=0), process_prodlist, dict(cat=name1+'|'+name2+'|'+name3, cat_url=cat_url))
 
 
 def process_prodlist(data, context, session):
@@ -93,7 +97,7 @@ def process_prodlist(data, context, session):
         offset = context.get('offset', 0) + 24
         if offset < prods_cnt:
             next_page = context.get("page", 1) + 1
-            next_url = data.response_url + '&page=' + str(next_page)
+            next_url = context['cat_url'] + '&page=' + str(next_page)
             session.queue(Request(next_url, max_age=0), process_prodlist, dict(context, page=next_page, offset=offset))
 
 
@@ -101,12 +105,12 @@ def process_product(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context["name"]
+    product.name = h.unescape(context["name"])
     product.url = context['url']
     product.ssid = data.xpath('//input[@name="product-id"]/@value').string()
     product.sku = context["sku"]
     product.category = context['cat']
-    product.manufacturer = context['brand']
+    product.manufacturer = h.unescape(context['brand'])
 
     mpn = data.xpath('//span[@class="variant-model"]/text()').string()
     if mpn:
@@ -153,7 +157,8 @@ def process_reviews(data, context, session):
         title = rev.get('title')
         excerpt = rev.get('content')
         if excerpt and remove_emoji(excerpt).strip() > 2:
-            review.title = title
+            if title:
+                review.title = remove_emoji(title).strip()
         else:
             excerpt = title
 
