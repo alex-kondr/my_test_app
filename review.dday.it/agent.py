@@ -61,12 +61,31 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
-        
 
-    grades = data.xpath('//div[@class="score"]')
-    print(grades)
-    
-    
+    summary = data.xpath('//section[contains(@class, "summary")]/h2//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    excerpt = data.xpath('//section[@class="article-body"]/section/p//text()').string(multiple=True)
+
+    rev_info = data.xpath('//script[contains(., "product_id")]/text()').string()
+    if rev_info:
+        rev_id = rev_info.split("?product_id=")[-1].split("'")[0]
+        next_url = 'https://www.dday.it/review_snippet?product_id={}'.format(rev_id)
+        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_review_next, dict(product=product, review=review, excerpt=excerpt))
+
+    elif excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
+
+
+def process_review_next(data, context, session):
+    strip_namespace(data)
+
+    review = context['review']
 
     grade_overall = data.xpath('//li[contains(@class, "total")]/div[@class="score"]//text()').string()
     if grade_overall:
@@ -94,18 +113,14 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//section[contains(@class, "summary")]/h2//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
     conclusion = data.xpath('//section[@class="product-summary"]/div[h3]/p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//section[@class="article-body"]/section/p//text()').string(multiple=True)
-    if excerpt:
-        review.add_property(type='excerpt', value=excerpt)
+    if context['excerpt']:
+        review.add_property(type='excerpt', value=context['excerpt'])
 
+        product = context['product']
         product.reviews.append(review)
 
         session.emit(product)

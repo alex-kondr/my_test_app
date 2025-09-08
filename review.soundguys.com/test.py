@@ -16,10 +16,10 @@ agent = agents.SOUND_GUYS_US
 # agent = agents.TEST
 reload = 1
 
-# name: 4+
+# name: 3+
 # con: 1+
-# exc: 2
-# log: 12
+# exc: 1+
+# log: 0
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

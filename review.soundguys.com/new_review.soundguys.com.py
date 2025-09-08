@@ -4,7 +4,7 @@ import simplejson
 
 
 def run(context, session):
-    session.queue(Request("https://live-soundguys.pantheonsite.io/wp-json/api/pages/reviews/?page=1&per_page=12&ts=1757325656635", max_age=0), process_revlist, dict())
+    session.queue(Request("https://live-soundguys.pantheonsite.io/wp-json/api/pages/reviews/?page=1&per_page=12&ts=1757325656635", use='curl', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -20,13 +20,13 @@ def process_revlist(data, context, session):
         author = rev.get('author_name')
         author_ssid = rev.get('author_slug')
         url = "https://www.soundguys.com/" + rev.get('slug') + "/"
-        session.queue(Request(url, max_age=0), process_review, dict(title=title, ssid=ssid, cat=cat, author=author, author_ssid=author_ssid, url=url))
+        session.queue(Request(url, use='curl', max_age=0), process_review, dict(title=title, ssid=ssid, cat=cat, author=author, author_ssid=author_ssid, url=url))
 
     next_page = context.get('page', 1) + 1
     page_cnt = revs_json.get('data', {}).get('content', {}).get('total_pages', 0)
     if next_page <= page_cnt:
         next_url = "https://live-soundguys.pantheonsite.io/wp-json/api/pages/reviews/?page={}&per_page=12&ts=1757325656635".format(next_page)
-        session.queue(Request(next_url, max_age=0), process_revlist, dict(page=next_page))
+        session.queue(Request(next_url, use='curl', max_age=0), process_revlist, dict(page=next_page))
 
 
 def process_review(data, context, session):
