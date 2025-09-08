@@ -16,7 +16,7 @@ def strip_namespace(data):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.dday.it/prove', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -62,11 +62,13 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    summary = data.xpath('//section[contains(@class, "summary")]/h2//text()').string(multiple=True)
+    summary = data.xpath('//h2[not(@class)]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
     excerpt = data.xpath('//section[@class="article-body"]/section/p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//section[@class="article-body"]/p//text()').string(multiple=True)
 
     rev_info = data.xpath('//script[contains(., "product_id")]/text()').string()
     if rev_info:

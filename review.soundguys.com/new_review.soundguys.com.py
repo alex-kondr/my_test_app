@@ -4,6 +4,7 @@ import simplejson
 
 
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request("https://live-soundguys.pantheonsite.io/wp-json/api/pages/reviews/?page=1&per_page=12&ts=1757325656635", use='curl', max_age=0), process_revlist, dict())
 
 
