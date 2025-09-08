@@ -2,6 +2,10 @@ from agent import *
 from models.products import *
 import simplejson
 import re
+import HTMLParser
+
+
+h = HTMLParser.HTMLParser()
 
 
 def strip_namespace(data):
@@ -142,7 +146,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.get('review')
         if excerpt:
-            excerpt = remove_emoji(excerpt).replace('\n', '').replace('\t', '').replace('\r', '').strip(' +-*.;•–')
+            excerpt = remove_emoji(h.unescape(excerpt)).replace('\n', '').replace('\t', '').replace('\r', '').strip(' +-*.;•–')
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
