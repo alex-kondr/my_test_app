@@ -18,7 +18,7 @@ reload = 1
 
 # name: 6+
 # concl: 5
-# exc: 249
+# exc: 241
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
