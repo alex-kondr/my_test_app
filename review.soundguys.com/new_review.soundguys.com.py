@@ -5,7 +5,7 @@ import simplejson
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request("https://live-soundguys.pantheonsite.io/wp-json/api/pages/reviews/?page=1&per_page=12&ts=1757325656635", use='curl', max_age=0), process_revlist, dict())
+    session.queue(Request("https://live-soundguys.pantheonsite.io/wp-json/api/pages/reviews/?page=1&per_page=12&ts=1757358626858", use='curl', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -26,7 +26,7 @@ def process_revlist(data, context, session):
     next_page = context.get('page', 1) + 1
     page_cnt = revs_json.get('data', {}).get('content', {}).get('total_pages', 0)
     if next_page <= page_cnt:
-        next_url = "https://live-soundguys.pantheonsite.io/wp-json/api/pages/reviews/?page={}&per_page=12&ts=1757325656635".format(next_page)
+        next_url = "https://live-soundguys.pantheonsite.io/wp-json/api/pages/reviews/?page={}&per_page=12&ts=1757358626858".format(next_page)
         session.queue(Request(next_url, use='curl', max_age=0), process_revlist, dict(page=next_page))
 
 
@@ -87,7 +87,9 @@ def process_review(data, context, session):
         summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type="summary", value=summary)
 
-    conclusion = data.xpath('//div[h2[contains(., "What should you get")]]/following-sibling::div/p//text()').string(multiple=True)
+    conclusion = data.xpath('(//div[h2[contains(., "What should you get")]]|//div[h2[contains(., "What should you get")]]/following-sibling::div)/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('(//div[h2[contains(., "Conclusion")]]|//div[h2[contains(., "Conclusion")]]/following-sibling::div)/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="e_Jh"]//text()').string(multiple=True)
 
@@ -95,9 +97,11 @@ def process_review(data, context, session):
         conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[h2[contains(., "What should you get")]]/preceding-sibling::div/p//text()').string(multiple=True)
+    excerpt = data.xpath('//div[h2[contains(., "What should you get")]]/preceding-sibling::div/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@data-content-wrapper="true"]/div/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[h2[contains(., "Conclusion")]]/preceding-sibling::div/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@data-content-wrapper="true"]/div/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').strip()

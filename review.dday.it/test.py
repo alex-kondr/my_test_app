@@ -16,8 +16,9 @@ agent = agents.DDAY_IT_IT
 # agent = agents.TEST
 reload = 1
 
-# name: 460
-# exc: 106
+# name: 238
+# exc: 6
+# https://www.dday.it/redazione/11156/beats-studio-in-prova-quelle-veramente-false.html
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

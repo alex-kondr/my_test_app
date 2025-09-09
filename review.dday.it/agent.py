@@ -39,7 +39,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(', la recensione')[0].split(', recensione')[0].split(' in prova: ')[0].strip()
+    product.name = context['title'].split(', la recensione')[0].split(', recensione')[0].split(' in prova: ')[0].split(', test ')[0].replace('. La recensione', '').replace('Recensione: ', '').replace('Recensione ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('-recensione', '')
     product.category = context['cat']
@@ -64,6 +64,7 @@ def process_review(data, context, session):
 
     summary = data.xpath('//h2[not(@class)]//text()').string(multiple=True)
     if summary:
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     excerpt = data.xpath('//section[@class="article-body"]/section/p//text()').string(multiple=True)
@@ -77,6 +78,13 @@ def process_review(data, context, session):
         session.do(Request(next_url, use='curl', force_charset='utf-8'), process_review_next, dict(product=product, review=review, excerpt=excerpt))
 
     elif excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
+        if 'Conclusioni:' in excerpt:
+            excerpt, conclusion = excerpt.split('Conclusioni: ')
+            conclusion = conclusion.strip()
+            conclusion = conclusion[0].title() + conclusion[1:]
+            review.add_property(type='conclusion', value=conclusion)
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
@@ -103,7 +111,7 @@ def process_review_next(data, context, session):
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.strip(' +-*.:;•,–')
+            pro = pro.replace(u'\uFEFF', '').strip(' +-*.:;•,–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -111,16 +119,18 @@ def process_review_next(data, context, session):
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.strip(' +-*.:;•,–')
+            con = con.replace(u'\uFEFF', '').strip(' +-*.:;•,–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//section[@class="product-summary"]/div[h3]/p//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     if context['excerpt']:
-        review.add_property(type='excerpt', value=context['excerpt'])
+        excerpt = context['excerpt'].replace(u'\uFEFF', '').strip()
+        review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
         product.reviews.append(review)
