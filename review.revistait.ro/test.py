@@ -16,6 +16,8 @@ agent = agents.REVISTA_IT_RO
 # agent = agents.TEST
 reload = 1
 
+# name: 5+
+# exc: 0
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

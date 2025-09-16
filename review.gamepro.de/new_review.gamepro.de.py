@@ -47,7 +47,7 @@ def process_review(data, context, session):
 
     platforms = data.xpath('//p[@class="info" and contains(., "Release:")]/text()').string()
     if platforms:
-        platforms = re.findall(r'\(.+\)', platforms)
+        platforms = re.findall(r'\([\w\d ]+\)', platforms)
         if platforms:
             product.category += '|' + '/'.join([platform.strip('( )') for platform in platforms]).replace(', ', '/')
 

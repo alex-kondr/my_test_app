@@ -223,7 +223,7 @@ class TestProduct:
             self.error_name.append(temp_name)
 
     def test_product_category(self, xproduct_names: list[str]=[]) -> None:
-        xproduct_names_category = self.xproduct_names_category + xproduct_names
+        xproduct_names_category = self.xproduct_names_category + xproduct_names + [')', '(']
 
         properties = self.product.get("product", {}).get("properties", [])
         category = [property.get("value") for property in properties if property.get("type") == "category"][0]

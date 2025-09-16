@@ -71,7 +71,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = context['title'].replace(u'\uFEFF', '').strip()
     review.url = product.url
     review.ssid = product.ssid
 

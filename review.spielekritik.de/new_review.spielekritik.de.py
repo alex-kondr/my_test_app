@@ -21,9 +21,9 @@ def process_revlist(data, context, session):
 
     revs = data.xpath('//h3[contains(@class, "title")]/a')
     for rev in revs:
-        name = rev.xpath("text()").string(multiple=True)
+        title = rev.xpath("text()").string(multiple=True)
         url = rev.xpath("@href").string(multiple=True)
-        session.queue(Request(url, use="curl", max_age=0), process_review, dict(name=name, url=url))
+        session.queue(Request(url, use="curl", max_age=0), process_review, dict(title=title, url=url))
 
     next_url = data.xpath("//span[@id='blog-pager-older-link']/a//@href").string()
     if next_url:
@@ -38,14 +38,17 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = context['name'].split('.', 1)[-1].split("Rezension:")[-1].strip()
     product.url = context['url']
     product.ssid = context['url'].split('/')[-1].replace('.html', '')
     product.category = 'Spiele'
 
+    product.name = context['title'].split('.', 1)[-1].split("Rezension:")[-1].strip(' .')
+    if len(product.name) < 2:
+        product.name = context['title']
+
     review = Review()
     review.type = 'pro'
-    review.title = context['name']
+    review.title = context['title']
     review.url = product.url
     review.ssid = product.ssid
 
@@ -60,7 +63,12 @@ def process_review(data, context, session):
     excerpt = data.xpath('//div[contains(@class, "entry-content")]//text()').string(multiple=True)
     if excerpt:
         excerpt = re.split(r"Das \d+\. Montagsspielen", excerpt)[0].strip()
-        review.add_property(type='excerpt', value=excerpt)
+
+        if 'Fazit:' in excerpt:
+            excerpt, conclusion = excerpt.split('Fazit:', 1)
+            review.add_property(type='conclusion', value=conclusion.strip())
+
+        review.add_property(type='excerpt', value=excerpt.strip())
 
         product.reviews.append(review)
 
