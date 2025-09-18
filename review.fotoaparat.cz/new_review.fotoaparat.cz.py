@@ -24,10 +24,10 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         return
 
     product = Product()
-    product.name = title.split(' test objektivu ')[-1].replace('Test Full frame kompaktu ', '').replace('Full frame kompakt ', '').replace('Test objektivu ', '').replace('Test ', '').strip()
+    product.name = title.split(' test objektivu ')[-1].split(' - test ')[0].replace('Uživatelský test ', '').replace('Srovnávací test ', '').replace('Test Full frame kompaktu ', '').replace('Full frame kompakt ', '').replace('Test objektivu ', '').replace('Podrobný test bezzrcadlovky ', '').replace('Test zrcadlovky ', '').replace('Praktický test digitální zrcadlovky ', '').replace('FotoTest: ', '').replace('Minitest: ', '').replace('První test ', '').replace('TEST: ', '').replace('Test: ', '').replace('Test ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    product.category = data.xpath('//div[@class="breadcrumbs"]/ul/li[last()]/a//text()').string(multiple=True) or 'Technologie'
+    product.category = data.xpath('//div[@class="breadcrumbs"]/ul/li[not(regexp:test(., "test", "i"))][last()]/a//text()').string(multiple=True) or 'Technologie'
 
     review = Review()
     review.type = 'pro'
@@ -88,6 +88,10 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         session.do(Request(next_page, use='curl', force_charset='utf-8'), process_review_next, dict(excerpt=excerpt, review=review, product=product))
 
     elif excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
+        excerpt = excerpt.replace('<a href="">', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
@@ -136,6 +140,9 @@ def process_review_next(data, context, session):
         excerpt = data.xpath('//div[not(@class)]/p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory"))]//text()').string(multiple=True)
 
     if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         context['excerpt'] += ' ' + excerpt
 
     next_page = data.xpath('//li[@class="pagination-next"]/a/@href').string()
@@ -143,6 +150,10 @@ def process_review_next(data, context, session):
         session.do(Request(next_page, use='curl', force_charset='utf-8'), process_review_next, dict(context, review=review, page=page))
 
     elif context['excerpt']:
+        if conclusion:
+            context['excerpt'] = context['excerpt'].replace(conclusion, '').strip()
+
+        excerpt = context['excerpt'].replace('<a href="">', '').strip()
         review.add_property(type='excerpt', value=context['excerpt'])
 
         product = context['product']

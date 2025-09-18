@@ -16,6 +16,10 @@ agent = agents.FOTOAPARÁT_CZ_CZ
 # agent = agents.TEST
 reload = 1
 
+# name: 30
+# cat: 8
+# concl: 13
+# exc: 648
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
