@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('http://www.fotoaparat.cz/article/subcat/303/1', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -20,6 +20,8 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     title = data.xpath('//h1//text()').string()
+    if not title:
+        return
 
     product = Product()
     product.name = title.split(' test objektivu ')[-1].replace('Test Full frame kompaktu ', '').replace('Full frame kompakt ', '').replace('Test objektivu ', '').replace('Test ', '').strip()
