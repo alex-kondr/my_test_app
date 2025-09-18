@@ -3,6 +3,7 @@ from models.products import *
 
 
 def run(context: dict[str, str], session: Session):
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('http://www.fotoaparat.cz/article/subcat/303/1', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 

@@ -3,6 +3,7 @@ from models.products import *
 
 
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('http://www.fotoaparat.cz/article/subcat/303/1', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -137,7 +138,7 @@ def process_review_next(data, context, session):
 
     next_page = data.xpath('//li[@class="pagination-next"]/a/@href').string()
     if next_page:
-        session.do(Request(next_page, use='curl', force_charset='utf-8'), process_review_next, dict(context, excerpt=excerpt, review=review, page=page))
+        session.do(Request(next_page, use='curl', force_charset='utf-8'), process_review_next, dict(context, review=review, page=page))
 
     elif context['excerpt']:
         review.add_property(type='excerpt', value=context['excerpt'])
