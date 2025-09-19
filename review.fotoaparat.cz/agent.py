@@ -24,7 +24,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = title.split(' test objektivu ')[-1].split(' - test ')[0].replace('Uživatelský test ', '').replace('Srovnávací test ', '').replace('Test Full frame kompaktu ', '').replace('Full frame kompakt ', '').replace('Test objektivu ', '').replace('Podrobný test bezzrcadlovky ', '').replace('Test zrcadlovky ', '').replace('Praktický test digitální zrcadlovky ', '').replace('FotoTest: ', '').replace('Minitest: ', '').replace('První test ', '').replace('TEST: ', '').replace('Test: ', '').replace('Test ', '').strip()
+    product.name = title.split(' test objektivu ')[-1].split(' - test ')[0].replace('Uživatelský test ', '').replace('Srovnávací test ', '').replace('Test Full frame kompaktu ', '').replace('Full frame kompakt ', '').replace('Test objektivu ', '').replace('Podrobný test bezzrcadlovky ', '').replace('Test zrcadlovky ', '').replace('Praktický test digitální zrcadlovky ', '').replace('FotoTest: ', '').replace('Minitest: ', '').replace('První test ', '').replace('TEST: ', '').replace('Test: ', '').replace('Test ', '').replace(' - preview', '').replace('Otestovali jsme objektivy ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = data.xpath('//div[@class="breadcrumbs"]/ul/li[not(regexp:test(., "test", "i"))][last()]/a//text()').string(multiple=True) or 'Technologie'
@@ -46,7 +46,7 @@ def process_review(data, context, session):
 
     pros = data.xpath('//p[strong[contains(., "Klady")]]/following-sibling::p[not(preceding-sibling::p[regexp:test(., "Zápory")] or regexp:test(., "Zápory"))]')
     if not pros:
-        pros = data.xpath('//table[thead/tr/td[contains(., "Dobrý")]]/tbody/tr/td[1]')
+        pros = data.xpath('//table[thead/tr/td[regexp:test(., "Dobrý|Klady")]]/tbody/tr/td[1]')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -57,7 +57,7 @@ def process_review(data, context, session):
 
     cons = data.xpath('//p[contains(., "Zápory")]/following-sibling::p[not(contains(., "Děkuji společnosti"))]')
     if not cons:
-        cons = data.xpath('//table[thead/tr/td[contains(., "Špatný")]]/tbody/tr/td[2]')
+        cons = data.xpath('//table[thead/tr/td[regexp:test(., "Špatný|Zápory")]]/tbody/tr/td[2]')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
@@ -70,16 +70,22 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//p[strong[contains(., "Závěr")]]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//p[strong[contains(., "Závěr")]]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Závěr")]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Závěr")]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[normalize-space(text())="závěr"]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//p[strong[contains(., "Závěr")]]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[not(@class)]/p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Závěr")]/preceding-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[normalize-space(text())="závěr"]/preceding-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[not(@class)]/p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
 
     next_page = data.xpath('//li[@class="pagination-next"]/a/@href').string()
     if next_page:
@@ -108,7 +114,7 @@ def process_review_next(data, context, session):
 
     pros = data.xpath('//p[strong[contains(., "Klady")]]/following-sibling::p[not(preceding-sibling::p[regexp:test(., "Zápory")] or regexp:test(., "Zápory"))]')
     if not pros:
-        pros = data.xpath('//table[thead/tr/td[contains(., "Dobrý")]]/tbody/tr/td[1]')
+        pros = data.xpath('//table[thead/tr/td[regexp:test(., "Dobrý|Klady")]]/tbody/tr/td[1]')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -119,7 +125,7 @@ def process_review_next(data, context, session):
 
     cons = data.xpath('//p[contains(., "Zápory")]/following-sibling::p[not(contains(., "Děkuji společnosti"))]')
     if not cons:
-        cons = data.xpath('//table[thead/tr/td[contains(., "Špatný")]]/tbody/tr/td[2]')
+        cons = data.xpath('//table[thead/tr/td[regexp:test(., "Špatný|Zápory")]]/tbody/tr/td[2]')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
@@ -128,16 +134,22 @@ def process_review_next(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//p[strong[contains(., "Závěr")]]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//p[strong[contains(., "Závěr")]]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Závěr")]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Závěr")]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[normalize-space(text())="závěr"]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//p[strong[contains(., "Závěr")]]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[not(@class)]/p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Závěr")]/preceding-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[normalize-space(text())="závěr"]/preceding-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[not(@class)]/p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti "))]//text()').string(multiple=True)
 
     if excerpt:
         if conclusion:
