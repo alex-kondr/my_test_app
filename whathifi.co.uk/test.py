@@ -16,6 +16,8 @@ agent = agents.WHAT_HIFI
 # agent = agents.TEST
 reload = 1
 
+# name: 1+
+# pros/cons: 1+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

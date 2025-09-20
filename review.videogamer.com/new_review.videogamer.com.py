@@ -1,9 +1,10 @@
 from agent import *
 from models.products import *
+import simplejson
 
 
 def run(context: dict[str, str], session: Session):
-    session.sessionbreakers = [SessionBreak(max_requests=6000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://www.videogamer.com/reviews', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -22,11 +23,14 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 
 def process_review(data: Response, context: dict[str, str], session: Session):
     product = Product()
-    product.name = context['title'].split(' review – ')[0].replace(' review', '').strip()
+    product.name = context['title'].split(' review – ')[0].split(' Review –')[0].replace(' review', '').replace(' Review', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = 'Games'
-    product.manufacturer = data.xpath('//p[strong[contains(., "Developer:")]]/text()').string(multiple=True)
+
+    manufacturer = data.xpath('//p[strong[contains(., "Developer")]]/text()').string(multiple=True)
+    if manufacturer:
+        product.manufacturer = manufacturer.strip(' :')
 
     platforms = data.xpath('//li[@class="platform"]/b/text()').string()
     if platforms:
@@ -36,6 +40,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if genres:
         product.category += '|' + genres.replace(', ', '/')
 
+    product.category = product.category.replace('|Unknown', '')
+
     review = Review()
     review.type = 'pro'
     review.title = context['title']
@@ -43,6 +49,13 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.ssid = product.ssid
 
     date = data.xpath('//div[@class="date"]/time/@datetime').string()
+    if not date:
+        date = data.xpath('//meta[contains(@property, "upload_date")]/@content').string()
+    if not date:
+        rev_json = data.xpath("""//script[contains(., '"reviewBody"')]/text()""").string()
+        if rev_json:
+            date = simplejson.loads(rev_json).get('review', {}).get('datePublished')
+
     if date:
         review.date = date.split('T')[0]
 
@@ -54,9 +67,14 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//div[@class="review--right"]/b/text()').string()
+    grade_overall = data.xpath('//a[@class="summary-rating"]/b/text()').string()
+    if not grade_overall:
+        grade_overall = data.xpath('//div[@class="review--right"]/b/text()').string()
+
     if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+        grade_overall = grade_overall.strip(' -+*.:')
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     pros = data.xpath('//span[@class="yes"]')
     for pro in pros:
@@ -79,6 +97,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[@class="article__body"]/p[not(contains(., "Reviewed on "))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "article__section")]/p[not(contains(., "Reviewed on ") or strong[regexp:test(., "Developer|Publisher|Available on")] or .//a[contains(@href, "review-score")])]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

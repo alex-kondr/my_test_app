@@ -11,7 +11,7 @@ def process_catlist(data, context, session):
     for cat in cats:
         name = cat.xpath('h3/text()').string()
         url = cat.xpath('a/@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(cat=name))
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(cat=name, cat_url=url))
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
@@ -24,7 +24,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
     page = context.get('page', 1)
     if current_page and int(current_page) == page:
         next_page = page + 1
-        next_url = 'https://www.whathifi.com/reviews/page/{}'.format(next_page)
+        next_url = context['cat_url'] + '/page/{}'.format(next_page)
         session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context, page=next_page))
 
 
@@ -63,10 +63,12 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         grade_overall = float(grade_overall.replace('Rating: ', '').split(' out ')[0])
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-    grades = data.xpath('//p[strong[contains(., "SCORES")]]/following-sibling::ul[1]/li')
+    grades = data.xpath('//p[strong[contains(., "SCORES")]]/following-sibling::ul[1]/li[not(contains(., "review"))]')
+    if not grades:
+        grades = data.xpath('//p[strong[contains(., "SCORES")]]/following-sibling::*[regexp:test(., "\w+ \d+$")]')
+
     for grade in grades:
-        grade_name = grade.xpath('strong/text()').string()
-        grade_val = grade.xpath('text()').string()
+        grade_name, grade_val = grade.xpath('.//text()').string(multiple=True).rsplit(' ', 1)
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
 
     pros = data.xpath('//div[h4[contains(., "Pros")]]/ul/li/p')
