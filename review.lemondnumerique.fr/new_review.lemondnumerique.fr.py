@@ -4,7 +4,7 @@ import re
 
 
 def run(context: dict[str, str], session: Session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://lemondenumerique.ouest-france.fr/tests/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -12,7 +12,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
     revs = data.xpath('//h4/a')
     for rev in revs:
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review_short, dict())
+        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review_short, dict(url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -20,17 +20,19 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 
 
 def process_review_short(data: Response, context: dict[str, str], session: Session):
-    prod_name = data.xpath('//p[contains(., "Pour lire l’intégralité de notre")]/a/text()').string()
-    rev_url = data.xpath('//p[contains(., "Pour lire l’intégralité de notre")]/a/@href').string()
-    if rev_url:
-        session.queue(Request(rev_url, use='curl', force_charset='utf-8'), process_review, dict(name=prod_name, url=rev_url))
+    name = data.xpath('//p[contains(., " lire ")]/a/text()').string()
+    url = data.xpath('//p[contains(., " lire ")]/a/@href').string()
+    if url and 'lemondenumerique.ouest-france.fr' in url:
+        session.do(Request(url, use='curl', force_charset='utf-8'), process_review, dict(name=name, url=url))
+    else:
+        process_review(data, context, session)
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):
     title = data.xpath('//h1/text()').string()
 
     product = Product()
-    product.name = (context['name'] or title).split('test du')[-1].split('test de')[-1].strip()
+    product.name = (context.get('name') or title).split('test du')[-1].split('test de')[-1].strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = 'Technologie'
@@ -70,7 +72,6 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     conclusion = data.xpath('//div[@class="avis_test"]//text()[not(contains(., "Notre avis"))]').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
-
 
     excerpt = data.xpath('//div[@class="article-content"]/p[not(contains(., "id=”"))]//text()').string(multiple=True)
     if excerpt:
