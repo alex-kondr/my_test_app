@@ -32,7 +32,7 @@ def process_review(data, context, session):
     title = data.xpath('//h1/text()').string()
 
     product = Product()
-    product.name = (context.get('name') or title).split('test du')[-1].split('test de')[-1].strip()
+    product.name = (context.get('name') or title).split('test du')[-1].split('test de')[-1].replace('test complet du ', '').replace('test complet de la ', '').replace('Test de la ', '').replace('test complet de ', '').replace('Test du ', '').replace('Test de ', '').replace(' : notre Test', '').replace(' testé', '').replace('Test ', '').replace(' en test', '').replace('Tests des ', '').replace('Tests de la ', '').replace('Tests de ', '').replace('Tests matériels ', '').replace('Tests du ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = 'Technologie'
