@@ -14,6 +14,8 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     title = data.xpath('//h1//text()').string(multiple=True)
+    if not title:
+        return
 
     product = Product()
     product.name = title.replace(' review', '').replace(' Review', '').strip()
