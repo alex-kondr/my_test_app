@@ -7,7 +7,7 @@ def run(context: dict[str, str], session: Session):
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
-    revs = data.xpath('//h2/a')
+    revs = data.xpath('//h2/a[not(img)]')
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
@@ -20,7 +20,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 
 def process_review(data: Response, context: dict[str, str], session: Session):
     product = Product()
-    product.name = context['title'].replace(' Review', '').strip()
+    product.name = context['title'].replace(' Review', '').split(' | ')[0].replace(' Tested and Rated', '').replace(' review', '').replace('Review of ', '').strip(' .:')
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
 
     product.url = data.xpath('//a[contains(., "Shop")]/@href').string()
@@ -29,7 +29,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     category = data.xpath('//a[@rel="category tag"]/text()').string()
     if category:
-        product.category = category.replace(' Reviews', '').strip()
+        product.category = category.replace(' Reviews', '').replace('-Reviews', '').strip()
     else:
         product.category = 'Backpacking Gear'
 
@@ -40,14 +40,17 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
+    if not date:
+        date = data.xpath('//p[contains(text(), "Updated ")]/text()').string()
+
     if date:
-        review.date = date.split('T')[0]
+        review.date = date.replace('Updated ', '').split('T')[0].strip(' .')
 
     author = data.xpath('//span[@class="post-meta-author"]//text()').string(multiple=True)
     author_url = data.xpath('//span[@class="post-meta-author"]/a/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-2]
-        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+        review.authors.append(Person(name=author, ssid=author_ssid))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
@@ -84,7 +87,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(., "Recommendation")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2|//h3)[regexp:test(., "Recommendation|The Bottom Line")]/following-sibling::p[not(contains(., "Disclosure:"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
@@ -95,9 +98,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if not conclusion and summary:
         review.add_property(type='conclusion', value=summary)
 
-    excerpt = data.xpath('//h2[contains(., "Recommendation")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2|//h3)[regexp:test(., "Recommendation|The Bottom Line")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="entry"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="entry"]/p[not(contains(., "Disclosure:"))]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

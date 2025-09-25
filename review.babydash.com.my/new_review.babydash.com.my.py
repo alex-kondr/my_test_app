@@ -14,30 +14,26 @@ def process_frontpage(data, context, session):
     cats = data.xpath("//div[@class='top-container']/ol/li//a")
     for cat in cats:
         name = cat.xpath(".//text()").string(multiple=True)
-
-        if not name in XCAT:
-            cats2 = data.xpath("//li[regexp:test(@class, '" + cat.xpath("@data-target").string() + "$')]")
-            for cat2 in cats2:
-                name2 = cat2.xpath(".//a[@class='parent']/text()").string()
-                url2 = cat2.xpath(".//a[@class='parent']/@href").string()
-                cats3 = cat2.xpath("ul/li//a")
-                if cats3:
-                    for cat3 in cats3:
-                        name3 = cat3.xpath("text()").string()
-                        url3 = cat3.xpath("@href").string()
-                        
-                        if name3 not in XCAT:
-                            print('cat=', name+'|'+name2+'|'+name3)
-                        
-                        # session.queue(Request(url3), process_category, dict(cat=name+'|'+name2+'|'+name3))
-                else:
-                    
-                    print('cat=', name+'|'+name2)
-                    
-                    # session.queue(Request(url2), process_category, dict(cat=name+'|'+name2))
+        url = cat.xpath('@href').string()
+        session.queue(Request(url), process_catlist, dict(cat=name))
 
 
-def process_category(data, context, session):
+def process_catlist(data, context, session):
+    sub_cats = data.xpath('//dl[dt[contains(., "Category")]]//ol[@class="items"]/li')
+    for sub_cat in sub_cats:
+        sub_name = sub_cat.xpath('span//a/text()').string()
+
+        sub_cats1 = sub_cat.xpath('ol/li//a')
+        for sub_cat1 in sub_cats1:
+            sub_name1 = sub_cat1.xpath('text()').string()
+            url = sub_cat1.xpath('@href').string()
+            
+            print('cat=', context['cat']+'|'+sub_name+'|'+sub_name1)
+            
+            # session.queue(Request(url), process_prodlist, dict(cat=context['cat']+'|'+sub_name+'|'+sub_name1))
+
+
+def process_prodlist(data, context, session):
     prods = data.xpath("//a[@class='product-item-link']")
     for prod in prods:
         name = prod.xpath("text()").string()
@@ -46,7 +42,7 @@ def process_category(data, context, session):
 
     next_url = data.xpath("//a[@class='link next']/@href").string()
     if next_url:
-        session.queue(Request(next_url), process_category, dict(context))
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
