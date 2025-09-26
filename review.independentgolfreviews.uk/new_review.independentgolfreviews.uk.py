@@ -86,13 +86,13 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Summary")]/following-sibling::p[not(contains(., "For more information:"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Summary")]/following-sibling::p[not(regexp:test(., "For more information:|Quick Hits|More information here:"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Summary")]/preceding-sibling::p[not(contains(@class, "has-text-color"))]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2[contains(., "Summary")]/preceding-sibling::p[not(contains(@class, "has-text-color"))]|//div[contains(@class, "content")]/div/div/p)//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(contains(@class, "has-text-color") or regexp:test(., "For more information:|Quick Hits"))]//text()').string(multiple=True)
+        excerpt = data.xpath('(//div[contains(@class, "content")]|//div[contains(@class, "content")]/div/div)/p[not(contains(@class, "has-text-color") or regexp:test(., "For more information:|Quick Hits|More information here:"))]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

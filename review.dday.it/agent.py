@@ -75,7 +75,7 @@ def process_review(data, context, session):
     if rev_info:
         rev_id = rev_info.split("?product_id=")[-1].split("'")[0]
         next_url = 'https://www.dday.it/review_snippet?product_id={}'.format(rev_id)
-        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_review_next, dict(product=product, review=review, excerpt=excerpt))
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(product=product, review=review, excerpt=excerpt))
 
     elif excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').strip()

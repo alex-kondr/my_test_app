@@ -2,7 +2,7 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['Reviews', 'reviews', 'First Looks', 'Editors’ Choice']
+XCAT = ['Reviews', 'reviews', 'Review', 'First Looks', 'Editors’ Choice']
 
 
 def run(context, session):
@@ -55,7 +55,7 @@ def process_reviews(data, context, session):
     if author_name and author_url:
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author_name.replace("'", "’"), ssid=author_ssid, profile_url=author_url))
-    else:
+    elif author_name:
         review.authors.append(Person(name=author_name.replace("'", "’"), ssid=author_name.replace("'", "’")))
 
     pros = data.xpath("//li[@class='pros']//ul[@class='pros-cons-list']//li")

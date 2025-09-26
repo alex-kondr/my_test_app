@@ -16,6 +16,7 @@ agent = agents.PCMAG_AU
 # agent = agents.TEST
 reload = 1
 
+# cat: 17
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

@@ -60,14 +60,14 @@ def process_review(data, context, session):
         author_url = 'https://www.soundguys.com/author/{}/'.format(context['author_ssid'])
         review.authors.append(Person(name=context['author'], ssid=context['author_ssid'], profile_url=author_url))
 
-    grade_overall = data.xpath('//div[contains(@style, "--gradid:url")]/text()').string()
+    grade_overall = data.xpath('//div[contains(text(), "SoundGuys Rating")]/div[contains(@style, "--gradid:url")]/text()').string()
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    grades = data.xpath('//div[div[contains(text(), "Rating Metric")]]/div[contains(@class, "Oi")]')
+    grades = data.xpath('//div[div[contains(text(), "Rating Metric")]]/div[@class="e_di"]')
     for grade in grades:
         grade_name = grade.xpath('text()').string()
-        grade_val = grade.xpath('following-sibling::div[1][contains(@class, "Pi")]/text()').string()
+        grade_val = grade.xpath('following-sibling::div[1][@class="e_ei"]/text()').string()
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
     pros = data.xpath('//div[div[contains(text(), "What we like")]]/div[not(contains(text(), "What we like"))]')
@@ -89,6 +89,8 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('(//div[h2[contains(., "What should you get")]]|//div[h2[contains(., "What should you get")]]/following-sibling::div)/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
     if not conclusion:
+        conclusion = data.xpath('(//div[h2[contains(., "Should you buy the")]]|//div[h2[contains(., "Should you buy the")]]/following-sibling::div)/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
+    if not conclusion:
         conclusion = data.xpath('(//div[h2[contains(., "Conclusion")]]|//div[h2[contains(., "Conclusion")]]/following-sibling::div)/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="e_Jh"]//text()').string(multiple=True)
@@ -98,6 +100,8 @@ def process_review(data, context, session):
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[h2[contains(., "What should you get")]]/preceding-sibling::div/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[h2[contains(., "What should you get")]]/preceding-sibling::div/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[h2[contains(., "Conclusion")]]/preceding-sibling::div/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
     if not excerpt:

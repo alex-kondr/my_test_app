@@ -32,7 +32,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.asadventure.com/nl.html', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -55,9 +55,9 @@ def process_frontpage(data, contenxt, session):
 
                         if sub_name1 not in XCAT:
                             session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
-                    else:
-                        url = sub_cat.xpath('li[contains(@class, "menu-item")]/a/@href').string()
-                        session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name))
+                    # else:
+                    #     url = sub_cat.xpath('li[contains(@class, "menu-item")]/a/@href').string()
+                    #     session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
 def process_prodlist(data, context, session):

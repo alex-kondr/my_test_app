@@ -38,7 +38,7 @@ def run(context, session):
 
 
 def process_prodlist(data, context, session):
-    prods = data.xpath('//div[@data-cy="product-list"]/div')
+    prods = data.xpath('//div[contains(@class, "fullhd")]')
     for prod in prods:
         name = prod.xpath('.//div/a[contains(@class, "product-card-title")]/text()').string()
         url = prod.xpath('.//div/a[contains(@class, "product-card-title")]/@href').string()
