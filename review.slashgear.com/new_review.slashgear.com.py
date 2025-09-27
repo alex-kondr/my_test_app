@@ -63,7 +63,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.strip(' +-*.:;•,–')
+            pro = pro.replace(u'\uFEFF', '').strip(' +-*.:;•,–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -71,12 +71,13 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.strip(' +-*.:;•,–')
+            con = con.replace(u'\uFEFF', '').strip(' +-*.:;•,–')
             if len(con) > 1 and 'N/A' not in con:
                 review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//h2[regexp:test(., "Verdict", "i")]/following-sibling::div/p[not(regexp:test(., "You can purchase"))]//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[regexp:test(., "Verdict", "i")]/preceding::p[not(@class)]//text()').string(multiple=True)
@@ -84,6 +85,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         excerpt = data.xpath('//div[@class="columns-holder"]/p[not(@class or regexp:test(., "You can purchase"))]//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

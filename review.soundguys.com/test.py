@@ -17,8 +17,8 @@ agent = agents.SOUND_GUYS_US
 reload = 1
 
 # name: 4+
-# con: 1+
-# exc: 8
+# con: 0
+# exc: 291
 # log: 0
 
 if __name__ == "__main__":

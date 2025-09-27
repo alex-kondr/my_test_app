@@ -101,7 +101,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[h2[contains(., "What should you get")]]/preceding-sibling::div/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[h2[contains(., "What should you get")]]/preceding-sibling::div/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[h2[contains(., "Should you buy the")]]/preceding-sibling::div/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[h2[contains(., "Conclusion")]]/preceding-sibling::div/p[not(contains(., "[/button]"))]//text()').string(multiple=True)
     if not excerpt:
@@ -109,6 +109,9 @@ def process_review(data, context, session):
 
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').strip()
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

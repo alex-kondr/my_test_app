@@ -33,7 +33,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=8000)]
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
     session.queue(Request('https://www.bouyguestelecom.fr/telephones-mobiles?sort=meilleures-ventes', force_charset='utf-8', use='curl', max_age=0), process_prodlist, dict(cat='Smartphone'))
 
 
