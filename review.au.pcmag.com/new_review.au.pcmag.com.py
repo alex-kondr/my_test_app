@@ -81,9 +81,9 @@ def process_reviews(data, context, session):
         summary = summary.replace("'", "’").strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath("//div[@class='summarygrey']//div[contains(@id,'__bottomline')]//text()").string(multiple=True)
+    conclusion = data.xpath("//h2[contains(.,'Conclusion') or contains(.,'conclusions') or contains(.,'verdict') or contains(.,'Verdict')]/following-sibling::p//text()").string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath("//h2[contains(.,'Conclusion') or contains(.,'conclusions') or contains(.,'verdict') or contains(.,'Verdict')]/following-sibling::p//text()").string(multiple=True)
+        conclusion = data.xpath("//div[@class='summarygrey']//div[contains(@id,'__bottomline')]//text()").string(multiple=True)
 
     if conclusion:
         conclusion = conclusion.replace("'", "’").strip()
