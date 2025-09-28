@@ -59,13 +59,19 @@ def process_reviews(data, context, session):
         review.authors.append(Person(name=author_name.replace("'", "’"), ssid=author_name.replace("'", "’")))
 
     pros = data.xpath("//li[@class='pros']//ul[@class='pros-cons-list']//li")
+    if not pros:
+        pros = data.xpath('(//p[b[contains(., "Strengths")]]/following-sibling::*)[1]/li')
+
     for pro in pros:
-        pro = pro.xpath("text()").string().replace("'", "’")
+        pro = pro.xpath(".//text()").string(multiple=True).replace("'", "’")
         review.add_property(type='pros', value=pro)
 
     cons = data.xpath("//li[@class='cons']//ul[@class='pros-cons-list']//li")
+    if not cons:
+        cons = data.xpath('(//p[b[contains(., "Limitations")]]/following-sibling::*)[1]/li')
+
     for con in cons:
-        con = con.xpath("text()").string().replace("'", "’")
+        con = con.xpath(".//text()").string(multiple=True).replace("'", "’")
         review.add_property(type='cons', value=con)
 
     grade_overall = data.xpath("//div[@class='review_bottomline']//div[contains(@class,'editor_rating')]//b//text()").string()
@@ -89,9 +95,9 @@ def process_reviews(data, context, session):
         conclusion = conclusion.replace("'", "’").strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath("//div[@id='id_text']//p//text()").string(multiple=True)
+    excerpt = data.xpath("//div[@id='id_text']//p[not(preceding::h2[contains(.,'Conclusion') or contains(.,'conclusions') or contains(.,'verdict') or contains(.,'Verdict')] or .//b[regexp:test(., 'Strengths|Limitations')])]//text()").string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath("//div[@id='id_text']//text()").string(multiple=True)
+        excerpt = data.xpath("//div[@id='id_text'][not(preceding::h2[contains(.,'Conclusion') or contains(.,'conclusions') or contains(.,'verdict') or contains(.,'Verdict')] or .//b[regexp:test(., 'Strengths|Limitations')])]//text()").string(multiple=True)
 
     if excerpt:
         if summary:
