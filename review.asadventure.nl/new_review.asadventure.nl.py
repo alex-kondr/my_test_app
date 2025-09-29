@@ -4,7 +4,7 @@ import simplejson
 import re
 
 
-XCAT = ["Nieuwe collectie", "Nieuwe outdoorcollectie", "Nieuwe fashioncollectie", "Verhuur", "Ecocheque producten", "Professioneel", "Promoties", "Veilig in het verkeer", "Cadeautips", "Merken"]
+XCAT = ["Nieuwe collectie", "Nieuwe outdoorcollectie", "Nieuwe fashioncollectie", "Verhuur", "Ecocheque producten", "Professioneel", "Promoties", "Veilig in het verkeer", "Cadeautips", "Merken", "Inspiratie"]
 
 
 def remove_emoji(string):
@@ -55,9 +55,6 @@ def process_frontpage(data, contenxt, session):
 
                         if sub_name1 not in XCAT:
                             session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
-                    # else:
-                    #     url = sub_cat.xpath('li[contains(@class, "menu-item")]/a/@href').string()
-                    #     session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + sub_name))
 
 
 def process_prodlist(data, context, session):
@@ -81,57 +78,61 @@ def process_product(data, context, session):
     product.category = context['cat']
     product.manufacturer = data.xpath('//h1[contains(@class, "title")]//a/text()').string()
 
-    mpn = product.url.split('-')[-1].replace('.html', '')
-    if mpn:
-        product.add_property(type='id.manufacturer', value=mpn)
-
     prod_info = data.xpath("//script[contains(., 'var productInfo = ')]/text()").string()
     if prod_info:
         prod_info = simplejson.loads(prod_info.split(' = ')[-1])
         product.ssid = prod_info.get("productId")
         product.sku = product.ssid
 
-    revs = data.xpath('//div[div/span[contains(., "Reviews")] and contains(@class, "content--modal")]//div[@class="as-t-box" and not(.//img[contains(@src, "/expert-images/")])]')
+    mpn = data.xpath('//div/@data-parent-product-sku').string()
+    if mpn:
+        product.add_property(type='id.manufacturer', value=mpn)
+
+        revs_url = 'https://api.feefo.com/api-feefo/api/10/reviews/product?parent_product_sku={}&origin=www.asadventure.com&merchant_identifier=as-adventure&since_period=ALL'.format(mpn)
+        session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+
+
+def process_reviews(data, context, session):
+    product = context['product']
+
+    try:
+        revs_json = simplejson.loads(data.content)
+    except:
+        return
+
+    revs = revs_json.get('reviews', [])
     for rev in revs:
+        if rev.get('locale') != 'nl_NL':
+            continue
+
+        rev = rev.get('products', [{}])[0]
+
         review = Review()
         review.type = 'user'
         review.url = product.url
+        review.ssid = rev.get('id')
 
-        date_author = rev.xpath('.//div[contains(@class, "text--subtle")]/span/text()').string()
-        if date_author:
-            review.date = date_author.rsplit(' ', 1)[-1]
+        date = rev.get('created_at')
+        if date:
+            review.date = date.split('T')[0]
 
-            author = date_author.rsplit(',')[0].split(' door ')[-1].strip()
-            if author:
-                review.authors.append(Person(name=author, ssid=author))
-
-        grade_overall = rev.xpath('count(.//span[contains(@class, "rating-item--full")])')
-        if grade_overall and grade_overall > 0:
+        grade_overall = rev.get('rating', {}).get('rating')
+        if grade_overall and float(grade_overall) > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        pros = rev.xpath('.//li[.//span[contains(@class, "positive")]]')
-        for pro in pros:
-            pro = pro.xpath('.//div//span//text()').string(multiple=True)
-            if pro:
-                pro = remove_emoji(pro).strip(' +-/\n?')
-                if len(pro) > 1 and not(pro.lower() == 'null' or pro.lower() == 'no' or pro.lower() == 'na'):
-                    review.add_property(type='pros', value=pro)
+        is_verified_buyer = rev.get('feedbackVerificationState')
+        if is_verified_buyer and is_verified_buyer == 'feefoVerified':
+            review.add_property(type='is_verified_buyer', value=True)
 
-        cons = rev.xpath('.//li[.//span[contains(@class, "negative")]]')
-        for con in cons:
-            con = con.xpath('.//div//span//text()').string(multiple=True, normalize_space=False)
-            if con:
-                con = remove_emoji(con).strip(' +-/\n?')
-                if len(con) > 1 and not(con == 'null' or con.lower() == 'no' or con.lower() == 'na'):
-                    review.add_property(type='cons', value=con)
+        hlp_yes = rev.get('helpful_votes')
+        if hlp_yes and int(hlp_yes) > 0:
+            review.add_property(type='helpful_votes', value=int(hlp_yes))
 
-        excerpt = rev.xpath('.//h2//text()').string(multiple=True)
+        excerpt = rev.get('review')
         if excerpt:
             excerpt = remove_emoji(excerpt).strip()
             if len(excerpt) > 1:
                 review.add_property(type="excerpt", value=excerpt)
-
-                review.ssid = review.digest() if date_author and author else review.digest(excerpt)
 
                 product.reviews.append(review)
 
