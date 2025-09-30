@@ -16,6 +16,9 @@ agent = agents.OVERCLOCKERS_RU_RU
 # agent = agents.TEST
 reload = 1
 
+# name: 4017
+# con: 17
+# exc: 1502
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

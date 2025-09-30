@@ -1,10 +1,33 @@
-from calendar import c
-from multiprocessing import process
 from agent import *
 from models.products import *
+import re
 
 
 XCAT = ["Все статьи", "FAQ", "Институт оверклокинга", "Руководства", "События", "Сайт", "Всё про..."]
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def strip_namespace(data):
@@ -79,6 +102,7 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[contains(@class, "sub-header")]//text()').string(multiple=True)
     if summary:
+        summary = remove_emoji(summary).strip()
         review.add_property(type='summary', value=summary)
 
     last_page = ''
@@ -93,6 +117,7 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('(//h3|//h1)[contains(., "Заключение")]/following-sibling::p[not(regexp:test(., "По итогам обзора|P.S.|Дискуссии по теме|JavaScript") or .//script)]//text()').string(multiple=True)
     if conclusion:
+        conclusion = remove_emoji(conclusion).strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h3|//h1)[contains(., "Заключение")]/preceding-sibling::p[not(regexp:test(., "CPU-Z:|AIDA64|Cinebench|PCMark 10:|3DMark|Winrar|7-Zip|Geekbench|CrystalDisk|Benchmark:|P.S.|Дискуссии по теме|JavaScript") or .//script)]//text()').string(multiple=True)
@@ -120,14 +145,14 @@ def process_lastpage(data, context, session):
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h3|//h1)[contains(., "Заключение")]/preceding-sibling::p[not(regexp:test(., "CPU-Z:|AIDA64|Cinebench|PCMark 10:|3DMark|Winrar|7-Zip|Geekbench|CrystalDisk|Benchmark:|P.S.|Дискуссии по теме|JavaScript") or .//script)]//text()').string(multiple=True)
-    if not excerpt:
+    if not excerpt and not conclusion:
         excerpt = data.xpath('//div[@itemprop="articleBody"]//p[not(regexp:test(., "CPU-Z:|AIDA64|Cinebench|PCMark 10:|3DMark|Winrar|7-Zip|Geekbench|CrystalDisk|Benchmark:|По итогам обзора|P.S.|Дискуссии по теме|JavaScript") or .//script)]//text()').string(multiple=True)
 
     if excerpt:
         context['excerpt'] = context.get('excerpt', '') + ' ' + excerpt
 
     if context['excerpt']:
-        excerpt = context['excerpt'].strip()
+        excerpt = remove_emoji(context['excerpt']).strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
