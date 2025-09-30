@@ -15,13 +15,20 @@ def process_catlist(data, context, session):
     for cat in cats:
         name = cat.xpath("a/text()").string()
 
-        sub_cats = cat.xpath(".//li[@class='lvl-1']/a")
+        sub_cats = cat.xpath(".//li[@class='lvl-1']")
         for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath("text()").string()
-            url = sub_cat.xpath("@href").string()
+            sub_name = sub_cat.xpath("a/text()").string()
 
             if sub_name not in XCAT:
-                session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + "|" + sub_name, url=url))
+                sub_cats1 = sub_cat.xpath('ul/li/a')
+                if sub_cats1:
+                    for sub_cat1 in sub_cats1:
+                        sub_name1 = sub_cat1.xpath('text()').string()
+                        url = sub_cat1.xpath("@href").string()
+                        session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1, url=url))
+                else:
+                    url = sub_cat.xpath('a/@href').string()
+                    session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + sub_name, url=url))
 
 
 def process_prodlist(data, context, session):
@@ -66,10 +73,6 @@ def process_reviews(data, context, session):
     new_data = data.parse_fragment(revs_json["html"])
 
     revs = new_data.xpath("//div[@class='jdgm-rev-widg__reviews']/div")
-    
-    if not revs:
-        raise ValueError('!!!!')
-    
     for rev in revs:
         review = Review()
         review.type = "user"
