@@ -15,6 +15,7 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     title = data.xpath('//h1//text()').string(multiple=True)
     if not title:
+        session.queue(Request(data.response_url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(url=data.response_url))
         return
 
     product = Product()
