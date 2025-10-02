@@ -16,6 +16,9 @@ agent = agents.PC_INFOPRATIQUE_FR
 # agent = agents.TEST
 reload = 1
 
+# name: 1+
+# author: 0+
+# exc: 0+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

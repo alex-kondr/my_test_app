@@ -14,12 +14,12 @@ def strip_namespace(data):
     os.rename(tmp, data.content_file)
 
 
-def run(context: dict[str, str], session: Session):
+def run(context, session):
     session.browser.use_new_parser = True
     session.queue(Request('https://www.pc-infopratique.com//dossier-debutr-0.html', force_charset='utf-8'), process_revlist, dict())
 
 
-def process_revlist(data: Response, context: dict[str, str], session: Session):
+def process_revlist(data, context, session):
     strip_namespace(data)
 
     revs = data.xpath('//b/a[contains(@href, "article-")]')
@@ -35,7 +35,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
         session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict())
 
 
-def process_review(data: Response, context: dict[str, str], session: Session):
+def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
@@ -105,7 +105,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         session.emit(product)
 
 
-def process_review_last(data: Response, context: dict[str, str], session: Session):
+def process_review_last(data, context, session):
     review = context['review']
 
     pros = data.xpath('//tbody[tr[contains(., "On aime")]]/tr[@valign="top"]//font//text()')
