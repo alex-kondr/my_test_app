@@ -50,9 +50,9 @@ def process_review(data, context, session):
     review.url = product.url
     review.ssid = product.ssid
 
-    date = data.xpath('//font[contains(text(), "Dossier publi")]/font[regexp:test(., "\d")]/text()').string()
+    date = data.xpath('//font[contains(text(), "Dossier publi")]/font[regexp:test(., "\d{4}")]/text()').string()
     if date:
-        review.date = date.split(' ', 1)[-1]
+        review.date = date.split(' ', 1)[-1].replace(u'�', 'e')
 
     author = data.xpath('//font[contains(text(), "Dossier publi")]/font[not(regexp:test(., "\d{4}"))]/text()').string()
     if author:
@@ -82,6 +82,7 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//p[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace('Conclusion ', '').strip(' :')
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//p[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
@@ -131,7 +132,11 @@ def process_review_last(data, context, session):
                 review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//font[contains(@style, "FONT-FAMILY")]/p[not(strong[regexp:test(., "Résumé|Informations complémentaires")])]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//font[contains(@style, "FONT-FAMILY: Verdana") and br and not(.//tbody or contains(., "Dossier publi"))]//text()').string(multiple=True)
+
     if conclusion:
+        conclusion = conclusion.replace('Conclusion ', '').strip(' :')
         review.add_property(type='conclusion', value=conclusion)
 
     if context['excerpt']:
