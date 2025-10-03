@@ -16,8 +16,8 @@ agent = agents.MOBIL
 # agent = agents.TEST
 reload = 1
 
-# name: 173
-# grades: 41
+# name: 136
+# grades: 37
 # exc: 8
 # log: 0+
 
