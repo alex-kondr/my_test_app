@@ -68,18 +68,18 @@ def process_review(data, context, session):
             grade_name = grade_name.split(' - ')[0].strip()
             review.grades.append(Grade(name=grade_name, value=float(grade_value), best=100.0))
 
+    summary = data.xpath('//h2[@class="review-box-header"]/text()').string()
+    if summary:
+        review.add_property(type='summary', value=summary)
+
     conclusion = data.xpath('//div[@class="entry"]/p[preceding-sibling::*[self::h1 or self::h2 or self::h3 or self::h4 or self::p[strong]][regexp:test(., "final thought|conclusion|overall|Final Say", "i")]][not(regexp:test(., "copy of|for this review"))][not(.//strong[contains(., "Platform:|Developer:|MSRP|Produced by:|Written by:|Published by:|Release Date:")])]//text()[not(regexp:test(., "copy provided by", "i"))]').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="entry"]/p[strong[regexp:test(., "final thought|conclusion|overall|Final Say", "i")]][not(regexp:test(., "copy of|for this review"))][not(.//strong[contains(., "Platform:|Developer:|MSRP|Produced by:|Written by:|Published by:|Release Date:")])]/text()[not(regexp:test(., "copy provided by", "i"))]').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@class="review-short-summary"]/p/text()').string()
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
-
-    summary = data.xpath('//h2[@class="review-box-header"]/text()').string()
-    if summary and not conclusion:
-        review.add_property(type='summary', value=summary)
-    elif summary:
-        review.add_property(type='conclusion', value=summary)
 
     excerpt = data.xpath('//div[@class="entry"]/p[not(preceding::*[regexp:test(., "final thought|conclusion|overall|Final Say", "i")])][not(*[regexp:test(., "final thought|conclusion|overall|Final Say", "i")])][not(.//strong[regexp:test(., "Platform:|Developer:|MSRP|Produced by:|Written by:|Published by:|Release Date:")])]//text()[not(regexp:test(., "copy provided by", "i"))]').string(multiple=True)
     if excerpt:

@@ -16,9 +16,9 @@ agent = agents.BRUTAL_GAMER_US
 # agent = agents.TEST
 reload = 1
 
-# name: 11
+# name: 2
 # grades: 713
-# exc: 10
+# exc: 2
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
