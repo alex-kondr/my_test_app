@@ -16,7 +16,7 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     title = data.xpath('//h1//text()').string(multiple=True)
     if not title:
-        time.sleep(60)
+        time.sleep(600)
         session.do(Request(data.response_url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(url=data.response_url))
         return
 
@@ -82,5 +82,5 @@ def process_review(data, context, session):
 
     next_url = data.xpath('//div[@class="previous-wrapper"]/a/@href').string()
     if next_url:
-        time.sleep(10)
+        time.sleep(1)
         session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_review, dict(url=next_url))
