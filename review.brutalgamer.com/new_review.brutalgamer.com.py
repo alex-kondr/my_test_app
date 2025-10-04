@@ -81,7 +81,7 @@ def process_review(data, context, session):
     elif summary:
         review.add_property(type='conclusion', value=summary)
 
-    excerpt = data.xpath('//div[@class="entry"]/p[not(preceding::*[regexp:test(., "final thought|conclusion|overall|Final Say", "i")])][not(*[regexp:test(., "final thought|conclusion|overall|Final Say", "i")])][not(.//strong[regexp:test(., Platform:|Developer:|MSRP|Produced by:|Written by:|Published by:|Release Date:")])]//text()[not(regexp:test(., "copy provided by", "i"))]').string(multiple=True)
+    excerpt = data.xpath('//div[@class="entry"]/p[not(preceding::*[regexp:test(., "final thought|conclusion|overall|Final Say", "i")])][not(*[regexp:test(., "final thought|conclusion|overall|Final Say", "i")])][not(.//strong[regexp:test(., "Platform:|Developer:|MSRP|Produced by:|Written by:|Published by:|Release Date:")])]//text()[not(regexp:test(., "copy provided by", "i"))]').string(multiple=True)
     if excerpt:
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
