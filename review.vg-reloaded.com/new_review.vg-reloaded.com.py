@@ -52,7 +52,7 @@ def process_review(data, context, session):
         grade = data.xpath('//div[contains(@class, "entry-content")]/p[regexp:test(., "score:", "i")]/text()').string()
 
     if grade:
-        grade = grade.split(':')[-1].strip()
+        grade = grade.split(':')[-1].split('/')[0].strip()
         if grade[0].isdigit():
             review.grades.append(Grade(type="overall", value=float(grade), best=10.0))
 
