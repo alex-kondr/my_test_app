@@ -3,6 +3,7 @@ from models.products import *
 
 
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.vg-reloaded.com/category/articles/'), process_revlist, {})
 
 
@@ -25,9 +26,10 @@ def process_review(data, context, session):
     product.ssid = data.xpath('//article[contains(@class, "type-post")]/@id').string().split('-')[-1]
     product.category = 'Games'
 
-    platform = context['title'].split(' Review')[0].replace('X/S', 'X\\S').strip()
-    if platform:
-        product.category += '|' + platform
+    if ' Review' in context['title']:
+        platform = context['title'].split(' Review')[0].replace('X/S', 'X\\S').strip()
+        if platform and 'review' not in platform.lower():
+            product.category += '|' + platform
 
     review = Review()
     review.title = context['title']
@@ -58,13 +60,15 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[contains(@class, "entry-content")]/p[1]/strong//text()').string(multiple=True)
     if summary:
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type="summary", value=summary)
 
     conclusion = data.xpath('//div[contains(@class, "entry-content")]/p[preceding-sibling::p[regexp:test(., "the verdict", "i")]]//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(regexp:test(., "the verdict", "i"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(regexp:test(., "the verdict", "i") or preceding::*[regexp:test(., "the verdict", "i")])]//text()').string(multiple=True)
     if excerpt:
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
@@ -72,8 +76,10 @@ def process_review(data, context, session):
         if summary:
             excerpt = excerpt.replace(summary, '').strip()
 
-        review.add_property(type="excerpt", value=excerpt)
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
+        if len(excerpt) > 3:
+            review.add_property(type="excerpt", value=excerpt)
 
-        product.reviews.append(review)
+            product.reviews.append(review)
 
-        session.emit(product)
+            session.emit(product)
