@@ -28,7 +28,7 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
-    next_url = data.xpath('//link[@rel="next"]/@href').string()
+    next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
         session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
 
@@ -37,7 +37,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' Review – ')[0].split(' Review: ')[0].split(' – The Movie: ')[0].strip()
+    product.name = context['title'].split(' Review – ')[0].split(' Review: ')[0].split(' – The Movie: ')[0].replace('I Tested ', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = 'Tech'
 

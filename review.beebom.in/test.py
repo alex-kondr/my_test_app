@@ -16,6 +16,8 @@ agent = agents.BEEBOM_IN
 # agent = agents.TEST
 reload = 1
 
+# name: 1+
+# exc: 2+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
