@@ -1,0 +1,110 @@
+from agent import *
+from models.products import *
+
+
+OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:143.0) Gecko/20100101 Firefox/143.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Cookie: _lscache_vary=3145438a14bd0db6944de15e15cde67b' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"""
+
+
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
+def run(context, session):
+    session.browser.use_new_parser = True
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.queue(Request('https://www.techguide.com.au/reviews/', use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_revlist, dict())
+
+
+def process_revlist(data, context, session):
+    strip_namespace(data)
+
+    revs = data.xpath('//h2[contains(@class, "title")]/a[contains(@href, "https://www.techguide.com.au/reviews/")]')
+    for rev in revs:
+        title = rev.xpath('text()').string()
+        url = rev.xpath('@href').string()
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_review, dict(title=title, url=url))
+
+    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
+    if next_url:
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_revlist, dict())
+
+
+def process_review(data, context, session):
+    strip_namespace(data)
+
+    product = Product()
+    product.name = context['title'].split(' review – ')[0].split(' reviews – ')[0].split(' review — ')[0].split(' review: ')[0].split(' Review: ')[0].replace('Review: ', '').replace(' review', '').strip()
+    product.url = context['url']
+    product.ssid = product.url.split('/')[-2].replace('-review', '')
+    product.category = data.xpath('//a[@class="category term-color-361"]/text()').string() or 'Tech'
+
+    review = Review()
+    review.type = 'pro'
+    review.title = context['title']
+    review.url = product.url
+    review.ssid = product.ssid
+
+    date = data.xpath('//meta[@property="article:published_time"]/@content').string()
+    if date:
+        review.date = date.split('T')[0]
+
+    author = data.xpath('//span[@class="meta-item post-author has-img"]/a[@rel="author"]/text()').string()
+    author_url = data.xpath('//span[@class="meta-item post-author has-img"]/a[@rel="author"]/@href').string()
+    if author and author_url:
+        author_ssid = author_url.split('/')[-2]
+        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    grade_overall = data.xpath('//div[@class="overall"]/span[@class="rate"]/text()').string()
+    if grade_overall:
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
+
+    pros = data.xpath('//*[h5[contains(., "Pros")]]/ul/li')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//*[h5[contains(., "Cons")]]/ul/li')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
+    summary = data.xpath('(//div[contains(@class, "post-content")]/p)[1]/strong//text()').string(multiple=True)
+    if summary:
+        review.add_property(type="summary", value=summary)
+
+    conclusion = data.xpath('//p[contains(., "VERDICT")]/following-sibling::p[not(.//a[contains(@href, "www.amazon.com")] or strong[regexp:test(., "PRICE:|Related Stories")] or contains(., "[taq_review]") or preceding::p/strong[contains(., "Related Stories")] or contains(., " is priced at "))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@class="review-description"]/p//text()').string(multiple=True)
+
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//p[contains(., "VERDICT")]/preceding-sibling::p[not(.//a[contains(@href, "www.amazon.com")])]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "post-content")]/p[not(.//a[contains(@href, "www.amazon.com")] or strong[regexp:test(., "PRICE:|Related Stories")] or contains(., "[taq_review]") or preceding::p/strong[contains(., "Related Stories")] or contains(., " is priced at "))]//text()').string(multiple=True)
+
+    if excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)

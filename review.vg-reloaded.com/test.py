@@ -16,10 +16,10 @@ agent = agents.VG_RELOADED_US
 # agent = agents.TEST
 reload = 1
 
-# name: 8
-# cat: 60
-# concl: 3
-# exc: 118
+# name: 9+
+# cat: 0+
+# concl: 3+
+# exc: 5
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
