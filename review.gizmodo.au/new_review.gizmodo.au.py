@@ -53,8 +53,10 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//span[contains(text(), "By")]/a[@rel="author"]/text()').string()
     author_url = data.xpath('//span[contains(text(), "By")]/a[@rel="author"]/@href').string()
+    author = data.xpath('//span[contains(text(), "By")]/a[@rel="author"]/text()').string()
+    if author:
+        author = data.xpath('//div[time]/div/text()').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
@@ -102,7 +104,7 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('(//h3|//p)[regexp:test(., "Should .+ Buy .+?|README", "i")]/following-sibling::p[not(preceding-sibling::h4 or preceding-sibling::h3[regexp:test(., "Spec", "i")] or regexp:test(., "https:|Spec", "i"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h3[regexp:test(., "Should .+ Buy .+?|README", "i")]/following-sibling::p[not(preceding-sibling::h4 or preceding-sibling::h3[regexp:test(., "Spec", "i")] or regexp:test(., "https:|Spec", "i"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[contains(@class, "review")]//p[contains(@class, "text-lg")]//text()').string(multiple=True)
     if not conclusion:
@@ -111,7 +113,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('''(//h3|//p)[regexp:test(., "Should .+ Buy .+?", "i")]/preceding-sibling::p[not(preceding-sibling::p[regexp:test(., "LIKE|NO LIKE")] or regexp:test(., "LIKE|NO LIKE|Don't Like", "i"))][not(@class)]//text()''').string(multiple=True)
+    excerpt = data.xpath('''//h3[regexp:test(., "Should .+ Buy .+?", "i")]/preceding-sibling::p[not(preceding-sibling::p[regexp:test(., "LIKE|NO LIKE")] or regexp:test(., "LIKE|NO LIKE|Don't Like", "i"))][not(@class)]//text()''').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(@class or preceding::h3[regexp:test(., "README|SPEC")])]//text()').string(multiple=True)
 

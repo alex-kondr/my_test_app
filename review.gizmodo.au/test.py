@@ -18,8 +18,8 @@ reload = 1
 
 # name: 22
 # date: 1+
-# authot: 64
-# pros/cons: 1
+# author: 64
+# pros/cons: 1+
 # exc: 15
 
 if __name__ == "__main__":

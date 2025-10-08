@@ -7,7 +7,7 @@ XCAT = ['Wohnideen', 'SALE', 'Marken', 'Prospekte', 'Gutscheine', 'Wohnbereiche'
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=8000)]
+    session.sessionbreakers = [SessionBreak(max_requests=9000)]
     session.queue(Request('https://www.roller.de/', max_age=0), process_frontpage, dict())
 
 
