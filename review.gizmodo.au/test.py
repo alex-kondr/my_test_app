@@ -16,11 +16,11 @@ agent = agents.GIZMODO_AU
 # agent = agents.TEST
 reload = 1
 
-# name: 22
+# name: 19+
 # date: 1+
-# author: 64
+# author: 1+
 # pros/cons: 1+
-# exc: 15
+# exc: 8
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

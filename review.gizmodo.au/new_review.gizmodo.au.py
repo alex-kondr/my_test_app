@@ -4,7 +4,7 @@ import re
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=6000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://gizmodo.com/reviews', use='curl', force_charset='utf-8', max_age=0), process_catlist, dict())
 
 
@@ -55,8 +55,9 @@ def process_review(data, context, session):
 
     author_url = data.xpath('//span[contains(text(), "By")]/a[@rel="author"]/@href').string()
     author = data.xpath('//span[contains(text(), "By")]/a[@rel="author"]/text()').string()
-    if author:
+    if not author:
         author = data.xpath('//div[time]/div/text()').string()
+
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))

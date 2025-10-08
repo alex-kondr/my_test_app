@@ -26,15 +26,7 @@ def process_review(data, context, session):
     product.name = data.xpath('//h2[@class="cwp-item"]/text()').string() or context['title'].split(' (review')[0].replace('(installation and review)', '').replace('(Review)', '').strip()
     product.url = data.xpath('//div[contains(@class, "affiliate-button")]/a/@href').string() or context['url']
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
-
-    category = ''
-    cats = data.xpath('//a[@rel="category tag"]/text()[normalize-space(.)]')
-    for cat in cats:
-        cat = cat.string()
-        if cat.lower() not in XCAT:
-            category += cat + '|'
-
-    product.category = category.replace('/', ' ').replace(' | ', '|').strip(' |') if category else 'Tech'
+    product.category = data.xpath('(//a[@rel="category tag" and not(regexp:test(., "review", "i"))]/text()[normalize-space(.)])[last()]').string() or 'Tech'
 
     review = Review()
     review.title = context['title']

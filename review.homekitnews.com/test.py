@@ -16,10 +16,10 @@ agent = agents.HOMEKIT_NEWS_AND_REVIEWS_TW
 # agent = agents.TEST
 reload = 1
 
-# cat: 5
-# author: 259
-# pros/cons: 1
-# exc: 7
+# cat: 0+
+# author: 259+
+# pros/cons: 1+
+# exc: 7+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

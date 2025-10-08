@@ -12,14 +12,14 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="20137"
+    agent_id="19572"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://api.mobil.se/api/v1/article/?orderBy=published&htmlText=1&query=visibility_status:P%20AND%20published:[*%20NOW]%20AND%20NOT%20hidefromfp_time:[*%20NOW]%20AND%20(tag%3Aprodukttester%20OR%20tag%3A%22j%C3%A4mf%C3%B6rande%20tester%22)%20AND%20(tag%3Aapple%20OR%20tag%3Asamsung%20OR%20tag%3Axiaomi%20OR%20tag%3Agoogle%20OR%20tag%3Asony%20OR%20tag%3Amotorola%20OR%20tag%3Aoneplus%20OR%20tag%3Ahuawei%20OR%20tag%3Alenovo%20OR%20tag%3Anokia%20OR%20tag%3Anothing%20OR%20tag%3Aikea%20OR%20tag%3A%22andra%20tillverkare%22)%20AND%20(tag%3Asurfplatta%20OR%20tag%3Atelefon%20OR%20tag%3A%22h%C3%B6rlurar%20headset%22%20OR%20tag%3Ah%C3%B6gtalare%20OR%20tag%3A%22klockor%20armband%22%20OR%20tag%3A%22smarta%20hemmet%22%20OR%20tag%3Aoutdoor)&fields=*,-bodytext,-ai_*,-bodytextHTML&limit=280&site_id=2',
+    url='https://beebom.com/category/reviews/',
     next_func=ProcessRun.revlist.name,
-    new_parser=False,
+    new_parser=True,
     breakers=0,
     # curl=True
 )
@@ -29,12 +29,12 @@ agent.create_run(
 #     url_xpath='@href'
 # )
 agent.create_revlist(
-    revs_xpath='//td/a[b]',
+    revs_xpath='//h3[contains(@class, "title")]//a',
     name_title=TypeAgent.review.value,
-    name_title_xpath='.//text()',
+    name_title_xpath='text()',
     url_xpath='@href',
     prod_rev=TypeAgent.review.name,
-    next_url_xpath='//a[img[contains(@src, "arrow_right_green")]]/@href',
+    next_url_xpath='//link[@rel="next"]/@href',
 )
 agent.create_review(
     date_xpath='//meta[@property="article:published_time"]/@content|//time/@datetime',
