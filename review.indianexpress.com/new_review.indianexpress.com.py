@@ -23,7 +23,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' review:')[0].split(' review :')[0].split(' Review:')[0].split(':')[0].strip()
+    product.name = context['title'].split(' review:')[0].split(' review :')[0].split(' Review:')[0].split(':')[0].replace(' Review', '').replace(' review', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].split('-')[-1]
     product.category = 'Tech'
@@ -38,12 +38,17 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//a[contains(@href, "https://indianexpress.com/profile/author/") and @id]//text()').string()
     author_url = data.xpath('//a[contains(@href, "https://indianexpress.com/profile/author/") and @id]/@href').string()
+    author = data.xpath('//a[contains(@href, "https://indianexpress.com/profile/author/") and @id]//text()').string()
+    if not author:
+        author = data.xpath('//div/text()[contains(., "Written by ")]').string()
+
     if author and author_url:
+        author = author.replace('Written by ', '')
         author_ssid = author_url.split('/')[-2]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
     elif author:
+        author = author.replace('Written by ', '')
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//div[@class="hide_rating"]//text()').string(multiple=True)
@@ -60,6 +65,9 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//p[.//strong[contains(., "Verdict")]]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[.//b[contains(., "Verdict")]]/following-sibling::p//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
