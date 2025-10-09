@@ -37,7 +37,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' Review – ')[0].split(' Review: ')[0].split(' – The Movie: ')[0].replace('I Tested ', '').strip()
+    product.name = context['title'].split(' Review – ')[0].split(' Review: ')[0].split(' – The Movie: ')[0].split(' Test: ')[0].replace('I Tested ', '').replace(' (Review)', '').replace(' Review', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = 'Tech'
 
@@ -96,11 +96,6 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    summary = data.xpath('(//div[@class="review-verdict"])[1]//text()').string(multiple=True)
-    if summary and conclusion:
-        review.add_property(type='summary', value=summary)
-    elif summary:
-        review.add_property(type='conclusion', value=summary)
 
     excerpt = data.xpath('//h2[regexp:test(., "Verdict|Should You Buy", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
@@ -112,6 +107,12 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
             conclusion = conclusion.strip()[0].title() + conclusion.strip()[1:]
             review.add_property(type='conclusion', value=conclusion)
+
+        summary = data.xpath('(//div[@class="review-verdict"])[1]//text()').string(multiple=True)
+        if summary and conclusion:
+            review.add_property(type='summary', value=summary)
+        elif summary:
+            review.add_property(type='conclusion', value=summary)
 
         review.add_property(type='excerpt', value=excerpt)
 
