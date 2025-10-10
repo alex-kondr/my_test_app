@@ -16,8 +16,8 @@ agent = agents.GOMIBO_DE
 # agent = agents.TEST
 reload = 1
 
-# mpn: 7
-# pros/cons: 2
+# mpn: 6
+# pros/cons: 1+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
