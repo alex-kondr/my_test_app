@@ -16,6 +16,11 @@ agent = agents.WWW_THE_GADGETEER_COM
 # agent = agents.TEST
 reload = 1
 
+# name: 74+
+# cat: 35+
+# pros/cons: 24+
+# concl: 6+
+# exc: 71
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

@@ -38,8 +38,11 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author_url = data.xpath('//a[contains(@href, "https://indianexpress.com/profile/author/") and @id]/@href').string()
     author = data.xpath('//a[contains(@href, "https://indianexpress.com/profile/author/") and @id]//text()').string()
+    author_url = data.xpath('//a[contains(@href, "https://indianexpress.com/profile/author/") and @id]/@href').string()
+    if not author:
+        author = data.xpath('//a[contains(@href, "https://indianexpress.com/profile/author/")]//text()').string()
+        author_url = data.xpath('//a[contains(@href, "https://indianexpress.com/profile/author/")]/@href').string()
     if not author:
         author = data.xpath('//div/text()[contains(., "Written by ")]').string()
 
@@ -71,7 +74,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[contains(@class, "content") or contains(@id, "content")]/p[not(.//strong[contains(., "Verdict")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[contains(@class, "content") or contains(@id, "content")]/p[not(.//strong[contains(., "Verdict")] or .//b[contains(., "Verdict")])]//text()').string(multiple=True)
     if excerpt:
         if summary:
             excerpt = excerpt.replace(summary, '').strip()

@@ -87,9 +87,9 @@ def process_review(data, context, session):
         summary = summary.replace('REVIEW', '').replace(u'\uFEFF', '').strip(' –:')
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('(//h2|//h3)[regexp:test(., "Final thoughts|Conclusion")]/following-sibling::p[not(@class or regexp:test(., ".+:.+\+|Where to buy|•") or (preceding-sibling::h2)[last()][contains(., "specs")])]//text()').string(multiple=True)
+    conclusion = data.xpath('((//h2|//h3)[regexp:test(., "Final thoughts|Conclusion")])[last()]/following-sibling::p[not(@class or regexp:test(., ".+:.+\+|Where to buy|•") or (preceding-sibling::h2)[last()][contains(., "specs")])]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//p[regexp:test(., "Final thoughts|Conclusion")]/following-sibling::p[not(@class or regexp:test(., ".+:.+\+|Where to buy|•") or (preceding-sibling::h2)[last()][contains(., "specs")])]//text()').string(multiple=True)
+        conclusion = data.xpath('(//p[regexp:test(., "Final thoughts|Conclusion")])[last()]/following-sibling::p[not(@class or regexp:test(., ".+:.+\+|Where to buy|•") or (preceding-sibling::h2)[last()][contains(., "specs")])]//text()').string(multiple=True)
 
     if conclusion:
         conclusion = conclusion.replace(u'\uFEFF', '').strip()

@@ -16,9 +16,9 @@ agent = agents.INDIANEXPRESS_US
 # agent = agents.TEST
 reload = 1
 
-# name: 165
-# author: 55
-# exc: 191
+# name: 88
+# author: 24+
+# exc: 174
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

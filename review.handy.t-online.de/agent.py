@@ -6,7 +6,7 @@ XCAT = ['Aktuelles', 'Weltall', 'WhatsApp', 'Windows', 'Kreuzworträtsel']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.t-online.de/digital/', use='curl', force_charset='utf-8', max_age=0), process_catlist, dict())
 
 
@@ -34,7 +34,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Passwort-Test: ', '').split(' im Test – ')[0].split(' im Test: ')[0].split(' im Vorab-Test: ')[0].replace('Test: ', '').replace(' im Test', '').strip()
+    product.name = context['title'].replace('Passwort-Test: ', '').split(' im Test – ')[0].split(' im Test: ')[0].split(' im Vorab-Test: ')[0].replace('Test: ', '').replace(' im Test', '').replace(' im Praxistest', '').replace(' im Doppel-Test', '').replace(' im Alltagstest', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('id_', '')
     product.category = context['cat'].replace('Tests', 'Technik')
