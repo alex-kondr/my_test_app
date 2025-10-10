@@ -16,7 +16,7 @@ agent = agents.BELSIMPEL_NL
 # agent = agents.TEST
 reload = 1
 
-# pros/cons: 4
+# pros/cons: 0
 # exc: 1+
 
 if __name__ == "__main__":

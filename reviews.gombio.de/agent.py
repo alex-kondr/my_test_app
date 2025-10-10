@@ -183,7 +183,7 @@ def process_reviews(data, context, session):
     offset = context.get('offset', 0) + 15
     if offset < int(revs_cnt):
         next_page = context.get('page', 1) + 1
-        next_url = 'https://www.gomibo.de/API/Reviews/v1.0/ProductReviews/{}?locale=de_DE&page={page}'.format(ssid=product.ssid, page=next_page)
+        next_url = 'https://www.gomibo.de/API/Reviews/v1.0/ProductReviews/{ssid}?locale=de_DE&page={page}'.format(ssid=product.ssid, page=next_page)
         options = "--compressed -H 'Accept-Encoding: deflate' -H 'Authorization: Bearer " + context['token'] + "'"
         session.do(Request(next_url, use='curl', force_charset='utf-8', options=options, max_age=0), process_reviews, dict(context, product=product, offset=offset, page=next_page))
 
