@@ -75,7 +75,7 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//h3[contains(., "Podsumowanie")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//b[contains(., "Podsumowanie")]/following-sibling::text()').string(multiple=True)
+        conclusion = data.xpath('//p[b[contains(., "Podsumowanie")]]/following-sibling::p//text()|//b[contains(., "Podsumowanie")]/following-sibling::text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)

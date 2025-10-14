@@ -16,6 +16,10 @@ agent = agents.GSMONLINE_PL
 # agent = agents.TEST
 reload = 1
 
+# name: 3+
+# author: 75
+# concl: 1+
+# exc: 5+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

@@ -11,3 +11,11 @@ with open("reviewer.gsmonline.pl/agent.py", "w", encoding="utf-8") as file:
             "(context, session)"
         )
     )
+
+
+
+
+    # if not context.get('repeat') and not data.xpath('//div[@class="article-full"]//p'):
+    #     time.sleep(600)
+    #     session.do(Request(data.response_url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, repeat=True))
+    #     return
