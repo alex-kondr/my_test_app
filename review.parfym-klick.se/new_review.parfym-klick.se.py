@@ -54,11 +54,10 @@ def process_catlist(data, context, session):
 def process_prodlist(data, context, session):
     strip_namespace(data)
 
-    prods = data.xpath('//div[@class="productBox"]')
+    prods = data.xpath('//div[@class="productBox"]//a')
     for prod in prods:
-        name = prod.xpath('.//div[@class="fullName"]//text()').string(multiple=True)
-        url = prod.xpath('.//a/@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_product, dict(context, name=name, url=url))
+        url = prod.xpath('@href').string()
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_product, dict(context, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -69,7 +68,7 @@ def process_product(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['name']
+    product.name = data.xpath('//div[@class="prodName"]/text()').string()
     product.url = context['url']
     product.ssid = data.xpath('//meta[@itemprop="sku"]/@content').string()
     product.sku = product.ssid

@@ -16,6 +16,8 @@ agent = agents.DAISYBEAUTY_SE
 # agent = agents.TEST
 reload = 1
 
+# name: 3+
+# exc: 8+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context: dict[str, str], session: Session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
     session.queue(Request('https://www.daisybeauty.com/recensioner/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -49,9 +49,12 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         review.add_property(type='summary', value=summary)
 
     excerpt = data.xpath('//div[@class="post-container"]/p[not(contains(@class, "meta"))]//text()').string(multiple=True)
-
     if excerpt:
-        review.add_property(type='excerpt', value=excerpt)
+        if 'Slutsats:' in excerpt:
+            excerpt, conclusion = excerpt.rsplit('Slutsats:', 1)
+            review.add_property(type='conclusion', value=conclusion.strip())
+
+        review.add_property(type='excerpt', value=excerpt.strip())
 
         product.reviews.append(review)
 

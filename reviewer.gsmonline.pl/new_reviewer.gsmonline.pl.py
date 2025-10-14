@@ -39,7 +39,7 @@ def process_revlist(data, context, session):
 def process_review(data, context, session):
     strip_namespace(data)
 
-    if not context.get('repeat') and not data.xpath('//div[@class="article-full"]/p'):
+    if not context.get('repeat') and not data.xpath('//div[@class="article-full"]//p'):
         time.sleep(600)
         session.do(Request(data.response_url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, repeat=True))
         return
@@ -74,12 +74,19 @@ def process_review(data, context, session):
             review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//h3[contains(., "Podsumowanie")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//b[contains(., "Podsumowanie")]/following-sibling::text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h3[contains(., "Podsumowanie")])[1]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
+        excerpt = data.xpath('(//b[contains(., "Podsumowanie")])[1]/preceding::p//text()|(//b[contains(., "Podsumowanie")])[1]/preceding-sibling::text()').string(multiple=True)
+    if not excerpt:
         excerpt = data.xpath('//div[@class="article-full"]/p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="article-full"]//p[@align="justify" and not(preceding::b[contains(., "Dane techniczne:")])]//text()[not(contains(., "Dane techniczne:"))]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
