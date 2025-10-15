@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-import time
 
 
 def strip_namespace(data):
@@ -18,7 +17,7 @@ def strip_namespace(data):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request('https://gsmonline.pl/testy', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+    session.queue(Request('https://gsmonline.pl/testy', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -29,20 +28,15 @@ def process_revlist(data, context, session):
         ssid = rev.xpath('@id').string().split('_')[-1]
         title = rev.xpath('.//h3/text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, ssid=ssid, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, ssid=ssid, url=url))
 
     next_url = data.xpath('//a[@class="last"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_review(data, context, session):
     strip_namespace(data)
-
-    if not context.get('repeat') and not data.xpath('//div[@class="article-full"]//p'):
-        time.sleep(600)
-        session.do(Request(data.response_url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, repeat=True))
-        return
 
     product = Product()
     product.name = context['title'].replace('Test - ', '').split(' - ')[0].split(' – ')[0].split(': test')[0].replace('Rozpoczynamy testy ', '').replace('Zaczynamy testy ', '').replace('Nasz test ', '').replace('Testujemy ', '').replace('Przetestowaliśmy ', '').replace('Recenzja ', '').replace('Test ', '').strip().capitalize()
@@ -95,4 +89,3 @@ def process_review(data, context, session):
 
         session.emit(product)
 
-        time.sleep(10)
