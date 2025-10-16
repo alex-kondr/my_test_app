@@ -1,11 +1,10 @@
 from agent import *
 from models.products import *
-import time
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=6000)]
-    session.queue(Request('https://www.dgl.ru/reviews', max_age=0), process_revlist, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.queue(Request('https://www.dgl.ru/reviews'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -15,11 +14,11 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
 
         if 'взгляд' in title.lower() or 'обзор' in title.lower():
-            session.queue(Request(url, max_age=0), process_review, dict(title=title, url=url))
+            session.queue(Request(url), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, max_age=0), process_revlist, dict())
+        session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data, context, session):
@@ -82,7 +81,7 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[@class="excerpts"]/p//text()').string(multiple=True)
     if summary:
-        summary = summary.replace(u'\uFEFF', '')
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//h1|//h2)[contains(., "Вердикт") or contains(., "вердикт") or contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")]/following-sibling::p[not(.//script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
@@ -90,7 +89,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('//div[@class="verdict-text"]//text()').string(multiple=True)
 
     if conclusion:
-        conclusion.replace(u'\uFEFF', '')
+        conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//h1|//h2)[contains(., "Вердикт") or contains(., "вердикт") or contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")]/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or .//b[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
@@ -106,12 +105,9 @@ def process_review(data, context, session):
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 
-        excerpt = excerpt.replace(u'\uFEFF', '')
-
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
 
         session.emit(product)
-
-        time.sleep(5)
