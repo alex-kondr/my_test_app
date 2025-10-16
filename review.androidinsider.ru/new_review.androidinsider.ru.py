@@ -1,11 +1,10 @@
 from agent import *
 from models.products import *
-import time
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=6000)]
-    session.queue(Request("https://androidinsider.ru/", max_age=0), process_frontpage, dict())
+    session.queue(Request("https://androidinsider.ru/"), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -13,24 +12,24 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath("text()").string()
         url = cat.xpath("@href").string()
-        session.queue(Request(url, max_age=0), process_revlist, dict(cat=name))
+        session.queue(Request(url), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
     prods = data.xpath("//h2[@class='post-title']/a")
     for prod in prods:
-        name = prod.xpath("text()").string()
+        title = prod.xpath("text()").string()
         url = prod.xpath("@href").string()
-        session.queue(Request(url, max_age=0), process_product, dict(context, name=name, url=url))
+        session.queue(Request(url), process_product, dict(context, title=title, url=url))
 
     next_page = data.xpath("//a[@rel='next']/@href").string()
     if next_page:
-        session.queue(Request(next_page, max_age=0), process_revlist, dict(context))
+        session.queue(Request(next_page), process_revlist, dict(context))
 
 
 def process_product(data, context, session):
     product = Product()
-    product.name = context["name"]
+    product.name = context["title"]
     product.ssid = context["url"].split('/')[-1].split('.')[0]
     product.category = context["cat"]
 
@@ -40,7 +39,7 @@ def process_product(data, context, session):
 
     review = Review()
     review.type = "pro"
-    review.title = product.name
+    review.title = context["title"]
     review.url = context['url']
     review.ssid = product.ssid
 
@@ -76,5 +75,3 @@ def process_product(data, context, session):
         product.reviews.append(review)
 
         session.emit(product)
-
-        time.sleep(10)

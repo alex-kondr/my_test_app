@@ -16,6 +16,9 @@ agent = agents.ANDROIDINSIDER_RU
 # agent = agents.TEST
 reload = 1
 
+# name: 84+
+# concl: 1+
+# exc: 5+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

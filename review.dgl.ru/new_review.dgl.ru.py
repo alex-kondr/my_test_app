@@ -4,7 +4,7 @@ import time
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
     session.queue(Request('https://www.dgl.ru/reviews', max_age=0), process_revlist, dict())
 
 
@@ -85,7 +85,7 @@ def process_review(data, context, session):
         summary = summary.replace(u'\uFEFF', '')
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('(//h1[contains(., "Выводы") or contains(., "Вердикт")]|//h2[contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")])/following-sibling::p[not(.//script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+    conclusion = data.xpath('(//h1|//h2)[contains(., "Вердикт") or contains(., "вердикт") or contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")]/following-sibling::p[not(.//script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="verdict-text"]//text()').string(multiple=True)
 
@@ -93,7 +93,7 @@ def process_review(data, context, session):
         conclusion.replace(u'\uFEFF', '')
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h1[contains(., "Выводы") or contains(., "Вердикт")]|//h2[contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")])/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or .//b[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h1|//h2)[contains(., "Вердикт") or contains(., "вердикт") or contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")]/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or .//b[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//h1[contains(., "Часто задаваемые вопросы")]/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
     if not excerpt:
@@ -114,4 +114,4 @@ def process_review(data, context, session):
 
         session.emit(product)
 
-        time.sleep(10)
+        time.sleep(5)
