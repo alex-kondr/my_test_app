@@ -17,7 +17,7 @@ agent = agents.DGL_RU
 reload = 1
 
 # name: 3554+
-# author: 2+
+# author: 622+
 # pros/cons: 34+
 # exc: 149
 
