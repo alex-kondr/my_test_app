@@ -52,7 +52,7 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//p[contains(., "Rating:")]//text()[regexp:test(., "\d.?\d?/\d")]').string()
+    grade_overall = data.xpath('//p[contains(., "Rating:")]//text()[regexp:test(., "\d.?\d?/\d") and not(contains(., "https:"))]').string()
     if grade_overall:
         grade_overall = float(grade_overall.split('/')[0].split()[-1])
         review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
@@ -64,7 +64,7 @@ def process_review(data, context, session):
         grade_val, grade_best = re.search(r'\d\.?\d{0,2}/\d+', grade).group().split('/')
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=float(grade_best)))
 
-    pros = data.xpath('//p[strong[contains(., "Pros")]]//text()[not(preceding-sibling::strong[contains(., "Cons")] or contains(., "Pros:"))][normalize-space()]')
+    pros = data.xpath('//p[strong[contains(., "Pros")]]//p[strong[contains(., "Pros")]]//text()[not(preceding::strong[contains(., "Cons")] or contains(., "Pros:") or contains(., "Cons"))][normalize-space()]')
     for pro in pros:
         pro = pro.string(multiple=True)
         if pro and '- ' in pro:
@@ -77,7 +77,9 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//strong[contains(., "Cons")]/following-sibling::text()[not(preceding-sibling::strong[contains(., "Rating") or contains(., "Price")])][normalize-space()]')
+    cons = data.xpath('//strong[contains(., "Cons")]/following-sibling::text()[not(preceding::strong[contains(., "Rating") or contains(., "Price")] or contains(., "[caption id=") or contains(., "Image Credit: Tech2"))][normalize-space()]')
+    if not cons:
+        cons = data.xpath('//p[strong[contains(., "Cons")]]//text()[contains(., "Cons")]/following::text()[not(preceding::strong[contains(., "Rating") or contains(., "Price")] or contains(., "Cons:") or contains(., "Price"))][normalize-space()]')
     if not cons:
         cons = data.xpath('//p[strong[contains(., "Cons")]]//text()[not(preceding-sibling::strong[contains(., "Rating") or contains(., "Price")] or contains(., "Cons:"))][normalize-space()]')
 
