@@ -16,6 +16,9 @@ agent = agents.TECH_2_IN
 # agent = agents.TEST
 reload = 1
 
+# pros/cons: 1
+# exc: 424
+# log: 19
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

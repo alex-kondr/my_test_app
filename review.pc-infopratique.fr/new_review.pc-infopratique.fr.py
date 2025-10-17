@@ -16,7 +16,7 @@ def strip_namespace(data):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.queue(Request('https://www.pc-infopratique.com//dossier-debutr-0.html', force_charset='utf-8'), process_revlist, dict())
+    session.queue(Request('https://www.pc-infopratique.com/dossier-debutr-0.html', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):

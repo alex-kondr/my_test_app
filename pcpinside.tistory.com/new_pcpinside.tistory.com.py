@@ -13,11 +13,17 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath("span[@class='title']/text()").string(multiple=True)
         url = rev.xpath("@href").string()
+
+        if not context.get('revs_cnt'):
+            context['revs_cnt'] = int(url.split('/')[-1])
+
         session.queue(Request(url, max_age=0), process_review, dict(title=title, url=url))
 
-    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
-    if next_url:
-        session.queue(Request(next_url, max_age=0), process_revlist, dict(context))
+    offset = context.get('offset', 0) + 5
+    if offset < context['revs_cnt']:
+        next_page = context.get('page', 1) + 1
+        next_url = 'http://pcpinside.tistory.com/?page=' + str(next_page)
+        session.queue(Request(next_url, max_age=0), process_revlist, dict(context, page=next_page))
 
 
 def process_review(data, context, session):
