@@ -16,8 +16,8 @@ agent = agents.TECH_2_IN
 # agent = agents.TEST
 reload = 1
 
-# pros/cons: 1
-# exc: 424
+# pros/cons: 2
+# exc: 426
 # log: 19
 
 if __name__ == "__main__":

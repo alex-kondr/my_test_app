@@ -63,7 +63,9 @@ def process_review(data, context, session):
         grade_val, grade_best = re.search(r'\d\.?\d{0,2}/\d+', grade).group().split('/')
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=float(grade_best)))
 
-    pros = data.xpath('//p[strong[contains(., "Pros")]]//text()[not(preceding::strong[contains(., "Cons") or contains(., "Price")] or contains(., "Pros:") or contains(., "Cons") or contains(., "Price"))][normalize-space()]')
+    pros = data.xpath('//p[strong[contains(., "Pros")]]//text()[not(preceding::strong[contains(., "Cons") or contains(., "Price")] or contains(., "Pros:") or contains(., "Price"))][normalize-space()][starts-with(., "-")]')
+    if not pros:
+        pros = data.xpath('//p[.//b[contains(., "Pros")]]//text()[not(preceding::strong[contains(., "Cons") or contains(., "Price")] or contains(., "Pros") or contains(., "Price"))][normalize-space()]')
     if not pros:
         pros = data.xpath('//strong[contains(., "Pros")]/following-sibling::span[not(preceding::strong[contains(., "Cons")] or contains(., "Cons"))]')
 
@@ -81,11 +83,11 @@ def process_review(data, context, session):
 
     cons = data.xpath('//strong[contains(., "Cons")]/following-sibling::text()[not(preceding::strong[contains(., "Rating") or contains(., "Price")] or contains(., "[caption id=") or contains(., "Image Credit: Tech2"))][normalize-space()]')
     if not cons:
-        cons = data.xpath('//p[strong[contains(., "Cons")]]//text()[contains(., "Cons")]/following::text()[not(preceding::strong[contains(., "Rating") or contains(., "Price")] or contains(., "Cons:") or contains(., "Price"))][normalize-space()]')
+        cons = data.xpath('//p[strong[contains(., "Cons")]]//text()[preceding::strong[1][contains(., "Cons")]][not(preceding::strong[contains(., "Rating") or contains(., "Price")] or contains(., "Cons:") or contains(., "Price"))][normalize-space()][starts-with(., "-")]')
     if not cons:
-        cons = data.xpath('//p[strong[contains(., "Cons")]]//text()[not(preceding::strong[contains(., "Rating") or contains(., "Price")] or contains(., "Cons:") or contains(., "Rating") or contains(., "Price"))][normalize-space()]')
+        cons = data.xpath('//p[strong[contains(., "Cons")]]//text()[not(preceding::strong[contains(., "Rating") or contains(., "Price")] or contains(., "Cons") or contains(., "Rating") or contains(., "Price"))][normalize-space()]')
     if not cons:
-        cons = data.xpath('//strong[contains(., "Cons")]/following-sibling::span[starts-with(., "-")]')
+        cons = data.xpath('//strong[contains(., "Cons")]/following-sibling::span[starts-with(., "-")]//text()')
 
     for con in cons:
         con = con.string(multiple=True)

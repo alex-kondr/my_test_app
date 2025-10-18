@@ -5,7 +5,7 @@ import time
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=6000)]
-    session.queue(Request('http://pcpinside.tistory.com/', max_age=0), process_revlist, dict())
+    session.queue(Request('http://pcpinside.tistory.com/', use='curl'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -17,13 +17,13 @@ def process_revlist(data, context, session):
         if not context.get('revs_cnt'):
             context['revs_cnt'] = int(url.split('/')[-1])
 
-        session.queue(Request(url, max_age=0), process_review, dict(title=title, url=url))
+        session.queue(Request(url, use='curl'), process_review, dict(title=title, url=url))
 
     offset = context.get('offset', 0) + 5
     if offset < context['revs_cnt']:
         next_page = context.get('page', 1) + 1
         next_url = 'http://pcpinside.tistory.com/?page=' + str(next_page)
-        session.queue(Request(next_url, max_age=0), process_revlist, dict(context, page=next_page))
+        session.queue(Request(next_url, use='curl'), process_revlist, dict(context, page=next_page))
 
 
 def process_review(data, context, session):
