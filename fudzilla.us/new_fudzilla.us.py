@@ -60,7 +60,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h2[regexp:test(., "Should you go|Conclusion")]/preceding-sibling::p//text()[not(regexp:test(., "customers can get |Amazon"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="itemFullText"]/p[not(regexp:test(., "Conclusion|Specs:|Standard:"))]//text()[not(regexp:test(., "customers can get |Amazon"))]').string(multiple=True)
+        excerpt = data.xpath('//div[@class="itemFullText"]/p[not(regexp:test(., "Conclusion|Specs:|Standard:"))]//text()[not(regexp:test(., "customers can get |Amazon"))]|//strong[contains(., "Conclusion")]/preceding-sibling::text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('(//div[@class="itemFullText"]|//div[@class="itemFullText"]/strong)/text()').string(multiple=True)
 

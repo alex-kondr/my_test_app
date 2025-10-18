@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-import time
 
 
 def run(context, session):
@@ -13,17 +12,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath("span[@class='title']/text()").string(multiple=True)
         url = rev.xpath("@href").string()
-
-        if not context.get('revs_cnt'):
-            context['revs_cnt'] = int(url.split('/')[-1])
-
         session.queue(Request(url, use='curl'), process_review, dict(title=title, url=url))
 
-    offset = context.get('offset', 0) + 5
-    if offset < context['revs_cnt']:
-        next_page = context.get('page', 1) + 1
-        next_url = 'http://pcpinside.tistory.com/?page=' + str(next_page)
-        session.queue(Request(next_url, use='curl'), process_revlist, dict(context, page=next_page))
+    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
+    if next_url:
+        session.queue(Request(next_url, use='curl'), process_revlist, dict())
 
 
 def process_review(data, context, session):
@@ -54,5 +47,3 @@ def process_review(data, context, session):
         product.reviews.append(review)
 
         session.emit(product)
-        
-        time.sleep(10)
