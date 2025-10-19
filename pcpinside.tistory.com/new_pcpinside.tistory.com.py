@@ -8,27 +8,25 @@ def run(context, session):
 
 
 def process_revlist(data, context, session):
-    revs = data.xpath("//div[@class='post-item']/a")
-    for rev in revs:
-        title = rev.xpath("span[@class='title']/text()").string(multiple=True)
-        url = rev.xpath("@href").string()
-        session.queue(Request(url, use='curl'), process_review, dict(title=title, url=url))
+    rev_url = data.xpath("//div[@class='post-item']/a/@href").string()
+    session.queue(Request(rev_url, use='curl'), process_review, dict(url=rev_url))
 
-    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
-    if next_url:
-        session.queue(Request(next_url, use='curl'), process_revlist, dict())
+    revs_cnt = int(rev_url.split('/')[-1])
+    for i in range(1, revs_cnt):
+        next_url = rev_url.rsplit('/', 1)[0] + '/' + str(i)
+        session.queue(Request(next_url, use='curl'), process_review, dict(url=next_url))
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = data.xpath('//div[@class="hgroup"]/h1/text()').string()
     product.url = context['url']
-    product.ssid = context['url'].split('/')[-1]
+    product.ssid = product.url.split('/')[-1]
     product.category = data.xpath("//div[@class='category']//text()").string()
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = product.name
     review.url = product.url
     review.ssid = product.ssid
 
