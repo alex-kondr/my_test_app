@@ -16,6 +16,8 @@ agent = agents.PCPINSIDE
 # agent = agents.TEST
 reload = 1
 
+# name: 115+
+# title: 0
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

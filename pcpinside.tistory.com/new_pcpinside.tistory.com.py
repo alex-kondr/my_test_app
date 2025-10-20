@@ -18,8 +18,12 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
+    title = data.xpath('//div[@class="hgroup"]/h1/text()').string()
+    if title:
+        title = title.replace(u'\uFEFF', '').strip()
+
     product = Product()
-    product.name = data.xpath('//div[@class="hgroup"]/h1/text()').string()
+    product.name = title
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
     product.category = data.xpath("//div[@class='category']//text()").string()
@@ -39,6 +43,9 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     excerpt = data.xpath('//div[@class="contents_style"]/p[not(.//a)][not(.//img)][not(b)][not(contains(@style, "TEXT-ALIGN: center"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="contents_style"]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
