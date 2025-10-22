@@ -16,6 +16,9 @@ agent = agents.STUFF_TV
 # agent = agents.TEST
 reload = 1
 
+# name: 14
+# pros/cons: 9+
+# exc: 8+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

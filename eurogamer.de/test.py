@@ -16,6 +16,12 @@ agent = agents.EUROGAMER
 # agent = agents.TEST
 reload = 1
 
+# name: 52
+# cat: 4
+# author: 2
+# pros/cons: 3
+# concl: 7
+# exc: 97
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

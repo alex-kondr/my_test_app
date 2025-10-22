@@ -22,7 +22,17 @@ def process_frontpage(data, context, session):
             for sub_cat in sub_cats:
                 sub_name = sub_cat.xpath('text()').string()
                 url = sub_cat.xpath('@href').string()
-                session.queue(Request(url, force_charset='utf-8', max_age=0), process_prodlist, dict(cat=name + '|' + sub_name))
+                session.queue(Request(url, force_charset='utf-8', max_age=0), process_catlist, dict(cat=name + '|' + sub_name))
+
+
+def process_catlist(data, context, session):
+    sub_cats = data.xpath('//a[@class="collection-item"]')
+    for sub_cat in sub_cats:
+        sub_name = sub_cat.xpath('following-sibling::div[1]//img/@alt').string()
+        url = sub_cat.xpath('@href').string()
+        session.queue(Request(url, force_charset='utf-8', max_age=0), process_prodlist, dict(cat=context['cat'] + '|' + sub_name))
+
+    process_prodlist(data, context, session)
 
 
 def process_prodlist(data, context, session):
