@@ -8,7 +8,7 @@ h = HTMLParser.HTMLParser()
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.districtcamera.com/', force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 

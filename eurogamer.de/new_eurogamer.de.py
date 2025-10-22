@@ -18,7 +18,7 @@ def strip_namespace(data):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=8000)]
-    session.queue(Request('https://www.eurogamer.de/reviews', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+    session.queue(Request('https://www.eurogamer.de/reviews', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -28,25 +28,25 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//a[span[@aria-label="Nächste Seite"]]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = re.sub(r' im Vergleichstest|Test zu | im Test|Test: | - Test', '', re.split(r' im Test:? | [-–] Test: | Test [-–] | Test: | im Review - ', context['title'].split(' – Test: ')[-1])[0]).strip()
+    product.name = re.sub(r' im Vergleichstest|Test zu | im Test|Test: | - Test', '', re.split(r' im Test:? | [-–] Test: | Test [-–] | Test: | im Review - ', context['title'].split(' – Test: ')[-1])[0]).split(' Review: ')[0].split(' Test – ')[0].replace('Test – ', '').replace(' für Switch Test', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('-review', '')
     product.category = 'Spiele'
 
     platforms = data.xpath('//li[regexp:test(., "Plattformen:|Erhältlich für:")]//text()').string(multiple=True)
     if platforms:
-        product.category += '|' + re.sub(r'\(.+\)', '', platforms.replace('Plattformen:', '').replace('Erhältlich für:', '').strip().replace(', ', '/')).strip()
+        product.category += '|' + re.sub(r'\(.+\)', '', platforms.replace('Plattformen:', '').replace('Erhältlich für:', '').strip().replace(', ', '/')).replace('Auch erhältlich: ', '').replace(' (', '/').strip()
 
     manufacturer = data.xpath('//li[regexp:test(., "Entwickler:|Hersteller:")]//text()').string(multiple=True)
     if manufacturer:
@@ -62,7 +62,7 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//span[@class="author"]/a/text()').string()
+    author = data.xpath('//span[@class="author"]//text()').string(multiple=True)
     author_url = data.xpath('//span[@class="author"]/a/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
@@ -109,7 +109,7 @@ def process_review(data, context, session):
         title = review.title + " - Pagina 1"
         review.add_property(type='pages', value=dict(title=title, url=review.url))
 
-        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(grade_overall=grade_overall, excerpt=excerpt, review=review, product=product, page=2))
+        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_review_next, dict(grade_overall=grade_overall, excerpt=excerpt, review=review, product=product, page=2))
 
     else:
         if excerpt and conclusion:
@@ -179,7 +179,7 @@ def process_review_next(data, context, session):
 
     next_url = data.xpath('//div[@class="next"]/a/@href').string()
     if next_url:
-        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_review_next, dict(context, page=page + 1))
+        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_review_next, dict(context, page=page + 1))
 
     elif context['excerpt']:
         review.add_property(type="excerpt", value=context['excerpt'])

@@ -16,6 +16,8 @@ agent = agents.CYCLE_LAB_ZA
 # agent = agents.TEST
 reload = 1
 
+# name: 9+
+# cat: 7+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
