@@ -16,6 +16,8 @@ agent = agents.DISTRICTCAMERA_US
 # agent = agents.TEST
 reload = 1
 
+# name: 4+
+# cat: 4+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
