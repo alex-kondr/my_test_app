@@ -37,6 +37,10 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
+    if not data.xpath('//div[@class="elementor-widget-container" and h2]/p') and not context.get('restart'):
+        time.sleep(600)
+        session.do(Request(data.response_url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, restart=True))
+
     product = Product()
     product.name = context['title'].replace(' Review', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
