@@ -77,6 +77,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
     pros = data.xpath('//div[@class="beebom-single-review" and div[contains(text(), "Pros")]]//div[contains(@class, "review-item")]')
+    if not pros:
+        pros = data.xpath('//p[strong[contains(text(), "Pros:")]]/following-sibling::*[1]/li')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -85,6 +88,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//div[@class="beebom-single-review" and div[contains(text(), "Cons")]]//div[contains(@class, "review-item")]')
+    if not cons:
+        cons = data.xpath('//p[strong[contains(text(), "Cons:")]]/following-sibling::*[1]/li')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -96,23 +102,17 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
+    summary = data.xpath('(//div[@class="review-verdict"])[1]//text()').string(multiple=True)
+    if summary and conclusion:
+        review.add_property(type='summary', value=summary)
+    elif summary:
+        review.add_property(type='conclusion', value=summary)
 
     excerpt = data.xpath('//h2[regexp:test(., "Verdict|Should You Buy", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "content-container")]/p[not(.//strong[contains(., "Buy from")])]//text()').string(multiple=True)
 
     if excerpt:
-        if 'Overall, ' in excerpt and not conclusion:
-            excerpt, conclusion = excerpt.rsplit('Overall, ', 1)
-
-            conclusion = conclusion.strip()[0].title() + conclusion.strip()[1:]
-            review.add_property(type='conclusion', value=conclusion)
-
-        summary = data.xpath('(//div[@class="review-verdict"])[1]//text()').string(multiple=True)
-        if summary and conclusion:
-            review.add_property(type='summary', value=summary)
-        elif summary:
-            review.add_property(type='conclusion', value=summary)
 
         review.add_property(type='excerpt', value=excerpt)
 

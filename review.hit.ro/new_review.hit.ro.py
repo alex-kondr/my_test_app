@@ -72,10 +72,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//strong[regexp:test(., "Concluzi", "i")]/preceding-sibling::text()|(//strong[regexp:test(., "Concluzi", "i")]/preceding-sibling::a|//strong[regexp:test(., "Concluzi", "i")]/preceding-sibling::p|//strong[regexp:test(., "Concluzi", "i")]/preceding-sibling::strong)//text()[not(contains(., "(cllic pe imagin") or contains(., "(clic pe imagin") or regexp:test(., "Specificatii", "i") or preceding-sibling::text()[regexp:test(., "SPECIFICATII", "i")])]').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('(//div[@itemprop="articleBody"]/text()|(//div[@itemprop="articleBody"]/strong|//div[@itemprop="articleBody"]/a|//div[@itemprop="articleBody"]/p)//text())[not(contains(., "(cllic pe imagin") or contains(., "(clic pe imagin") or regexp:test(., "Specificatii|concluzii", "i") or preceding-sibling::text()[regexp:test(., "SPECIFICATII", "i")])]').string(multiple=True)
-
+    excerpt = data.xpath('(//div[@itemprop="articleBody"]/text()|(//div[@itemprop="articleBody"]/strong|//div[@itemprop="articleBody"]/a|//div[@itemprop="articleBody"]/p)//text())[not(contains(., "(cllic pe imagin") or contains(., "(clic pe imagin") or regexp:test(., "Specificatii|concluzi", "i") or preceding-sibling::text()[regexp:test(., "SPECIFICATII|Concluzi", "i")])]').string(multiple=True)
     if excerpt:
         grades = re.findall(r'(Intro/Poveste|Grafica|Gameplay|Sunete/Muzica|Realism|A\.I\.|Multiplayer|Rejucabilitate) \d{1,2},?\d?', excerpt)
         for grade in grades:
@@ -84,7 +81,7 @@ def process_review(data, context, session):
             review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
         excerpt = excerpt.split('Criteriu Nota Plusuri')[0]
-        if conclusion and conclusion in excerpt:
+        if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 
         review.add_property(type='excerpt', value=excerpt)

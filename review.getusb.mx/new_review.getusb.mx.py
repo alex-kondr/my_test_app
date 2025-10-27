@@ -66,14 +66,17 @@ def process_review(data, context, session):
         summary = h.unescape(summary).replace(u'�', '').replace(u'Ã¡', u'á').replace(u'Ã©', u'é').replace(u'Ã³', u'ó').replace(u'Ã­', u'í').replace(u'Â', u' ').replace(u'â€œ', u'“').replace(u'â€', u'”').replace(u'\x9D', '”').replace(u'hiceron', u'hicieron').replace(u'apoyo', u'apoyó').replace(u'Ã\x81', u'Á').replace(u'Ã±', u'ñ').replace(u'Ã\x8D', u'Í').replace('  ', ' ').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath("//strong[regexp:test(normalize-space(.), 'ConclusiÃ³n')]/following-sibling::text()").string(multiple=True)
+    conclusion = data.xpath("//strong[regexp:test(normalize-space(.), 'ConclusiÃ³n|CONCLUSIÃ“N')]/following-sibling::text()").string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath("//p[strong[regexp:test(normalize-space(.), 'ConclusiÃ³n|CONCLUSIÃ“N')]]/following-sibling::text()|//p[strong[regexp:test(normalize-space(.), 'ConclusiÃ³n|CONCLUSIÃ“N')]]/following-sibling::blockquote//text()").string(multiple=True)
+
     if conclusion:
         conclusion = h.unescape(conclusion).split("Trackback")[0].split("Tags:")[0].replace(u'�', '').replace(u'Ã¡', u'á').replace(u'Ã©', u'é').replace(u'Ã³', u'ó').replace(u'Ã­', u'í').replace(u'Â', u' ').replace(u'â€œ', u'“').replace(u'â€', u'”').replace(u'\x9D', '”').replace(u'hiceron', u'hicieron').replace(u'apoyo', u'apoyó').replace(u'Ã\x81', u'Á').replace(u'Ã±', u'ñ').replace(u'Ã\x8D', u'Í').replace('  ', ' ').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('(//main[contains(@class, "content")]/article|//main[contains(@class, "content")]/article/a|//main[contains(@class, "content")]/article/strong)/text()|//main[contains(@class, "content")]/article/p[not(@class)]//text()|//main[contains(@class, "content")]/article/div/p[not(@class)]//text()').string(multiple=True)
     if excerpt:
-        excerpt = h.unescape(excerpt).split("ConclusiÃ³n")[0].split("Trackback")[0].split("Tags:")[0].replace(u'�', '').replace(u'Ã¡', u'á').replace(u'Ã©', u'é').replace(u'Ã³', u'ó').replace(u'Ã­', u'í').replace(u'Â', u' ').replace(u'â€œ', u'“').replace(u'â€', u'”').replace(u'\x9D', '”').replace(u'hiceron', u'hicieron').replace(u'apoyo', u'apoyó').replace(u'Ã\x81', u'Á').replace(u'Ã±', u'ñ').replace(u'Ã\x8D', u'Í').replace('  ', ' ').strip()
+        excerpt = h.unescape(excerpt).split("ConclusiÃ³n")[0].split('CONCLUSIÃ“N')[0].split("Trackback")[0].split("Tags:")[0].replace('Veamos algunos:', '').replace(u'�', '').replace(u'Ã¡', u'á').replace(u'Ã©', u'é').replace(u'Ã³', u'ó').replace(u'Ã­', u'í').replace(u'Â', u' ').replace(u'â€œ', u'“').replace(u'â€', u'”').replace(u'\x9D', '”').replace(u'hiceron', u'hicieron').replace(u'apoyo', u'apoyó').replace(u'Ã\x81', u'Á').replace(u'Ã±', u'ñ').replace(u'Ã\x8D', u'Í').replace('  ', ' ').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

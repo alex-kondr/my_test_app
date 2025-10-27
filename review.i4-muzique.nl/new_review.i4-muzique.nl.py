@@ -53,7 +53,7 @@ def process_product(data, context, session):
     product.sku = product.ssid
     product.category = context["cat"]
 
-    if context['mpn']:
+    if context['mpn'] and ' ' not in context['mpn']:
         product.add_property(type='id.manufacturer', value=context['mpn'])
 
     ean = data.xpath("//tr[contains(@class, '--attribute_ean')]/td//text()").string(multiple=True)

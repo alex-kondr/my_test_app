@@ -62,10 +62,15 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[regexp:test(., "Veredict", "i")]/following-sibling::p[contains(@class, "article-body") and not(contains(., "*Los precios de los") or contains(., "⭐"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h4[regexp:test(., "conclusión", "i")]/following-sibling::p[contains(@class, "article-body") and not(contains(., "*Los precios de los") or contains(., "⭐"))]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[regexp:test(., "Veredict", "i")]/preceding-sibling::p[contains(@class, "article-body") and not(contains(., "*Los precios de los") or contains(., "⭐"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h4[regexp:test(., "conclusión", "i")]/preceding-sibling::p[contains(@class, "article-body") and not(contains(., "*Los precios de los") or contains(., "⭐"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div/p[contains(@class, "article-body") and not(contains(., "*Los precios de los") or contains(., "⭐"))]//text()').string(multiple=True)
 
