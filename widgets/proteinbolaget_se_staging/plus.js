@@ -23,3 +23,10 @@ var r = document.querySelector("hrow");
 var divHrow = r.querySelector(".hrow");
 var parent = r.querySelector(".header");
 parent.appendChild(divHrow)
+
+  var tdStars = document.querySelectorAll("td.sym")
+  forEach(tdStars, function(_, star) {
+    star.innerHTML = '⭐';
+
+    console.log("star=", star)
+  });

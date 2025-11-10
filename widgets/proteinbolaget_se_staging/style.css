@@ -1,0 +1,63 @@
+/*= require widget */
+
+div.testfreaks {
+  margin-left: 6em !important;
+  margin-right: 8em !important;
+}
+
+div.tf-header {
+  display: flex !important;
+  justify-content: center !important;
+}
+
+div.article.review.customer-review {
+  display: flex !important;
+}
+
+div.article.review.customer-review > div.header {
+  margin-left: -2em !important;
+}
+
+div.vbuyer.hcol {
+  margin-left: .5em !important;
+  background-color: #6bff9130 !important;
+  color: #008e00 !important;
+  font-size: .8em !important;
+  padding: .3em !important;
+  font-weight: bold !important;
+}
+
+div.author.hcol {
+  color: black !important;
+}
+
+#tf-tab-rsort {
+	background-color: #000000c2 !important;
+	color: white !important;
+	background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0id2hpdGUiIGNsYXNzPSJiaSBiaS1jaGV2cm9uLWRvd24iIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMS42NDYgNC42NDZhLjUuNSAwIDAgMSAuNzA4IDBMOCAxMC4yOTNsNS42NDYtNS42NDdhLjUuNSAwIDAgMSAuNzA4LjcwOGwtNiA2YS41LjUgMCAwIDEtLjcwOCAwbC02LTZhLjUuNSAwIDAgMSAwLS43MDgiLz4KPC9zdmc+") !important;
+  background-size: 1em !important;
+  background-position: right 1.3em center !important;
+}
+
+#tf-tab-rsort-label {
+  display: flex !important;
+  position: static !important;
+  overflow: inherit !important;
+  margin: 8px !important;
+}
+
+#tf-tab-user, .customer-review .footer, .customer-review .hrow span, .logo.text-logo.pull-left, .customer-review > .header > .hrow > time.date, div.verified.iconverified, div.pros, div.cons, div.response  {
+  display: none !important;
+}
+
+.customer-review .header .hrow > div.score.hcol {
+  display: flex !important;
+  font-size: 1.3em !important;
+  padding-bottom: .3em !important;
+}
+
+.customer-review .tf-grade {
+  margin-left: .5em !important;
+  font-size: 10px !important;
+  margin-top: .6em !important;
+}
