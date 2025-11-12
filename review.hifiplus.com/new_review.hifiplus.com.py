@@ -22,7 +22,7 @@ def process_review(data, context, session):
     title = data.xpath('//h1/text()').string()
 
     product = Product()
-    product.name = title
+    product.name = title.replace(' review', '').replace(' Review', '').replace('Review ', '').strip()
     product.url = data.xpath('//a[@data-wpel-link="external"][preceding-sibling::*[contains(., "Manufacturer")] or parent::*[preceding-sibling::*[contains(., "Manufacturer")]]]/@href').string() or context['url']
     product.ssid = context['url'].strip('/').split('/')[-1]
     product.category = 'Tech'
@@ -51,11 +51,11 @@ def process_review(data, context, session):
         author_ssid = author_url.strip('/').split('/')[-1]
         review.authors.append(Person(name=author_name, profile_url=author_url, ssid=author_ssid))
 
-    conclusion = data.xpath('//div[@class="content-box"]//p[preceding::*[self::h3 or self::h4][regexp:test(., "Final Thought", "i")]][normalize-space()][not(preceding::*[regexp:test(., "^\s*Technical specification|Learn more about|\s*Price and Contact Details|Final Thought", "i")])][not(regexp:test(., "^\s*Price and Contact Details|Learn more about", "i"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//div[@class="content-box"]//p[preceding::*[self::h3 or self::h4 or self::b][regexp:test(., "Final Thought|Conclusion", "i")]][normalize-space()][not(preceding::*[regexp:test(., "^\s*Technical specification|Learn more about|\s*Price and Contact Details|Final Thought", "i")])][not(regexp:test(., "^\s*Price and Contact Details|Learn more about", "i"))]//text()').string(multiple=True)
     if conclusion and conclusion.strip():
         review.add_property(type='conclusion', value=conclusion.strip())
 
-    excerpt = data.xpath('//div[@class="content-box"]//p[not(preceding::*[regexp:test(., "^\s*Technical specification|Learn more about|\s*Price and Contact Details|Final Thought", "i")])][not(regexp:test(., "^\s*Price and Contact Details|Learn more about", "i"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="content-box"]//p[not(preceding::*[regexp:test(., "^\s*Technical specification|Learn more about|\s*Price and Contact Details|Final Thought|Conclusion", "i")])][not(regexp:test(., "^\s*Price and Contact Details|Learn more about|Conclusion", "i"))]//text()').string(multiple=True)
     if excerpt and excerpt.strip():
         review.add_property(type='excerpt', value=excerpt.strip())
 
