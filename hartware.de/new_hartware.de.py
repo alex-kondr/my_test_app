@@ -3,6 +3,9 @@ from models.products import *
 import re
 
 
+OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:145.0) Gecko/20100101 Firefox/145.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: deflated' -H 'Connection: keep-alive' -H 'Cookie: TCF_COOKIE=CQaxgwAQaxgwAFDADBDECEFsAP_gAEPgAAYgLlNR_G__bWlr-bb3aftkeYxP9_hr7sQxBgbJk24FzLvW7JwWx2E5NAzatqIKmRIAu3TBIQNlHJDURVCgKIgVryDMaEyUoTNKJ6BkiFMRI2NYCFxvm4tjWQCY5vr99lc1mB-N7dr82dzyy6hHn3a5_2S1WJCdIYetDfv8ZBKT-9IEd_x8v4v4_F7pE2-eS1n_pGvp6j9-YnM_dBmxt-bSffzPn__rl_e7X_vd_n37v94XH77v____f_-7_wXIaj-N_62vLf8WCvw_bIcxi_7_AH3YhiCA2TRswLmXUtyRgtvsJmSJE0YUwQMiABRuiCQAJSMDCIiKFCERAqXiGYAJghQmaQQ8DJAGYixMCgAJCfFxbGsgEzydT86K77ElsZybXtsrlkk3BHfuVa8skqoTE4UwYKO9bYwCAj1eQp7uiVrRaR-Z3SJgUgBjf_KNTL0uw9xOOerTXia8zk6Yl--5Lnv-92idMz977Z9f2k7_2fzeutzd_-2AAAAA.YAAAAAAAAAAA; borlabs-cookie=%7B%22consents%22%3A%7B%22essential%22%3A%5B%22borlabs-cookie%22%5D%7D%2C%22domainPath%22%3A%22www.hartware.de%2F%22%2C%22expires%22%3A%22Sun%2C%2011%20Jan%202026%2008%3A07%3A14%20GMT%22%2C%22uid%22%3A%22wzlxoy59-rj2wkzg9-8d2klvs7-xapfslgp%22%2C%22v3%22%3Atrue%2C%22version%22%3A1%7D' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"""
+
+
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"
     out = file(tmp, "w")
@@ -42,7 +45,7 @@ def remove_emoji(string):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=6000)]
-    session.queue(Request('https://www.hartware.de/category/reviews/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+    session.queue(Request('https://www.hartware.de/category/reviews/', use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -54,11 +57,11 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
 
         if ' Preview' not in title:
-            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_revlist, dict())
 
 
 def process_review(data, context, session):
@@ -105,7 +108,7 @@ def process_review(data, context, session):
         review.add_property(type='pages', value=dict(title=title, url=page_url))
 
     if pages:
-        session.do(Request(page_url, use='curl', force_charset='utf-8', max_age=0), process_review_last, dict(excerpt=excerpt, review=review, product=product))
+        session.do(Request(page_url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_review_last, dict(excerpt=excerpt, review=review, product=product))
 
     elif excerpt:
         excerpt = remove_emoji(excerpt)
