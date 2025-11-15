@@ -60,7 +60,7 @@
 
 .testfreaks .tf-header {
   display: grid !important;
-  justify-content: center !important;
+  justify-content: left !important;
   margin-left: 2em !important;
 }
 
