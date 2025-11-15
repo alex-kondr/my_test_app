@@ -1,37 +1,93 @@
 /*= require widget */
 
-div.testfreaks {
-  margin-left: 6em !important;
-  margin-right: 8em !important;
+@import url('https://fonts.googleapis.com/css2?family=Lora&display=swap');
+
+.testfreaks-reviews .testfreaks {
+  max-width: 1280px !important;
+  margin: auto !important;
+  font-family: 'Helvetica Neue' !important;
 }
 
-div.tf-header {
-  display: flex !important;
+.testfreaks .tf-score {
+  width: 55% !important;
+  margin-left: auto !important;
+}
+
+.testfreaks .tf-distribution .fill {
+  background-color: #d3d3d3 !important;
+  width: 120% !important;
+}
+
+.testfreaks .tf-score .tf-rating {
+  float: left !important;
+  font-weight: bold !important;
+  margin-top: 0.2em !important;
+}
+
+.testfreaks .tf-score .tf-stars.tf-stars-svg {
+  margin-left: 3.4em !important;
+  position: relative !important;
+}
+
+.testfreaks .tf-stars {
+  position: initial !important;
+}
+
+.testfreaks .article .tf-stars-svg {
+  margin-right: 1em !important;
+}
+
+.testfreaks .tf-score .tf-based {
+  margin-top: 0.2em !important;
+}
+
+.testfreaks .tf-distribution .range {
+  font-weight: bold !important;
+  padding-top: 0.1em !important;
+}
+
+.testfreaks .tf-dist-all .bar {
+  width: 20em !important;
+}
+
+.testfreaks .article .header {
+  margin-left: -30px !important;
+}
+
+.testfreaks .article .content {
+  width: 65% !important;
+}
+
+.testfreaks .tf-header {
+  display: grid !important;
   justify-content: center !important;
+  margin-left: 2em !important;
 }
 
-div.article.review.customer-review {
+.testfreaks .article.review.customer-review {
   display: flex !important;
 }
 
-div.article.review.customer-review > div.header {
+.testfreaks .article.review.customer-review.header {
   margin-left: -2em !important;
 }
 
-div.vbuyer.hcol {
+.testfreaks .vbuyer.hcol {
   margin-left: .5em !important;
   background-color: #6bff9130 !important;
   color: #008e00 !important;
   font-size: .8em !important;
   padding: .3em !important;
   font-weight: bold !important;
+  font-size: 50% !important;
 }
 
-div.author.hcol {
+.testfreaks .author.hcol {
   color: black !important;
+  font-size: 75% !important;
 }
 
-#tf-tab-rsort {
+.testfreaks #tf-tab-rsort {
 	background-color: #000000c2 !important;
 	color: white !important;
 	background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0id2hpdGUiIGNsYXNzPSJiaSBiaS1jaGV2cm9uLWRvd24iIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMS42NDYgNC42NDZhLjUuNSAwIDAgMSAuNzA4IDBMOCAxMC4yOTNsNS42NDYtNS42NDdhLjUuNSAwIDAgMSAuNzA4LjcwOGwtNiA2YS41LjUgMCAwIDEtLjcwOCAwbC02LTZhLjUuNSAwIDAgMSAwLS43MDgiLz4KPC9zdmc+") !important;
@@ -39,25 +95,37 @@ div.author.hcol {
   background-position: right 1.3em center !important;
 }
 
-#tf-tab-rsort-label {
+.testfreaks #tf-tab-rsort-label {
   display: flex !important;
   position: static !important;
   overflow: inherit !important;
   margin: 8px !important;
 }
 
-#tf-tab-user, .customer-review .footer, .customer-review .hrow span, .logo.text-logo.pull-left, .customer-review > .header > .hrow > time.date, div.verified.iconverified, div.pros, div.cons, div.response  {
+.testfreaks #tf-tab-user, .testfreaks .customer-review .footer, .testfreaks .customer-review .hrow .sep, .testfreaks .logo.text-logo.pull-left, .testfreaks .customer-review .header .hrow .date, .testfreaks .verified.iconverified, .testfreaks .pros, .testfreaks .cons, .testfreaks .response  {
   display: none !important;
 }
 
-.customer-review .header .hrow > div.score.hcol {
+.testfreaks .customer-review .header .hrow .score.hcol {
   display: flex !important;
   font-size: 1.3em !important;
   padding-bottom: .3em !important;
 }
 
-.customer-review .tf-grade {
-  margin-left: .5em !important;
+.testfreaks .customer-review .tf-grade {
   font-size: 10px !important;
   margin-top: .6em !important;
+  width: 7em !important;
+}
+
+.testfreaks-reviews .tf-distribution .sym {
+  font-size: 0 !important;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUiIGhlaWdodD0iMTQiIHZpZXdCb3g9IjAgMCAxNSAxNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNNy4zNDUzNiAyLjIyMjczTDEwLjIzMzUgNC45MjQ2M0wxMy40OTU0IDUuNDQ5NzNDMTMuOTY2IDUuNTE1ODMgMTQuMTQ1OSA2LjA5Nzg4IDEzLjgxNDIgNi40MjQyM0wxMS4xOTMyIDkuMTA2NzZMMTIuMDk2MiAxMi42NDI5QzEyLjE3NzkgMTMuMTA4OSAxMS42ODU3IDEzLjQ2NDkgMTEuMjY0MSAxMy4yNDQ1TDcuMzQ1MzYgMTEuMDExTDMuNDI2NjEgMTMuMjQ0NUMzLjAwNDk4IDEzLjQ2NDkgMi41MTI4IDEzLjEwODkgMi41OTQ0OCAxMi42NDI5TDMuNDk3NDkgOS4xMDY3NkwxLjAwMzE5IDYuNDI0MjNDMC42NzE1MjcgNi4wOTc4OCAwLjg1MTQyMyA1LjUxNTgzIDEuMzIyMDMgNS40NDk3M0w0LjU4Mzk5IDQuOTI0NjNMNy4zNDUzNiAyLjIyMjczWiIgZmlsbD0iI0ZGRDcwMCIvPjwvc3ZnPg==') !important;
+  background-size: 14px !important;
+  width: 14px !important;
+  background-repeat: no-repeat !important;
+}
+
+.testfreaks .customer-review .product-name {
+  color: gray !important;
 }
