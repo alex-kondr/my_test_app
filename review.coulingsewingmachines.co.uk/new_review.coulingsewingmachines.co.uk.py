@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-import simplejson
 
 
 X_CATS = ['FINANCE', 'SPECIAL OFFERS', 'EX-DISPLAY / PRE-LOVED', 'FIND BY PART', ]
@@ -20,7 +19,8 @@ def strip_namespace(data):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.browser.use_new_parser = True
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request("https://coulingsewingmachines.co.uk/"), process_catlist, dict())
 
 
@@ -120,11 +120,13 @@ def process_product(data, context, session):
             excerpt = title
 
         if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = excerpt.strip(' +-*.:;•,–')
+            if len(excerpt) > 2:
+                review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = review.digest() if author else review.digest(excerpt)
+                review.ssid = review.digest() if author else review.digest(excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
