@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 from agent import *
 from models.products import *
 
@@ -12,6 +14,11 @@ def strip_namespace(data):
         out.write(line + "\n")
     out.close()
     os.rename(tmp, data.content_file)
+
+
+def Request(url):
+    r = agent.Request(url, proxies=['rotating-us'], use='curl', force_charset='utf-8')
+    return r
 
 
 def run(context, session):
@@ -37,60 +44,32 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('', '').strip()
+    product.name = context['title'].split(' Review – ')[0].replace('Review: ', '').replace(' Review', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    product.category = 'Tech'
+
+    product.category = data.xpath('//a[contains(@class, "terms-list-item") and not(regexp:test(., "Review|New|Tech"))]/text()').string()
+    if not product.category:
+        product.category = 'Tech'
 
     review = Review()
     review.type = 'pro'
     review.title = context['title']
     review.url = product.url
     review.ssid = product.ssid
+    review.date = data.xpath('//span[contains(@class, "type-date")]/time/text()').string()
 
-    date = data.xpath('//meta[@property="article:published_time"]/@content|//time/@datetime').string()
-    if date:
-        review.date = date.split('T')[0]
-
-    author = data.xpath('/text()').string()
-    author_url = data.xpath('/@href').string()
-    if author and author_url:
-        author_ssid = author_url.split('/')[-1]
-        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
-    elif author:
+    author = data.xpath('//span[contains(@class, "type-author")]/text()').string()
+    if author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//text()').string()
-    if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
-
-    pros = data.xpath('(//h3[contains(., "Pros")]/following-sibling::*)[1]/li')
-    for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
-        if pro:
-            pro = pro.strip(' +-*.:;•,–')
-            if len(pro) > 1:
-                review.add_property(type='pros', value=pro)
-
-    cons = data.xpath('(//h3[contains(., "Cons")]/following-sibling::*)[1]/li')
-    for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
-        if con:
-            con = con.strip(' +-*.:;•,–')
-            if len(con) > 1:
-                review.add_property(type='cons', value=con)
-
-    summary = data.xpath('//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
-    conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h4[contains(., "Final Thoughts")]/following-sibling::p[not(contains(., "We were provided with "))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h4[contains(., "Final Thoughts")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "container")]/p[not(contains(., "We were provided with "))]/text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

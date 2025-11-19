@@ -12,12 +12,12 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="19018"
+    agent_id="19261"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.booredatwork.com/category/review/',
+    url='https://www.maxit.my/category/reviews/',
     next_func=ProcessRun.revlist.name,
     new_parser=True,
     breakers=0,
@@ -34,7 +34,7 @@ agent.create_revlist(
     name_title_xpath='text()',
     url_xpath='@href',
     prod_rev=TypeAgent.review.name,
-    next_url_xpath='//div/@data-next-page',
+    next_url_xpath='//link[@rel="next"]/@href',
 )
 agent.create_review(
     date_xpath='//meta[@property="article:published_time"]/@content|//time/@datetime',
