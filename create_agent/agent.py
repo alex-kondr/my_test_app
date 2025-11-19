@@ -62,7 +62,7 @@ class AgentForm:
     out.close()
     os.rename(tmp, data.content_file)\n\n\n""" if new_parser else ""
 
-        text += "def run(context: dict[str, str], session: Session):\n"
+        text += "def run(context, session):\n"
         text += "    session.browser.use_new_parser = True\n" if new_parser else ""
         text += f"    session.sessionbreakers = [SessionBreak(max_requests={breakers})]\n" if breakers else ""
         text += """    session.queue(Request('{url}', use='curl', force_charset='utf-8'), process_{next_func}, dict())\n""".format(url=url, next_func=next_func)
@@ -81,7 +81,7 @@ class AgentForm:
         name_xpath: str,
         url_xpath: str
         ):
-        text = "\n\ndef process_frontpage(data: Response, context: dict[str, str], session: Session):\n"
+        text = "\n\ndef process_frontpage(data, context, session):\n"
 
         text += "    strip_namespace(data)\n\n" if self.new_parser else ""
 
@@ -110,7 +110,7 @@ class AgentForm:
 
         # text = "\n\ndef process_prodlist"
 
-        text = "\n\ndef process_revlist(data: Response, context: dict[str, str], session: Session):\n"
+        text = "\n\ndef process_revlist(data, context, session):\n"
         text += "    strip_namespace(data)\n\n" if self.new_parser else ""
         text += (
             f"    revs = data.xpath('{revs_xpath}')\n"
@@ -134,7 +134,7 @@ class AgentForm:
         mpn_xpath = input("mpn_xpath?: ")
         ean_xpath = input("ean_xpath?: ")
 
-        text = "\n\ndef process_product(data: Response, context: dict[str, str], session: Session):\n"
+        text = "\n\ndef process_product(data, context, session):\n"
         text += "    strip_namespace(data)\n\n" if self.new_parser else ""
         text += (
             "    product = Product()\n"
@@ -185,7 +185,7 @@ class AgentForm:
         excerpt_xpath: str,
         ):
 
-        text = "\n\ndef process_review(data: Response, context: dict[str, str], session: Session):\n"
+        text = "\n\ndef process_review(data, context, session):\n"
         text += "    strip_namespace(data)\n\n" if self.new_parser else ""
         text += (
             "    product = Product()\n"
@@ -281,7 +281,7 @@ class AgentForm:
         excerpt_xpath = input("excerpt_xpath: ")
         rev_ssid_xpath = input("rev_ssid_xpath: ")
 
-        text = "\n\ndef process_reviews(data: Response, context: dict[str, str], session: Session):\n"
+        text = "\n\ndef process_reviews(data, context, session):\n"
         text += "    strip_namespace(data)\n\n" if self.new_parser else ""
         text += (
             "    product = context['product']\n"
