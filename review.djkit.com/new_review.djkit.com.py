@@ -22,7 +22,7 @@ def strip_namespace(data):
 
 def RequestRevs(pid, page):
     url = 'https://api.judge.me/reviews/reviews_for_widget?url=b4f450-9b.myshopify.com&shop_domain=b4f450-9b.myshopify.com&platform=shopify&page={page}&per_page=5&product_id={pid}'.format(pid=pid, page=page)
-    r = agent.Request(url, proxies=['eu'], max_age=0)
+    r = agent.Request(url, proxies=['eu'])
     return r
 
 
