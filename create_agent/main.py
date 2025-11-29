@@ -12,29 +12,29 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="19898"
+    agent_id="18338"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.babystore.ae/',
-    next_func=ProcessRun.frontpage.name,
+    url='https://www.chip.de/testberichte',
+    next_func=ProcessRun.revlist.name,
     new_parser=True,
     breakers=0,
     # curl=False
 )
-agent.create_frontpage(
-    cats_xpath='//li[contains(@class, "menu-item")]',
-    name_xpath='text()',
-    url_xpath='@href'
-)
+# agent.create_frontpage(
+#     cats_xpath='//li[contains(@class, "menu-item")]',
+#     name_xpath='text()',
+#     url_xpath='@href'
+# )
 agent.create_revlist(
-    revs_xpath='//div[@id="productList"]/div',
-    name_title=TypeAgent.product.value,
-    name_title_xpath='.//div[contains(@class, "product-content")]/h2/a//text()',
-    url_xpath='.//div[contains(@class, "product-content")]/h2/a/@href',
-    prod_rev=TypeAgent.product.name,
-    next_url_xpath='//link[@rel="next"]/@href',
+    revs_xpath='//section[not(h2[contains(text(), "Die beliebtesten Testberichte")])]//article[h3]//a',
+    name_title=TypeAgent.review.value,
+    name_title_xpath='text()',
+    url_xpath='@href',
+    prod_rev=TypeAgent.review.name,
+    next_url_xpath='//a[contains(@class, "next")]/@href',
 )
 agent.create_review(
     date_xpath='//meta[@property="article:published_time"]/@content|//time/@datetime',
