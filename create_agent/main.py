@@ -17,17 +17,17 @@ agent = AgentForm(
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.chip.de/testberichte',
-    next_func=ProcessRun.revlist.name,
-    new_parser=True,
+    url='https://www.digitaltrends.com/topic/product-reviews/',
+    next_func=ProcessRun.catlist.name,
+    new_parser=False,
     breakers=0,
     # curl=False
 )
-# agent.create_frontpage(
-#     cats_xpath='//li[contains(@class, "menu-item")]',
-#     name_xpath='text()',
-#     url_xpath='@href'
-# )
+agent.create_frontpage(
+    cats_xpath='//li[contains(@class, "menu-item")]',
+    name_xpath='text()',
+    url_xpath='@href'
+)
 agent.create_revlist(
     revs_xpath='//section[not(h2[contains(text(), "Die beliebtesten Testberichte")])]//article[h3]//a',
     name_title=TypeAgent.review.value,
