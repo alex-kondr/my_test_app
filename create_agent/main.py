@@ -17,24 +17,24 @@ agent = AgentForm(
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.digitaltrends.com/',
-    next_func=ProcessRun.catlist.name,
+    url='https://www.pocket-lint.com/reviews/',
+    next_func=ProcessRun.revlist.name,
     new_parser=False,
     breakers=0,
     # curl=False
 )
-agent.create_frontpage(
-    cats_xpath='//ul[contains(@class, "list")]/li[contains(@class, "item")]/a',
-    name_xpath='text()',
-    url_xpath='@href'
-)
+# agent.create_frontpage(
+#     cats_xpath='//ul[contains(@class, "list")]/li[contains(@class, "item")]/a',
+#     name_xpath='text()',
+#     url_xpath='@href'
+# )
 agent.create_revlist(
-    revs_xpath='//h3[contains(@class, "title")]/a',
+    revs_xpath='//h5[contains(@class, "title")]/a',
     name_title=TypeAgent.review.value,
     name_title_xpath='text()',
     url_xpath='@href',
     prod_rev=TypeAgent.review.name,
-    next_url_xpath='//link[@rel="next"]/@href',
+    next_url_xpath='//a[contains(@class, "next")]/@href',
 )
 agent.create_review(
     date_xpath='//meta[@property="article:published_time"]/@content|//time/@datetime',
@@ -43,8 +43,8 @@ agent.create_review(
     grade_overall_xpath='//text()',
     pros_xpath='(//h3[contains(., "Pros")]/following-sibling::*)[1]/li',
     cons_xpath='(//h3[contains(., "Cons")]/following-sibling::*)[1]/li',
-    summary_xpath='//text()',
+    summary_xpath='//div[h3[contains(text(), "Summary")]]/div//text()',
     conclusion_xpath='//h3[contains(., "Conclusion")]/following-sibling::p//text()',
     excerpt_with_concl_xpath='//h3[contains(., "Conclusion")]/preceding-sibling::p//text()',
-    excerpt_xpath='//text()'
+    excerpt_xpath='//section[contains(@class, "article-body")]/div[contains(@class, "content")]/p[not(contains(., "This device was provided "))]//text()'
 )
