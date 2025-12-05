@@ -17,9 +17,9 @@ agent = AgentForm(
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.phonearena.com/reviews?content_type=reviews',
+    url='https://www.nikonians.org/reviews',
     next_func=ProcessRun.revlist.name,
-    new_parser=True,
+    new_parser=False,
     breakers=0,
     # curl=False
 )
@@ -29,7 +29,7 @@ agent.create_run(
 #     url_xpath='@href'
 # )
 agent.create_revlist(
-    revs_xpath='//h3[contains(@class, "title")]/a',
+    revs_xpath='//h3/a',
     name_title=TypeAgent.review.value,
     name_title_xpath='text()',
     url_xpath='@href',
