@@ -1,0 +1,131 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+from agent import *
+from models.products import *
+import simplejson
+
+
+def Request(url):
+    r = agent.Request(url, proxies=['eu'])
+    return r
+
+
+def run(context, session):
+    session.queue(Request('https://www.digixo.com/'), process_frontpage, dict())
+
+
+def process_frontpage(data, context, session):
+    cats = data.xpath('//li[@class="cbp-hrtitle"]')
+    for cat in cats:
+        name = cat.xpath('a/text()').string(multiple=True)
+
+        sub_cats = cat.xpath('.//div[@class="cbp-hrsub-inner"]/div')
+        for sub_cat in sub_cats:
+            sub_name = sub_cat.xpath('h4//text()').string(multiple=True)
+
+            sub_cats1 = sub_cat.xpath('ul//a')
+            for sub_cat1 in sub_cats1:
+                sub_name1 = sub_cat1.xpath('text()').string(multiple=True)
+                url = sub_cat1.xpath('@href').string()
+                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name + '|' + sub_name1))
+
+
+def process_prodlist(data, context, session):
+    prods = data.xpath('//div[contains(@class, "productlist_item") and .//i[contains(@class, "fa-star")]]')
+    for prod in prods:
+        name = prod.xpath('.//div/span[@class="entityname"]/text()').string(multiple=True)
+        brand = prod.xpath('.//div[@class="brandname"]/text()').string(multiple=True)
+        ssid = prod.xpath('@data-id').string()
+        url = prod.xpath('.//a/@href').string()
+        session.queue(Request(url), process_product, dict(context, name=name, brand=brand, ssid=ssid, url=url))
+
+    next_url = data.xpath('//a[@title="Aller à la page suivante"]/@href').string()
+    if next_url:
+        session.queue(Request(next_url), process_prodlist, dict(context))
+
+
+def process_product(data, context, session):
+    context['ean'] = data.xpath('//meta[@itemprop="gtin13"]/@content').string()
+
+    revs_url = 'https://www.digixo.com/v1/product/{}/1/getreviews'.format(context['ssid'])
+    session.queue(Request(revs_url), process_reviews, dict(context))
+
+
+def process_reviews(data, context, session):
+    product = Product()
+    product.name = context['name']
+    product.url = context['url']
+    product.ssid = context['ssid']
+    product.sku = product.ssid
+    product.category = context['cat']
+    product.manufacturer = context['brand']
+
+    ean = context['ean']
+    if ean and ean.isdigit() and len(ean) > 10:
+        product.add_property(type="id.ean", value=ean)
+    elif ean:
+        product.add_property(type='id.manufacturer', value=ean)
+
+    revs = simplejson.loads(data.content)
+    for rev in revs:
+        review = Review()
+        review.type = 'user'
+        review.url = product.url
+
+        author = rev.get('pseudo')
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
+
+        grade_overall = rev.get('note')
+        if grade_overall and float(grade_overall) > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
+        pros = rev.get('comment_pos')
+        if pros:
+            if '\r\n' in pros:
+                pros = pros.split('\r\n')
+            elif '- ' in pros:
+                pros = pros.split('- ')
+            else:
+                pros = [pros]
+
+            for pro in pros:
+                pro = pro.replace('N/A', '').replace('n/a', '').replace('???', '').replace('??', '').replace('•', '').strip(' -+–')
+                if len(pro) > 1 and pro != 'na':
+                    review.add_property(type='pros', value=pro)
+
+        cons = rev.get('comment_neg')
+        if cons:
+            if '\r\n' in cons:
+                cons = cons.split('\r\n')
+            elif '- ' in cons:
+                cons = cons.split('- ')
+            else:
+                cons = [cons]
+
+            for con in cons:
+                con = con.replace('N/A', '').replace('n/a', '').replace('???', '').replace('??', '').replace('•', '').strip(' -+–')
+                if len(con) > 1 and con != 'na':
+                    review.add_property(type='cons', value=con)
+
+        title = rev.get('titre')
+        excerpt = rev.get('comment')
+        if excerpt:
+            review.title = title
+        else:
+            excerpt = title
+
+        if excerpt:
+            excerpt = excerpt.replace('\r\n', '').strip()
+
+            if len(excerpt) > 2:
+                review.add_property(type="excerpt", value=excerpt)
+
+                review.ssid = review.digest() if author else review.digest(excerpt)
+
+                product.reviews.append(review)
+
+    if product.reviews:
+        session.emit(product)
+
+# no next page
