@@ -3,11 +3,11 @@ from models.products import *
 
 
 XCAT = ['Tools & DIY', 'About GearLab']
-XTITLE = ['Best ']
+XTITLE = ['best ', 'how to', 'advice']
 
 
 def run(context, session):
-    session.queue(Request('https://www.techgearlab.com', use='curl', force_charset='utf-8'), process_frontpage, dict())
+    session.queue(Request('https://www.techgearlab.com', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -15,13 +15,13 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('a/text()').string()
 
-        cats1 = cat.xpath('ul/li/a')
-        for cat1 in cats1:
-            cat1_name = cat1.xpath('text()').string()
-            url = cat1.xpath('@href').string()
+        sub_cats = cat.xpath('ul/li/a')
+        for sub_cat in sub_cats:
+            subcat_name = sub_cat.xpath('text()').string()
+            url = sub_cat.xpath('@href').string()
 
-            if url and cat1_name and not cat1_name.startswith("All "):
-                session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name+'|'+cat1_name))
+            if url and subcat_name and not subcat_name.startswith("All "):
+                session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(cat=name+'|'+subcat_name))
 
 
 def process_revlist(data, context, session):
@@ -30,12 +30,12 @@ def process_revlist(data, context, session):
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
 
-        if title and not any(xtitle in title for xtitle in XTITLE):
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
+        if title and not any(xtitle in title.lower() for xtitle in XTITLE):
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict(context))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
@@ -50,7 +50,12 @@ def process_review(data, context, session):
     review.title = context['title']
     review.url = product.url
     review.ssid = product.ssid
+
     review.date = data.xpath('//div[contains(text(), "By") and a[contains(@href, "/author/")]]/span/text()').string()
+    if not review.date:
+        date = data.xpath('//div[contains(text(), "By") and a[contains(@href, "/author/")]]/following-sibling::div[1][@class="small"]/text()').string()
+        if date:
+            review.date = date.split(' ', 1)[-1]
 
     author = data.xpath('//div[contains(text(), "By")]/a[contains(@href, "/author/")]/text()').string()
     author_url = data.xpath('//div[contains(text(), "By")]/a[contains(@href, "/author/")]/@href').string()
@@ -91,14 +96,14 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//div[@class="articletext"]//text()[not(preceding::*[contains(., "REASONS TO")] or contains(., "REASONS TO"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::text()|(//h2[contains(., "Conclusion")]/following-sibling::a//h2[contains(., "Conclusion")]/following-sibling::span|//h2[contains(., "Conclusion")]/following-sibling::strong|//h2[contains(., "Conclusion")]/following-sibling::em)//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@class="summary_larger"]/div[@class="articletext"]//text()[not(preceding::*[contains(., "REASONS TO")] or contains(., "REASONS TO"))]').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//section[contains(@class, "article-body")]/div[contains(@class, "content")]/p[not(contains(., "This device was provided "))]//text()').string(multiple=True)
-
+    excerpt = data.xpath('//div[not(@class)]/div[@class="articletext"]/p[not(preceding::h2[contains(., "Conclusion")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

@@ -12,7 +12,7 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="19700"
+    agent_id="20063"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
@@ -46,5 +46,5 @@ agent.create_review(
     summary_xpath='//div[h3[contains(text(), "Summary")]]/div//text()',
     conclusion_xpath='//h3[contains(., "Conclusion")]/following-sibling::p//text()',
     excerpt_with_concl_xpath='//h3[contains(., "Conclusion")]/preceding-sibling::p//text()',
-    excerpt_xpath='//section[contains(@class, "article-body")]/div[contains(@class, "content")]/p[not(contains(., "This device was provided "))]//text()'
+    excerpt_xpath='//text()'
 )
