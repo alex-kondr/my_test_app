@@ -6,12 +6,27 @@ import simplejson
 OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.8,en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Cookie: client_key=eb0d; aws-waf-token=33fe9b72-74e9-46c6-a49e-858ffff22840:CAoApbtVgdYIAAAA:TFy9DqjVclYTB4fXHJUtSSQ0/iYXoFn6oO3dw0iq1T2xU54nEXM4l+L5nougxjtgaRFiefvG4Bj/wz8nmK31EZk9Y2y5h0oaUDMVTmbsBaNuZPqzjyXeAqyj4tSSRZ4CCUsmFWPLzGj5FfL3YoEZscKbyVsi41uUpUv2d1/JQM9+/hUWnLmSYlk5+fxZLZQTpiQvDosRFjNDwzen; session_token.1755778179145597822=176ea96d25c5dcb613145601f8907f0a5867757e3ffa8c3e22261394e80b2c6e; country=ca; tkbl_session=e521f736-d9ea-410a-972a-12c05ed15051' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: cross-site' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers'"""
 
 
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
 def run(context, session):
+    session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request("https://www.primecables.ca/", use='curl', options=OPTIONS), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
+    strip_namespace(data)
+
     cats = data.xpath('//li[contains(@class, "nav2020")]')
     for cat in cats:
         name = cat.xpath('a//text()').string(multiple=True)
@@ -20,14 +35,16 @@ def process_frontpage(data, context, session):
         for cat1 in cats1:
             cat1_name = cat1.xpath('dt/a//text()').string()
 
-            sub_cats = cat1.xpath('dd/ul/li')
+            sub_cats = cat1.xpath('dd/div/div/ul/li/a')
             for sub_cat in sub_cats:
-                subcat_name = sub_cat.xpath('div[@class="category-name"]//text()').string()
-                url = sub_cat.xpath('a/@href').string()
+                subcat_name = sub_cat.xpath('text()').string()
+                url = sub_cat.xpath('@href').string()
                 session.queue(Request(url, use='curl', options=OPTIONS), process_prodlist, dict(cat=name + "|" + cat1_name + "|" + subcat_name))
 
 
 def process_prodlist(data, context, session):
+    strip_namespace(data)
+
     prods = data.xpath('//li[contains(@class, "product-item")]//div[contains(@class, "rating-control")]/a/@href')
     for prod in prods:
         url = prod.string()
@@ -41,6 +58,8 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
+    strip_namespace(data)
+
     product = Product()
     product.name = data.xpath('//h1[contains(@id, "product-title")]/text()').string()
     product.ssid = data.xpath('//input[contains(@id, "product_id")]/@value').string()
@@ -52,7 +71,7 @@ def process_product(data, context, session):
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
 
-    prod_json = data.xapth('''//script[contains(., '"@type": "Product"')]/text()''').string()
+    prod_json = data.xpath('''//script[contains(., '"@type": "Product"')]/text()''').string()
     if prod_json:
         prod_json = simplejson.loads(prod_json)
 
@@ -67,49 +86,48 @@ def process_product(data, context, session):
 
 
 def process_reviews(data, context, session):
+    strip_namespace(data)
+
     product = context['product']
 
-    revs = data.xpath('//li[contains(@id, "review")]/parent::ul')
+    revs = data.xpath('//div[@class="review-list"]/ul/li')
     for rev in revs:
         review = Review()
         review.type = "user"
         review.url = product.url
-        review.date = rev.xpath('following::div[@class="review-date"][1]//text()').string()
+        review.date = rev.xpath('.//div[@class="review-date"]//text()').string()
 
-        ssid = rev.xpath('li/@id').string()
+        ssid = rev.xpath('@id').string()
         if ssid:
-            review.ssid = ssid.split('review-')[-1]
+            review.ssid = ssid.replace('review-', '')
 
-        author = rev.xpath('following::div[@class="review-customer-name notranslate"][1]/p//span[@itemprop="author"]//text()').string()
+        author = rev.xpath('.//span[@itemprop="author"]//text()').string()
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = rev.xpath('following-sibling::div[@class="review-num"][1]/span/text()').string()
+        grade_overall = rev.xpath('.//div[@class="review-num"]/span/text()').string()
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        hlp_yes = rev.xpath('following::div[@class="review-thank notranslate"][1]/span//text()').string()
+        hlp_yes = rev.xpath('.//div[@class="review-thank-amount"]//text()').string()
         if hlp_yes:
-            hlp_yes = int(hlp_yes.split(' people')[0].split(' person')[0].lstrip('('))
-            if hlp_yes > 0:
-                review.add_property(type='helpful_votes', value=hlp_yes)
+            hlp_yes = hlp_yes.replace('Thanked', '').replace('for', '').strip()
+            if int(hlp_yes) > 0:
+                review.add_property(type='helpful_votes', value=int(hlp_yes))
 
-        is_verified = rev.xpath('following::div[@class="review-customer-sort notranslate"][1]/img/@src').string()
-        if is_verified and 'verified-buyer' in is_verified:
+        is_verified = rev.xpath('.//img[contains(@src, "verified-buyer")]').string()
+        if is_verified:
             review.add_property(type='is_verified_buyer', value=True)
-        else:
-            continue
 
-        excerpt = rev.xpath('following::div[@class="review-content-text"][1]/p//text()').string()
+        excerpt = rev.xpath('.//div[@class="review-content-text"]/p//text()').string()
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
-    if next_url and data.response_url != next_url:
+    if next_url and next_url.strip(' #'):
         session.do(Request(next_url, use='curl', options=OPTIONS), process_reviews, dict(product=product))
 
     elif product.reviews:
         session.emit(product)
-
