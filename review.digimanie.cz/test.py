@@ -16,6 +16,11 @@ agent = agents.DIGIMANIE_CZ
 # agent = agents.TEST
 reload = 1
 
+# name: 31
+# grade: 481
+# author: 11
+# concl: 43
+# exc: 40
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
