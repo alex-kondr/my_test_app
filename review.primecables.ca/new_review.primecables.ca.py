@@ -12,30 +12,28 @@ def run(context, session):
 
 
 def process_frontpage(data, context, session):
-    cats = data.xpath('//li[@class="nav2020"]')
+    cats = data.xpath('//li[contains(@class, "nav2020")]')
     for cat in cats:
-        name = cat.xpath('a//text()').string()
+        name = cat.xpath('a//text()').string(multiple=True)
 
-        sub_cats = cat.xpath('div/div/dl')
-        for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath('dt/a//text()').string()
+        cats1 = cat.xpath('div/div/dl')
+        for cat1 in cats1:
+            cat1_name = cat1.xpath('dt/a//text()').string()
 
-            sub_cats1 = sub_cat.xpath('dd/ul/li')
-            for sub_cat1 in sub_cats1:
-                sub_name1 = sub_cat1.xpath('div[@class="category-name"]//text()').string()
-                url = sub_cat1.xpath('a/@href').string()
-                session.queue(Request(url, use='curl', options=OPTIONS), process_prodlist, dict(cat=name + "|" + sub_name + "|" + sub_name1))
+            sub_cats = cat1.xpath('dd/ul/li')
+            for sub_cat in sub_cats:
+                subcat_name = sub_cat.xpath('div[@class="category-name"]//text()').string()
+                url = sub_cat.xpath('a/@href').string()
+                session.queue(Request(url, use='curl', options=OPTIONS), process_prodlist, dict(cat=name + "|" + cat1_name + "|" + subcat_name))
 
 
 def process_prodlist(data, context, session):
-    prods = data.xpath('//div[@class="product-name-wrap"]/div')
+    prods = data.xpath('//li[contains(@class, "product-item")]//div[contains(@class, "rating-control")]/a/@href')
     for prod in prods:
-        name = prod.xpath('p[@v-else="v-else"]//text()').string()
-        url = prod.xpath('a/@__href').string()
-
+        url = prod.string()
         if url:
-            url = url.split("source_url('")[-1].rstrip("')\"")
-            session.queue(Request(url, use='curl', options=OPTIONS), process_product, dict(context, name=name, url=url))
+            url = url.split('#')[0]
+            session.queue(Request(url, use='curl', options=OPTIONS), process_product, dict(context, url=url))
 
     next_url = data.xpath('//li[@class="next"]/a/@href').string()
     if next_url:
@@ -43,28 +41,29 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
-    prod_json = data.xpath('//div/@data-origin-params').string()
-    if not prod_json:
-        return
-
-    prod_content = simplejson.loads(prod_json)
-
     product = Product()
-    product.name = context['name']
+    product.name = data.xpath('//h1[contains(@id, "product-title")]/text()').string()
+    product.ssid = data.xpath('//input[contains(@id, "product_id")]/@value').string()
+    product.sku = product.ssid
     product.url = context['url']
     product.category = context['cat']
-    product.ssid = prod_content.get('id')
-    product.sku = prod_content.get('sku')
-    product.manufacturer = data.xpath('//span[@itemprop="brand"]//text()').string()
 
-    mpn = data.xpath('//span[@itemprop="model"]//text()').string()
+    mpn = data.xpath('//span[contains(@id, "product-model")]/text()').string()
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
 
-    revs_count = data.xpath('//meta[@itemprop="reviewCount"]/@content').string()
-    if revs_count and int(revs_count) > 0:
-        revs_url = product.url.replace('p-', 'reviews-')
-        session.do(Request(revs_url, use='curl', options=OPTIONS), process_reviews, dict(product=product))
+    prod_json = data.xapth('''//script[contains(., '"@type": "Product"')]/text()''').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
+
+        product.manufacturer = prod_json.get('brand')
+
+    revs_count = data.xpath('//span[@class="of-review"]/text()').string()
+    if revs_count:
+        revs_count = revs_count.split()[0].strip('( )')
+        if revs_count and int(revs_count) > 0:
+            revs_url = product.url.replace('p-', 'reviews-')
+            session.do(Request(revs_url, use='curl', options=OPTIONS), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
