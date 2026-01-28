@@ -16,6 +16,10 @@ agent = agents.PRIMECABLES_CA_CA
 # agent = agents.TEST
 reload = 1
 
+# name: 1231
+# cat: 1001
+# exc: 12
+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
