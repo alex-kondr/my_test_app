@@ -147,9 +147,10 @@ def process_reviews(data, context, session):
         excerpt = rev.xpath('.//div[@class="review-content-text"]/p//text()').string()
         if excerpt:
             excerpt = remove_emoji(excerpt).strip()
-            review.add_property(type='excerpt', value=excerpt)
+            if len(excerpt) > 2:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url and next_url.strip(' #'):
