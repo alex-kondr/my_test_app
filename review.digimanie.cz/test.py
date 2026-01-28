@@ -17,8 +17,8 @@ agent = agents.DIGIMANIE_CZ
 reload = 1
 
 # name: 31
-# grade: 481
-# author: 11
+# grade: 481+
+# author: 11+
 # concl: 43
 # exc: 40
 

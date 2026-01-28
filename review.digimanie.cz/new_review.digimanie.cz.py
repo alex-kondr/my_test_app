@@ -3,6 +3,9 @@ from models.products import *
 import time
 
 
+XTITLE = ['digitest - ', ' vs. ']
+
+
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.digimanie.cz/recenze/', use='curl', force_charset='utf-8'), process_revlist, dict())
@@ -19,7 +22,9 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
+
+        if url and title and not any(xtitle in title.lower() for xtitle in XTITLE):
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -28,9 +33,9 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].replace(' v testu', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-1]
+    product.ssid = product.url.split('/')[-1].replace('-v-testu', '')
     product.category = data.xpath('//div[@class="post-header-info__content"]//a[not(contains(., "Recenze"))]/text()[normalize-space(.)]').string() or 'Technologie'
 
     review = Review()
@@ -76,9 +81,9 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('//div[@class="post-body"]/p[not(preceding::h2[regexp:test(., "Plusy|Minusy|vhodný pro")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="post-body"]/p[not(preceding::h2[regexp:test(., "Plusy|Minusy|vhodný pro|Závěr")] or regexp:test(., "\[\_heureka|\(klikněte pro zvětšení\)|\d+\. ISO"))]//text()').string(multiple=True)
 
-    pages = data.xpath('//a[@class="post-chapters__item"]')
+    pages = data.xpath('//div[@class="post-chapters__section"]//a')
     for page in pages:
         title = page.xpath('text()').string()
         url = page.xpath('@href').string()
@@ -89,6 +94,9 @@ def process_review(data, context, session):
 
     elif excerpt:
         conclusion = data.xpath('//h4[contains(., "Verdikt")]/following-sibling::p//text()').string(multiple=True)
+        if not conclusion:
+            conclusion = data.xpath('//h2[contains(., "Závěr")]/following-sibling::p//text()').string(multiple=True)
+
         if conclusion:
             review.add_property(type='conclusion', value=conclusion)
 
@@ -123,9 +131,16 @@ def process_review_last(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//div[@class="post-body"]/p[not(preceding::h2[regexp:test(., "Plusy|Minusy|vhodný pro")])]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Závěr")]/following-sibling::p[not(preceding::h2[regexp:test(., "Plusy|Minusy|vhodný pro")] or regexp:test(., "\[\_heureka|\(klikněte pro zvětšení\)|\d+\. ISO"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@class="post-body"]/p[not(preceding::h2[regexp:test(., "Plusy|Minusy|vhodný pro")] or regexp:test(., "\[\_heureka|\(klikněte pro zvětšení\)|\d+\. ISO"))]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//h2[contains(., "Závěr")]/preceding-sibling::p[not(preceding::h2[regexp:test(., "Plusy|Minusy|vhodný pro|Závěr")] or regexp:test(., "\[\_heureka|\(klikněte pro zvětšení\)|\d+\. ISO"))]//text()').string(multiple=True)
+    if excerpt:
+        context['excerpt'] += ' ' + excerpt
 
     excerpt = context['excerpt']
     if excerpt:
