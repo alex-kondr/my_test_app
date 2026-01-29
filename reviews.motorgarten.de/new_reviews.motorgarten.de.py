@@ -111,9 +111,6 @@ def process_product(data, context, session):
     revs_url = 'https://motorgarten.de/product/%s/reviews' % product.ssid
     session.do(Request(revs_url), process_reviews, dict(product=product, revs_url=revs_url))
 
-    if product.reviews:
-        session.emit(product)
-
 
 def process_reviews(data, context, session):
     strip_namespace(data)
@@ -122,7 +119,7 @@ def process_reviews(data, context, session):
 
     revs = data.xpath('//div[@class="product-detail-review-item"]')
     for rev in revs:
-        if data.xpath('//meta[@itemprop="inLanguage"]/@content').string() != 'de-DE':
+        if rev.xpath('.//meta[@itemprop="inLanguage"]/@content').string() != 'de-DE':
             continue
 
         review = Review()
@@ -145,8 +142,9 @@ def process_reviews(data, context, session):
 
         title = rev.xpath('.//div[contains(@class, "item-title")]/p/text()').string()
         excerpt = rev.xpath('p[@itemprop="description"]//text()').string(multiple=True)
-        if excerpt and title and 'Trusted Shops' not in title:
-            review.title = remove_emoji(title).strip()
+        if excerpt:
+            if title and 'Trusted Shops' not in title:
+                review.title = remove_emoji(title).strip()
         else:
             excerpt = title
 
@@ -162,7 +160,7 @@ def process_reviews(data, context, session):
     next_page = data.xpath('//li[contains(@class, "page-next")][not(contains(@class, "disabled"))]/input/@value').string()
     if next_page:
         next_url = context['revs_url'] + '?p=' + next_page
-        session.do(Request(next_url), process_reviews, dict(context))
+        session.do(Request(next_url), process_reviews, dict(context, product=product))
 
     elif product.reviews:
         session.emit(product)

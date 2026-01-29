@@ -45,7 +45,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request("https://www.primecables.ca/", use='curl', options=OPTIONS), process_frontpage, dict())
 
 
@@ -100,7 +100,7 @@ def process_product(data, context, session):
     if prod_json:
         prod_json = simplejson.loads(prod_json)
 
-        product.manufacturer = prod_json.get('brand')
+        product.manufacturer = prod_json.get('brand', {}).get('name')
 
     revs_count = data.xpath('//span[@class="of-review"]/text()').string()
     if revs_count:
