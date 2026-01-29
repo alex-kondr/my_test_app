@@ -12,13 +12,9 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.PRIMECABLES_CA_CA
+agent = agents.VOLKSKRANT_NL
 # agent = agents.TEST
 reload = 1
-
-# name: 1231+
-# cat: 1001+
-# exc: 0+
 
 
 if __name__ == "__main__":
