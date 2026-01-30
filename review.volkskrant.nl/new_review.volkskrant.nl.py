@@ -55,7 +55,11 @@ def process_review(data, context, session):
         review.date = date.split('T')[0]
 
     author = data.xpath('//meta[@name="author"]/@content').string()
-    if author:
+    author_url = data.xpath('//a[@rel="author"]/@href').string()
+    if author and author_url:
+        author_ssid = author_url.split('/')[-2]
+        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+    elif author:
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//span[@data-test-id="article-sublabel" and contains(., "★")]//text()').string(multiple=True)
@@ -71,6 +75,9 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     excerpt = data.xpath('//div[@class="paywall"]/p[not(contains(., "Geselecteerd door de redactie"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="paywall"]/div/p[not(contains(., "Geselecteerd door de redactie"))]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
