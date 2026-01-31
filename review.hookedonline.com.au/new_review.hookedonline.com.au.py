@@ -16,7 +16,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=6000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request("https://www.hookedonline.com.au/"), process_frontpage, dict())
 
 
