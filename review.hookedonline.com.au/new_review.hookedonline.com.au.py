@@ -45,60 +45,64 @@ def process_frontpage(data, context, session):
 def process_prodlist(data, context, session):
     strip_namespace(data)
 
-    prods = data.xpath('//div[@class="wrapper-thumbnail col-xs-6 col-sm-4 col-lg-3"]/div/div/h3//a')
+    prods = data.xpath('//div[contains(@class, "card-body")]')
     for prod in prods:
-        name = prod.xpath('text()').string()
-        url = prod.xpath('@href').string()
-        session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        name = prod.xpath('.//p[contains(@class, "title")]/a/text()').string()
+        mpn = prod.xpath('.//meta[@itemprop="mpn"]/@content').string()
+        url = prod.xpath('.//p[contains(@class, "title")]/a/@href').string()
 
-    next_url = data.xpath('//i[@class="fa fa-chevron-right"]/parent::a/@href').string()
+        rating = prod.xpath('.//span[@itemprop="ratingCount"]')
+        if rating:
+            session.queue(Request(url), process_product, dict(context, name=name, mpn=mpn, url=url))
+
+    next_url = data.xpath('//a[i[contains(@class, "fa-chevron-right")]]/@href').string()
     if next_url:
         session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
+    strip_namespace(data)
+
     product = Product()
     product.name = context['name']
     product.url = context['url']
+    product.ssid = product.url.split('/')[-1]
     product.category = context['cat'].replace('|Other Boating', '')
-    product.manufacturer = data.xpath('//meta[@itemprop="brand"]/@content').string()
-    product.sku = data.xpath('//meta[@itemprop="sku"]/@content').string()
-    product.ssid = product.sku
+    product.manufacturer = data.xpath('//div[@class="product_brads_logo"]//@title').string()
 
-    ean = data.xpath('//meta[@itemprop="gtin13"]/@content').string()
-    if ean:
-        product.add_property(type='id.ean', value=ean)
+    mpn = context['mpn']
+    if mpn:
+        product.add_property(type='id.manufacturer', value=mpn)
 
-    revs_count = data.xpath('//span[@itemprop="ratingCount"]//text()').string()
-    if not revs_count or revs_count == "0":
-        return
-    
-    revs = data.xpath('//head/meta[@itemprop="itemReviewed"]/parent::*')
+    sku = data.xpath('//meta[@itemprop="sku"]/@content').string()
+    if sku != mpn:
+        product.sku = sku
+
+    revs = data.xpath('//div[@aria-labelledby="tabReviews"]//div[@itemprop="review"]')
     for rev in revs:
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review.title = rev.xpath('(following-sibling::body//h4)[1]//text()').string()
-        review.date = rev.xpath('following-sibling::head/meta[@itemprop="datePublished"]/@content').string()
 
-        author = rev.xpath('(following-sibling::body//span[@itemprop="author"])[1]//text()').string()
+        date = rev.xpath('.//strong/comment()').string()
+        if date:
+            review.date = date.split('">')[-1].rsplit(' ', 1).strip()
+
+        author = rev.xpath('.//span[@itemprop="author"]//text()').string(multiple=True)
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = rev.xpath('following-sibling::head/meta[@itemprop="ratingValue"]/@content').string()
+        grade_overall = rev.xpath('.//meta[@itemprop="ratingValue"]/@content').string()
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        excerpt = rev.xpath('(following-sibling::body//span[@itemprop="description"])[1]//text()').string(multiple=True)
+        excerpt = rev.xpath('.//span[@itemprop="description"]//text()').string(multiple=True)
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
-            if author:
-                review.ssid = review.digest()
-            else:
-                review.ssid = review.digest(excerpt)
-            
+            review.ssid = review.digest() if author else review.digest(excerpt)
+
             product.reviews.append(review)
-        
+
     if product.reviews:
         session.emit(product)
