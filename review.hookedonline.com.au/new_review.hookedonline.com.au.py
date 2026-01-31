@@ -84,9 +84,11 @@ def process_product(data, context, session):
         review.type = 'user'
         review.url = product.url
 
-        date = rev.xpath('.//strong/comment()').string()
+        date = rev.xpath('.//strong/comment()').first()
         if date:
-            review.date = date.split('">')[-1].rsplit(' ', 1).strip()
+            date = date.xml.data
+            if date:
+                review.date = date.split('>')[-1].strip()
 
         author = rev.xpath('.//span[@itemprop="author"]//text()').string(multiple=True)
         if author:
