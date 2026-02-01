@@ -17,7 +17,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
     session.queue(Request('https://www.pcguru.hu/tesztek', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -47,7 +47,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' teszt ')[0].replace('', '').strip()
+    product.name = context['title'].split(' teszt ')[0].replace(' teszt', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
     product.category = 'Játékok'
@@ -59,7 +59,7 @@ def process_review(data, context, session):
 
     genre = data.xpath('//div[@class="game-info"]/b[contains(text(), "Műfaj")]/following-sibling::p/text()').string()
     if genre:
-        product.category += '|' + genre
+        product.category += '|' + genre.replace(' / ', '/')
 
     review = Review()
     review.type = 'pro'
@@ -93,9 +93,9 @@ def process_review(data, context, session):
         if date:
             review.date = date.split()[0]
 
-    grade_overall = data.xpath('//span[@id="progress-text"]/text()').string()
+    grade_overall = data.xpath('//script[contains(., "animateProgress")]/text()').string()
     if grade_overall:
-        grade_overall = float(grade_overall.replace('%', ''))
+        grade_overall = float(grade_overall.split('animateProgress(')[-1].split(');')[0])
         if grade_overall > 0:
             review.grades.append(Grade(type='overall', value=grade_overall, best=100.0))
 
@@ -117,14 +117,17 @@ def process_review(data, context, session):
 
     summary = data.xpath('//h2[@class="news_lead"]//text()').string(multiple=True)
     if summary:
+        summary = summary.replace(u'\x96', '').replace(u'\x84', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//div[b[contains(text(), "Vélemény")]]/p//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\x96', '').replace(u'\x84', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//section[contains(@class, "content")]/p[not((em|i)[contains(text(), "A tesztkódot") or contains(text(), "A teszt szerzője")])]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'\x96', '').replace(u'\x84', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

@@ -16,6 +16,12 @@ agent = agents.PC_GURU_HU
 # agent = agents.TEST
 reload = 1
 
+# name: 7
+# date: 1
+# author: 1
+# grades: 3973
+# pros/cons: 5+
+# exc: 14+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
