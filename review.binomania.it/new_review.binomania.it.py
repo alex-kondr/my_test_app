@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.binomania.it/recensioni-binomania/', use='curl', force_charset='utf-8'), process_catlist, dict())
 
 
@@ -72,9 +72,9 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="entry-content"]//p[@class="" and not(parent::td or preceding::h2[regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE", "i")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="entry-content"]//p[@class="" and not(parent::td or preceding::h2[regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:|\{var", "i")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="entry-content"]//p[not(@class or parent::td or preceding::h2[regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:", "i")])]//text()[not(regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:", "i"))]|//div[@class="entry-content"]/div/text()|//div[@class="entry-content"]/div/strong/text()|//div[@class="entry-content"]/div/a/text()').string(multiple=True)
+        excerpt = data.xpath('(//div[@class="entry-content"]//p[not(@class or parent::td or preceding::h2[regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:", "i")])]//text()|(//div[@class="entry-content"]/div|//div[@class="entry-content"]/div/strong|//div[@class="entry-content"]/div/a)/text())[not(regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:|\{var", "i"))]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

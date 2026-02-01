@@ -16,6 +16,10 @@ agent = agents.BINOMANIA_IT
 # agent = agents.TEST
 reload = 1
 
+# name: 33
+# pros/cons: 12
+# concl: 8
+# exc: 190
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
