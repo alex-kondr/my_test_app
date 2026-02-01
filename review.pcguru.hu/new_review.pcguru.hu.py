@@ -16,6 +16,7 @@ def strip_namespace(data):
 
 
 def run(context, session):
+    session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://www.pcguru.hu/tesztek', use='curl', force_charset='utf-8'), process_revlist, dict())
 
@@ -29,13 +30,17 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
-    page_cnt = data.xpath('//li[contains(@class, "page-item")]/a[contains(@class, "last")]/@href').string()
+    page_cnt = context.get('page_cnt')
+    if not page_cnt:
+        page_cnt = data.xpath('//li[contains(@class, "page-item")]/a[contains(@class, "last")]/@href').string()
+        if page_cnt:
+            page_cnt = int(page_cnt.split('?page=')[-1])
+
     if page_cnt:
-        page_cnt = int(page_cnt.split('?page=')[-1])
         next_page = context.get('page', 1) + 1
         if next_page <= page_cnt:
             next_url = 'https://www.pcguru.hu/tesztek?page=' + str(next_page)
-            session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict(page=next_page))
+            session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict(page_cnt=page_cnt, page=next_page))
 
 
 def process_review(data, context, session):
@@ -62,7 +67,7 @@ def process_review(data, context, session):
     review.url = product.url
     review.ssid = product.ssid
 
-    author = data.xpath('//a[contains(@href, "/profil/")]/b/text()').string()
+    author = data.xpath('//a[contains(@href, "/profil/")]//text()').string()
     author_url = data.xpath('//a[contains(@href, "/profil/")]/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
@@ -118,7 +123,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//section[contains(@class, "content")]/p[not(em[contains(text(), "A tesztkódot")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//section[contains(@class, "content")]/p[not((em|i)[contains(text(), "A tesztkódot") or contains(text(), "A teszt szerzője")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
