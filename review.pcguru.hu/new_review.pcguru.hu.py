@@ -117,17 +117,17 @@ def process_review(data, context, session):
 
     summary = data.xpath('//h2[@class="news_lead"]//text()').string(multiple=True)
     if summary:
-        summary = summary.replace(u'\x96', '').replace(u'\x84', '').strip()
+        summary = summary.replace(u'\x96', '').replace(u'\x94', '').replace(u'\x84', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//div[b[contains(text(), "Vélemény")]]/p//text()').string(multiple=True)
     if conclusion:
-        conclusion = conclusion.replace(u'\x96', '').replace(u'\x84', '').strip()
+        conclusion = conclusion.replace(u'\x96', '').replace(u'\x94', '').replace(u'\x84', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//section[contains(@class, "content")]/p[not((em|i)[contains(text(), "A tesztkódot") or contains(text(), "A teszt szerzője")])]//text()').string(multiple=True)
     if excerpt:
-        excerpt = excerpt.replace(u'\x96', '').replace(u'\x84', '').strip()
+        excerpt = excerpt.replace(u'\x96', '').replace(u'\x94', '').replace(u'\x84', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
