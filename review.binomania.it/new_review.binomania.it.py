@@ -73,6 +73,9 @@ def process_review(data, context, session):
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[@class="entry-content"]//p[@class="" and not(parent::td or preceding::h2[regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE", "i")])]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="entry-content"]//p[not(@class or parent::td or preceding::h2[regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:", "i")])]//text()[not(regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:", "i"))]|//div[@class="entry-content"]/div/text()|//div[@class="entry-content"]/div/strong/text()|//div[@class="entry-content"]/div/a/text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
