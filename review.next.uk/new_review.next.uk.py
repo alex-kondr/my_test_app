@@ -4,9 +4,6 @@ import simplejson
 import re
 
 
-OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0' -H 'Accept: */*' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Referer: https://www.next.co.uk/' -H 'Bv-Bfd-Token: 24381,main_site,en_GB' -H 'Origin: https://www.next.co.uk' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: cross-site' -H 'Priority: u=0' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers'"""
-
-
 def remove_emoji(string):
     emoji_pattern = re.compile("["
                                u"\U0001F600-\U0001F64F"  # emoticons
@@ -33,8 +30,8 @@ def remove_emoji(string):
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.next.co.uk/shop/department-homeware-productaffiliation-kitchen-0', use='curl', options=OPTIONS, max_age=0), process_category, dict(cat='Home|Kitchen & Dining'))
-    session.queue(Request('https://www.next.co.uk/shop/department-homeware-productaffiliation-lighting-0', use='curl', options=OPTIONS, max_age=0), process_category, dict(cat='Home|Lighting'))
+    session.queue(Request('https://www.next.co.uk/shop/department-homeware-productaffiliation-kitchen-0'), process_category, dict(cat='Home|Kitchen & Dining'))
+    session.queue(Request('https://www.next.co.uk/shop/department-homeware-productaffiliation-lighting-0'), process_category, dict(cat='Home|Lighting'))
 
 
 def process_category(data, context, session):
