@@ -35,7 +35,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Video recensione dello ', '').replace('Video recensione del ', '').replace('Videorecensione del ', '').replace(' video e recensione', '').replace('Video e recensione del ', '').replace('Video e recensione dei ', '').replace('Recensione del ', '').replace('Recensione ', '').split(' – ')[0].replace('Preview dei ', '').replace(' videorecensione', '').split('- preview')[0].split(': recensione')[0].replace(' preview', '').replace('Test approfondito:', '').replace('Video recensione ', '').split('- preview')[0].replace(' video e recensione', '').replace(' preview', '').replace(' videorecensione', '').replace('RECENSIONE DEL ', '').replace('Video recensione ', '').replace('Preview ', '').split(': prestazioni')[0].replace('. la video recensione', '').replace('RECENSIONE DELLA ', '').replace('Videorecensione della ', '').replace('. Preview', '').replace('. Video e recensione', '').split(' Test ')[0].strip()
+    product.name = context['title'].replace('Video recensione dello ', '').replace('Video recensione del ', '').replace('Videorecensione del ', '').replace(' video e recensione', '').replace('Video e recensione del ', '').replace('Video e recensione dei ', '').replace('Recensione del ', '').replace('Recensione ', '').split(' – ')[0].replace('Preview dei ', '').replace(' videorecensione', '').split('- preview')[0].split(': recensione')[0].replace(' preview', '').replace('Test approfondito:', '').replace('Video recensione ', '').split('- preview')[0].replace(' video e recensione', '').replace(' preview', '').replace(' videorecensione', '').replace('RECENSIONE DEL ', '').replace('Video recensione ', '').replace('Preview ', '').split(': prestazioni')[0].replace('. la video recensione', '').replace('RECENSIONE DELLA ', '').replace('Videorecensione della ', '').replace('. Preview', '').replace('. Video e recensione', '').replace('. Video e Recensione', '').split(' Test ')[0].split(': test ')[0].replace('Videorecensione: ', '').replace('. La video recensione', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('recensione-', '').replace('-preview', '')
     product.category = context['cat']
@@ -59,6 +59,9 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     pros = data.xpath('(//p[contains(., "PREGI")]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('(//p[em[regexp:test(., "PREGI", "i")]]/following-sibling::*)[1]/li')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -67,6 +70,9 @@ def process_review(data, context, session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('(//p[contains(., "DIFETTI") and not(contains(., "PREGI"))]/following-sibling::*)[1]/li')
+    if not cons:
+        cons = data.xpath('(//p[em[regexp:test(., "DIFETTI", "i")] and not(contains(., "PREGI"))]/following-sibling::*)[1]/li')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -83,7 +89,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[@class="entry-content"]//p[@class="" and not(parent::td or preceding::h2[regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:|\{var|PREZZO E GARANZIA", "i")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//div[@class="entry-content"]//p[not(@class or parent::td or preceding::h2[regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:|PREZZO E GARANZIA", "i")])]//text()|(//div[@class="entry-content"]/div|//div[@class="entry-content"]/div/strong|//div[@class="entry-content"]/div/a)/text())[not(regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:|\{var", "i"))]').string(multiple=True)
+        excerpt = data.xpath('(//div[@class="entry-content"]//p[not(@class or parent::td or preceding::h2[regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:|PREZZO E GARANZIA|Conclusioni")] or preceding::p[strong[regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:|PREZZO E GARANZIA|Conclusioni")]] or preceding::p[em[regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:|PREZZO E GARANZIA|Conclusioni|Pregi|Difetti")]])]//text()|(//div[@class="entry-content"]/div|//div[@class="entry-content"]/div/strong|//div[@class="entry-content"]/div/a)/text())[not(regexp:test(., "PREGI E DIFETTI|IN SINTESI|RINGRAZIAMENTI|DISCLAIMER|CONCLUSIONE|Pregi:|Difetti:|PREGI|DIFETTI|\{var|Conclusioni|La prova in pillole|Pregi|Difetti"))]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

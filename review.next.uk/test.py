@@ -16,6 +16,8 @@ agent = agents.NEXT_UK
 # agent = agents.TEST
 reload = 1
 
+# name: 8+
+# author: 335+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
