@@ -4,7 +4,7 @@ import re
 import simplejson
 
 
-XCAT = ['Weekdeals', 'Telefoon met abonnement', 'Sim Only', 'Verlengen', 'Klantenservice']
+XCAT = ['Weekdeals', 'Telefoon met abonnement', 'Sim Only', 'Verlengen', 'Klantenservice', 'Bizarre Belsimpel Dagen']
 
 
 def remove_emoji(string):
@@ -46,20 +46,23 @@ def process_frontpage(data, context, session):
         name = cat.xpath('a/text()').string()
 
         if name and name not in XCAT:
-            sub_cats = cat.xpath('.//ul[not(regexp:test(., "Populaire|Alle providers"))]/li[not(contains(@class, "title"))]/a')
-            for sub_cat in sub_cats:
-                sub_name = sub_cat.xpath('text()').string()
-                url = sub_cat.xpath('@href').string().split('?')[0]
-                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + sub_name))
+            subcats = cat.xpath('(.//ul[li[contains(., "Alle merken")]]|.//ul[li[contains(., "Alle merken")]]/following-sibling::ul)/li[not(contains(@class, "title"))]/a')
+            if not subcats:
+                subcats = cat.xpath('.//ul[not(regexp:test(., "Populaire|Alle providers"))]/li[not(contains(@class, "title"))]/a')
+
+            for subcat in subcats:
+                subcat_name = subcat.xpath('text()').string()
+                url = subcat.xpath('@href').string().split('?')[0].split('#')[0]
+                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + subcat_name))
 
 
 def process_prodlist(data, context, session):
-    prods = data.xpath('//div[contains(@class, "product-item__title-rating")]')
+    prods = data.xpath('//div[contains(@class, "item__hero-title-rating")]')
     for prod in prods:
         name = prod.xpath('.//a/text()').string()
         url = prod.xpath('.//a/@href').string()
 
-        revs_cnt = prod.xpath('.//span[contains(@class, "rating__review-amount")]/text()').string()
+        revs_cnt = prod.xpath('.//p[@class="rating__content"]/text()[not(contains(., "Geen beoordelingen"))]').string()
         if revs_cnt and int(revs_cnt.strip('( )')) > 0:
             session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
@@ -69,16 +72,17 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
-    ssid = data.xpath('//script[contains(., "viewedProductId") and not(contains(., "null"))]/text()').string()
-    if not ssid:
-        return
-
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = ssid.split('=')[-1].strip('" ')
-    product.sku = product.ssid
     product.category = context['cat']
+
+    ssid = data.xpath('//script[contains(., "window.viewedProductId=")]/text()').string()
+    if not ssid:
+        return
+
+    product.ssid = ssid.replace('window.viewedProductId="', '').strip(' "')
+    product.sku = product.ssid
 
     prod_json = data.xpath('''//script[contains(., '"@type": "Product"')]/text()''').string()
     if prod_json:
@@ -98,6 +102,7 @@ def process_product(data, context, session):
     revs_url = 'https://www.belsimpel.nl/API/Reviews/v1.0/ProductReviews/{}?locale=nl_NL'.format(product.ssid)
     options = "--compressed -H 'Accept-Encoding: deflate' -H 'Authorization: Bearer " + token + "'"
     session.do(Request(revs_url, use='curl', force_charset='utf-8', options=options, max_age=0), process_reviews, dict(product=product, token=token))
+
 
 def process_reviews(data, context, session):
     product = context['product']
