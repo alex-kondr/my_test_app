@@ -137,22 +137,22 @@ def process_reviews(data, context, session):
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-        pros_ = []
+        pros_unique = []
         pros = rev.get('review', {}).get('plus_points')
         if pros:
             for pro in pros:
                 pro = remove_emoji(pro).strip(' +-*.:;•–')
-                if len(pro) > 1 and pro not in pros_:
-                    pros_.append(pro)
+                if len(pro) > 1 and pro not in pros_unique:
+                    pros_unique.append(pro)
                     review.add_property(type='pros', value=pro)
 
-        cons_ = []
+        cons_unique = []
         cons = rev.get('review', {}).get('min_points', [])
         if cons:
             for con in cons:
                 con = remove_emoji(con).strip(' +-*.:;•–')
-                if len(con) > 1 and con not in cons_:
-                    cons_.append(con)
+                if len(con) > 1 and con not in cons_unique:
+                    cons_unique.append(con)
                     review.add_property(type='cons', value=con)
 
         is_recommended = rev.get('review', {}).get('is_would_recommend')
