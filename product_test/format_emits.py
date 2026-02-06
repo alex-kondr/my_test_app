@@ -58,7 +58,7 @@ def parse_emit_log(input_path: Path):
                 continue
 
             line_to_eval = line[len("EMIT: "):]
-            
+
             try:
                 # WARNING: eval() is used here. It's a security risk if the input
                 # is not from a trusted source.
@@ -73,14 +73,14 @@ def parse_emit_log(input_path: Path):
                             product_dict[key] = to_dict(stringified_obj)
                         except Exception as e:
                             print(f"Warning on line {i}: Could not eval string content of '{key}'. Keeping as string. Error: {e}")
-                
+
                 products.append(product_dict)
 
             except Exception as e:
                 print(f"Error on line {i}: Could not parse line. Skipping. Error: {e}")
                 print(f"Problematic line content: {line_to_eval[:200]}...")
                 continue
-    
+
     return products
 
 

@@ -12,19 +12,19 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="20206"
+    agent_id="20070"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.binomania.it/recensioni-binomania/',
-    next_func=ProcessRun.catlist.name,
+    url='https://www.wardow.com/en/',
+    next_func=ProcessRun.frontpage.name,
     new_parser=False,
-    breakers=5000,
+    breakers=10000,
     # curl=False
 )
 agent.create_frontpage(
-    cats_xpath='//ul/li/a[contains(@href, "/tag/")]',
+    cats_xpath='//li[contains(@class, "menu-list")]',
     name_xpath='text()',
     url_xpath='@href'
 )
