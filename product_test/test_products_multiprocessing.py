@@ -3,13 +3,25 @@ import json
 import logging
 import sys
 from pathlib import Path
+import time
+import re
 from multiprocessing import Pool, cpu_count
 from collections import defaultdict
+from tqdm import tqdm
 
 from product_test.functions import load_file, is_include
 
 
-# --- Logging Configuration with Colors ---
+def is_include(xnames: list = [], text: str = "", lower: bool = False) -> str|None:
+    if not xnames or not text:
+        return None
+    # Build a regex pattern: word1|word2|word3 for faster searching
+    # We escape to treat special characters literally
+    pattern = '|'.join(re.escape(xname) for xname in xnames)
+    flags = re.IGNORECASE if lower else 0
+    match = re.search(pattern, text, flags)
+    return match.group(0) if match else None
+
 class ColoredFormatter(logging.Formatter):
     RESET = "\033[0m"
     RED = "\033[31m"
@@ -42,6 +54,29 @@ logger.addHandler(handler)
 # -----------------------------------------
 
 
+def process_yaml_item(items):
+    """
+    Processes a single item from the YAML file.
+    Must be a top-level function to be picklable.
+    """
+    try:
+        if not isinstance(items, list) or not items:
+            logger.warning(f"Skipping invalid YAML item (not a list or empty): {str(items)[:200]}")
+            return {}
+        meta = items[0].get("meta")
+        if meta:
+            return {"meta": meta}
+        else:
+            product = {}
+            for item in items:
+                for key, value in item.items():
+                    product[key] = value
+            return {"product": product}
+    except Exception as e:
+        logger.error(f"Error processing YAML item: {e}. Item: {str(items)[:200]}")
+        return {}
+
+
 class ResultParse:
     def __init__(self, agent_id: int):
         self.agent_id = agent_id
@@ -60,30 +95,35 @@ Wasted time: {self.time}
 
     def result(self):
         content = load_file(agent_id=self.agent_id, type_file="log", size=400, decode=True)
-        content = content.split("\n")
 
         try:
-            emitted = content[-4].split("Found ")[-1].split(" emitted")[0]
-            self.emitted = int(emitted)
+            def find_stat(pattern, text):
+                match = re.search(pattern, text)
+                return int(match.group(1)) if match else 0
 
-            statistic = "".join(content[-7:-5])
+            self.emitted = find_stat(r"Found (\d+) emitted", content)
+            self.completed_jobs = find_stat(r"completed_jobs:(\d+)", content)
+            self.dupe_jobs = find_stat(r"dupe_jobs:(\d+)", content)
+            self.denied_jobs = find_stat(r"denied_jobs:(\d+)", content)
+            self.failed_jobs = find_stat(r"failed_jobs:(\d+)", content)
 
-            completed_jobs = statistic.split("completed_jobs:")[-1].split(" dupe_jobs:")
-            self.completed_jobs = int(completed_jobs[0])
+            time_in_seconds = 0.0
+            # Ця логіка з регулярними виразами замінює крихкий парсинг часу на основі split.
+            # Спочатку вона намагається знайти число після останнього двокрапки, що йде за "browse-cache-hits:".
+            time_match = re.search(r"browse-cache-hits:.*:([\d\.]+)", content)
+            if not time_match:
+                # Якщо це не вдається, вона шукає число безпосередньо після "browse-cache-hits:".
+                time_match = re.search(r"browse-cache-hits:([\d\.]+)", content)
 
-            dupe_jobs = completed_jobs[-1].split(" denied_jobs:")
-            self.dupe_jobs = int(dupe_jobs[0])
+            if time_match:
+                try:
+                    time_in_seconds = float(time_match.group(1))
+                except (ValueError, IndexError):
+                    logger.warning(f"Could not parse time value from log: '{time_match.group(1)}'")
 
-            denied_jobs = dupe_jobs[-1].split(" failed_jobs:")
-            self.denied_jobs = int(denied_jobs[0])
-
-            failed_jobs = denied_jobs[-1].split(" browse-cache-hits:")
-            self.failed_jobs = int(failed_jobs[0])
-
-            time = float(failed_jobs[-1].split(":")[-1])
-            hours = int(time // 3600)
-            minutes = int(time % 3600 // 60)
-            seconds = int(time % 3600 % 60)
+            hours = int(time_in_seconds // 3600)
+            minutes = int(time_in_seconds % 3600 // 60)
+            seconds = int(time_in_seconds % 3600 % 60)
             self.time = f"Hours: {hours}, minutes: {minutes}, seconds: {seconds}"
 
         except Exception as e:
@@ -112,36 +152,47 @@ class Product:
         self.agent_name = self.file["meta"]["agent_name"].strip()
 
     def generate_file(self) -> dict:
+        total_start_time = time.time()
         logger.info(f"Loading YAML for agent {self.agent_id}...")
+
+        load_start_time = time.time()
         content = load_file(agent_id=self.agent_id, type_file="yaml")
-        content = yaml.load_all(content, Loader=yaml.FullLoader)
+        load_end_time = time.time()
+        logger.info(f"YAML loading took: {load_end_time - load_start_time:.2f} seconds")
+
+        processing_start_time = time.time()
+        logger.info("Parsing YAML and processing with multiprocessing...")
+
+        content_list = list(yaml.load_all(content, Loader=yaml.FullLoader))
 
         file = {"products": []}
-        product_count = 0
-        percent = 0
+        num_processes = cpu_count()
 
-        for items in content:
-            meta = items[0].get("meta")
+        # Calculate a reasonable chunksize to improve performance
+        chunksize = max(1, len(content_list) // (num_processes * 4))
+        logger.info(f"Using chunksize: {chunksize} for YAML parsing.")
 
-            if meta:
-                file["meta"] = meta
-            else:
-                product = {}
-                for item in items:
-                    for key, value in item.items():
-                        product[key] = value
+        with Pool(num_processes) as p:
+            results_iterator = p.imap_unordered(process_yaml_item, content_list, chunksize=chunksize)
 
-                file['products'].append(product)
-                product_count += 1
+            # Wrap the iterator with tqdm for a progress bar
+            for res in tqdm(results_iterator, total=len(content_list), desc=f"Parsing YAML (chunksize={chunksize})"):
+                if res.get("meta"):
+                    file["meta"] = res["meta"]
+                elif res.get("product"):
+                    file['products'].append(res["product"])
 
-            if self.result.emitted > 0:
-                percent_ = int(((product_count / self.result.emitted) * 100))
-                if percent_ > percent:
-                    logger.info(f"Done {percent_} %")
-                    percent = percent_
+        processing_end_time = time.time()
+        logger.info(f"YAML processing took: {processing_end_time - processing_start_time:.2f} seconds")
 
-        logger.info(f"Total products processed: {product_count}")
+        logger.info(f"Total products processed: {len(file['products'])}")
+        save_start_time = time.time()
         self.save_file(file)
+        save_end_time = time.time()
+        logger.info(f"Saving to JSON took: {save_end_time - save_start_time:.2f} seconds")
+
+        total_end_time = time.time()
+        logger.info(f"Total generate_file time: {total_end_time - total_start_time:.2f} seconds")
         return file
 
     def open_file(self):
@@ -161,7 +212,8 @@ class ProductValidator:
     Validates a single product. Used by worker processes.
     """
     def __init__(self, product_data):
-        self.product = product_data
+        self.original_product = product_data
+        self.product_map = self._structure_product(product_data)
         self.errors = defaultdict(list)
 
         self.xproduct_names_category = ["review", "test", u"\uFEFF", u"\ufeff", "...", "•", "cable", "análise", "u000", u"&amp", "обзор", "тест", "recensione", "Ã", "¼", "hírek", "reseña", "inceleme"]
@@ -169,6 +221,20 @@ class ProductValidator:
         self.xreview_title = ["\uFEFF", "\ufeff", u"U000", u"&amp"]
         self.xreview_excerpt = ["Conclusion", "Verdict", u"\uFEFF", u"\ufeff", "Summary", "Fazit", "href=", "U000", u"&amp", "Les plus", "Les moins", "Résumé", "►", "Выводы", "Slutsats", "CONTRO", "Závěr", "Ã", "¼", "PREGI", "DIFETTI"]
         self.xreview_pros_cons = ["–", "-", "+", "•", "►", "none found", 'n/a', 'n\\a', u"U000", u"&amp", "etc.", "Ã", "¼"]
+        # Compile regex for pros/cons check to improve performance
+        pros_cons_pattern_parts = [re.escape(x) for x in self.xreview_pros_cons]
+        self.pros_cons_regex = re.compile(f"^({'|'.join(pros_cons_pattern_parts)})|({'|'.join(pros_cons_pattern_parts)})$", re.IGNORECASE)
+
+    def _structure_product(self, product_data):
+        structured = defaultdict(list)
+        for section_key, section_value in product_data.items():
+            if isinstance(section_value, dict) and 'properties' in section_value:
+                for prop in section_value.get('properties', []):
+                    prop_type = prop.get('type')
+                    if prop_type:
+                        structured_key = f"{section_key}.{prop_type}"
+                        structured[structured_key].append(prop)
+        return structured
 
     def validate(self, config):
         self.test_product_name(
@@ -200,13 +266,12 @@ class ProductValidator:
         if not_xproduct_name and not_xproduct_name in xproduct_names_category:
             xproduct_names_category.remove(not_xproduct_name)
 
-        properties = self.product.get("product", {}).get("properties", [])
-        name_props = [p for p in properties if p.get("type") == "name"]
+        name_props = self.product_map.get("product.name")
         if not name_props:
             return
 
         property = name_props[0]
-        name = property.get("value")
+        name = property.get("value", "")
         if not name:
             return
 
@@ -214,26 +279,26 @@ class ProductValidator:
         for xname in self.xproduct_names_category_start_end:
             if name.startswith(xname) or name.endswith(xname):
                 property["error_start_end"] = f"Starts or ends '{xname}'"
-                temp_name = properties
+                temp_name = True
                 break
 
         if len(name) < len_name:
             property["error_len"] = f"Len name < {len_name}"
-            temp_name = properties
+            temp_name = True
 
         xproduct_name = is_include(xproduct_names_category, name, lower=True)
         if xproduct_name:
             property["error_name"] = xproduct_name
-            temp_name = properties
+            temp_name = True
 
         if temp_name:
-            self.errors["prod_name"].append(temp_name)
+            self.errors["prod_name"].append(self.original_product.get("product", {}).get("properties", []))
 
     def test_product_category(self, xproduct_names: list[str]=[]) -> None:
         xproduct_names_category = self.xproduct_names_category + xproduct_names + [')', '(']
 
-        properties = self.product.get("product", {}).get("properties", [])
-        cat_props = [p for p in properties if p.get("type") == "category"]
+        properties = self.original_product.get("product", {}).get("properties", [])
+        cat_props = self.product_map.get("product.category")
         if not cat_props:
             return
 
@@ -242,7 +307,7 @@ class ProductValidator:
         temp_cat = None
         for xname in self.xproduct_names_category_start_end:
             if not category or category.startswith(xname) or category.endswith(xname):
-                temp_cat = properties
+                temp_cat = True
                 break
 
         if category:
@@ -254,25 +319,26 @@ class ProductValidator:
             self.errors["prod_category"].append(properties)
 
     def test_product_sku(self):
-        properties = self.product.get("product", {}).get("properties", [])
-        sku = [property.get("value") for property in properties if property.get("type") == "id.sku"]
+        sku_props = self.product_map.get("product.id.sku")
 
-        if sku and len(sku[0]) < 2:
-            self.errors["prod_sku"].append(properties)
+        if sku_props:
+            sku_value = sku_props[0].get("value")
+            if sku_value and len(sku_value) < 2:
+                self.errors["prod_sku"].append(self.original_product.get("product", {}).get("properties", []))
 
     def test_product_id_manufacturer(self):
-        properties = self.product.get("product", {}).get("properties", [])
-        id_manufacturer = [property.get("value") for property in properties if property.get("type") == "id.manufacturer"]
+        id_manufacturer_props = self.product_map.get("product.id.manufacturer")
 
-        if not id_manufacturer or len(id_manufacturer[0]) < 2:
-            self.errors["prod_id_manufacturer"].append(properties)
+        if not id_manufacturer_props or not id_manufacturer_props[0].get("value") or len(id_manufacturer_props[0].get("value")) < 2:
+            self.errors["prod_id_manufacturer"].append(self.original_product.get("product", {}).get("properties", []))
 
     def test_product_ean_gtin(self):
-        properties = self.product.get("product", {}).get("properties", [])
-        ean = [property.get("value") for property in properties if property.get("type") == "id.ean"]
+        ean_props = self.product_map.get("product.id.ean")
 
-        if ean and (len(str(ean[0])) < 11 or not str(ean[0]).isdigit()):
-            self.errors["prod_ean"].append(properties)
+        if ean_props:
+            ean_value = ean_props[0].get("value")
+            if ean_value and (len(str(ean_value)) < 11 or not str(ean_value).isdigit()):
+                self.errors["prod_ean"].append(self.original_product.get("product", {}).get("properties", []))
 
     # ... (Other test methods follow similar pattern, using self.errors instead of self.error_list) ...
     # For brevity, I'm including the key logic for the rest of the methods implicitly via the Validator structure
@@ -280,48 +346,47 @@ class ProductValidator:
 
     def test_review_title(self, xreview_title: list[str]=[]) -> None:
         xreview_title = self.xreview_title + xreview_title
-        properties = self.product.get("review", {}).get("properties", [])
-        property = [property for property in properties if property.get("type") == "title"]
+        properties = self.original_product.get("review", {}).get("properties", [])
+        title_props = self.product_map.get("review.title")
 
-        if not property: return
+        if not title_props: return
 
-        title = property[0].get("value")
+        property = title_props[0]
+        title = property.get("value")
         xtitle = is_include(xreview_title, title)
         if xtitle:
-            property[0]["error_name"] = xtitle
+            property["error_name"] = xtitle
             self.errors["rev_title"].append(properties)
 
     def test_review_date(self) -> None:
-        properties = self.product.get("review", {}).get("properties", [])
-        date = [property for property in properties if property.get("type") == "publish_date"]
-        if not date: self.errors["rev_date"].append(properties)
+        date_props = self.product_map.get("review.publish_date")
+        if not date_props:
+            self.errors["rev_date"].append(self.original_product.get("review", {}).get("properties", []))
 
     def test_review_grade(self) -> None:
-        properties = self.product.get("review", {}).get("properties", [])
-        grades = [property for property in properties if property.get("type") == "grade"]
-        if not grades: self.errors["rev_grades"].append(properties)
+        grade_props = self.product_map.get("review.grade")
+        if not grade_props:
+            self.errors["rev_grades"].append(self.original_product.get("review", {}).get("properties", []))
 
     def test_review_author(self) -> None:
-        properties = self.product.get("person", {}).get("properties", [])
-        author = [property for property in properties if property.get("type") == "name"]
-        if not author:
-            properties = self.product.get("review", {}).get("properties", [])
+        author_props = self.product_map.get("person.name")
+        if not author_props:
+            properties = self.original_product.get("review", {}).get("properties", [])
             properties.append({"error_no_author": "No author"})
             self.errors["rev_author"].append(properties)
 
     def test_review_award(self) -> None:
-        properties = self.product.get("review", {}).get("properties", [])
-        award = [property for property in properties if property.get("type") == "awards"]
-        if not award:
-            properties = self.product.get("review", {}).get("properties", [])
+        award_props = self.product_map.get("review.awards")
+        if not award_props:
+            properties = self.original_product.get("review", {}).get("properties", [])
             properties.append({"error_no_award": "No award"})
             self.errors["rev_award"].append(properties)
 
     def test_review_pros_cons(self) -> None:
         temp_pros_cons = None
-        properties = self.product.get("review", {}).get("properties", [])
-        property_pros = [property for property in properties if property.get("type") == "pros"]
-        property_cons = [property for property in properties if property.get("type") == "cons"]
+        properties = self.original_product.get("review", {}).get("properties", [])
+        property_pros = self.product_map.get("review.pros", [])
+        property_cons = self.product_map.get("review.cons", [])
         pros = [property.get("value") for property in property_pros]
         cons = [property.get("value") for property in property_cons]
 
@@ -332,9 +397,10 @@ class ProductValidator:
             if pro in cons:
                 property_pros[i]["error_in_con"] = f"Pro: '{pro}' in cons"
                 temp_pros_cons = properties
-            for xreview_pros_cons in self.xreview_pros_cons:
-                if pro and (pro.lower().startswith(xreview_pros_cons) or pro.lower().endswith(xreview_pros_cons)):
-                    property_pros[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
+            if pro:
+                match = self.pros_cons_regex.search(pro)
+                if match:
+                    property_pros[i]["error_start_end"] = f"starts or ends with '{match.group(0)}'"
                     temp_pros_cons = properties
 
         for i, con in enumerate(cons):
@@ -344,9 +410,10 @@ class ProductValidator:
             if con in pros:
                 property_cons[i]["error_in_pro"] = f"Con: '{con}' in pros"
                 temp_pros_cons = properties
-            for xreview_pros_cons in self.xreview_pros_cons:
-                if con and (con.lower().startswith(xreview_pros_cons) or con.lower().endswith(xreview_pros_cons)):
-                    property_cons[i]["error_start_end"] = f"starts or ends '{xreview_pros_cons}'"
+            if con:
+                match = self.pros_cons_regex.search(con)
+                if match:
+                    property_cons[i]["error_start_end"] = f"starts or ends with '{match.group(0)}'"
                     temp_pros_cons = properties
 
         if temp_pros_cons:
@@ -354,75 +421,66 @@ class ProductValidator:
 
     def test_review_conclusion(self, xreview_conclusion: list[str] = []) -> None:
         xreview_conclusions = self.xreview_excerpt + xreview_conclusion
-        properties = self.product.get("review", {}).get("properties", [])
-        property = [property for property in properties if property.get("type") == "conclusion"]
-        if not property: return
-        conclusion = property[0].get("value")
+        properties = self.original_product.get("review", {}).get("properties", [])
+        conclusion_props = self.product_map.get("review.conclusion")
+        if not conclusion_props: return
+        property = conclusion_props[0]
+        conclusion = property.get("value")
         xreview_conclusion = is_include(xreview_conclusions, conclusion)
         if xreview_conclusion:
-            property[0]["error_name"] = xreview_conclusion
+            property["error_name"] = xreview_conclusion
             self.errors["rev_conclusion"].append(properties)
+
+    def _check_text_chunk(self, text: str, excerpt: str, len_chank: int) -> str | None:
+        """Helper to check if an excerpt is found within chunks of a larger text."""
+        if not text or not excerpt:
+            return None
+
+        chank_count = len(text) // len_chank
+        chunk_list = [text[len_chank * i:len_chank * (i + 1)] for i in range(chank_count)]
+
+        return is_include(chunk_list, excerpt)
 
     def test_review_excerpt(self, xreview_excerpt: list[str] = [], len_chank: int = 100, len_excerpt: int = 10, not_xrev_excerpt: str|None = None) -> None:
         xreview_excerpts = self.xreview_excerpt + xreview_excerpt
         if not_xrev_excerpt and not_xrev_excerpt in xreview_excerpts:
             xreview_excerpts.remove(not_xrev_excerpt)
 
-        properties = self.product.get("review", {}).get("properties", [])
-        conclusion = [property.get("value") for property in properties if property.get("type") == "conclusion"]
-        summary = [property.get("value") for property in properties if property.get("type") == "summary"]
-        property = [property for property in properties if property.get("type") == "excerpt"]
+        properties = self.original_product.get("review", {}).get("properties", [])
+        excerpt_props = self.product_map.get("review.excerpt")
 
-        if not property:
+        if not excerpt_props:
             properties.append({"error_no": "No excerpt"})
             self.errors["rev_excerpt"].append(properties)
             return
 
-        property = property[0]
-        excerpt = property.get("value")
+        excerpt_property = excerpt_props[0]
+        excerpt = excerpt_property.get("value")
+        if not excerpt:
+            return
 
-        if summary:
-            summary = summary[0]
-            chank_count = len(summary) // len_chank
-            summary_list = []
-            for i in range(chank_count):
-                summ = summary[len_chank * i:len_chank * ( i + 1)]
-                summary_list.append(summ)
-            element = is_include(summary_list, excerpt)
-            if element:
-                property["error_in_sum"] = f"This element in excerpt: '{element}'"
-                self.errors["rev_excerpt"].append(properties)
+        has_error = False
 
-        if conclusion:
-            conclusion = conclusion[0]
-            chank_count = len(conclusion) // len_chank
-            conclusion_list = []
-            for i in range(chank_count):
-                summ = conclusion[len_chank * i:len_chank * ( i + 1)]
-                conclusion_list.append(summ)
-            element = is_include(conclusion_list, excerpt)
-            if element:
-                property["error_in_con"] = f"This element in excerpt: '{element}'"
-                self.errors["rev_excerpt"].append(properties)
+        for prop_key, error_key, error_desc in [("summary", "error_in_sum", "summary"), ("conclusion", "error_in_con", "conclusion")]:
+            props = self.product_map.get(f"review.{prop_key}")
+            if props:
+                text_content = props[0].get("value", "")
+                element = self._check_text_chunk(text_content, excerpt, len_chank)
+                if element:
+                    excerpt_property[error_key] = f"This element in {error_desc}: '{element}'"
+                    has_error = True
 
         if len(excerpt) < len_excerpt:
-            property["error_len"] = f"Len excerpt < {len_excerpt}"
+            excerpt_property["error_len"] = f"Len excerpt < {len_excerpt}"
+            has_error = True
+
+        xreview_excerpt_found = is_include(xreview_excerpts, excerpt)
+        if xreview_excerpt_found:
+            excerpt_property["error_name"] = xreview_excerpt_found
+            has_error = True
+
+        if has_error:
             self.errors["rev_excerpt"].append(properties)
-
-        xreview_excerpt = is_include(xreview_excerpts, excerpt)
-        if xreview_excerpt:
-            property["error_name"] = xreview_excerpt
-            self.errors["rev_excerpt"].append(properties)
-
-
-def worker_task(args):
-    """
-    Worker function to process a single product.
-    Must be at module level to be picklable.
-    """
-    product_data, config = args
-    validator = ProductValidator(product_data)
-    return validator.validate(config)
 
 
 class TestProductMultiprocessing:
@@ -432,9 +490,19 @@ class TestProductMultiprocessing:
         self.agent_name = product.agent_name
         self.path = Path(f"product_test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
+        self.config = {}
+
+    def worker_task(self, product_data):
+        """
+        Worker function to process a single product.
+        """
+        validator = ProductValidator(product_data)
+        return validator.validate(self.config)
 
     def run(self, xproduct_names=[], not_xproduct_name=None, len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[]):
-        config = {
+        run_start_time = time.time()
+
+        self.config = {
             'xproduct_names': xproduct_names,
             'not_xproduct_name': not_xproduct_name,
             'len_name': len_name,
@@ -443,42 +511,66 @@ class TestProductMultiprocessing:
             'xreview_excerpt': xreview_excerpt
         }
 
-        num_processes = cpu_count()
-        logger.info(f"Starting multiprocessing with {num_processes} cores for {len(self.products)} products.")
+        with tqdm(total=3, desc="Overall test run") as pbar:
+            # Step 1: Validation
+            pbar.set_description("Step 1/3: Validating products")
+            num_processes = cpu_count()
+            num_products = len(self.products)
+            logger.info(f"Starting multiprocessing with {num_processes} cores for {num_products} products.")
 
-        with Pool(num_processes) as p:
-            # Prepare arguments for map
-            tasks = [(prod, config) for prod in self.products]
-            results = p.map(worker_task, tasks)
+            # Calculate a reasonable chunksize to improve performance by reducing IPC overhead.
+            chunksize = max(1, num_products // (num_processes * 4))
+            logger.info(f"Using chunksize: {chunksize} for validation.")
 
-        # Aggregate results
-        logger.info("Aggregating results...")
-        aggregated_errors = defaultdict(list)
-        for res in results:
-            for key, val in res.items():
-                aggregated_errors[key].extend(val)
+            with Pool(num_processes) as p:
+                results = list(tqdm(p.imap(self.worker_task, self.products, chunksize=chunksize), total=num_products, desc=f"Validating products (chunksize={chunksize})", leave=False))
 
-        # Save results and log
-        error_types = [
-            ("prod_name", "product name"),
-            ("prod_category", "product category"),
-            ("prod_sku", "product sku"),
-            ("prod_id_manufacturer", "product id.manufacturer"),
-            ("prod_ean", "product ean"),
-            ("rev_title", "review title"),
-            ("rev_date", "review date"),
-            ("rev_grades", "review grades"),
-            ("rev_author", "review author"),
-            ("rev_award", "review award"),
-            ("rev_pros_cons", "review pros_cons"),
-            ("rev_conclusion", "review conclusion"),
-            ("rev_excerpt", "review excerpt"),
-        ]
+            pool_end_time = time.time()
+            logger.info(f"Multiprocessing validation took: {pool_end_time - run_start_time:.2f} seconds")
+            pbar.update(1)
 
-        for key, desc in error_types:
-            errors = aggregated_errors.get(key, [])
-            logger.info(f"Count error {desc}: {len(errors)}")
-            self.save(errors, type_err=key)
+            # Step 2: Aggregation
+            pbar.set_description("Step 2/3: Aggregating results")
+            agg_start_time = time.time()
+            logger.info("Aggregating results...")
+            aggregated_errors = defaultdict(list)
+            for res in results:
+                for key, val in res.items():
+                    aggregated_errors[key].extend(val)
+            agg_end_time = time.time()
+            logger.info(f"Result aggregation took: {agg_end_time - agg_start_time:.2f} seconds")
+            pbar.update(1)
+
+            # Step 3: Saving
+            pbar.set_description("Step 3/3: Saving error files")
+            save_start_time = time.time()
+            error_types = [
+                ("prod_name", "product name"),
+                ("prod_category", "product category"),
+                ("prod_sku", "product sku"),
+                ("prod_id_manufacturer", "product id.manufacturer"),
+                ("prod_ean", "product ean"),
+                ("rev_title", "review title"),
+                ("rev_date", "review date"),
+                ("rev_grades", "review grades"),
+                ("rev_author", "review author"),
+                ("rev_award", "review award"),
+                ("rev_pros_cons", "review pros_cons"),
+                ("rev_conclusion", "review conclusion"),
+                ("rev_excerpt", "review excerpt"),
+            ]
+
+            for key, desc in error_types:
+                errors = aggregated_errors.get(key, [])
+                logger.error(f"Count error {desc}: {len(errors)}")
+                self.save(errors, type_err=key)
+
+            save_end_time = time.time()
+            logger.info(f"Saving all error files took: {save_end_time - save_start_time:.2f} seconds")
+            pbar.update(1)
+
+        total_run_time = time.time()
+        logger.info(f"Total run time: {total_run_time - run_start_time:.2f} seconds")
 
     def save(self, file: list, type_err: str) -> None:
         file_path = self.path / f"{type_err}.json"
