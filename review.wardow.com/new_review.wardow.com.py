@@ -28,7 +28,7 @@ def process_prodlist(data, context, session):
     prods = data.xpath('//a[@class="product-card__link"]')
     for prod in prods:
         name = prod.xpath('.//text()').string(multiple=True)
-        url = prod.xpath('@href').string()
+        url = 'https://www.wardow.com/en/products/' + prod.xpath('@href').string().split('/')[-1]
         session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
@@ -45,7 +45,7 @@ def process_product(data, context, session):
     product.category = context['cat']
     product.manufacturer = data.xpath('//a[@class="product-vendor"]/text()').string()
 
-    mpn = data.xapth('//strong[contains(text(), "Model number:")]/following-sibling::text()').string()
+    mpn = data.xpath('//strong[contains(text(), "Model number:")]/following-sibling::text()').string()
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
 
