@@ -26,7 +26,7 @@ def process_frontpage(data, context, session):
 
     cats = data.xpath('//li[@class="menu-end"]/ul/li')
     for cat in cats:
-        name = cat.xpath('a//text()').string(multiple=True).split('(')[0].strip().title()
+        name = cat.xpath('a//text()').string(multiple=True).strip()
 
         subcats = cat.xpath('ul//a')
         if subcats:
@@ -56,11 +56,11 @@ def process_revlist(data, context, session):
         url = 'http://www.defunctgames.com' + rev.get('link')
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, ssid=ssid, url=url))
 
-    page_cnt = data_json.get('total_pages')
+    page_cnt = context.get('page_cnt', data_json.get('pagination', {}).get('total_pages'))
     next_page = context.get('page', 1) + 1
     if next_page <= page_cnt:
         next_url = 'http://www.defunctgames.com/ajax/filter_reviews.php?system={cat_group}&limit=20&page={page}'.format(cat_group=context['cat_group'], page=next_page)
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context, page=next_page))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context, page=next_page, page_cnt=page_cnt))
 
 
 def process_review(data, context, session):
@@ -70,7 +70,7 @@ def process_review(data, context, session):
     product.name = context['title']
     product.url = context['url']
     product.ssid = context['ssid']
-    product.category = context['cat'].replace('(Reviews)', '').strip(' |')
+    product.category = context['cat'].replace('(Reviews)', '').replace('OTHER CONSOLES', '').strip(' |').title()
     product.manufacturer = data.xpath('//div[@class="review-card__developer"]/ul//text()').string(multiple=True)
 
     genre = data.xpath('//div[@class="review-card__genre"]/ul//text()').string(multiple=True)
@@ -100,6 +100,10 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[@class="review__text" and not(.//b[contains(., "Warning")])]//text()').string(multiple=True)
     if excerpt:
+        if 'Conclusion: ' in excerpt:
+            excerpt, conclusion = excerpt.split('Conclusion: ')
+            review.add_property(type='conclusion', value=conclusion.strip())
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

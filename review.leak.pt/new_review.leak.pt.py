@@ -22,7 +22,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('Análise – ', '').replace('Review – ', '').replace('Review: ', '').replace('Análise: ', '').split(': ')[0].split(' Review')[0].split(' – ')[0].replace(' review', '').replace('Mini-Review ', '').replace('Análise ', '').replace(' Análise', '').replace('Review ', '').replace('Quick-review ', '').replace('Mini-review ', '').replace('Análise ', '').replace('Análise/', '').strip()
+    product.name = context['title'].replace('Análise – ', '').replace('Review – ', '').replace('Review: ', '').replace('Análise: ', '').split(': ')[0].split(' Review')[0].split(' – ')[0].replace(' review', '').replace('Mini-Review ', '').replace('Análise ', '').replace(' Análise', '').replace('Review ', '').replace('Quick-review ', '').replace('Mini-review ', '').replace('Análise ', '').replace('Análise/', '').replace(' (Review)', '').replace('(Análise) ', '').replace('(Review) ', '').replace('(Mini-Review) ', '').replace('(Mini-Análise) ', '').replace('Testámos a ', '').replace('Testámos o ', '').replace('[Review] ', '').replace('[Review/Análise]', '').replace('(Opinião) ', '').replace('(Em análise) ', '').replace('(Quick-Review) ', '').replace('(Re-Review) ', '').replace('(Preview) ', '').replace('(Especial) ', '').replace('(Mini-Teste) ', '').replace('Testei o ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = 'Tecnologia'

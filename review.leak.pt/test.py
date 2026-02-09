@@ -16,6 +16,9 @@ agent = agents.LEAK_PT
 # agent = agents.TEST
 reload = 1
 
+# name: 6+
+# exc: 1+
+# log: 6+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

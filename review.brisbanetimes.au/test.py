@@ -16,6 +16,8 @@ agent = agents.BRISBANE_TIMES_AU
 # agent = agents.TEST
 reload = 1
 
+# name: 2+
+# log: 2+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
