@@ -10,10 +10,8 @@ def run(context, session):
 def process_frontpage(data, context, session):
     cats = data.xpath('(//li[contains(@class, "nav-item") and a[contains(., "Shop")]])[1]/ul[1]/li/a')
     for cat in cats:
-        name = cat.xpath('a//text()').string(multiple=True)
+        name = cat.xpath('.//text()').string(multiple=True)
         url = cat.xpath('@href').string()
-        
-        print 'cat=', name
         session.queue(Request(url), process_category, dict(cat=name))
 
 
@@ -22,9 +20,7 @@ def process_category(data, context, session):
     for subcat in subcats:
         subcat_name = subcat.xpath('.//h2//text()').string(multiple=True)
         url = subcat.xpath('.//a[contains(text(), "Zu den Produkten")]/@href').string()
-        
-        print context['cat']+'|'+subcat_name
-        # session.queue(Request(url), process_prodlist, dict(cat=context['cat']+'|'+subcat_name))
+        session.queue(Request(url), process_prodlist, dict(cat=context['cat']+'|'+subcat_name))
 
 
 def process_prodlist(data, context, session):
