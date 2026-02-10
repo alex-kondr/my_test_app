@@ -75,9 +75,9 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h4[regexp:test(., "THE BOTTOM LINE|Conclusion", "i")]/preceding-sibling::p[not((preceding::h4|preceding::p/span|preceding::p/strong)[regexp:test(., "ADVANTAGES|DISADVANTAGES|THE BOTTOM LINE|Pros:|Cons:|Summary")])]//text()[not(regexp:test(., "Pros:|Cons:|Summary"))]').string(multiple=True)
+    excerpt = data.xpath('//h4[regexp:test(., "THE BOTTOM LINE|Conclusion", "i")]/preceding-sibling::p[not((preceding::h4|preceding::p/span|preceding::p/strong)[regexp:test(., "ADVANTAGES|DISADVANTAGES|THE BOTTOM LINE|Pros:|Cons:|Summary")])]//text()[not(regexp:test(., "Pros:|Cons:|Summary|\(In fairness"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "content")]/p[not((preceding::h4|preceding::p/span|preceding::p/strong)[regexp:test(., "ADVANTAGES|DISADVANTAGES|THE BOTTOM LINE|Pros:|Cons:|Summary")])]//text()[not(regexp:test(., "Pros:|Cons:|Summary"))]').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "content")]/p[not((preceding::h4|preceding::p/span|preceding::p/strong)[regexp:test(., "ADVANTAGES|DISADVANTAGES|THE BOTTOM LINE|Pros:|Cons:|Summary|(In fairness,")])]//text()[not(regexp:test(., "Pros:|Cons:|Summary|\(In fairness"))]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
