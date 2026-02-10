@@ -8,6 +8,8 @@ import re
 from multiprocessing import Pool, cpu_count
 from collections import defaultdict
 from tqdm import tqdm
+import os
+import difflib
 
 from product_test.functions import load_file, is_include
 
@@ -52,6 +54,79 @@ handler = logging.StreamHandler(sys.stdout)
 handler.setFormatter(ColoredFormatter("%(asctime)s - %(levelname)s - %(message)s", datefmt="%H:%M:%S"))
 logger.addHandler(handler)
 # -----------------------------------------
+
+
+def calculate_code_change(old_file_path: Path, new_file_path: Path) -> tuple[int, int, float, float] | None:
+    """
+    Compares two files and calculates the percentage of change.
+    Returns a tuple of (added_lines, deleted_lines, percentage_with_whitespace, percentage_without_whitespace), or None on error.
+    Added/deleted lines are counted from a whitespace-sensitive comparison.
+    """
+    try:
+        with open(old_file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            old_lines = f.readlines()
+        with open(new_file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            new_lines = f.readlines()
+    except FileNotFoundError as e:
+        logger.error(f"File not found during code change calculation: {e}")
+        return None
+
+    # --- Calculation with whitespace (considers indentation and trailing spaces) ---
+    differ_ws = difflib.Differ()
+    diff_ws = list(differ_ws.compare(old_lines, new_lines))
+    added_lines = len([line for line in diff_ws if line.startswith('+ ')])
+    deleted_lines = len([line for line in diff_ws if line.startswith('- ')])
+
+    total_lines_old = len(old_lines)
+    if total_lines_old == 0:
+        percentage_ws = 100.0 if added_lines > 0 else 0.0
+    else:
+        percentage_ws = (added_lines + deleted_lines) / total_lines_old * 100
+
+    # --- Calculation without whitespace (ignores leading/trailing spaces) ---
+    old_lines_stripped = [line.strip() for line in old_lines]
+    new_lines_stripped = [line.strip() for line in new_lines]
+
+    differ_no_ws = difflib.Differ()
+    diff_no_ws = list(differ_no_ws.compare(old_lines_stripped, new_lines_stripped))
+    added_lines_no_ws = len([line for line in diff_no_ws if line.startswith('+ ')])
+    deleted_lines_no_ws = len([line for line in diff_no_ws if line.startswith('- ')])
+
+    if total_lines_old == 0:
+        percentage_no_ws = 100.0 if added_lines_no_ws > 0 else 0.0
+    else:
+        # The number of changed lines ignoring whitespace, as a percentage of original total lines.
+        percentage_no_ws = (added_lines_no_ws + deleted_lines_no_ws) / total_lines_old * 100
+
+    return added_lines, deleted_lines, percentage_ws, percentage_no_ws
+
+
+def check_code_changes(root_dir: str = None):
+    """
+    Analyzes the specified directory for 'old_*' and 'new_*' file pairs and logs code changes.
+    If root_dir is not provided, it will search from the project's root directory.
+    """
+    root_path = Path(root_dir).parent if root_dir else Path(__file__).parent
+    logger.info("-" * 40)
+    logger.info(f"Analyzing directory for code changes: {root_path.resolve()}")
+    found_pairs = False
+    for dirpath, _, filenames in os.walk(root_path):
+        old_files = [f for f in filenames if f.startswith('old_')]
+        for old_file_name in old_files:
+            new_file_name = 'new_' + old_file_name[len('old_'):]
+            if new_file_name in filenames:
+                found_pairs = True
+                result = calculate_code_change(Path(dirpath) / old_file_name, Path(dirpath) / new_file_name)
+                if result:
+                    added, deleted, percentage_ws, percentage_no_ws = result
+                    relative_path = Path(dirpath).relative_to(root_path)
+                    logger.info(f"Comparison for '{old_file_name[4:]}' in './{relative_path}':")
+                    logger.info(f"  - Added: {added}, Deleted: {deleted} (literal lines)")
+                    logger.info(f"  - Change (with whitespace): {percentage_ws:.2f}%")
+                    logger.info(f"  - Change (ignoring whitespace): {percentage_no_ws:.2f}%")
+    if not found_pairs:
+        logger.warning("No 'old_*' and 'new_*' file pairs found to compare.")
+    logger.info("-" * 40)
 
 
 def process_yaml_item(items):

@@ -7,7 +7,7 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 
 
-from product_test.test_products_multiprocessing import Product, TestProductMultiprocessing
+from product_test.test_products_multiprocessing import Product, TestProductMultiprocessing, check_code_changes
 from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
@@ -16,6 +16,10 @@ agent = agents.ICULTURE_NL
 # agent = agents.TEST
 reload = 1
 
+# name: 4+
+# date: 19
+# author: 19
+# exc: 7
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
@@ -26,3 +30,5 @@ if __name__ == "__main__":
     log = LogProduct(agent, reload=reload)
     test_log = TestLogProduct(log)
     test_log.test_log()
+
+    check_code_changes(__file__)
