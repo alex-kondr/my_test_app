@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import simplejson
 
 
 def run(context, session):
@@ -62,6 +63,21 @@ def process_review(data, context, session):
     author = data.xpath('//div[time[not(@class)]]/span[contains(@class, "text")]/text()').string()
     if author:
         review.authors.append(Person(name=author, ssid=author))
+
+    rev_json = data.xpath('//script[contains(., "var dataLayer = ")]/text()').string()
+    if rev_json:
+        rev_json = simplejson.loads(rev_json.replace('var dataLayer = ', '').strip(' ;:'))
+
+        if rev_json:
+            if not date:
+                date = rev_json[0].get('date-published') or rev_json[0].get('date')
+                if date:
+                    review.date = date.split('T')[0]
+
+            if not author:
+                author = rev_json[0].get('author')
+                if author:
+                    review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//p[@class="score"]/text()').string()
     if grade_overall:
