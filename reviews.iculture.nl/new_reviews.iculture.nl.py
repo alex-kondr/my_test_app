@@ -115,7 +115,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('(((//h2|//h3)[contains(@id, "conclusie") or contains(., "Conclusie")]/preceding-sibling::div//p|(//h2|//h3)[contains(@id, "conclusie") or contains(., "Conclusie")]/preceding-sibling::p)[not(@class or img[contains(@src, "favicon.chief.tools/")])]|//div[contains(@class, "excerpt")])//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//body//p[not(@class or img[contains(@src, "favicon.chief.tools/")])]|//div[contains(@class, "excerpt")])//text()').string(multiple=True)
+        excerpt = data.xpath('(//body//p[not(@class or img[contains(@src, "favicon.chief.tools/")])]|//div[contains(@class, "excerpt")])[not((preceding::h2|preceding::h3)[contains(@id, "conclusie") or contains(., "Conclusie")])]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
