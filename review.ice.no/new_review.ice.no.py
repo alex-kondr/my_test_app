@@ -52,7 +52,7 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod.xpath('.//p/@data-analytics-product-name').string()
         brand = prod.xpath('.//div[p[@data-analytics-product-name]]/p[not(@data-analytics-product-name)]/text()').string()
-        url = prod.xpath('.//a[contains(@class, "product-card")]/@href').string()
+        url = prod.xpath('.//a[contains(@class, "product-card")]/@href').string().split('?')[0].split('#')[0]
         session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_product, dict(context, name=name, brand=brand, url=url))
 
     # No next page
@@ -62,11 +62,11 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = data.xpath('//button/@data-ls-product-id').string()
+    product.ssid = data.xpath('//div/@data-ls-product-id').string()
     product.category = context['cat']
-    product.manufacturer = data.xpath('//button/@data-ls-brand').string()
+    product.manufacturer = context['brand']
 
-    ean = data.xpath('//button/@data-ls-gtin').string()
+    ean = data.xpath('//div/@data-ls-gtin').string()
     if ean and len(ean) > 10 and ean.isdigit():
         product.add_property(type='id.ean', value=ean)
 
@@ -95,15 +95,20 @@ def process_reviews(data, context, session):
         review.url = product.url
         review.ssid = str(rev.get('id'))
 
+        date = rev.get('created_at')
+        if date:
+            review.date = date.split('T')[0]
+
         author = rev.get('user', {})
         if author:
             author_name = h.unescape(remove_emoji(author.get('name') or author.get('short_name'))).strip()
             author_ssid = str(author.get('id'))
             review.authors.append(Person(name=author_name, ssid=author_ssid))
 
-        date = rev.get('created_at')
-        if date:
-            review.date = date.split('T')[0]
+        grade_overall = rev.get('lipscore')
+        if grade_overall:
+            grade_overall = grade_overall / 2.0
+            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
         hlp_yes = rev.get('votes_up')
         if hlp_yes:
@@ -117,11 +122,6 @@ def process_reviews(data, context, session):
         if is_verified:
             review.add_property(type='is_verified_buyer', value=True)
 
-        grade_overall = rev.get('lipscore')
-        if grade_overall:
-            grade_overall = grade_overall / 2.0
-            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
-
         excerpt = rev.get('text')
         if excerpt:
             excerpt = h.unescape(remove_emoji(excerpt)).strip(' .+')
@@ -133,8 +133,8 @@ def process_reviews(data, context, session):
     offset = context.get('offset', 0) + 5
     if offset < context['revs_cnt']:
         next_page = context.get('page', 1) + 1
-        next_url = 'https://wapi.lipscore.com/products/{0}/reviews?api_key={1}&page={2}'.format(context['prod_id'], API_KEY, next_page)
-        session.do(Request(next_url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_reviews, dict(context, page=next_page, offset=offset))
+        next_url = 'https://wapi.lipscore.com/products/{prod_id}/reviews?api_key={api_key}&page={page}'.format(prod_id=context['prod_id'], api_key=API_KEY, page=next_page)
+        session.do(Request(next_url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_reviews, dict(context, product=product, page=next_page, offset=offset))
 
     elif product.reviews:
         session.emit(product)
