@@ -6,7 +6,7 @@ XTITLE = ['Best ', 'Recommended ', 'THANK YOU!', 'About', 'Privacy Policy', 'KIM
 
 
 def run(context, session):
-    session.queue(Request('https://www.iculture.nl/reviews/'), process_revlist, dict())
+    session.queue(Request('https://carseatblog.com/?s=reviews'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -25,7 +25,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' Review: ')[0].strip()
+    product.name = context['title'].split(' Review: ')[0].replace(' Review', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-3]
     product.category = 'Tech'
@@ -66,14 +66,14 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//h4[regexp:test(., "THE BOTTOM LINE|Conclusion", "i")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
-        data.xpath('//p[strong[contains(., "Summary")]]/following-sibling::p[not(regexp:test(., "Pros:|Cons:"))]//text()').sring(multiple=True)
+        data.xpath('//p[strong[contains(., "Summary")]]/following-sibling::p[not(regexp:test(., "Pros:|Cons:"))]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h4[regexp:test(., "THE BOTTOM LINE|Conclusion", "i")]/preceding-sibling::p[not((preceding::h4|preceding::p/span|preceding::p/strong)[regexp:test(., "ADVANTAGES|DISADVANTAGES|THE BOTTOM LINE|Pros:|Cons:|Summary")])]//text()[not(regexp:test(., "Pros:|Cons:|Summary|\(In fairness"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "content")]/p[not((preceding::h4|preceding::p/span|preceding::p/strong)[regexp:test(., "ADVANTAGES|DISADVANTAGES|THE BOTTOM LINE|Pros:|Cons:|Summary|(In fairness,")])]//text()[not(regexp:test(., "Pros:|Cons:|Summary|\(In fairness"))]').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "content")]/p[not((preceding::h4|preceding::p/span|preceding::p/strong)[regexp:test(., "ADVANTAGES|DISADVANTAGES|THE BOTTOM LINE|Pros:|Cons:|Summary|\(In fairness,")])]//text()[not(regexp:test(., "Pros:|Cons:|Summary|\(In fairness"))]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

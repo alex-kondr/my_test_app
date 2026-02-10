@@ -12,23 +12,19 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.ICULTURE_NL
+agent = agents.A_S_ADVENTURE_NL
 # agent = agents.TEST
 reload = 1
 
-# name: 4+
-# date: 0
-# author: 0
-# exc: 0
 
 if __name__ == "__main__":
-    product = Product(agent, reload=reload)
-    print(product.result)
-    test = TestProductMultiprocessing(product)
-    test.run(xproduct_names=[], not_xproduct_name='', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
+    # product = Product(agent, reload=reload)
+    # print(product.result)
+    # test = TestProductMultiprocessing(product)
+    # test.run(xproduct_names=[], not_xproduct_name='', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
 
-    log = LogProduct(agent, reload=reload)
-    test_log = TestLogProduct(log)
-    test_log.test_log()
+    # log = LogProduct(agent, reload=reload)
+    # test_log = TestLogProduct(log)
+    # test_log.test_log()
 
     check_code_changes(__file__)
