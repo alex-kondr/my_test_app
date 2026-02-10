@@ -52,7 +52,7 @@ def process_review(data, context, session):
     # if grade_overall:
     #     review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
 
-    pros = data.xpath('//h4[contains(., "ADVANTAGES:")]/following-sibling::ul/li')
+    pros = data.xpath('(//h4[regexp:test(., "ADVANTAGES:", "i")]/following-sibling::ul)[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -60,7 +60,7 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//h4[contains(., "DISADVANTAGES:")]/following-sibling::ul/li')
+    cons = data.xpath('(//h4[regexp:test(., "DISADVANTAGES:", "i")]/following-sibling::ul)[1]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -68,14 +68,14 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h4[contains(., "THE BOTTOM LINE")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h4[regexp:test(., "THE BOTTOM LINE|Conclusion", "i")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         data.xpath('//p[strong[contains(., "Summary")]]/following-sibling::p[not(regexp:test(., "Pros:|Cons:"))]//text()').sring(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h4[contains(., "THE BOTTOM LINE")]/preceding-sibling::p[not((preceding::h4|preceding::p/span|preceding::p/strong)[regexp:test(., "ADVANTAGES|DISADVANTAGES|THE BOTTOM LINE|Pros:|Cons:|Summary")])]//text()[not(regexp:test(., "Pros:|Cons:|Summary"))]').string(multiple=True)
+    excerpt = data.xpath('//h4[regexp:test(., "THE BOTTOM LINE|Conclusion", "i")]/preceding-sibling::p[not((preceding::h4|preceding::p/span|preceding::p/strong)[regexp:test(., "ADVANTAGES|DISADVANTAGES|THE BOTTOM LINE|Pros:|Cons:|Summary")])]//text()[not(regexp:test(., "Pros:|Cons:|Summary"))]').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "content")]/p[not((preceding::h4|preceding::p/span|preceding::p/strong)[regexp:test(., "ADVANTAGES|DISADVANTAGES|THE BOTTOM LINE|Pros:|Cons:|Summary")])]//text()[not(regexp:test(., "Pros:|Cons:|Summary"))]').string(multiple=True)
 
