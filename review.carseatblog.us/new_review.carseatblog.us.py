@@ -48,10 +48,6 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    # grade_overall = data.xpath('//text()').string()
-    # if grade_overall:
-    #     review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
-
     pros = data.xpath('(//h4[regexp:test(., "ADVANTAGES:", "i")]/following-sibling::ul)[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
