@@ -73,10 +73,13 @@ def process_prodlist(data, context, session):
 
 def process_product(data, context, session):
     product = Product()
-    product.name = data.xpath('//div[h1[@data-testid="product_name"]]/span[@itemprop="item"]/text()').string()
     product.url = context['url']
     product.category = context['cat']
     product.manufacturer = data.xpath('//div[@data-testid="product_brand"]//text()').string()
+
+    product.name = data.xpath('//div[h1[@data-testid="product_name"]]/span[@itemprop="item"]/text()').string()
+    if not product.name:
+        product.name = data.xpath('//div[h1[@data-testid="product_name"]]/text()').string()
 
     prod_info = data.xpath("//script[contains(., 'var productInfo = ')]/text()").string()
     if prod_info:
@@ -130,7 +133,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.get('review')
         if excerpt:
-            excerpt = remove_emoji(excerpt).strip()
+            excerpt = remove_emoji(excerpt).replace('\n', '').replace('\r', '').strip()
             if len(excerpt) > 2:
                 review.add_property(type="excerpt", value=excerpt)
 

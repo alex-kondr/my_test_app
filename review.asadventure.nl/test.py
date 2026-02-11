@@ -16,15 +16,19 @@ agent = agents.A_S_ADVENTURE_NL
 # agent = agents.TEST
 reload = 1
 
+# name: 5
+# cat: 42
+# author: 2221+
+# log: 2
 
 if __name__ == "__main__":
-    # product = Product(agent, reload=reload)
-    # print(product.result)
-    # test = TestProductMultiprocessing(product)
-    # test.run(xproduct_names=[], not_xproduct_name='', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
+    product = Product(agent, reload=reload)
+    print(product.result)
+    test = TestProductMultiprocessing(product)
+    test.run(xproduct_names=[], not_xproduct_name='', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
 
-    # log = LogProduct(agent, reload=reload)
-    # test_log = TestLogProduct(log)
-    # test_log.test_log()
+    log = LogProduct(agent, reload=reload)
+    test_log = TestLogProduct(log)
+    test_log.test_log()
 
     check_code_changes(__file__)
