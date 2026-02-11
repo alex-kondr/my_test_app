@@ -16,10 +16,10 @@ agent = agents.A_S_ADVENTURE_NL
 # agent = agents.TEST
 reload = 1
 
-# name: 5
-# cat: 42
+# name: 5+
+# cat: 42+
 # author: 2221+
-# log: 2
+# log: 0+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

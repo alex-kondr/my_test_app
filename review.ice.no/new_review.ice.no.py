@@ -124,7 +124,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.get('text')
         if excerpt:
-            excerpt = h.unescape(remove_emoji(excerpt)).strip(' .+')
+            excerpt = h.unescape(remove_emoji(excerpt)).replace('\n', '').replace('\r', '').strip(' .+')
             if excerpt:
                 review.add_property(type='excerpt', value=excerpt)
 
