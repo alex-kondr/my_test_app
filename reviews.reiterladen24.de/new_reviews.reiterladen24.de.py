@@ -1,9 +1,10 @@
 from agent import *
 from models.products import *
+import time
 
 
 XCAT = ['Geschenkideen',  'Neuheiten', 'Sale']
-
+SLEEP = 1
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
@@ -11,6 +12,8 @@ def run(context, session):
 
 
 def process_frontpage(data, context, session):
+    time.sleep(SLEEP)
+
     cats = data.xpath('//div[div[@class="row navigation-flyout-content"]]')
     for cat in cats:
         name = cat.xpath('.//a[@itemprop="url" and not(@class)]/@title').string()
@@ -32,6 +35,8 @@ def process_frontpage(data, context, session):
 
 
 def process_prodlist(data, context, session):
+    time.sleep(SLEEP)
+
     prods = data.xpath('//div[@class="card-body"]')
     for prod in prods:
         name = prod.xpath('.//a[@class="product-name"]/text()').string()
@@ -50,6 +55,8 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
+    time.sleep(SLEEP)
+
     product = Product()
     product.name = context['name']
     product.url = context['url']
@@ -72,6 +79,8 @@ def process_product(data, context, session):
 
 
 def process_reviews(data, context, session):
+    time.sleep(SLEEP)
+
     product = context['product']
 
     revs = data.xpath('//body[div[@class="row product-detail-review-item-info"]]')
@@ -110,7 +119,7 @@ def process_reviews(data, context, session):
 
                 product.reviews.append(review)
 
-    next_url = data.xpath('//li[contains(@class, "page-next")]/a/@href').string()
+    next_url = data.xpath('//li[@class="page-item page-next"]/a/@href').string()
     if next_url:
         session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
 
