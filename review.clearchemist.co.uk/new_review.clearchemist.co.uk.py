@@ -39,16 +39,13 @@ def process_frontpage(data, context, session):
                         for subcat in subcats:
                             subcat_name = subcat.xpath('span/text()').string()
                             url = subcat.xpath('@href').string()
-                            
-                            print name+'|'+cat1_name+'|'+cat2_name+'|'+subcat_name, url
+                            session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+cat2_name+'|'+subcat_name))
                     else:
                         url = cat2.xpath('a/@href').string()
-                        
-                        print name+'|'+cat1_name+'|'+cat2_name, url
+                        session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+cat2_name))
             else:
                 url = cat1.xpath('a/@href').string()
-                
-                print name+'|'+cat1_name, url
+                session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name))
 
 
 def process_prodlist(data, context, session):
@@ -77,15 +74,14 @@ def process_reviews(data, context, session):
     product.ssid = context['ssid']
 
     sku = context.get('sku')
-    if sku and sku.isdigit() == True and 11 < len(sku) < 15:
-        product.properties.append(ProductProperty(type='id.ean', value=sku))
-    elif sku:
+    if sku and sku.isdigit() and len(sku) > 10:
+        product.add_property(type='id.ean', value=sku)
+    else:
         product.sku = sku
 
     revs = data.xpath("//li[@class='item review-item']")
     for rev in revs:
         review = Review()
-        review.title = rev.xpath('div[@class="review-title"]/text()').string()
         review.url = product.url
         review.type = 'user'
         review.date = rev.xpath('.//time/@datetime').string()
@@ -96,14 +92,21 @@ def process_reviews(data, context, session):
 
         grade_overall = rev.xpath('.//span[@itemprop="ratingValue"]/text()').string()
         if grade_overall:
-            value = float(grade_overall.strip("%")) / 20
-            review.grades.append(Grade(type='overall', value=float(value), best=5.0))
+            grade_overall = float(grade_overall.strip("%")) / 20
+            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
+        title = rev.xpath('div[@class="review-title"]/text()').string()
         excerpt = rev.xpath(".//div[@class='review-content']//text()").string(multiple=True)
         if excerpt:
-            review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
+            review.title = title
+        else:
+            excerpt = title
+
+        if excerpt:
+            review.add_property(type='excerpt', value=excerpt)
 
             review.ssid = review.digest() if author else review.digest(excerpt)
+
             product.reviews.append(review)
 
     if product.reviews:
