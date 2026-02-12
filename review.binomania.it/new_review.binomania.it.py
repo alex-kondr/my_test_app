@@ -61,6 +61,8 @@ def process_review(data, context, session):
     pros = data.xpath('(//p[contains(., "PREGI")]/following-sibling::*)[1]/li')
     if not pros:
         pros = data.xpath('(//p[em[regexp:test(., "PREGI", "i")]]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('(//h3[regexp:test(., "PREGI", "i")]/following-sibling::*)[1]/li')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -72,6 +74,8 @@ def process_review(data, context, session):
     cons = data.xpath('(//p[contains(., "DIFETTI") and not(contains(., "PREGI"))]/following-sibling::*)[1]/li')
     if not cons:
         cons = data.xpath('(//p[em[regexp:test(., "DIFETTI", "i")] and not(contains(., "PREGI"))]/following-sibling::*)[1]/li')
+    if not cons:
+        cons = data.xpath('(//h3[regexp:test(., "Difetti", "i")]/following-sibling::*)[1]/li')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
@@ -83,6 +87,8 @@ def process_review(data, context, session):
     conclusion = data.xpath('(//h2[regexp:test(., "IN SINTESI|CONCLUSIONE", "i")]/following-sibling::p|//h2[regexp:test(., "IN SINTESI|CONCLUSIONE", "i")]/following-sibling::blockquote/p)[not(preceding::h2[regexp:test(., "RINGRAZIAMENTI|DISCLAIMER|PREZZO E GARANZIA", "i")])]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[h2[regexp:test(., "IN SINTESI|CONCLUSIONE", "i")]]//p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[h2[regexp:test(., "IN SINTESI|CONCLUSIONE", "i")]]/following-sibling::p//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
