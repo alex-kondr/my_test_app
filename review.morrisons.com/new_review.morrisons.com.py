@@ -65,9 +65,9 @@ def process_prodlist(data, context, session):
         product.name = prod.get('name')
         product.ssid = prod.get('productId')
         product.sku = str(prod.get('retailerProductId'))
-        product.category = context['cat']
+        product.category = context['cat'].srtip(' |')
         product.manufacturer = prod.get('brand')
-        product.url = 'https://groceries.morrisons.com/products/' + product.ssid
+        product.url = 'https://groceries.morrisons.com/products/' + product.sku
 
         revs_cnt = prod.get('ratingSummary', {}).get('count')
         if revs_cnt and int(revs_cnt) > 0:
@@ -122,15 +122,17 @@ def process_reviews(data, context, session):
 
         title = rev.get("headline")
         excerpt = rev.get("comments")
-        if excerpt:
+        if excerpt and len(excerpt.replace('\n', '').strip()) > 2:
             review.title = title
         else:
             excerpt = title
 
         if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = excerpt.replace('\n', '').strip()
+            if len(excerpt) > 2:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     next_page = revs_json.get('metadata', {}).get('nextPage')
     if next_page:
