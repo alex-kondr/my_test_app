@@ -47,23 +47,30 @@ def process_category(data, context, session):
     if data_json:
         prods_id = []
 
-        productGroups = simplejson.loads(data_json.replace('window.__INITIAL_STATE__=', '')).get('data', {}).get('products', {}).get('catalogue', {}).get('data', {}).get('productGroups', [])
+        data_json = simplejson.loads(data_json.replace('window.__INITIAL_STATE__=', ''))
+        productGroups = data_json.get('data', {}).get('products', {}).get('catalogue', {}).get('data', {}).get('productGroups', [])
         for prod in productGroups:
             prods_id += prod.get('products')
 
-        print 'prods_cnt_before=', len(prods_id), data.response_url
-
-        options = """--compressed -X PUT -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0' -H 'Accept: application/json; charset=utf-8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: gzip, deflate, br, zstd' -H 'Referer: https://groceries.morrisons.com/categories/fruit-veg-flowers/salads/176758' -H 'X-CSRF-TOKEN: 759c5112-f2da-4aea-8777-16f0f1710891' -H 'client-route-id: 1c59073c-c97c-4cb8-87ef-91cb68333d36' -H 'ecom-request-source: web' -H 'ecom-request-source-version: 2.0.0-2026-02-11-12h15m51s-e1c187d9' -H 'page-view-id: 1cf06ccf-1eed-4ee4-b153-6a56a5de47ce' -H 'content-type: application/json; charset=utf-8' -H 'Origin: https://groceries.morrisons.com' -H 'Connection: keep-alive' -H 'Cookie: VISITORID=_T6QhWcVbfq7c3RLfFLS_zkw6HrfyBOYwa_50brXyAo8u9vxFa2GCLddWn_1H_DxA186JbdkIxDYH2U2TkwWu7vF37-ibZiX6Lk2Ag==; AWSALB=2PE5UAWpWKqrm2f4JZsfAidJSiw5UB1DuL0VOkg9fqbUAJr048egFN3JC0eJSDMALH7amNpNphWVgi5p9T8F9FcgTO8pRQxopWGZVQjO6ZHFcJ0K45fnfwkv8WqS; AWSALBCORS=2PE5UAWpWKqrm2f4JZsfAidJSiw5UB1DuL0VOkg9fqbUAJr048egFN3JC0eJSDMALH7amNpNphWVgi5p9T8F9FcgTO8pRQxopWGZVQjO6ZHFcJ0K45fnfwkv8WqS; global_sid=edrUvETOxLW6Uws05AoK8hhBPY87tZ9ahxL3O6qaRiZG4WCejcjReyBynEG4A2gl8AUNl9Kx97P9DdHYdXamsIcfPkOZIf3szVeljg==; OptanonConsent=isGpcEnabled=0&datestamp=Thu+Feb+12+2026+14%3A07%3A21+GMT%2B0200+(%D0%B7%D0%B0+%D1%81%D1%85%D1%96%D0%B4%D0%BD%D0%BE%D1%94%D0%B2%D1%80%D0%BE%D0%BF%D0%B5%D0%B9%D1%81%D1%8C%D0%BA%D0%B8%D0%BC+%D1%81%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82%D0%BD%D0%B8%D0%BC+%D1%87%D0%B0%D1%81%D0%BE%D0%BC)&version=202501.2.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=b62cbd90-562e-4eed-9135-28b58cf73009&interactionCount=1&isAnonUser=1&landingPath=NotLandingPage&groups=C0001%3A1%2CC0003%3A1%2CC0004%3A1%2CC0002%3A1&intType=1&geolocation=UA%3B51&AwaitingReconsent=false; OptanonAlertBoxClosed=2026-02-12T11:31:20.829Z; contentExperienceUserId=6a904135-7147-4fbc-a6f7-5016b18a522e; language=en-GB; AWSALBTG=vrNDN2IuGroSs53kZLEBKmVZFh4XmLJYaYU7eiDh3KugCudMSFnkIudKi/va3IQ+Lu/IxpS0f+DsgHE3XZwEjyepcjjUigHosxnX7+z0QuNThMX/JshWahDq4FNesN4wEKFhFxuZ7BurhukL7ZEwvfVfGYH8Po6pzwxVgEWijC7v; AWSALBTGCORS=vrNDN2IuGroSs53kZLEBKmVZFh4XmLJYaYU7eiDh3KugCudMSFnkIudKi/va3IQ+Lu/IxpS0f+DsgHE3XZwEjyepcjjUigHosxnX7+z0QuNThMX/JshWahDq4FNesN4wEKFhFxuZ7BurhukL7ZEwvfVfGYH8Po6pzwxVgEWijC7v' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Priority: u=4' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' --data-raw '{}'""".format(str(prods_id).replace("u'", '"').replace("'", '"'))
+        csrf = data_json.get('session',{}).get('csrf', {}).get('token')
+        sessionId = data_json.get('session',{}).get('metadata', {}).get('sessionId')
+        assetVersion = data_json.get('session',{}).get('metadata', {}).get('assetVersion')
+        pageViewId = data_json.get('session',{}).get('metadata', {}).get('pageViewId')
+        options = """--compressed -X PUT -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0' -H 'Accept: application/json; charset=utf-8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'X-CSRF-TOKEN: {csrf}' -H 'client-route-id: {sessionId}' -H 'ecom-request-source: web' -H 'ecom-request-source-version: {assetVersion}' -H 'page-view-id: {pageViewId}' -H 'content-type: application/json; charset=utf-8' -H 'Connection: keep-alive' -H 'Cookie: VISITORID=b5-ryR21q6cNziyUkKwzEr5s8pGeTn4D39uPXeQJnEJUhBuR3rSuFnlc3uvQdGTr_HzOZ6zmQmKd9z70fapxZ_lg-LwQ2zWlfUS5Hg==; AWSALB=uxKtv5k7IxrWdtB7peIoTMDqqJtQGpWoM3mDVqlPCIm67r18kRHASpTvyHR+ezK89jitdHV+daKzhNTCU82ZY0nkSmYnGeNLTW7UGWXEt0ta7bDaWdC+1BYvNaKn; AWSALBCORS=uxKtv5k7IxrWdtB7peIoTMDqqJtQGpWoM3mDVqlPCIm67r18kRHASpTvyHR+ezK89jitdHV+daKzhNTCU82ZY0nkSmYnGeNLTW7UGWXEt0ta7bDaWdC+1BYvNaKn; OptanonConsent=isGpcEnabled=0&datestamp=Thu+Feb+12+2026+16%3A17%3A35+GMT%2B0200+(%D0%B7%D0%B0+%D1%81%D1%85%D1%96%D0%B4%D0%BD%D0%BE%D1%94%D0%B2%D1%80%D0%BE%D0%BF%D0%B5%D0%B9%D1%81%D1%8C%D0%BA%D0%B8%D0%BC+%D1%81%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82%D0%BD%D0%B8%D0%BC+%D1%87%D0%B0%D1%81%D0%BE%D0%BC)&version=202501.2.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=b62cbd90-562e-4eed-9135-28b58cf73009&interactionCount=1&isAnonUser=1&landingPath=NotLandingPage&groups=C0001%3A1%2CC0003%3A1%2CC0004%3A1%2CC0002%3A1&intType=1&geolocation=UA%3B51&AwaitingReconsent=false; OptanonAlertBoxClosed=2026-02-12T11:31:20.829Z; contentExperienceUserId=6a904135-7147-4fbc-a6f7-5016b18a522e; language=en-GB; AWSALBTG=VsdAdLeLyzJT6SR6bEoi5lU58AJz4X2QewrhA/PNkRSOYoAtKu7uacs5Rnm618bGOGJS2QbKRvQwVCO8ZAFEJwCcMQo4JAIIe5MNOEJQpMuZA6uc1LmAJ+M34X6Zoztgi6yFW7pfVoZzVvbEQBC8hm6SIiEYmMriMb1hvKUnE1P6; AWSALBTGCORS=VsdAdLeLyzJT6SR6bEoi5lU58AJz4X2QewrhA/PNkRSOYoAtKu7uacs5Rnm618bGOGJS2QbKRvQwVCO8ZAFEJwCcMQo4JAIIe5MNOEJQpMuZA6uc1LmAJ+M34X6Zoztgi6yFW7pfVoZzVvbEQBC8hm6SIiEYmMriMb1hvKUnE1P6; global_sid=MBNMz46lSEwzm9xlvUvjASkgMzKmD1KER6HBJ5zxgYBeJhArDRXXsC2qS7ME2C6PDgjzxHptLmtaOzfPS25GL1byYXkMjIMa3Djbpg==' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Priority: u=4' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' --data-raw '{prods_id}'""".format(prods_id=str(prods_id).replace("u'", '"').replace("'", '"'), csrf=csrf, sessionId=sessionId, assetVersion=assetVersion, pageViewId=pageViewId)
         url = 'https://groceries.morrisons.com/api/webproductpagews/v6/products'
-        session.queue(Request(url, use='curl', options=options, max_age=0, force_charset='utf-8'), process_prodlist, dict(context))
+        session.queue(Request(url, use='curl', options=options, max_age=0, force_charset='utf-8'), process_prodlist, dict(context, prods_cnt=len(prods_id), cat_url=data.response_url))
 
 
 def process_prodlist(data, context, session):
     strip_namespace(data)
 
-    prods = simplejson.loads(data.content).get('products')
+    try:
+        prods = simplejson.loads(data.content).get('products')
+    except:
+        return
     
-    print 'prods_cnt_after=', len(prods)
+    print '\nprods_cnt=', context['prods_cnt'], 'of', len(prods), context['url'], '\n'
+    
     for prod in prods:
         product = Product()
         product.name = prod.get('name')

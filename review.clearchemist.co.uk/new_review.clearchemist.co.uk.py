@@ -14,7 +14,6 @@ def strip_namespace(data):
     os.rename(tmp, data.content_file)
 
 
-
 def run(context, session):
     session.browser.use_new_parser = True
     session.queue(Request("https://www.clearchemist.co.uk/"), process_frontpage, dict())
