@@ -7,6 +7,32 @@ import HTMLParser
 XCAT = ["Meat & Fish", "Fruit & Veg", "Fresh", "Bakery & Cakes", "Food Cupboard", "Frozen", "Drinks", "Beer, Wines & Spirits", "World Foods", "Free From", "Adult Cat Food (1-6 years)", "Senior Cat Food (7 years+)", "Kitten Food (0-1 years)", "Cat Treats & Milk", "Adult Dog Food (2 years+)", "Senior Dog Food (7 years+)", "Puppy Food (0-2 years)", "Small Breed Dog Food", "Dog Treats, Chews & Biscuits", "Butchers", "Pet Bigger Packs", "Treats", "Advanced Nutrition", "Christmas for Pets", "Advertised Brand", "Baby Milk", "Baby & Toddler Meals & Drinks", "Finger Foods", "HiPP Organic", "New"]
 h = HTMLParser.HTMLParser()
 
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               u"&#\d+;"  # HTML entities
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
+
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"
     out = file(tmp, "w")
@@ -53,7 +79,7 @@ def process_category(data, context, session):
         for prod in productGroups:
             prods_id += prod.get('products')
 
-        options = """--compressed -X PUT -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0' -H 'Accept: application/json; charset=utf-8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Referer: https://groceries.morrisons.com/categories' -H 'X-CSRF-TOKEN: 6e03c497-e251-4021-a17f-af5709589dd7' -H 'client-route-id: d481d19c-e6e4-4aa0-afbc-97fdb3c8da10' -H 'ecom-request-source: web' -H 'ecom-request-source-version: 2.0.0-2026-02-12-09h03m25s-aa743fa3' -H 'page-view-id: 9367652e-b59d-487d-a2be-b7bc5dd37ee3' -H 'content-type: application/json; charset=utf-8' -H 'Origin: https://groceries.morrisons.com' -H 'Connection: keep-alive' -H 'Cookie: VISITORID=P5jKof6l6SXKlqtZz0QVVkKau2DK1dOJfbD-6Iy518b5OCO4y1W3_v5YKa7qxg9IgmhCEY0m7YoKbaOE_pwCfThGPbXAYDu25wlDtw==; AWSALB=hJy+bGmbATS6saTWfr5NaGWIy0vntPp8iIQbPvZBd0xTrfshGxfbV9Rws81XaZjUr5p2XCYUt1+ABEF4w9AWrELMXxJ49TTxSVx7MYS6DUM0Lv2gQyc6U7ITFmNH; AWSALBCORS=hJy+bGmbATS6saTWfr5NaGWIy0vntPp8iIQbPvZBd0xTrfshGxfbV9Rws81XaZjUr5p2XCYUt1+ABEF4w9AWrELMXxJ49TTxSVx7MYS6DUM0Lv2gQyc6U7ITFmNH; global_sid=ubBCMpF5xjQhIdR-7XQAhm-MszQFoSlKhwSz4pUVsu-0jTlc1fdUzLxIUGzESQlLcejsldv2dJG1yRIoF5Nbe11Fx76zUpsIrsvROw==; OptanonConsent=isGpcEnabled=0&datestamp=Fri+Feb+13+2026+13%3A03%3A13+GMT%2B0200+(%D0%B7%D0%B0+%D1%81%D1%85%D1%96%D0%B4%D0%BD%D0%BE%D1%94%D0%B2%D1%80%D0%BE%D0%BF%D0%B5%D0%B9%D1%81%D1%8C%D0%BA%D0%B8%D0%BC+%D1%81%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82%D0%BD%D0%B8%D0%BC+%D1%87%D0%B0%D1%81%D0%BE%D0%BC)&version=202501.2.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=9e5b6786-5ba3-4d52-94c8-f00355089f13&interactionCount=1&isAnonUser=1&landingPath=NotLandingPage&groups=C0001%3A1%2CC0003%3A1%2CC0004%3A1%2CC0002%3A1&intType=1; OptanonAlertBoxClosed=2026-02-13T11:03:13.045Z; contentExperienceUserId=58a2d1a1-b232-48e3-9d8a-9c7cb4295689; language=en-GB' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Priority: u=4' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers' --data-raw '{prods_id}'""".format(prods_id=str(prods_id).replace("u'", '"').replace("'", '"'))
+        options = """--compressed -X PUT -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:147.0) Gecko/20100101 Firefox/147.0' -H 'Accept: application/json; charset=utf-8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Referer: https://groceries.morrisons.com/categories' -H 'X-CSRF-TOKEN: 92281fc2-cec5-4147-b591-21895e888f94' -H 'client-route-id: 37048d43-b34a-4d0b-aa44-353adcc7001d' -H 'ecom-request-source: web' -H 'ecom-request-source-version: 2.0.0-2026-02-12-09h03m25s-aa743fa3' -H 'page-view-id: d966cfad-86fd-4734-a7ee-7da6c397472a' -H 'content-type: application/json; charset=utf-8' -H 'Origin: https://groceries.morrisons.com' -H 'Connection: keep-alive' -H 'Cookie: VISITORID=F9odEau8Y8VypF3Qd0NWIz0E7LnjIJedxS7N84k9I6CPO4RybDkjbhHELlgMUlZ9Ih75k-BsxGfa04uvJ_opn9Y6WKW21xxB4bjf_A==; AWSALB=U+9mmSZaaIltbbaE+zS9F6OIB8gKTABVMtoEo/tlqQPdB1UxFtYPGy/mjvqvgE5kwDtVR5oaq3kT8rjP8wTBj0vFgCOFf9Ufzn0z5UA8XClirFMw915NfFjq8xwQ; AWSALBCORS=U+9mmSZaaIltbbaE+zS9F6OIB8gKTABVMtoEo/tlqQPdB1UxFtYPGy/mjvqvgE5kwDtVR5oaq3kT8rjP8wTBj0vFgCOFf9Ufzn0z5UA8XClirFMw915NfFjq8xwQ; OptanonConsent=isGpcEnabled=0&datestamp=Fri+Feb+13+2026+14%3A50%3A39+GMT%2B0200+(%D0%B7%D0%B0+%D1%81%D1%85%D1%96%D0%B4%D0%BD%D0%BE%D1%94%D0%B2%D1%80%D0%BE%D0%BF%D0%B5%D0%B9%D1%81%D1%8C%D0%BA%D0%B8%D0%BC+%D1%81%D1%82%D0%B0%D0%BD%D0%B4%D0%B0%D1%80%D1%82%D0%BD%D0%B8%D0%BC+%D1%87%D0%B0%D1%81%D0%BE%D0%BC)&version=202501.2.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=b62cbd90-562e-4eed-9135-28b58cf73009&interactionCount=1&isAnonUser=1&landingPath=NotLandingPage&groups=C0001%3A1%2CC0003%3A1%2CC0004%3A1%2CC0002%3A1&intType=1&geolocation=UA%3B51&AwaitingReconsent=false; OptanonAlertBoxClosed=2026-02-12T11:31:20.829Z; contentExperienceUserId=6a904135-7147-4fbc-a6f7-5016b18a522e; language=en-GB; AWSALBTG=VsdAdLeLyzJT6SR6bEoi5lU58AJz4X2QewrhA/PNkRSOYoAtKu7uacs5Rnm618bGOGJS2QbKRvQwVCO8ZAFEJwCcMQo4JAIIe5MNOEJQpMuZA6uc1LmAJ+M34X6Zoztgi6yFW7pfVoZzVvbEQBC8hm6SIiEYmMriMb1hvKUnE1P6; AWSALBTGCORS=VsdAdLeLyzJT6SR6bEoi5lU58AJz4X2QewrhA/PNkRSOYoAtKu7uacs5Rnm618bGOGJS2QbKRvQwVCO8ZAFEJwCcMQo4JAIIe5MNOEJQpMuZA6uc1LmAJ+M34X6Zoztgi6yFW7pfVoZzVvbEQBC8hm6SIiEYmMriMb1hvKUnE1P6; global_sid=_poqhKnSXuvEaQBzkoqA8U_GVLaV8rl0bYGgwlNY-s7Rq9Bp8ROjTGhNjlCV-n-Cu8rGURU7KWw3ARSDD2Iu9Z3QrWUN2eg7pSP-lQ==' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Priority: u=4' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' --data-raw '{prods_id}'""".format(prods_id=str(prods_id).replace("u'", '"').replace("'", '"'))
         url = 'https://groceries.morrisons.com/api/webproductpagews/v6/products'
         session.do(Request(url, use='curl', options=options, max_age=0, force_charset='utf-8'), process_prodlist, dict(context, prods_cnt=len(prods_id), cat_url=data.response_url))
 
@@ -130,12 +156,12 @@ def process_reviews(data, context, session):
         excerpt = rev.get("comments")
         if excerpt and len(h.unescape(excerpt).replace('\n', '').strip()) > 2:
             if title:
-                review.title = h.unescape(title).replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').strip()
+                review.title = h.unescape(remove_emoji(title)).replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').replace('â\\x80\\x9C', '"').replace('â\\x80\\x9D', '"').strip()
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = h.unescape(excerpt).replace('\n', '').replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').strip()
+            excerpt = h.unescape(remove_emoji(excerpt)).replace('\n', '').replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').replace('â\\x80\\x9C', '"').replace('â\\x80\\x9D', '"').strip()
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
