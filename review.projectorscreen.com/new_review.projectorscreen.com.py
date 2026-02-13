@@ -16,8 +16,8 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.queue(Request('https://www.projectorscreen.com/blog?categories=259', use='curl', force_charset='utf-8'), process_revlist, dict(cat='Projectors'))
-    session.queue(Request('https://www.projectorscreen.com/blog?categories=186', use='curl', force_charset='utf-8'), process_revlist, dict(cat='Movies'))
+    session.queue(Request('https://www.projectorscreen.com/blog?categories=259', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(cat='Projectors'))
+    session.queue(Request('https://www.projectorscreen.com/blog?categories=186', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(cat='Movies'))
 
 
 def process_revlist(data, context, session):
@@ -27,11 +27,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('.//strong[contains(@class, "title")]/text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict(context))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
@@ -39,14 +39,17 @@ def process_review(data, context, session):
 
     product = Product()
     product.name = context['title'].replace(' Review', '').strip()
-    product.url = context['url']
-    product.ssid = product.url.split('/')[-1].replace('-review', '')
+    product.ssid = context['url'].split('/')[-1].replace('-review', '')
     product.category = context['cat']
+
+    product.url = data.xpath('//a[@class="card-product__inner"]/@href').string()
+    if not product.url:
+        product.url = context['url']
 
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     grades = data.xpath('//div[contains(@class, "review")]/div/div[contains(@class, "points-cell")]')
@@ -73,17 +76,13 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//div[h3[contains(text(), "Summary")]]/div//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
-    conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "Conclusion", "i")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(., "Conclusion", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="article-template__content"]/p//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
