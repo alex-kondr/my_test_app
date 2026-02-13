@@ -17,7 +17,10 @@ def strip_namespace(data):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request('https://www.tomshw.it/cerca?keyword=Recensione', force_charset='utf-8'), process_revlist, dict())
+    
+    url = 'https://www.tomshw.it/hardware/corsair-galleon-100-sd-tastiera-e-stream-deck-uniti'
+    session.queue(Request(url, force_charset='utf-8'), process_review, dict(cat='cat', url=url, title='title'))
+    # session.queue(Request('https://www.tomshw.it/cerca?keyword=Recensione', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -37,6 +40,8 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     strip_namespace(data)
+    
+    print data.content
 
     product = Product()
     product.name = context['title'].split('Recensione |')[0].split('|')[0].split("– Recensione")[0].split("Recensione ")[-1].split("Test ")[-1].split(', recensione:')[0].split(' recensione')[0].replace(' - Recensione', '').replace('Recensioni ', '').replace(' Recensione', '').strip()
