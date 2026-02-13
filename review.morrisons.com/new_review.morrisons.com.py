@@ -1,9 +1,11 @@
 from agent import *
 from models.products import *
 import simplejson
+import HTMLParser
 
 
 XCAT = ["Meat & Fish", "Fruit & Veg", "Fresh", "Bakery & Cakes", "Food Cupboard", "Frozen", "Drinks", "Beer, Wines & Spirits", "World Foods", "Free From", "Adult Cat Food (1-6 years)", "Senior Cat Food (7 years+)", "Kitten Food (0-1 years)", "Cat Treats & Milk", "Adult Dog Food (2 years+)", "Senior Dog Food (7 years+)", "Puppy Food (0-2 years)", "Small Breed Dog Food", "Dog Treats, Chews & Biscuits", "Butchers", "Pet Bigger Packs", "Treats", "Advanced Nutrition", "Christmas for Pets", "Advertised Brand", "Baby Milk", "Baby & Toddler Meals & Drinks", "Finger Foods", "HiPP Organic", "New"]
+h = HTMLParser.HTMLParser()
 
 
 def strip_namespace(data):
@@ -64,9 +66,7 @@ def process_prodlist(data, context, session):
         prods = simplejson.loads(data.content).get('products')
     except:
         return
-    
-    print '\nprods_cnt=', context['prods_cnt'], 'of', len(prods), context['cat_url'], '\n'
-    
+
     for prod in prods:
         product = Product()
         product.name = prod.get('name')
@@ -131,12 +131,12 @@ def process_reviews(data, context, session):
         excerpt = rev.get("comments")
         if excerpt and len(excerpt.replace('\n', '').strip()) > 2:
             if title:
-                review.title = title.replace(u'\x27', "'")
+                review.title = h.unescape(title).replace(u'\x27', u"'")
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = excerpt.replace('\n', '').strip()
+            excerpt = h.unescape(excerpt).replace('\n', '').strip()
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
