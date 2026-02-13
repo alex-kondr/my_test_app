@@ -48,7 +48,7 @@ def remove_emoji(string):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.camping-kaufhaus.com/widgets/menu/offcanvas?navigationId=0199ecdbb9af73138656afcb301073e7'), process_catlist, dict())
+    session.queue(Request('https://www.camping-kaufhaus.com/widgets/menu/offcanvas?navigationId=0199ecdbb9af73138656afcb301073e7', force_charset='utf-8'), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -60,7 +60,7 @@ def process_catlist(data, context, session):
         url = cat.xpath('@href').string()
 
         if name not in XCAT:
-            session.queue(Request(url), process_category, dict(cat=name))
+            session.queue(Request(url, force_charset='utf-8'), process_category, dict(cat=name))
 
 
 def process_category(data, context, session):
@@ -75,7 +75,7 @@ def process_category(data, context, session):
     for subcat in subcats:
         name = subcat.xpath('.//span[contains(@class, "subcategory")]/text()').string()
         url = subcat.xpath('@href').string()
-        session.queue(Request(url), process_category, dict(cat=context['cat']+'|'+name))
+        session.queue(Request(url, force_charset='utf-8'), process_category, dict(cat=context['cat']+'|'+name))
 
 
 def process_prodlist(data, context, session):
@@ -85,12 +85,12 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod.xpath('text()').string()
         url = prod.xpath('@href').string().split('?')[0]
-        session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, name=name, url=url))
 
     next_page = data.xpath('//input[@id="p-next-bottom"]/@value').string()
     if next_page:
         next_url = context['cat_url'] + '?p=' + next_page
-        session.queue(Request(next_url), process_prodlist, context)
+        session.queue(Request(next_url, force_charset='utf-8'), process_prodlist, context)
 
 
 def process_product(data, context, session):
