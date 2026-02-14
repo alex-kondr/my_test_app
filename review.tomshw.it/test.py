@@ -16,10 +16,11 @@ agent = agents.TOMS_HARDWARE___IT
 # agent = agents.TEST
 reload = 1
 
-# name: 36
+# name: 3+
 # author: 4
-# pros/cons: 41
-# exc: 42
+# grades: 344+
+# pros/cons: 7+
+# exc: 42+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

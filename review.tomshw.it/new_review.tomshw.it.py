@@ -2,33 +2,15 @@ from agent import *
 from models.products import *
 
 
-def strip_namespace(data):
-    tmp = data.content_file + ".tmp"
-    out = file(tmp, "w")
-    for line in file(data.content_file):
-        line = line.replace('<ns0', '<')
-        line = line.replace('ns0:', '')
-        line = line.replace(' xmlns', ' abcde=')
-        out.write(line + "\n")
-    out.close()
-    os.rename(tmp, data.content_file)
-
-
 def run(context, session):
-    session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    
-    url = 'https://www.tomshw.it/hardware/corsair-galleon-100-sd-tastiera-e-stream-deck-uniti'
-    session.queue(Request(url, force_charset='utf-8'), process_review, dict(cat='cat', url=url, title='title'))
-    # session.queue(Request('https://www.tomshw.it/cerca?keyword=Recensione', force_charset='utf-8'), process_revlist, dict())
+    session.queue(Request('https://www.tomshw.it/cerca?keyword=Recensione', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
-    strip_namespace(data)
-
-    revs = data.xpath('//div[a/h2]')
+    revs = data.xpath('//div[h2 and p and a]')
     for rev in revs:
-        title = rev.xpath('.//h2/text()').string()
+        title = rev.xpath('h2/text()').string()
         cat = rev.xpath('p[not(regexp:test(., "Recensione|Review|Sponsorizzato", "i"))]/text()').string()
         url = rev.xpath('a/@href').string()
         session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, cat=cat, url=url))
@@ -39,10 +21,6 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
-    strip_namespace(data)
-    
-    print data.content
-
     product = Product()
     product.name = context['title'].split('Recensione |')[0].split('|')[0].split("– Recensione")[0].split("Recensione ")[-1].split("Test ")[-1].split(', recensione:')[0].split(' recensione')[0].replace(' - Recensione', '').replace('Recensioni ', '').replace(' Recensione', '').strip()
     product.ssid = context['url'].split('/')[-1].replace('-test-recensione', '').replace('-recensione', '')
@@ -53,6 +31,8 @@ def process_review(data, context, session):
         product.url = data.xpath('//a[contains(., "su Amazon")]/@href').string()
     if not product.url:
         product.url = data.xpath('//a[contains(@class, "button-v2-yellow")]/@href').string()
+    if not product.url:
+        product.url = data.xpath('//a[contains(@rel, "sponsored")]/@href').string()
     if not product.url:
         product.url = context['url']
 
@@ -66,7 +46,7 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//p[contains(text(), "a cura di")]/span//text()/text()').string(multiple=True)
+    author = data.xpath('//p[contains(text(), "a cura di")]/span//text()').string(multiple=True)
     author_url = data.xpath('//p[span/a[contains(@href, "https://www.tomshw.it/author")]]//a/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
@@ -75,8 +55,6 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('count(//div[contains(@class, "md:flex")]/svg[contains(@class, "text-red-500") and contains(@viewbox, "576")]) + count(//div[contains(@class, "md:flex")]/svg[contains(@class, "text-red-500") and contains(@viewbox, "536")]) div 2')
-    
-    print 'grade_overall=', grade_overall
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
