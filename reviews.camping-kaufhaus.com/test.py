@@ -16,6 +16,11 @@ agent = agents.CAMPING_KAUFHAUS_DE
 # agent = agents.TEST
 reload = 1
 
+# name: 1+
+# cat: 16+
+# id.man: 3+
+# author: 'Peter KaÃ\x9Febaum'
+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

@@ -17,7 +17,7 @@ agent = agents.TOMS_HARDWARE___IT
 reload = 1
 
 # name: 3+
-# author: 4
+# author: 0+
 # grades: 344+
 # pros/cons: 7+
 # exc: 42+

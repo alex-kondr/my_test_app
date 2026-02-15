@@ -127,7 +127,7 @@ def process_product(data, context, session):
 
         author = rev.xpath('.//div[@itemprop="author"]/meta/@content').string()
         if author:
-            author = h.unescape(remove_emoji(author)).replace('Ã\\x9F', 'ß').replace('Ã\\x9C', 'Ü').replace('\xe2\x80\x9c', '"').replace('\xc3\x9c', 'Ü').replace('\xc3\x9f', 'ß').strip(' +*,')
+            author = h.unescape(remove_emoji(author)).replace(u'Ã\\x9F', u'ß').replace(u'Ã\\x9C', u'Ü').replace(u'\xe2\x80\x9c', u'"').replace(u'\xc3\x9c', u'Ü').replace(u'\xc3\x9f', u'ß').strip(' +*,')
             if author:
                 review.authors.append(Person(name=author, ssid=author))
             else:

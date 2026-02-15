@@ -156,12 +156,12 @@ def process_reviews(data, context, session):
         excerpt = rev.get("comments")
         if excerpt and len(h.unescape(excerpt).replace('\n', '').strip()) > 2:
             if title:
-                review.title = h.unescape(remove_emoji(title)).replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').replace('\xe2\x80\x9c', '"').replace('\xe2\x80\x9d', '"').replace('\\x', "'").strip()
+                review.title = h.unescape(remove_emoji(title)).replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').replace('\xe2\x80\x9c', '"').replace('\xe2\x80\x9d', '"').replace(u'\xe2\x80\x9c', '"').replace(u'\xe2\x80\x9d', '"').replace('\\x', "'").strip()
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = h.unescape(remove_emoji(excerpt)).replace('\n', '').replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').replace('\xe2\x80\x9c', '"').replace('\xe2\x80\x9d', '"').replace('\\x', "'").strip()
+            excerpt = h.unescape(remove_emoji(excerpt)).replace('\n', '').replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').replace('\xe2\x80\x9c', '"').replace('\xe2\x80\x9d', '"').replace(u'\xe2\x80\x9c', '"').replace(u'\xe2\x80\x9d', '"').replace('\\x', "'").strip()
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
