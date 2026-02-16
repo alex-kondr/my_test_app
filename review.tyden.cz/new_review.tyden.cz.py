@@ -1,5 +1,9 @@
 from agent import *
 from models.products import *
+import time
+
+
+SLEEP = 1
 
 
 def run(context, session):
@@ -9,6 +13,8 @@ def run(context, session):
 
 
 def process_catlist(data, context, session):
+    time.sleep(SLEEP)
+
     cats = data.xpath('(//div[span[contains(., "Hardware")]])[1]//ul[@class="header-menu__drawer-list"]//a')
     for cat in cats:
         name = "Hardware" + '|' + cat.xpath('.//text()').string(multiple=True)
@@ -17,18 +23,22 @@ def process_catlist(data, context, session):
 
 
 def process_revlist(data, context, session):
+    time.sleep(SLEEP)
+
     revs = data.xpath('//h2[@class="un-card-headline"]//a')
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(context, title=title, url=url))
+        session.queue(Request(url, max_age=0), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_revlist, dict(context))
+        session.queue(Request(next_url, max_age=0), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
+    time.sleep(SLEEP)
+
     product = Product()
     product.name = context['title'].replace('Test ', '').replace(' v testu', '').strip()
     product.url = context['url']
@@ -41,11 +51,11 @@ def process_review(data, context, session):
     review.url = product.url
     review.ssid = product.ssid
 
-    date = data.xapath('//time/@datetime').string()
+    date = data.xpath('//time/@datetime').string()
     if date:
         review.date = date.split()[0]
 
-    author = data.xpath('//p[@class="post-header-info__name"]//a/text()').string()
+    author = data.xpath('//p[@class="post-header-info__name"]//text()').string()
     author_url = data.xpath('//p[@class="post-header-info__name"]//a/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
@@ -85,14 +95,14 @@ def process_review(data, context, session):
             page_url = page.xpath('@href').string()
             review.add_property(type='pages', value=dict(title=page_title, url=page_url))
 
-        conclusion_page = True if 'Závěr' in page_title else False
-        session.do(Request(page_url), process_review_last, dict(context, product=product, review=review, excerpt=excerpt, conclusion_page=conclusion_page))
+        is_conclusion_page = True if 'Závěr' in page_title else False
+        session.do(Request(page_url), process_review_last, dict(context, product=product, review=review, excerpt=excerpt, is_conclusion_page=is_conclusion_page))
 
     elif excerpt:
-        if context.get('conclusion'):
+        if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 
-        review.add_property(type="excerpt", value=context['excerpt'])
+        review.add_property(type="excerpt", value=excerpt)
 
         product.reviews.append(review)
 
@@ -117,7 +127,7 @@ def process_review_last(data, context, session):
         con = con.xpath('.//text()').string(multiple=True)
         review.add_property(type='cons', value=con)
 
-    if context['conclusion_page']:
+    if context['is_conclusion_page']:
         conclusion = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
     else:
         conclusion = data.xpath('//div[@class="review-box__verdict"]/p//text()').string(multiple=True)

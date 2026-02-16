@@ -16,6 +16,11 @@ agent = agents.TYDEN_CZ_CZ
 # agent = agents.TEST
 reload = 1
 
+# name: 10+
+# author: 6
+# concl: 3+
+# exc: 3+
+# log: 129+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

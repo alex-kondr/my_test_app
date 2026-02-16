@@ -46,7 +46,7 @@ def process_prodlist(data, context, session):
 
         revs_count = prod.xpath('.//span[@class="rating-description"]/span/text()').string()
         if revs_count and int(revs_count.replace(',', '')) > 0:
-            session.queue(Request(url, use='curl', options=OPTIONS, max_age=0, force_charset='utf-8'), process_product, dict(context, url=url, name=name,brand=brand, revs_count=int(revs_count.replace(',', ''))))
+            session.queue(Request(url, use='curl', options=OPTIONS, max_age=0, force_charset='utf-8'), process_product, dict(context, url=url, name=name, brand=brand))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -56,10 +56,10 @@ def process_prodlist(data, context, session):
 def process_product(data, context, session):
     product = Product()
     product.name = context['name']
-    product.category = context['cat']
     product.url = context['url'].split("&")[0]
     product.ssid = get_url_parameter(product.url, 'ID')
-    product.manufacturer = context.get('brand')
+    product.category = context['cat']
+    product.manufacturer = context['brand']
 
     ean = data.xpath('''//script[contains(text(), '"upcNumber"')]//text()''').string()
     if ean:
@@ -68,30 +68,32 @@ def process_product(data, context, session):
             product.add_property(type='id.ean', value=ean)
 
     revs_url = 'https://www.bloomingdales.com/xapi/digital/v1/product/' + product.ssid + '/reviews?offset=0'
-    session.queue(Request(revs_url, use='curl', options=OPTIONS, max_age=0, force_charset='utf-8'), process_reviews, dict(context, product=product, revs_count=context['revs_count']))
+    session.do(Request(revs_url, use='curl', options=OPTIONS, max_age=0, force_charset='utf-8'), process_reviews, dict(context, product=product))
 
 
 def process_reviews(data, context, session):
     product = context['product']
 
-    revs_json = simplejson.loads(data.content)
+    try:
+        revs_json = simplejson.loads(data.content).get('productReviews', [])
+        if not revs_json:
+            return
+    except:
+        return
 
-    revs = revs_json.get('review', {}).get('reviews', [])
+    revs_json = revs_json[0].get('paginatedReviews', {})
+
+    revs = revs_json.get('reviews', [])
     for rev in revs:
-        review = Review()
-
         is_syndicated = rev.get('syndicated')
         if is_syndicated:
             continue
 
+        review = Review()
         review.type = 'user'
         review.url = product.url
         review.ssid = str(rev['reviewId'])
         review.date = rev.get('submissionTime')
-
-        title = rev.get('title')
-        if title:
-            review.title = remove_emoji(title)
 
         author = rev.get('userNickname', rev.get('displayName'))
         author_id = rev.get('authorId')
@@ -105,27 +107,37 @@ def process_reviews(data, context, session):
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
         hlp_yes = rev.get('totalPositiveFeedbackCount')
-        if hlp_yes:
+        if hlp_yes and int(hlp_yes) > 0:
             review.add_property(type='helpful_votes', value=int(hlp_yes))
 
         hlp_no = rev.get('totalNegativeFeedbackCount')
-        if hlp_no:
+        if hlp_no and int(hlp_no) > 0:
             review.add_property(type='not_helpful_votes', value=int(hlp_no))
 
         is_recommended = rev.get('recommended')
         if is_recommended:
             review.add_property(value=True, type='is_recommended')
 
+        title = rev.get('title')
         excerpt = rev.get('reviewText')
+        if excerpt and len(remove_emoji(excerpt).strip()) > 2:
+            if title:
+                review.title = remove_emoji(title)
+        else:
+            excerpt = title
+
         if excerpt:
-            excerpt = remove_emoji(excerpt)
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = remove_emoji(excerpt).strip()
+            if len(excerpt) > 2:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
-    offset = context.get('offset', 0) + 8
-    if offset < context['revs_count']:
+    revs_cnt = revs_json.get('total', 0)
+    offset = context.get('offset', 0) + 30
+    if offset < revs_cnt:
         next_url = 'https://www.bloomingdales.com/xapi/digital/v1/product/' + product.ssid + '/reviews?offset=' + str(offset)
-        session.do(Request(next_url, use='curl', options=OPTIONS, max_age=0, force_charset='utf-8'), process_reviews, dict(product=product, revs_count=context['revs_count'], offset=offset))
+        session.do(Request(next_url, use='curl', options=OPTIONS, max_age=0, force_charset='utf-8'), process_reviews, dict(product=product, offset=offset))
+
     elif product.reviews:
         session.emit(product)
