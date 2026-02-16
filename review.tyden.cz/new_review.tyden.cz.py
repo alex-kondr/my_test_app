@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-import simplejson
 
 
 def run(context, session):
@@ -79,7 +78,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
 
-    pages = data.xpath('//div[@class="post-chapters__section"]//a')
+    pages = data.xpath('//div[contains(@class, "post-chapters__section")]//a')
     if pages:
         for page in pages:
             page_title = page.xpath('.//text()').string(multiple=True)

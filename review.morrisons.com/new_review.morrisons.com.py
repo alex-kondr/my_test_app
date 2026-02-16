@@ -156,12 +156,12 @@ def process_reviews(data, context, session):
         excerpt = rev.get("comments")
         if excerpt and len(h.unescape(excerpt).replace('\n', '').strip()) > 2:
             if title:
-                review.title = h.unescape(remove_emoji(title)).replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').replace(u'â\x80¦', u'').replace('\xe2\x80\x9c', '"').replace('\xe2\x80\x9d', '"').replace(u'\xe2\x80\x9c', '"').replace(u'\xe2\x80\x9d', '"').replace('\\x', "'").replace(u'â\x80\x98', u"'").replace(u'\xe2\x80\x98', u"'").replace(u'Ã\x80', u'À').replace(u'\xc3\x80', u'À').replace(u'â\x98\x86', u'').replace(u'\xe2\x98\x86', u'').replace(u'â\x80\x94', u'—').replace(u'Ã\x9c', u'Ü').strip()
+                review.title = h.unescape(remove_emoji(title)).replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').replace(u'â\x80¦', u'').replace('\xe2\x80\x9c', '"').replace('\xe2\x80\x9d', '"').replace(u'\xe2\x80\x9c', '"').replace(u'\xe2\x80\x9d', '"').replace('\\x', "'").replace(u'â\x80\x98', u"'").replace(u'\xe2\x80\x98', u"'").replace(u'Ã\x80', u'À').replace(u'\xc3\x80', u'À').replace(u'â\x98\x86', u'').replace(u'\xe2\x98\x86', u'').replace(u'â\x80\x94', u'—').replace(u'Ã\x9c', u'Ü').replace(u'â\x80\x93', u'-').replace(u'Â£', u' ').replace(u' Â', u'').replace(u'Â\xa0', u' ').replace(u'Â©', u'©').strip(u'Â ')
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = h.unescape(remove_emoji(excerpt)).replace('\n', '').replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').replace(u'â\x80¦', u'').replace('\xe2\x80\x9c', '"').replace('\xe2\x80\x9d', '"').replace(u'\xe2\x80\x9c', '"').replace(u'\xe2\x80\x9d', '"').replace('\\x', "'").replace(u'â\x80\x98', u"'").replace(u'\xe2\x80\x98', u"'").replace(u'Ã\x80', u'À').replace(u'\xc3\x80', u'À').replace(u'\xe2\x98\x86', u'').replace(u'â\x80\x94', u'—').replace(u'Ã\x9c', u'Ü').strip()
+            excerpt = h.unescape(remove_emoji(excerpt)).replace('\n', '').replace('\\x27', "'").replace('\\x26', '').replace('â\\x80¦', '').replace(u'â\x80¦', u'').replace('\xe2\x80\x9c', '"').replace('\xe2\x80\x9d', '"').replace(u'\xe2\x80\x9c', '"').replace(u'\xe2\x80\x9d', '"').replace('\\x', "'").replace(u'â\x80\x98', u"'").replace(u'\xe2\x80\x98', u"'").replace(u'Ã\x80', u'À').replace(u'\xc3\x80', u'À').replace(u'\xe2\x98\x86', u'').replace(u'â\x80\x94', u'—').replace(u'Ã\x9c', u'Ü').replace(u'â\x80\x93', u'-').replace(u'Â£', u' ').replace(u' Â', u' ').replace(u'Â\xa0', u' ').replace(u'Â©', u'©').strip(u'Â ')
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
