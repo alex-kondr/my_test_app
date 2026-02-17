@@ -120,14 +120,14 @@ def process_reviews(data, context, session):
 
         title = rev.get('title')
         excerpt = rev.get('reviewText')
-        if excerpt and len(remove_emoji(excerpt).strip()) > 2:
+        if excerpt and len(remove_emoji(excerpt).replace('\n', '').replace('\r', '').strip()) > 2:
             if title:
-                review.title = remove_emoji(title)
+                review.title = remove_emoji(title).replace('\n', '').replace('\r', '').strip()
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = remove_emoji(excerpt).strip()
+            excerpt = remove_emoji(excerpt).replace('\n', '').replace('\r', '').strip()
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
