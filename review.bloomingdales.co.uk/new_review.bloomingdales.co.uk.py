@@ -32,7 +32,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=6000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://www.bloomingdales.com/shop/mens/watches?id=1000066', use='curl', options=OPTIONS, max_age=0, force_charset='utf-8'), process_prodlist, dict(cat='Watches|Male'))
     session.queue(Request('https://www.bloomingdales.com/shop/jewelry-accessories/womens-watches?id=1230061', use='curl', options=OPTIONS, max_age=0, force_charset='utf-8'), process_prodlist, dict(cat='Watches|Female'))
 
