@@ -86,7 +86,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
+    excerpt = data.xpath('(//div[@class="post-body"]/div[not(@class or .//div or .//img or .//a[contains(@href, "https://levi.cz/")])]|//div[@class="post-body"]/p)//text()').string(multiple=True)
 
     pages = data.xpath('//div[contains(@class, "post-chapters__section")]//a')
     if pages:
@@ -95,7 +95,7 @@ def process_review(data, context, session):
             page_url = page.xpath('@href').string()
             review.add_property(type='pages', value=dict(title=page_title, url=page_url))
 
-        is_conclusion_page = True if 'Závěr' in page_title else False
+        is_conclusion_page = True if 'závěr' in page_title.lower() else False
         session.do(Request(page_url), process_review_last, dict(context, product=product, review=review, excerpt=excerpt, is_conclusion_page=is_conclusion_page))
 
     elif excerpt:
@@ -128,11 +128,11 @@ def process_review_last(data, context, session):
         review.add_property(type='cons', value=con)
 
     if context['is_conclusion_page']:
-        conclusion = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
+        conclusion = data.xpath('(//div[@class="post-body"]/div[not(@class or .//div or .//img or .//a[contains(@href, "https://levi.cz/")])]|//div[@class="post-body"]/p)//text()').string(multiple=True)
     else:
         conclusion = data.xpath('//div[@class="review-box__verdict"]/p//text()').string(multiple=True)
 
-        excerpt = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('(//div[@class="post-body"]/div[not(@class or .//div or .//img or .//a[contains(@href, "https://levi.cz/")])]|//div[@class="post-body"]/p)//text()').string(multiple=True)
         if excerpt:
             context['excerpt'] += " " + excerpt
 
