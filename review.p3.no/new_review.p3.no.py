@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.queue(Request('https://www.nrk.no/filmpolitiet/', use='curl', force_charset='utf-8'), process_revlist, dict())
+    session.queue(Request('https://www.nrk.no/filmpolitiet/'), process_revlist, dict(cat='Film'))
 
 
 def process_revlist(data, context, session):
@@ -11,41 +11,53 @@ def process_revlist(data, context, session):
     for rev in revs:
         ssid = rev.xpath('@data-id').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(url=url, ssid=ssid))
+        session.queue(Request(url), process_review, dict(url=url, ssid=ssid))
 
-    next_url = data.xpath('//button[contains(@class, "page-forward")]/@data-id[contains(., "size=18")]').string()
-    if next_url:
-        next_url = 'https://www.nrk.no/serum/api/render/' + next_url
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
+    if context.get('next_url'):
+        offset = context['offset'] + 6
+        next_url = next_url.split('.offset=')[0] + str(offset) + '&' + next_url.split('.offset=')[-1].split('&', 1)[-1]
+        session.queue(Request(next_url), process_revlist, dict(context, offset=offset))
+
+    else:
+        next_url = data.xpath('//button[contains(@class, "page-forward")]/@data-id[contains(., "size=18")]').string()
+        if next_url:
+            next_url = 'https://www.nrk.no/serum/api/render/' + next_url
+            session.queue(Request(next_url), process_revlist, dict(next_url=next_url, offset=22))
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace('', '').strip()
+    product.name = data.xpath('//div[@class="review-info"]/h3/text()').string().strip('« »')
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
-    product.category = 'Tech'
+    product.ssid = context['ssid']
+    product.category = context['cat']
+
+    genres = data.xpath('//p[contains(text(), "Sjanger: ")]/text()').string()
+    if genres:
+        product.category += '|' + genres.replace('Sjanger: ', '').strip().replace(', ', '/')
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = data.xpath('//h1[contains(@class, "title")]/text()').string()
     review.url = product.url
     review.ssid = product.ssid
 
-    date = data.xpath('//meta[@property="article:published_time"]/@content|//time/@datetime').string()
+    date = data.xpath('//meta[@property="article:published_time"]/@content').string()
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('/text()').string()
-    author_url = data.xpath('/@href').string()
+    author = data.xpath('//a[@class="author__name"]/text()').string()
+    author_url = data.xpath('//a[@class="author__name"]/@href').string()
     if author and author_url:
-        author_ssid = author_url.split('/')[-1]
+        author_ssid = author_url.split('-')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//text()').string()
+    grade_overall = data.xpath('//span[@class="review-rating"]/span/text()').string()
     if grade_overall:
+        grade_overall = grade_overall.split()[-1]
+        if grade_overall and float(grade_overall) > 0
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
 
     pros = data.xpath('(//h3[contains(., "Pros")]/following-sibling::*)[1]/li')
@@ -64,7 +76,7 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//div[h3[contains(text(), "Summary")]]/div//text()').string(multiple=True)
+    summary = data.xpath('//div[contains(@class, "article-lead")]/p/text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
