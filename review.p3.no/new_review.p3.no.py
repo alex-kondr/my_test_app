@@ -3,42 +3,64 @@ from models.products import *
 
 
 def run(context, session):
-    session.queue(Request('https://www.nrk.no/filmpolitiet/'), process_revlist, dict(cat='Film'))
+    session.queue(Request('https://www.nrk.no/anmeldelser/'), process_catlist, dict())
+
+
+def process_catlist(data, context, session):
+    cats = data.xpath('//h3[contains(@class, "title")]/a')
+    for cat in cats:
+        name = cat.xpath('text()').string()
+        url = cat.xpath('@href').string()
+        session.queue(Request(url), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
-    revs = data.xpath('//a[@data-id]')
+    revs = data.xpath('//a[@data-id and not(preceding::button[contains(., "Vis flere")]) and figure]')
     for rev in revs:
         ssid = rev.xpath('@data-id').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(url=url, ssid=ssid))
+        session.queue(Request(url), process_review, dict(context, url=url, ssid=ssid))
 
     if context.get('next_url'):
-        offset = context['offset'] + 6
-        next_url = next_url.split('.offset=')[0] + str(offset) + '&' + next_url.split('.offset=')[-1].split('&', 1)[-1]
+        offset = context.get('offset', 0) + 9
+        next_url = context['next_url'].split('.offset=')[0] + '.offset=' + str(offset) + '&' + context['next_url'].split('.offset=')[-1].split('&', 1)[-1]
         session.queue(Request(next_url), process_revlist, dict(context, offset=offset))
 
     else:
-        next_url = data.xpath('//button[contains(@class, "page-forward")]/@data-id[contains(., "size=18")]').string()
+        next_url = data.xpath('//button[contains(@class, "page-forward") and not(preceding::button[contains(., "Vis flere")])]/@data-id[contains(., "size=18")]').string()
         if next_url:
             next_url = 'https://www.nrk.no/serum/api/render/' + next_url
-            session.queue(Request(next_url), process_revlist, dict(next_url=next_url, offset=22))
+            session.queue(Request(next_url), process_revlist, dict(context, next_url=next_url))
 
 
 def process_review(data, context, session):
+    if data.xpath('//img[contains(@alt, "1 tall")]'):
+        return  # Multi-revs. There full reviews for any product on site
+
+    title = data.xpath('//h1[contains(@class, "title")]/text()').string()
+
     product = Product()
-    product.name = data.xpath('//div[@class="review-info"]/h3/text()').string().strip('« »')
     product.url = context['url']
     product.ssid = context['ssid']
-    product.category = context['cat']
 
-    genres = data.xpath('//p[contains(text(), "Sjanger: ")]/text()').string()
+    name = data.xpath('//div[@class="review-info"]/h3/text()').string()
+    if name:
+        product.name = name.strip('« »')
+    else:
+        product.name = title
+
+    product.category = context['cat']
+    genres = data.xpath('//p[contains(text(), "Sjanger:")]/text()').string()
     if genres:
-        product.category += '|' + genres.replace('Sjanger: ', '').strip().replace(', ', '/')
+        product.category += '|' + genres.title().replace('Sjanger:', '').strip().replace(', ', '/')
+
+    manufacturer = data.xpath('//p[contains(text(), "Distributør:")]/text()').string()
+    if manufacturer:
+        product.manufacturer = manufacturer.replace('Distributør:', '').strip()
 
     review = Review()
     review.type = 'pro'
-    review.title = data.xpath('//h1[contains(@class, "title")]/text()').string()
+    review.title = title
     review.url = product.url
     review.ssid = product.ssid
 
@@ -57,38 +79,22 @@ def process_review(data, context, session):
     grade_overall = data.xpath('//span[@class="review-rating"]/span/text()').string()
     if grade_overall:
         grade_overall = grade_overall.split()[-1]
-        if grade_overall and float(grade_overall) > 0
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
-
-    pros = data.xpath('(//h3[contains(., "Pros")]/following-sibling::*)[1]/li')
-    for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
-        if pro:
-            pro = pro.strip(' +-*.:;•,–')
-            if len(pro) > 1:
-                review.add_property(type='pros', value=pro)
-
-    cons = data.xpath('(//h3[contains(., "Cons")]/following-sibling::*)[1]/li')
-    for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
-        if con:
-            con = con.strip(' +-*.:;•,–')
-            if len(con) > 1:
-                review.add_property(type='cons', value=con)
+        if grade_overall and float(grade_overall) > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=6.0))
 
     summary = data.xpath('//div[contains(@class, "article-lead")]/p/text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2|//h3|//h5)[contains(., "Konklusjon")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
-
+    excerpt = data.xpath('//div[contains(@class,"article-body")]/p[not(preceding-sibling::h2[regexp:test(.,"Konklusjon")])][not(contains(., "(Anmeldelsen fortsetter under bildet)") or regexp:test(., "anmeldelse:", "i"))]//text()[not(contains(., "[youtube"))][not(parent::strong) and not(contains(text(), "Spoileradvarsel!") or contains(., "href="))]').string(multiple=True)
     if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
