@@ -3,6 +3,7 @@ from typing import List
 import sys
 
 from dotenv import load_dotenv
+from tqdm import tqdm
 import requests
 from requests.auth import HTTPBasicAuth
 import urllib3
@@ -17,7 +18,7 @@ urllib3.disable_warnings()
 load_dotenv()
 
 
-def load_file(agent_id: int, type_file: str = "yaml", size: int|str = "", decode: bool = False) -> str:
+def load_file(agent_id: int, type_file: str = "yaml", size: int|str = "", decode: bool = False) -> str | bytes:
     """
     type_file: "yaml", "log"
     """
@@ -32,10 +33,20 @@ def load_file(agent_id: int, type_file: str = "yaml", size: int|str = "", decode
         auth=HTTPBasicAuth(
             username=os.getenv("USER-NAME"),
             password=os.getenv("PASS")
-        )
+        ),
+        stream=True
     )
 
-    return response.content.decode("utf-8") if decode else response.content
+    total_size = int(response.headers.get('content-length', 0))
+    block_size = 1024 * 1024  # 1 MB
+    content = bytearray()
+
+    with tqdm(total=total_size, unit='iB', unit_scale=True, unit_divisor=1024, desc=f"Downloading {type_file}") as t:
+        for data in response.iter_content(block_size):
+            t.update(len(data))
+            content.extend(data)
+
+    return content.decode("utf-8") if decode else bytes(content)
 
 
 def is_include(xnames: list = [], text: str = "", lower: bool = False) -> str|None:

@@ -238,13 +238,26 @@ class Product:
         processing_start_time = time.time()
         logger.info("Parsing YAML and processing with multiprocessing...")
 
-        content_list = list(yaml.load_all(content, Loader=yaml.FullLoader))
+        try:
+            from yaml import CLoader as Loader
+            logger.info("Use CLoader")
+        except ImportError:
+            from yaml import FullLoader as Loader
+            logger.info("Use FullLoader")
+
+        if isinstance(content, bytes):
+            total_docs = content.count(b'\n---') + 1
+        else:
+            total_docs = content.count('\n---') + 1
+        content_list = []
+        for doc in tqdm(yaml.load_all(content, Loader=Loader), total=total_docs, desc="Parsing YAML"):
+            content_list.append(doc)
 
         file = {"products": []}
         num_processes = cpu_count()
 
         # Calculate a reasonable chunksize to improve performance
-        chunksize = max(1, len(content_list) // (num_processes * 4))
+        chunksize = max(10, len(content_list) // (num_processes * 2))
         logger.info(f"Using chunksize: {chunksize} for YAML parsing.")
 
         with Pool(num_processes) as p:
@@ -558,6 +571,16 @@ class ProductValidator:
             self.errors["rev_excerpt"].append(properties)
 
 
+def validate_product_task(args):
+    """
+    Worker function to process a single product.
+    Defined at module level to avoid pickling the entire TestProductMultiprocessing instance.
+    """
+    product_data, config = args
+    validator = ProductValidator(product_data)
+    return validator.validate(config)
+
+
 class TestProductMultiprocessing:
     def __init__(self, product: Product):
         Path("product_test/error").mkdir(exist_ok=True)
@@ -566,13 +589,6 @@ class TestProductMultiprocessing:
         self.path = Path(f"product_test/error/{self.agent_name}")
         self.path.mkdir(exist_ok=True)
         self.config = {}
-
-    def worker_task(self, product_data):
-        """
-        Worker function to process a single product.
-        """
-        validator = ProductValidator(product_data)
-        return validator.validate(self.config)
 
     def run(self, xproduct_names=[], not_xproduct_name=None, len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[]):
         run_start_time = time.time()
@@ -597,8 +613,11 @@ class TestProductMultiprocessing:
             chunksize = max(1, num_products // (num_processes * 4))
             logger.info(f"Using chunksize: {chunksize} for validation.")
 
+            # Create a generator of arguments to avoid creating a large intermediate list
+            tasks = ((product, self.config) for product in self.products)
+
             with Pool(num_processes) as p:
-                results = list(tqdm(p.imap(self.worker_task, self.products, chunksize=chunksize), total=num_products, desc=f"Validating products (chunksize={chunksize})", leave=False))
+                results = list(tqdm(p.imap(validate_product_task, tasks, chunksize=chunksize), total=num_products, desc=f"Validating products (chunksize={chunksize})", leave=False))
 
             pool_end_time = time.time()
             logger.info(f"Multiprocessing validation took: {pool_end_time - run_start_time:.2f} seconds")
