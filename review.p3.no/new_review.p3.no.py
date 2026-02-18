@@ -38,7 +38,7 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
-    if data.xpath('//img[contains(@alt, "1 tall")]'):
+    if data.xpath('//img[contains(@alt, "1 tall")]|//h2[@class="numbered-heading"]'):
         return  # Multi-revs. There full reviews for any product on site
 
     title = data.xpath('//h1[contains(@class, "title")]/text()').string()
@@ -83,7 +83,7 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//span[@class="review-rating"]/span/text()').string()
+    grade_overall = data.xpath('//div[contains(@class, "article-lead-media review")]//span[@class="review-rating"]/span/text()').string()
     if grade_overall:
         grade_overall = grade_overall.split()[-1]
         if grade_overall and float(grade_overall) > 0:
