@@ -16,10 +16,10 @@ agent = agents.P3_FILMPOLITIET_NO
 # agent = agents.TEST
 reload = 1
 
-# name: 44
+# name: 44+
 # author: 126
-# exc: 55
-# log: 42
+# exc: 55+
+# log: 42+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
