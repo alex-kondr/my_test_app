@@ -16,13 +16,16 @@ def process_catlist(data, context, session):
 
 def process_revlist(data, context, session):
     revs = data.xpath('//a[@data-id and not(preceding::button[contains(., "Vis flere")]) and figure]')
+    if not revs:
+        return
+
     for rev in revs:
         ssid = rev.xpath('@data-id').string()
         url = rev.xpath('@href').string()
         session.queue(Request(url), process_review, dict(context, url=url, ssid=ssid))
 
     if context.get('next_url'):
-        offset = context.get('offset', 0) + 9
+        offset = context.get('offset', 9) + 9
         next_url = context['next_url'].split('.offset=')[0] + '.offset=' + str(offset) + '&' + context['next_url'].split('.offset=')[-1].split('&', 1)[-1]
         session.queue(Request(next_url), process_revlist, dict(context, offset=offset))
 
