@@ -88,14 +88,18 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[contains(@class, "article-lead")]/p/text()').string(multiple=True)
     if summary:
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//h2|//h3|//h5)[contains(., "Konklusjon")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[contains(@class,"article-body")]/p[not(preceding-sibling::h2[regexp:test(.,"Konklusjon")])][not(contains(., "(Anmeldelsen fortsetter under bildet)") or regexp:test(., "anmeldelse:", "i"))]//text()[not(contains(., "[youtube"))][not(parent::strong) and not(contains(text(), "Spoileradvarsel!") or contains(., "href="))]').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
+
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 
