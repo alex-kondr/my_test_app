@@ -3,6 +3,7 @@ from models.products import *
 
 
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.nrk.no/anmeldelser/'), process_catlist, dict())
 
 
