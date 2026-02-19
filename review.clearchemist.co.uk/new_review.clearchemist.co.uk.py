@@ -2,6 +2,9 @@ from agent import *
 from models.products import *
 
 
+XCAT = ['Home', 'Special Offers', 'Contact']
+
+
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"
     out = file(tmp, "w")
@@ -26,14 +29,16 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('a/span/text()').string()
 
-        subcats = cat.xpath('.//li[contains(@class, "level1")]/a')
-        if subcats:
-            for subcat in subcats:
-                subcat_name = subcat.xpath('.//text()').string(multiple=True)
-                session.queue(Request(url), process_prodlist, dict(cat=name+'|'+subcat_name))
-        else:
-            url = cat.xpath('a/@href').string()
-            session.queue(Request(url), process_prodlist, dict(cat=name))
+        if name not in XCAT:
+            subcats = cat.xpath('.//li[contains(@class, "level1")]/a')
+            if subcats:
+                for subcat in subcats:
+                    subcat_name = subcat.xpath('.//text()').string(multiple=True)
+                    url = subcat.xpath('@href').string()
+                    session.queue(Request(url), process_prodlist, dict(cat=name+'|'+subcat_name))
+            else:
+                url = cat.xpath('a/@href').string()
+                session.queue(Request(url), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
