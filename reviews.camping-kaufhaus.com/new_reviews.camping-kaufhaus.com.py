@@ -75,7 +75,7 @@ def process_category(data, context, session):
     for subcat in subcats:
         name = subcat.xpath('.//span[contains(@class, "subcategory")]/text()').string()
         url = subcat.xpath('@href').string()
-        session.queue(Request(url, force_charset='utf-8'), process_product, dict(cat=context['cat']+'|'+name, cat_url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=context['cat']+'|'+name, cat_url=url))
         # session.queue(Request(url, force_charset='utf-8'), process_category, dict(cat=context['cat']+'|'+name))
 
 
