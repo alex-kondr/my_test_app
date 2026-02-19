@@ -20,34 +20,25 @@ def run(context, session):
 
 
 def process_frontpage(data, context, session):
-    cats = data.xpath('//div[contains(@class, "level0")]')
+    strip_namespace(data)
+
+    cats = data.xpath('//li[contains(@class, "level0")]')
     for cat in cats:
         name = cat.xpath('a/span/text()').string()
 
-        cats1 = cat.xpath('div[contains(@class, "element-inner")]/div')
-        for cat1 in cats1:
-            cat1_name = cat1.xpath('a/span/text()').string()
-
-            cats2 = cat1.xpath('div[contains(@class, "element-inner")]/div')
-            if cats2:
-                for cat2 in cats2:
-                    cat2_name = cat2.xpath('a/span/text()').string()
-
-                    subcats = cat2.xpath('div[contains(@class, "element-inner")]/div/a')
-                    if subcats:
-                        for subcat in subcats:
-                            subcat_name = subcat.xpath('span/text()').string()
-                            url = subcat.xpath('@href').string()
-                            session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+cat2_name+'|'+subcat_name))
-                    else:
-                        url = cat2.xpath('a/@href').string()
-                        session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+cat2_name))
-            else:
-                url = cat1.xpath('a/@href').string()
-                session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name))
+        subcats = cat.xpath('.//li[contains(@class, "level1")]/a')
+        if subcats:
+            for subcat in subcats:
+                subcat_name = subcat.xpath('.//text()').string(multiple=True)
+                session.queue(Request(url), process_prodlist, dict(cat=name+'|'+subcat_name))
+        else:
+            url = cat.xpath('a/@href').string()
+            session.queue(Request(url), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
+    strip_namespace(data)
+
     prods = data.xpath('//li[contains(@class, "item product")]')
     for prod in prods:
         name = prod.xpath('.//a[@class="product-item-link"]/text()').string()
@@ -58,14 +49,16 @@ def process_prodlist(data, context, session):
         revs_cnt = prod.xpath('.//a[@class="action view"]/text()').string()
         if revs_cnt and int(revs_cnt) > 0:
             revs_url = "https://www.clearchemist.co.uk/review/product/listAjax/id/{}/".format(ssid)
-            session.queue(Request(revs_url), process_reviews, dict(context, name=name, url=url, ssid=ssid, sku=sku))
+            session.queue(Request(revs_url), process_product, dict(context, name=name, url=url, ssid=ssid, sku=sku))
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
         session.queue(Request(next_url), process_prodlist, dict(context))
 
 
-def process_reviews(data, context, session):
+def process_product(data, context, session):
+    strip_namespace(data)
+
     product = Product()
     product.name = context['name']
     product.url = context['url']
@@ -77,6 +70,15 @@ def process_reviews(data, context, session):
         product.add_property(type='id.ean', value=sku)
     else:
         product.sku = sku
+
+    context['product'] = product
+    process_reviews(data, context, session)
+
+
+def process_reviews(data, context, session):
+    strip_namespace(data)
+
+    product = context['product']
 
     revs = data.xpath("//li[@class='item review-item']")
     for rev in revs:
@@ -108,7 +110,9 @@ def process_reviews(data, context, session):
 
             product.reviews.append(review)
 
-    if product.reviews:
-        session.emit(product)
+    next_url = data.xpath('//a[@class="action  next"]/@href').string()
+    if next_url:
+        session.do(Request(next_url), process_reviews, dict(product=product))
 
-    # No next_url
+    elif product.reviews:
+        session.emit(product)

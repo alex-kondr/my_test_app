@@ -4,7 +4,7 @@ import simplejson
 import re
 
 
-XCAT = ["Nieuwe collectie", "Nieuwe outdoorcollectie", "Nieuwe fashioncollectie", "Verhuur", "Ecocheque producten", "Professioneel", "Promoties", "Veilig in het verkeer", "Cadeautips", "Merken", "Inspiratie", "✨ Nieuwe collectie"]
+XCAT = ["Nieuwe collectie", "Nieuwe outdoorcollectie", "Nieuwe fashioncollectie", "Verhuur", "Ecocheque producten", "Professioneel", "Promoties", "Veilig in het verkeer", "Cadeautips", "Merken", "Inspiratie", "✨ Nieuwe collectie", "Wintersport", "Outlet", "Trends", "Lookbooks", "Departement", "Lookbook Fashion Kids", "Second Life", "Voor bedrijven", "Outdoor Originals", "Ecocheque producten", "Bushcraft"]
 
 
 def remove_emoji(string):

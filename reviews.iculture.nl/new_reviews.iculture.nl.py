@@ -113,6 +113,10 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
+    summary = data.xpath('//div[header]/div[@class="mb-4"]/text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
     conclusion = data.xpath('(//h2|//h3|//h4)[contains(@id, "conclusie") or contains(., "Conclusie")]/following-sibling::p[preceding-sibling::h2[1][contains(@id, "conclusie") or contains(., "Conclusie")] or preceding-sibling::h3[1][contains(@id, "conclusie") or contains(., "Conclusie")] or preceding-sibling::h4[1][contains(@id, "conclusie") or contains(., "Conclusie")]]//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace(u'â€�', '”').strip()
