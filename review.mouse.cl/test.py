@@ -16,6 +16,9 @@ agent = agents.LATERCERA_MOUSE_CL
 # agent = agents.TEST
 reload = 1
 
+# name: 11
+# exc: 1+
+# log: 24+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

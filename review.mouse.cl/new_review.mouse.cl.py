@@ -7,6 +7,7 @@ URLS = ['https://www.latercera.com/pf/api/v3/content/fetch/story-feed-sections-f
 
 
 def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     for url in URLS:
         session.queue(Request(url.replace('offset', '0')), process_revlist, dict(cat_url=url))
 
@@ -34,7 +35,7 @@ def process_review(data, context, session):
     title = data.xpath('//div[contains(@class, "article")]/h1[contains(@class, "title")]//text()').string(multiple=True)
 
     product = Product()
-    product.name = title.replace('Reseña | ', '').replace('Review |', '').replace('Review| ', '').replace('Review: ', '').replace('Review ', '').replace(u'\L', '').replace(u' ', '').strip(' |')
+    product.name = title.replace('Review del ', '').replace('Preview | ', '').replace('Reseña | ', '').replace('Review |', '').replace('Review| ', '').replace('Review: ', '').replace('Review ', '').replace(u'\L', '').replace(u' ', '').replace('Testament: ', '').strip(' |')
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('review-', '')
     product.category = data.xpath('//div[contains(@class, "heading")]/span[contains(@class, "section__name")]//text()').string(multiple=True)
@@ -59,12 +60,6 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
-
-    grade_overall = data.xpath('//p[regexp:test(text(), "Nota:.+⭐")]//text()').string(multiple=True)
-    if grade_overall:
-        grade_overall = grade_overall.count('⭐')
-        if grade_overall > 0:
-            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
     pros = data.xpath('//p[contains(., "A favor (Pros)")]/following-sibling::p[contains(., "✅")]')
     for pro in pros:

@@ -67,16 +67,10 @@ def process_category(data, context, session):
     strip_namespace(data)
 
     subcats = data.xpath('//li/a[contains(@class, "subcategory-navigation-link")]')
-    if not subcats:
-        context['cat_url'] = data.response_url
-        process_prodlist(data, context, session)
-        return
-
     for subcat in subcats:
         name = subcat.xpath('.//span[contains(@class, "subcategory")]/text()').string()
         url = subcat.xpath('@href').string()
-        # session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=context['cat']+'|'+name, cat_url=url))
-        session.queue(Request(url, force_charset='utf-8'), process_category, dict(cat=context['cat']+'|'+name))
+        session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=context['cat']+'|'+name, cat_url=url))
 
 
 def process_prodlist(data, context, session):

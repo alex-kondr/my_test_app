@@ -56,7 +56,7 @@ def process_prodlist(data, context, session):
             revs_url = "https://www.clearchemist.co.uk/review/product/listAjax/id/{}/".format(ssid)
             session.queue(Request(revs_url), process_product, dict(context, name=name, url=url, ssid=ssid, sku=sku))
 
-    next_url = data.xpath('//a[@rel="next"]/@href').string()
+    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
         session.queue(Request(next_url), process_prodlist, dict(context))
 
@@ -115,7 +115,7 @@ def process_reviews(data, context, session):
 
             product.reviews.append(review)
 
-    next_url = data.xpath('//a[@class="action  next"]/@href').string()
+    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
         session.do(Request(next_url), process_reviews, dict(product=product))
 
