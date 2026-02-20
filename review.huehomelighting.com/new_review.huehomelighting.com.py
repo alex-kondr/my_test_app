@@ -16,7 +16,7 @@ def process_prodlist(data, context, session):
         url = prod.xpath("a//@href").string()
 
         if 'review' in title.lower() and not any(xtitle in title for xtitle in XTITLE):
-        session.queue(Request(url, use='curl'), process_product, dict(context, title=title, url=url))
+            session.queue(Request(url, use='curl'), process_product, dict(context, title=title, url=url))
 
     # no next page
 
@@ -35,44 +35,51 @@ def process_product(data, context, session):
     review.ssid = product.ssid
     review.date = data.xpath("//span[@class='post-date updated']//@datetime").string()
 
-    author_name = data.xpath("//h5//span[@itemprop='author']//span[@itemprop='name']//text()").string()
+    author = data.xpath("//h5//span[@itemprop='author']//span[@itemprop='name']//text()").string()
     author_url = data.xpath("//h5//span[@itemprop='author']/a[@rel='author' and not(contains(@href, '/about/'))]//@href").string()
-    if author_name:
-        if author_url:
-            review.authors.append(Person(name=author_name, profile_url=author_url, ssid=author_name))
-        else:
-            review.authors.append(Person(name=author_name, ssid=author_name))
+    if author and author_url:
+        author_ssid = author_url.split('/')[-2]
+        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath("//meta[@itemprop='ratingValue']//@content").string()
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-
-
     pros = data.xpath("//h4[text()[contains(., 'Pros')]]//following-sibling::ul[1]/li")
     for pro in pros:
-        pro = pro.xpath("text()").string().replace('+', '')
-        review.add_property(type='pros', value=pro)
+        pro = pro.xpath("text()").string()
+        if pro:
+            pro = pro.replace('+', '')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
 
-    cons = data.xpath("//h4[text()[contains(., 'Cons')]]//following-sibling::ul[1]/li")
+    cons = data.xpath("//h4[contains(., 'Cons')]//following-sibling::ul[1]/li")
     for con in cons:
-        con = con.xpath("text()").string().replace('-', '')
-        review.add_property(type='cons', value=con)
+        con = con.xpath("text()").string()
+        if con:
+            con = con.replace('-', '')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
 
     summary = data.xpath("//span[@itemprop='description']//text()").string(multiple=True)
+    if not summary:
+        summary = data.xpath('//div[@itemprop="articleBody"]/p[@class]//text()').string(multiple=True)
+
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath("//h3[text()[contains(.,'Verdict')]]//following-sibling::p//text()").string(multiple=True)
+    conclusion = data.xpath("//h3[regexp:test(.,'Verdict|Are they worth it|Should you buy it')]//following-sibling::p//text()").string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath("//h3[text()[contains(.,'Overall')]]//following-sibling::p[1]//text()").string(multiple=True)
+        conclusion = data.xpath("//h3[contains(.,'Overall')]//following-sibling::p[1]//text()").string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath("//div[@itemprop='reviewBody']//p//text()").string(multiple=True)
+    excerpt = data.xpath("//div[@itemprop='reviewBody']/p[not(@class or preceding::h3[regexp:test(., 'FAQ|Verdict|Are they worth it|Should you buy it')])]//text()").string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath("//div[@itemprop='articleBody']//p//text()").string(multiple=True)
+        excerpt = data.xpath("//div[@itemprop='articleBody']/p[not(@class or preceding::h3[regexp:test(., 'FAQ|Verdict|Are they worth it|Should you buy it')])]//text()").string(multiple=True)
 
     if excerpt:
         if summary:
