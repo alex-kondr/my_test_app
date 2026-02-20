@@ -46,38 +46,20 @@ def process_prodlist(data, context, session):
 
     prods = data.xpath('//li[contains(@class, "item product")]')
     for prod in prods:
-        name = prod.xpath('.//a[@class="product-item-link"]/text()').string()
-        url = prod.xpath('.//a[@class="product-item-link"]/@href').string()
-        ssid = prod.xpath('.//div/@data-product-id').string()
-        sku = prod.xpath('.//form/@data-product-sku').string()
+        product = Product()
+        product.name = prod.xpath('.//a[@class="product-item-link"]/text()').string()
+        product.url = prod.xpath('.//a[@class="product-item-link"]/@href').string()
+        product.ssid = prod.xpath('.//div/@data-product-id').string()
+        product.category = context['cat']
 
         revs_cnt = prod.xpath('.//a[@class="action view"]/text()').string()
         if revs_cnt and int(revs_cnt) > 0:
-            revs_url = "https://www.clearchemist.co.uk/review/product/listAjax/id/{}/".format(ssid)
-            session.queue(Request(revs_url), process_product, dict(context, name=name, url=url, ssid=ssid, sku=sku))
+            revs_url = "https://www.clearchemist.co.uk/review/product/listAjax/id/{}/".format(product.ssid)
+            session.queue(Request(revs_url), process_reviews, dict(product=product))
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
         session.queue(Request(next_url), process_prodlist, dict(context))
-
-
-def process_product(data, context, session):
-    strip_namespace(data)
-
-    product = Product()
-    product.name = context['name']
-    product.url = context['url']
-    product.category = context['cat'].replace('Shop|', '').strip(' |')
-    product.ssid = context['ssid']
-
-    sku = context.get('sku')
-    if sku and sku.isdigit() and len(sku) > 10:
-        product.add_property(type='id.ean', value=sku)
-    else:
-        product.sku = sku
-
-    context['product'] = product
-    process_reviews(data, context, session)
 
 
 def process_reviews(data, context, session):
@@ -103,7 +85,7 @@ def process_reviews(data, context, session):
 
         title = rev.xpath('div[@class="review-title"]/text()').string()
         excerpt = rev.xpath(".//div[@class='review-content']//text()").string(multiple=True)
-        if excerpt:
+        if excerpt and title != excerpt:
             review.title = title
         else:
             excerpt = title
