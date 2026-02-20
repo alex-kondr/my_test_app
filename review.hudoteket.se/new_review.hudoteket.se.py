@@ -30,15 +30,17 @@ def run(context, session):
 def process_frontpage(data, context, session):
     strip_namespace(data)
 
-    cats = data.xpath('//ul[@id="produkt"]/ul/li')
+    cats = data.xpath('//ul[@id="produkt"]/ul/li/a')
     for cat in cats:
-        name = cat.xpath('a/text()').string()
-
+        name = cat.xpath('text()').string()
+        url = cat.xpath('@href').string()
+        
+        print name, url
         # if name and name not in XCAT:
         #     XCAT.append(name)
-        cats1 = cat.xpath('ul/li')
-        for cat1 in cats1:
-            cat1_name = cat1.xpath('a/text()').string()
+        # cats1 = cat.xpath('ul/li')
+        # for cat1 in cats1:
+        #     cat1_name = cat1.xpath('a/text()').string()
 
             # if cat1_name and cat1_name not in XCAT:
             #     XCAT.append(cat1_name)
@@ -50,19 +52,19 @@ def process_frontpage(data, context, session):
             #         # session.queue(Request(url, force_charset='utf-8'), process_category, dict(cat=cat1_name))
             #         continue
 
-            subcats = cat1.xpath('ul/li/a')
-            if subcats:
-                for subcat in subcats:
-                    subcat_name = subcat.xpath('text()').string()
-                    url = subcat.xpath('@href').string()
+            # subcats = cat1.xpath('ul/li/a')
+            # if subcats:
+            #     for subcat in subcats:
+            #         subcat_name = subcat.xpath('text()').string()
+            #         url = subcat.xpath('@href').string()
                     
-                    print name+'|'+cat1_name+'|'+subcat_name, url
-                    # session.queue(Request(url, force_charset='utf-8'), process_category, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
-            else:
-                url = cat1.xpath('a/@href').string()
+            #         print name+'|'+cat1_name+'|'+subcat_name, url
+            #         # session.queue(Request(url, force_charset='utf-8'), process_category, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
+            # else:
+            #     url = cat1.xpath('a/@href').string()
                 
-                print name+'|'+cat1_name
-                # session.queue(Request(url, force_charset='utf-8'), process_category, dict(cat=name+'|'+cat1_name))
+            #     print name+'|'+cat1_name
+            #     # session.queue(Request(url, force_charset='utf-8'), process_category, dict(cat=name+'|'+cat1_name))
 
 def process_category(data, context, session):
     strip_namespace(data)
