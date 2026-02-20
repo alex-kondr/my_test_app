@@ -3,33 +3,31 @@ from models.products import *
 import simplejson
 
 
+URLS = ['https://www.latercera.com/pf/api/v3/content/fetch/story-feed-sections-fetch?query={%22feedOffset%22:offset,%22feedSize%22:12,%22fromComponent%22:%22result-list%22,%22includeSections%22:%22/mouse%22}&d=1098&mxId=00000000&_website=la-tercera', 'https://www.latercera.com/pf/api/v3/content/fetch/story-feed-sections-fetch?query={%22feedOffset%22:offset,%22feedSize%22:12,%22fromComponent%22:%22result-list%22,%22includeSections%22:%22/tecnologia%22}&d=1098&mxId=00000000&_website=la-tercera']
+
+
 def run(context, session):
-    session.queue(Request('https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=uk&source=gcsc&start=0&cselibv=f71e4ed980f4c082&cx=0099769ad8b6d3d5e&q=review&safe=off&cse_tok=AEXjvhLUAa2A0yJD_IIRrKZM40wm%3A1771415353767&exp=cc%2Capo&fexp=121538238%2C121538239%2C73152292%2C73152290&callback=google.search.cse.api12566&rurl=https%3A%2F%2Fwww.latercera.com%2Fsearch%2F%3Fq%3Dreview'), process_revlist, dict())
+    for url in URLS:
+        session.queue(Request(url.replace('offset', '0')), process_revlist, dict(cat_url=url))
 
 
 def process_revlist(data, context, session):
     try:
-        revs_json = simplejson.loads('{' + data.content.split('({')[-1].strip('( ;)'))
+        revs_json = simplejson.loads(data.content)
     except:
         return
 
-    current_page = revs_json.get('cursor', {}).get('currentPageIndex', 0)
-    if current_page < context.get('page', 0):
-        return
-
-    revs = revs_json.get('results', [])
+    revs = revs_json.get('content_elements', [])
     for rev in revs:
-        title = rev.get('title')
-        url = rev.get('url')
+        title = rev.get('headlines', {}).get('basic')
+        url = 'https://www.latercera.com' + rev.get('websites', {}).get('la-tercera', {}).get('website_url')
 
         if 'reseña' in title.lower() or 'review' in title.lower():
             session.queue(Request(url), process_review, dict(url=url))
 
-
-    offset = context.get('offset', 0) + 10
-    next_page = context.get('page', 0) + 1
-    next_url = 'https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=uk&source=gcsc&start=' + str(offset) + '&cselibv=f71e4ed980f4c082&cx=0099769ad8b6d3d5e&q=review&safe=off&cse_tok=AEXjvhLUAa2A0yJD_IIRrKZM40wm%3A1771415353767&exp=cc%2Capo&fexp=121538238%2C121538239%2C73152292%2C73152290&callback=google.search.cse.api12566&rurl=https%3A%2F%2Fwww.latercera.com%2Fsearch%2F%3Fq%3Dreview'
-    session.queue(Request(next_url), process_revlist, dict(offset=offset, page=next_page))
+    offset = revs_json.get('next')
+    if offset:
+        session.queue(Request(context['cat_url'].replace('offset', str(offset))), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
@@ -61,6 +59,12 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
+
+    grade_overall = data.xpath('//p[regexp:test(text(), "Nota:.+⭐")]//text()').string(multiple=True)
+    if grade_overall:
+        grade_overall = grade_overall.count('⭐')
+        if grade_overall > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
     pros = data.xpath('//p[contains(., "A favor (Pros)")]/following-sibling::p[contains(., "✅")]')
     for pro in pros:
