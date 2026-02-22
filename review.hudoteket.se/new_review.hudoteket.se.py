@@ -64,7 +64,7 @@ def process_product(data, context, session):
     if not prod_json:
         return
 
-    prod_json = simplejson.loads(prod_json)
+    prod_json = simplejson.loads(prod_json.replace('"Re"', '\\"Re\\"'))
 
     product = Product()
     product.name = context["name"]

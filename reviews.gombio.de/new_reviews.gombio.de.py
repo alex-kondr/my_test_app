@@ -62,8 +62,10 @@ def process_prodlist(data, context, session):
         url = prod.xpath('.//a/@href').string()
 
         revs_cnt = prod.xpath('.//p[contains(@class, "rating__content")]/text()').string()
-        if revs_cnt and int(revs_cnt.strip('( )')) > 0:
-            session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        if revs_cnt:
+            revs_cnt = revs_cnt.strip('( )')
+            if revs_cnt.isdigit() and int(revs_cnt) > 0:
+                session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//a[@aria-label="Nächste Seite"]/@href').string()
     if next_url:
