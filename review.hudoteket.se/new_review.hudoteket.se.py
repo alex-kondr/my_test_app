@@ -40,7 +40,7 @@ def process_category(data, context, session):
     for subcat in subcats:
         name = subcat.xpath('text()').string()
         url = subcat.xpath('@href').string()
-        session.queue(Request(url, force_charset='utf-8'), process_category, dict(cat=context['cat']+'|'+name))
+        session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=context['cat']+'|'+name))
 
 
 def process_prodlist(data, context, session):
@@ -54,7 +54,7 @@ def process_prodlist(data, context, session):
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, force_charset='utf-8'), process_product, dict(context))
+        session.queue(Request(next_url, force_charset='utf-8'), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):

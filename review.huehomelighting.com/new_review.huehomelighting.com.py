@@ -15,7 +15,7 @@ def process_prodlist(data, context, session):
         title = prod.xpath("h3/text()").string()
         url = prod.xpath("a//@href").string()
 
-        if 'review' in title.lower() and not any(xtitle in title for xtitle in XTITLE):
+        if 'review' in title.lower() and not any(xtitle in title.lower() for xtitle in XTITLE):
             session.queue(Request(url, use='curl'), process_product, dict(context, title=title, url=url))
 
     # no next page
@@ -43,11 +43,7 @@ def process_product(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath("//meta[@itemprop='ratingValue']//@content").string()
-    if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
-
-    pros = data.xpath("//h4[text()[contains(., 'Pros')]]//following-sibling::ul[1]/li")
+    pros = data.xpath("(//h4|//h3)[text()[contains(., 'Pros')]]//following-sibling::ul[1]/li")
     for pro in pros:
         pro = pro.xpath("text()").string()
         if pro:
@@ -55,7 +51,7 @@ def process_product(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath("//h4[contains(., 'Cons')]//following-sibling::ul[1]/li")
+    cons = data.xpath("(//h4|//h3)[contains(., 'Cons')]//following-sibling::ul[1]/li")
     for con in cons:
         con = con.xpath("text()").string()
         if con:
