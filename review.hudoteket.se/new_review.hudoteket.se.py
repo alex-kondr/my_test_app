@@ -128,11 +128,12 @@ def process_product(data, context, session):
         excerpt = rev.get("description")
         if excerpt and excerpt.strip():
             excerpt = remove_emoji(excerpt).strip()
-            review.add_property(type='excerpt', value=excerpt)
+            if len(excerpt) > 2:
+                review.add_property(type='excerpt', value=excerpt)
 
-            review.ssid = review.digest() if author else review.digest(excerpt)
+                review.ssid = review.digest() if author else review.digest(excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
