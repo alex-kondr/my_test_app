@@ -22,7 +22,7 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split("Test du")[-1].split(":")[0].strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.split('/')[-1]
 
     category = data.xpath('//a[contains(@href, "/category/") and @property="v:title"]/text()').string()
     if category:
@@ -36,17 +36,22 @@ def process_review(data, context, session):
     review.url = product.url
     review.ssid = product.ssid
 
-    date = data.xpath('//meta[@property="article:published_time"]/@content|//time/@datetime').string()
-    if date:
-        review.date = date.split('T')[0]
+    rev_json = data.xpath('//script[contains(., "dateCreated")]/text()').string()
+    if rev_json:
+        date = rev_json.get('datePublished')
+        if date:
+            review.date = date.split("T")[0]
 
-    author = data.xpath('/text()').string()
-    author_url = data.xpath('/@href').string()
-    if author and author_url:
-        author_ssid = author_url.split('/')[-1]
-        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
-    elif author:
-        review.authors.append(Person(name=author, ssid=author))
+        author = rev_json.get('author', {}).get('name')
+        author_url = rev_json.get('authot', {}).get('url')
+        if author and author_url:
+            author_ssid = author_url.split('/')[-1]
+            review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+        elif author:
+            review.authors.append(Person(name=author, ssid=author))
+
+    if not review.authors:
+        author = data.xpath('')
 
     grade_overall = data.xpath('//text()').string()
     if grade_overall:
