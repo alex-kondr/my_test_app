@@ -16,6 +16,8 @@ agent = agents.HUDOTEKET_SV
 # agent = agents.TEST
 reload = 1
 
+# grade: 4+
+# auhtor: 10+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

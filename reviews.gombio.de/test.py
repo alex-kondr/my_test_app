@@ -16,6 +16,7 @@ agent = agents.GOMIBO_DE
 # agent = agents.TEST
 reload = 1
 
+# id.manufacturer: 7+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
