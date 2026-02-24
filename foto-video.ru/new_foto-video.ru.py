@@ -1,5 +1,15 @@
 from agent import *
 from models.products import *
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            # http://www.foto-video.ru/tech/test/57033/
 
 
 def run(context, session):
@@ -42,9 +52,11 @@ def process_review(data, context, session):
 
     grade_overall = data.xpath('//tr[td[contains(., "Общая оценка")]]/td[not(contains(., "Общая оценка"))]/text()').string()
     if grade_overall:
-        grade_overall = float(grade_overall.replace(',', '.'))
-        if grade_overall > 0:
-            review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+        grade_overall = grade_overall.replace(',', '.')
+        if '*' in grade_overall:
+            grade_overall = grade_overall.count('*')
+            if float(grade_overall) > 0:
+                review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
     grades = data.xpath('//tbody[tr[contains(., "Общая оценка")]]/tr[td[regexp:test(., "\d+")] and not(contains(., "Общая оценка"))]')
     for grade in grades:
