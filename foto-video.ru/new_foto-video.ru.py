@@ -9,7 +9,7 @@ from models.products import *
             
             
             
-            # http://www.foto-video.ru/tech/test/57033/
+            # http://www.foto-video.ru/tech/test/57033/ grades***
 
 
 def run(context, session):
