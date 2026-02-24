@@ -66,29 +66,25 @@ def process_review(data, context, session):
 
     grades = data.xpath('//div[@class="review-item"]')
     for grade in grades:
-        grade = grade.xpath('.//h5//text()').string(multiple=True)
-        if grade:
-            grade_name, grade_val = grade.split(' - ')
-            grade_name = grade_name.strip()
-            grade_val = grade_val.strip(' %')
+        grade_name = grade.xpath('.//h5//text()').string(multiple=True)
+        grade_val = grade.xpath('.//span/@style').string()
+        if grade_name and grade_val:
+            grade_name = grade_name.split(' - ')[0].strip()
+            grade_val = grade_val.replace('width:', '').strip(' %')
             if grade_name and grade_val and float(grade_val) > 0:
                 review.grades.append(Grade(name=grade_name, value=float(grade_val), best=100.0))
 
-    pros = data.xpath('//li[strong[contains(., "Les plus")]]/text()[normalize-space(.)]')
-    for pro in pros:
-        pro = pro.string(multiple=True)
-        if pro:
-            pro = pro.strip(' +-*.:;•,–')
-            if len(pro) > 1:
-                review.add_property(type='pros', value=pro)
+    pros = data.xpath('//li[strong[contains(., "Les plus")]]/text()[normalize-space(.)]').string(multiple=True)
+    if pros:
+            pros = pros.strip(' +-*.:;•,–')
+            if len(pros) > 1:
+                review.add_property(type='pros', value=pros)
 
-    cons = data.xpath('//li[strong[contains(., "Les moins")]]/text()[normalize-space(.)]')
-    for con in cons:
-        con = con.string(multiple=True)
-        if con:
-            con = con.strip(' +-*.:;•,–')
-            if len(con) > 1:
-                review.add_property(type='cons', value=con)
+    cons = data.xpath('//li[strong[contains(., "Les moins")]]/text()[normalize-space(.)]').string(multiple=True)
+    if cons:
+        cons = cons.strip(' +-*.:;•,–')
+        if len(cons) > 1:
+            review.add_property(type='cons', value=cons)
 
     summary = data.xpath('//div[@class="review-short-summary"]/p//text()').string(multiple=True)
     conclusion = data.xpath('//h3[regexp:test(., "conclusion", "i")]/following-sibling::p[preceding-sibling::h3[1][regexp:test(., "conclusion", "i")] and not(preceding::strong[regexp:test(., "Les plus|Les moins")])]//text()').string(multiple=True)
