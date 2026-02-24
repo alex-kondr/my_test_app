@@ -14,7 +14,7 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
         session.queue(Request(url, use='curl', max_age=0), process_review, dict(title=title, url=url))
 
-    next_url = data.xpath('//a[contains(., "»")]/@href').string()
+    next_url = data.xpath('//div[@class="numbers"]/a[contains(., "»")]/@href').string()
     if next_url:
         session.queue(Request(next_url, use='curl', max_age=0), process_revlist, dict())
 

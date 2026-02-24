@@ -13,7 +13,9 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
+
+        if ' vs ' not in title:
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//span[contains(@id, "next-page")]/a/@href').string()
     if next_url:
@@ -22,14 +24,15 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split("Test du")[-1].split(":")[0].strip()
+    product.name = context['title'].split("Test du")[-1].split(":")[0].replace('Test des ', '').replace('Test de ', '').replace('Tests – ', '').replace('Test ', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-1]
+    product.ssid = product.url.split('/')[-1].replace('test-', '')
 
     category = data.xpath('//a[contains(@href, "/category/") and @property="v:title"]/text()').string()
     if category:
-        product.category = category.replace('Tests -', '').strip().title()
-    else:
+        product.category = category.replace('Tests & Comparatifs', '').replace('Tests – Autres Marques', '').replace('Tests -', '').strip().title()
+
+    if not product.category:
         product.category = 'Technologie'
 
     review = Review()
@@ -61,8 +64,13 @@ def process_review(data, context, session):
             review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//div[@class="review-final-score"]/h3/text()').string()
+    if not grade_overall:
+        grade_overall = data.xpath('//div[@class="review-final-score"]//@style').string()
+
     if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
+        grade_overall = grade_overall.replace('width:', '').strip(' %')
+        if grade_overall and float(grade_overall) > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
     grades = data.xpath('//div[@class="review-item"]')
     for grade in grades:
@@ -97,11 +105,9 @@ def process_review(data, context, session):
     elif summary:
         review.add_property(type='conclusion', value=summary)
 
-    excerpt = data.xpath('//div[@class="entry"]/p[not(preceding::strong[regexp:test(., "Les plus|Les moins")])]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
-
+    excerpt = data.xpath('//div[@class="entry"]/p[not(preceding::strong[regexp:test(., "Les plus|Les moins")] or preceding::h3[regexp:test(., "conclusion", "i")])]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
