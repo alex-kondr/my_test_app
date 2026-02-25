@@ -27,7 +27,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].replace("Test du ", '').split(":")[0].replace('Test des ', '').replace('Test de ', '').replace('Rétro-test du ', '').replace('Retro-test express ', '').replace('Rétro-test ', '').replace('Tests – ', '').replace('Test ', '').replace('Preview du ', '').replace(' – preview', '').replace(' – Vidéo sponso', '').strip()
+    product.name = context['title'].replace("Test du ", '').split(":")[0].replace('Test des ', '').replace('Test de ', '').replace('Rétro-test du ', '').replace('Retro-test du ', '').replace('Retro-test express ', '').replace('Rétro-test ', '').replace('Retro-test ','').replace('Tests – ', '').replace('Test ', '').replace('Preview du ', '').replace(' – preview', '').replace(' – Vidéo sponso', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('retro-test-', '').replace('test-', '')
 

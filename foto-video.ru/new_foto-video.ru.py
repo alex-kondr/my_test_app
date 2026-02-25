@@ -1,23 +1,10 @@
 from agent import *
 from models.products import *
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            # http://www.foto-video.ru/tech/test/57033/ grades***
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    
-    url = 'http://www.foto-video.ru/tech/test/57033/'
-    session.queue(Request(url, use='curl', max_age=0), process_review, dict(title='title', url=url))
-    # session.queue(Request('http://www.foto-video.ru/tech/test/', use='curl', max_age=0), process_revlist, dict())
+    session.queue(Request('http://www.foto-video.ru/tech/test/', use='curl', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -68,6 +55,16 @@ def process_review(data, context, session):
         if grade_name and grade_val and float(grade_val) > 0:
             review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
 
+    if not grades or not grade_name:
+        grades = data.xpath('//tr[td[contains(text(), "*")] and not(td[contains(text(), "Общая оценка")])]')
+        for grade in grades:
+            grade_name = grade.xpath('td[not(contains(text(), "*"))]/text()').string()
+            grade_val = grade.xpath('td[contains(text(), "*")]/text()').string()
+            if grade_name and grade_val:
+                grade_val = grade_val.count('*')
+                if float(grade_val) > 0:
+                    review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
+
     pros = data.xpath('//tr[td[b[contains(text(), "Плюсы:")]]]/td[not(contains(., "Плюсы:"))]//text()[normalize-space(.)]')
     if not pros:
         pros = data.xpath('//b[contains(., "Достоинства:")]/following-sibling::text()[1]')
@@ -75,6 +72,8 @@ def process_review(data, context, session):
         pros = data.xpath('//div[@class="preview"]/text()[contains(., "Достоинства:")]')
     if not pros:
         pros = data.xpath('//b[contains(text(), "Плюсы:")]/following-sibling::text()[1]')
+    if not pros:
+        pros = data.xpath('//tr[td[contains(text(), "Плюсы")]]/td[not(contains(., "Плюсы"))]//text()[normalize-space(.)]')
 
     for pro in pros:
         pro = pro.string(multiple=True)
@@ -90,6 +89,8 @@ def process_review(data, context, session):
          cons = data.xpath('//div[@class="preview"]/text()[contains(., "Недостатки:")]')
     if not cons:
         cons = data.xpath('//b[contains(text(), "Минусы:")]/following-sibling::text()[1]')
+    if not cons:
+        cons = data.xpath('//tr[td[contains(text(), "Минусы")]]/td[not(contains(., "Минусы"))]//text()[normalize-space(.)]')
 
     for con in cons:
         con = con.string(multiple=True)

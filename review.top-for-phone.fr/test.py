@@ -16,10 +16,10 @@ agent = agents.TOPFORPHONE_FR
 # agent = agents.TEST
 reload = 1
 
-# name: 15
-# category: 161
-# conclusion: 12+
-# excerpt: 74
+# name: 10
+# category: 51+
+# conclusion: 14+
+# excerpt: 62
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
