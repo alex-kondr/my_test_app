@@ -1,5 +1,22 @@
 from agent import *
 from models.products import *
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+        #    http://www.foto-video.ru/tech/test/2744/
+        # "error_name": "Выводы"
+
+
+XTITLE = ['Результаты тестирования', 'Тестирование', 'Тест пяти макрообъективов Sigma. С Сигмой по жизни', 'Итоги теста']
 
 
 def run(context, session):
@@ -12,7 +29,9 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('.//text()').string(multiple=True)
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', max_age=0), process_review, dict(title=title, url=url))
+
+        if not any(xtitle in title for xtitle in XTITLE):
+            session.queue(Request(url, use='curl', max_age=0), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//div[@class="numbers"]/a[contains(., "»")]/@href').string()
     if next_url:
@@ -21,7 +40,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = context['title'].replace('. Первый этап тестирования', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = 'Photo and Video'
@@ -74,6 +93,8 @@ def process_review(data, context, session):
         pros = data.xpath('//b[contains(text(), "Плюсы:")]/following-sibling::text()[1]')
     if not pros:
         pros = data.xpath('//tr[td[contains(text(), "Плюсы")]]/td[not(contains(., "Плюсы"))]//text()[normalize-space(.)]')
+    if not pros:
+        pros = data.xpath('//strong[contains(text(), "Плюсы")]/following-sibling::text()[1]')
 
     for pro in pros:
         pro = pro.string(multiple=True)
@@ -91,6 +112,8 @@ def process_review(data, context, session):
         cons = data.xpath('//b[contains(text(), "Минусы:")]/following-sibling::text()[1]')
     if not cons:
         cons = data.xpath('//tr[td[contains(text(), "Минусы")]]/td[not(contains(., "Минусы"))]//text()[normalize-space(.)]')
+    if not cons:
+        cons = data.xpath('//strong[contains(text(), "Минусы")]/following-sibling::text()[1]')
 
     for con in cons:
         con = con.string(multiple=True)
@@ -98,10 +121,6 @@ def process_review(data, context, session):
             con = con.replace('Недостатки:', '').strip(' +-*.:;•,–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
-
-    summary = data.xpath('//div[@class="preview" and not(regexp:test(., "Достоинства:|Недостатки:"))]/text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
 
     image = data.xpath('//div[@id="photo_img"]/a/@href').string()
     if image:
@@ -113,11 +132,25 @@ def process_review(data, context, session):
         image_alt = image.xpath('.//@alt').string()
         product.add_property(type="image", value=dict(src=image_src, alt=image_alt))
 
-    excerpt = data.xpath('(//div[text()[contains(., "Тест ")]]/text()[not(contains(., "Тест "))]|//div[text()[contains(., "Тест ")]]/p//text())[not(contains(., "Полные тексты статей читайте в"))]').string(multiple=True)
+    summary = data.xpath('//div[@class="preview" and not(regexp:test(., "Достоинства:|Недостатки:"))]/text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    conclusion = data.xpath('//p[b[contains(text(), "Выводы")]]/following-sibling::p//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('(//div[text()[contains(., "Тест ")]]/text()[not(contains(., "Тест "))]|//div[text()[contains(., "Тест ")]]/p[not(b[contains(text(), "Выводы")])]//text())[not(regexp:test(., "Полные тексты статей читайте в|Полный текст статьи читайте"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//div[text()[contains(., "Текст ")]]/text()[not(contains(., "Текст "))]|//div[text()[contains(., "Текст ")]]/p//text())[not(contains(., "Полные тексты статей читайте в"))]').string(multiple=True)
+        excerpt = data.xpath('(//div[text()[contains(., "Текст ")]]/text()[not(contains(., "Текст "))]|//div[text()[contains(., "Текст ")]]/p[not(b[contains(text(), "Выводы")])]//text())[not(regexp:test(., "Полные тексты статей читайте в|Полный текст статьи читайте"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[not(@class)]/p[not(strong[regexp:test(., "Андрей ПАРШЕВ|Ориентировочная стоимость|Плюсы|Минусы")] or b[contains(text(), "Выводы")])]//text()[not(regexp:test(., "Полные тексты статей читайте в|Полный текст статьи читайте"))]').string(multiple=True)
 
     if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
+        excerpt = excerpt.replqce('<br />', '').replace('<p>', '').replace('</p>', '').replace('<a href=" ">', '').replace('</a>', '').replace('<div>', '').replace('</div>', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

@@ -26,7 +26,6 @@ def remove_emoji(string):
                                u"\ufe0f"  # dingbats
                                u"\u3030"
                                r'&#\d+;?'
-                               r'\<br\>'
                                "]+", flags=re.UNICODE)
     return emoji_pattern.sub(r'', string)
 
@@ -127,7 +126,7 @@ def process_product(data, context, session):
 
         excerpt = rev.get("description")
         if excerpt and excerpt.strip():
-            excerpt = remove_emoji(excerpt).strip()
+            excerpt = remove_emoji(excerpt).replace('<br>', '').strip()
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 

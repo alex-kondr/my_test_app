@@ -66,7 +66,7 @@ def process_product(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath("//h3[regexp:test(.,'Verdict|Are they worth it|Should you buy it')]//following-sibling::p//text()").string(multiple=True)
+    conclusion = data.xpath("//h3[regexp:test(.,'Verdict|Are they worth it|Should you buy it')]//following-sibling::p[not(preceding::h3[contains(., 'Other Switches')])]//text()").string(multiple=True)
     if not conclusion:
         conclusion = data.xpath("//h3[contains(.,'Overall')]//following-sibling::p[1]//text()").string(multiple=True)
 
