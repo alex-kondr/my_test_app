@@ -3,6 +3,9 @@ from models.products import *
 import simplejson
 
 
+XTITLE = ['Unboxing de', ' vs ']
+
+
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('http://www.top-for-phone.fr/category/tests', use='curl', force_charset='utf-8'), process_revlist, dict())
@@ -14,7 +17,7 @@ def process_revlist(data, context, session):
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
 
-        if ' vs ' not in title:
+        if not any(xtitle in title for xtitle in XTITLE):
             session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//span[contains(@id, "next-page")]/a/@href').string()
@@ -24,13 +27,13 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split("Test du")[-1].split(":")[0].replace('Test des ', '').replace('Test de ', '').replace('Tests – ', '').replace('Test ', '').strip()
+    product.name = context['title'].replace("Test du ", '').split(":")[0].replace('Test des ', '').replace('Test de ', '').replace('Rétro-test du ', '').replace('Retro-test express ', '').replace('Rétro-test ', '').replace('Tests – ', '').replace('Test ', '').replace('Preview du ', '').replace(' – preview', '').replace(' – Vidéo sponso', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-1].replace('test-', '')
+    product.ssid = product.url.split('/')[-1].replace('retro-test-', '').replace('test-', '')
 
     category = data.xpath('//a[contains(@href, "/category/") and @property="v:title"]/text()').string()
     if category:
-        product.category = category.replace('Tests & Comparatifs', '').replace('Tests – Autres Marques', '').replace('Tests -', '').strip().title()
+        product.category = category.replace('Tests & Comparatifs', '').replace('Tests – Autres Marques', '').replace('Tests – autres marques', '').replace('Tests -', '').strip().title()
 
     if not product.category:
         product.category = 'Technologie'
@@ -95,7 +98,10 @@ def process_review(data, context, session):
             review.add_property(type='cons', value=cons)
 
     summary = data.xpath('//div[@class="review-short-summary"]/p//text()').string(multiple=True)
-    conclusion = data.xpath('//h3[regexp:test(., "conclusion", "i")]/following-sibling::p[preceding-sibling::h3[1][regexp:test(., "conclusion", "i")] and not(preceding::strong[regexp:test(., "Les plus|Les moins")])]//text()').string(multiple=True)
+    conclusion = data.xpath('//h3[regexp:test(., "conclusion", "i")]/following-sibling::p[preceding-sibling::h3[1][regexp:test(., "conclusion", "i")] and not(preceding::strong[regexp:test(., "Les plus|Les moins")] or contains(., "Voir la vidéo de "))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[strong[regexp:test(., "conclusion", "i")]]/following-sibling::p[not(preceding::strong[regexp:test(., "Les plus|Les moins")] or contains(., "Voir la vidéo de "))]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
@@ -105,7 +111,7 @@ def process_review(data, context, session):
     elif summary:
         review.add_property(type='conclusion', value=summary)
 
-    excerpt = data.xpath('//div[@class="entry"]/p[not(preceding::strong[regexp:test(., "Les plus|Les moins")] or preceding::h3[regexp:test(., "conclusion", "i")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="entry"]/p[not(preceding::strong[regexp:test(., "Les plus|Les moins")] or preceding::h3[regexp:test(., "conclusion", "i")] or preceding::p/strong[regexp:test(., "conclusion", "i")] or contains(., "Voir la vidéo de ") or strong[regexp:test(., "conclusion", "i")])]//text()').string(multiple=True)
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
