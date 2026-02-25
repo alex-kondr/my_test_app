@@ -1,19 +1,5 @@
 from agent import *
 from models.products import *
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-        #    http://www.foto-video.ru/tech/test/2744/
-        # "error_name": "Выводы"
 
 
 XTITLE = ['Результаты тестирования', 'Тестирование', 'Тест пяти макрообъективов Sigma. С Сигмой по жизни', 'Итоги теста']
@@ -137,6 +123,9 @@ def process_review(data, context, session):
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//p[b[contains(text(), "Выводы")]]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('(//p[strong[contains(., "Выводы")]]|//p[strong[contains(., "Выводы")]]/following::p[not(preceding::div[contains(@class, "footer")])])[not(contains(., "Об авторе статьи"))]//text()[not(regexp:test(., "Выводы|Андерс УШОЛЬД"))]').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
@@ -144,13 +133,15 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('(//div[text()[contains(., "Текст ")]]/text()[not(contains(., "Текст "))]|//div[text()[contains(., "Текст ")]]/p[not(b[contains(text(), "Выводы")])]//text())[not(regexp:test(., "Полные тексты статей читайте в|Полный текст статьи читайте"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[not(@class)]/p[not(strong[regexp:test(., "Андрей ПАРШЕВ|Ориентировочная стоимость|Плюсы|Минусы")] or b[contains(text(), "Выводы")])]//text()[not(regexp:test(., "Полные тексты статей читайте в|Полный текст статьи читайте"))]').string(multiple=True)
+        excerpt = data.xpath('//div[not(@class)]/p[not(strong[regexp:test(., "Андрей ПАРШЕВ|Ориентировочная стоимость|Плюсы|Минусы|Андерс УШОЛЬД")] or contains(., "Выводы"))]//text()[not(regexp:test(., "Полные тексты статей читайте в|Полный текст статьи читайте"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div/p[not(strong[regexp:test(., "Андрей ПАРШЕВ|Ориентировочная стоимость|Плюсы|Минусы|Андерс УШОЛЬД")] or contains(., "Выводы"))]//text()[not(regexp:test(., "Полные тексты статей читайте в|Полный текст статьи читайте"))]').string(multiple=True)
 
     if excerpt:
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 
-        excerpt = excerpt.replqce('<br />', '').replace('<p>', '').replace('</p>', '').replace('<a href=" ">', '').replace('</a>', '').replace('<div>', '').replace('</div>', '').strip()
+        excerpt = excerpt.replace('<br />', '').replace('<p>', '').replace('</p>', '').replace('<a href=" ">', '').replace('</a>', '').replace('<div>', '').replace('</div>', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
