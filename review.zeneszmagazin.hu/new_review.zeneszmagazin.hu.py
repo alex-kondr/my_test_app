@@ -48,9 +48,9 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' – ')[0].strip()
+    product.name = context['title'].split(' – ')[0].replace(' - review', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.split('/')[-1].split('-')[0]
     product.category = context['cat']
 
     review = Review()
@@ -67,15 +67,16 @@ def process_review(data, context, session):
     if author:
         review.authors.append(Person(name=author, ssid=author))
 
-    conclusion = data.xpath("//div[@itemprop='articleBody']/p[contains(., 'Összegzés')]/following-sibling::p[1]//text()").string(multiple=True)
+    conclusion = data.xpath("//div[@itemprop='articleBody']/p[contains(., 'Összegzés')]/following-sibling::p[contains(@style, 'text')]//text()").string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@itemprop="articleBody"]/p[contains(., "Összegzés")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@itemprop="articleBody"]/p[contains(., "Összegzés")]/preceding-sibling::p[contains(@style, "text")]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@itemprop="articleBody"]/p[@style]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@itemprop="articleBody"]/p[contains(@style, "text")]//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(u'\x9D', '').strip(' –')
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
