@@ -67,13 +67,13 @@ def process_review(data, context, session):
     if author:
         review.authors.append(Person(name=author, ssid=author))
 
-    conclusion = data.xpath("//div[@itemprop='articleBody']/p[contains(., 'Összegzés')]/following-sibling::p[contains(@style, 'text')]//text()").string(multiple=True)
+    conclusion = data.xpath("//div[@itemprop='articleBody']/p[contains(., 'Összegzés')]/following-sibling::p[contains(@style, 'text')]//text()[not(contains(., '<br>'))]").string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@itemprop="articleBody"]/p[contains(., "Összegzés")]/preceding-sibling::p[contains(@style, "text")]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@itemprop="articleBody"]/p[contains(., "Összegzés")]/preceding-sibling::p[contains(@style, "text")]//text()[not(contains(., "<br>"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@itemprop="articleBody"]/p[contains(@style, "text")]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@itemprop="articleBody"]/p[contains(@style, "text")]//text()[not(contains(., "<br>"))]').string(multiple=True)
 
     if excerpt:
         excerpt = excerpt.replace(u'\x9D', '').strip(' –')
