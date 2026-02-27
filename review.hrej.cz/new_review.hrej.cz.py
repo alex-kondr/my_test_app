@@ -1,0 +1,217 @@
+from agent import *
+from models.products import *
+import simplejson
+
+
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
+def run(context, session):
+    session.browser.use_new_parser = True
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
+    session.queue(Request('https://hrej.cz/reviews'), process_revlist, dict())
+
+
+def process_revlist(data, context, session):
+    strip_namespace(data)
+
+    revs = data.xpath('//h2[@class="un-card-headline"]//a')
+    for rev in revs:
+        title = rev.xpath('text()').string()
+        url = rev.xpath('@href').string()
+        session.queue(Request(url), process_review, dict(title=title, url=url))
+
+    next_url = data.xpath('//link[@rel="next"]/@href').string()
+    if next_url:
+        session.queue(Request(next_url), process_revlist, dict(context))
+
+
+def process_review(data, context, session):
+    strip_namespace(data)
+
+    product = Product()
+
+    product.name = data.xpath('//a[@class="review-box__title"]/text()').string()
+    if not product.name:
+        product.name = context['title'].replace('Recenze ', '').split(' –⁠ ')[0].split(', ')[0].strip()
+
+    product.url = data.xpath('//li[regexp:test(., "Doporučená cena", "i")]//a[contains(@rel, "sponsored")]/@href').string()
+    if not product.url:
+        product.url = context['url']
+
+    prod_json = data.xpath('''//script[contains(., '"type":"REVIEW"')]/text()''').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
+
+        ssid = prod_json.get('dataLayerData', {}).get('article', {}).get('id')
+        if ssid:
+            product.ssid = str(ssid)
+
+    if not product.ssid:
+        product.ssid = context['url'].split('/')[-1].replace('recenze-', '')
+
+    product.category = "Games"
+    platforms = data.xpath('//div[contains(@class, "content--platform")]/a[contains(@class, "game-platform")]/text()[normalize-space(.)]').join('/')
+    if not platforms:
+        platforms = data.xpath('//div[contains(@class, "chip-group")]/div[contains(@class, "chip--info")]//span[contains(@class, "chip__text")]/text()[normalize-space(.)]').join('/')
+
+    if platforms:
+        product.category += '|' + platforms
+
+    prod_json = data.xpath('''//script[contains(., '"creator":')]/text()''').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
+
+        product.manufacturer = prod_json.get('itemReviewed', {}).get('creator', {}).get('name')
+
+    review = Review()
+    review.type = "pro"
+    review.title = context['title']
+    review.url = context['url']
+    review.ssid = product.ssid
+
+    date = data.xpath('//time/@datetime').string()
+    if date:
+        review.date = date.split(' ')[0]
+
+    authors = data.xpath('//p[@class="post-header-info__name"]')
+    for author in authors:
+        author_name = author.xpath('.//text()').string(multiple=True)
+        author_url = author.xpath('a/@href').string()
+        if author_name and author_url:
+            author_ssid = author_url.strip('/').split('/')[-1]
+            review.authors.append(Person(name=author_name, ssid=author_ssid, profile_url=author_url))
+        elif author:
+            review.authors.append(Person(name=author_name, ssid=author_name))
+
+    grade_overall = data.xpath('//div[contains(@class, "lg")]/@data-rating').string()
+    if grade_overall:
+        grade_overall = float(grade_overall) / 10
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
+
+    user_grade = data.xpath('//div[contains(@class, "md")]/@data-rating').string()
+    if user_grade:
+        user_grade = float(user_grade) / 10
+        if user_grade:
+            review.grades.append(Grade(name='Hodnocení čtenářů', value=grade_overall, best=10.0))
+
+    pros = data.xpath('//div[contains(@class, "proscons-pros")]//span[contains(@class, "text")]')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//div[contains(@class, "proscons-cons")]//span[contains(@class, "text")]')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
+    summary = data.xpath('//div[@class="post-body__perex"]/p//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    conclusion = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[contains(@class, "verdict")]/p//text()').string(multiple=True)
+
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
+
+    pages = data.xpath('//a[contains(@class, "post-chapters__item")]')
+    if pages:
+        for page in pages:
+            title = page.xpath('text()').string()
+            url = page.xpath('@href').string()
+            review.add_property(type='pages', value=dict(title=title, url=url))
+
+        session.do(Request(url), process_review_last, dict(product=product, review=review, excerpt=excerpt))
+
+    elif excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
+
+
+def process_review_last(data, context, session):
+    strip_namespace(data)
+
+    product = context['product']
+
+    review = context['review']
+
+    platforms = data.xpath('//div[contains(@class, "content--platform")]/a[contains(@class, "game-platform")]/text()[normalize-space(.)]').join('/')
+    if not platforms:
+        platforms = data.xpath('//div[contains(@class, "chip-group")]/div[contains(@class, "chip--info")]//span[contains(@class, "chip__text")]/text()[normalize-space(.)]').join('/')
+
+    if platforms:
+        product.category += '|' + platforms
+
+    grade_overall = data.xpath('//div[contains(@class, "lg")]/@data-rating').string()
+    if grade_overall:
+        grade_overall = float(grade_overall) / 10
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
+
+    user_grade = data.xpath('//div[contains(@class, "md")]/@data-rating').string()
+    if user_grade:
+        user_grade = float(user_grade) / 10
+        if user_grade:
+            review.grades.append(Grade(name='Hodnocení čtenářů', value=grade_overall, best=10.0))
+
+    pros = data.xpath('//div[contains(@class, "proscons-pros")]//span[contains(@class, "text")]')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//div[contains(@class, "proscons-cons")]//span[contains(@class, "text")]')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
+    conclusion = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[contains(@class, "verdict")]/p//text()').string(multiple=True)
+
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
+
+    if excerpt:
+        context['excerpt'] += ' ' + excerpt
+
+    if context['excerpt']:
+        review.add_property(type='excerpt', value=context['excerpt'])
+
+        product.reviews.append(review)
+
+        session.emit(product)

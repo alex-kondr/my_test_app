@@ -42,13 +42,20 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.otto.de/babys/', use='curl', force_charset='utf-8'), process_catlist, dict(cat='Babymode'))
     session.queue(Request('https://www.otto.de/spielzeug/', use='curl', force_charset='utf-8'), process_catlist, dict(cat='Spielzeug'))
-    session.queue(Request('https://www.mytoys.de/mode-schuhe/?sortiertnach=bewertung', use='curl', force_charset='utf-8'), process_prodlist, dict(cat='Bekleidung'))
     session.queue(Request('https://www.otto.de/diy/bastelbedarf/bastelzubehoer/?altersgruppe=kinder', use='curl', force_charset='utf-8'), process_catlist, dict(cat='Basteln'))
-    session.queue(Request('https://www.otto.de/diy/malen/malvorlagen/malbuecher/?s=teenager&sortiertnach=bewertung', use='curl', force_charset='utf-8'), process_prodlist, dict(cat='Teenager Malbücher'))
-    session.queue(Request('https://www.otto.de/moebel/kindermoebel/', use='curl', force_charset='utf-8'), process_catlist, dict(cat='Kinderzimmer'))
     session.queue(Request('https://www.otto.de/garten/gartenmoebel/gartenmoebel-sets/?altersgruppe=kinder', use='curl', force_charset='utf-8'), process_catlist, dict(cat='Kinder Gartenmöbel-Sets'))
+
+    url = 'https://www.mytoys.de/mode-schuhe/?sortiertnach=bewertung'
+    session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat='Bekleidung', cat_url=url))
+
+    url = 'https://www.otto.de/diy/malen/malvorlagen/malbuecher/?s=teenager&sortiertnach=bewertung'
+    session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat='Teenager Malbücher', cat_url=url))
+
+    url = 'https://www.otto.de/moebel/kindermoebel/'
+    session.queue(Request(url, use='curl', force_charset='utf-8'), process_catlist, dict(cat='Kinderzimmer', cat_url=url))
 
 
 def process_catlist(data,context, session):
@@ -71,14 +78,14 @@ def process_catlist(data,context, session):
 def process_prodlist(data, context, session):
     strip_namespace(data)
 
-    prods = data.xpath('//article[@data-product-id]')
+    prods = data.xpath('//article[@data-product-id and .//span[contains(@class, "product-title__title")]]')
     for prod in prods:
         name = prod.xpath('.//span[contains(@class, "product-title__title")]/text()').string()
         url = prod.xpath('.//a[contains(@class, "product-title__link")]/@href').string().split('#')[0]
         ssid = prod.xpath('@data-product-id').string()
 
         revs_cnt = prod.xpath('.//span[contains(@class, "rating__amount")]/text()').string()
-        if revs_cnt and int(revs_cnt.stri('( )')) > 0:
+        if revs_cnt:
             session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, ssid=ssid, url=url))
         else:
             return
@@ -131,7 +138,7 @@ def process_reviews(data, context, session):
         review.url = product.url
         review.ssid = rev.xpath('@data-review-id').string()
 
-        date = rev.xpath('.//span[contains(@class, "item__customer")]/text()[last()] ').string()
+        date = rev.xpath('.//span[contains(@class, "item__customer")]/text()[last()]').string()
         if date:
             review.date = date.split(' am ')[-1].strip()
 
@@ -148,18 +155,15 @@ def process_reviews(data, context, session):
             review.add_property(type='is_verified_buyer', value=True)
 
         hlp_yes = rev.xpath('.//span[contains(@class, "helpfulVoteCount")]/text()').string()
-        if hlp_yes:
-            hlp_yes = int(hlp_yes)
-            if hlp_yes:
-                review.add_property(type='helpful_votes', value=int(hlp_yes))
+        if hlp_yes and int(hlp_yes):
+            review.add_property(type='helpful_votes', value=int(hlp_yes))
 
         hlp_total = rev.xpath('.//span[contains(@class, "helpfulVoteTotalCount")]/text()').string()
-        if hlp_total:
-            hlp_total = int(hlp_total)
+        if hlp_total and int(hlp_total):
             if not hlp_yes:
                 hlp_yes = 0
 
-            hlp_no = hlp_total - hlp_yes
+            hlp_no = int(hlp_total) - int(hlp_yes)
             if hlp_no:
                 review.add_property(type='not_helpful_votes', value=hlp_no)
 
@@ -173,12 +177,17 @@ def process_reviews(data, context, session):
 
         if excerpt:
             excerpt = remove_emoji(excerpt).replace('\n', '').replace('\t', '').strip(' +-*.;•–')
-            if len(excerpt) > 1:
+            if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
                 product.reviews.append(review)
 
-    if product.reviews:
-        session.emit(product)
+    revs_cnt = data.xpath('//span[contains(@class, "review-count")]/text()').string()
+    offset = context.get('offset', 0) + 30
+    if revs_cnt and offset < int(revs_cnt.replace('.', '').strip('( )')):
+        next_page = context.get('page', 1) + 1
+        revs_url = 'https://www.otto.de/kundenbewertungen/{ssid}/?page={page}'.format(ssid=product.ssid, page=next_page)
+        session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product, offset=offset, page=next_page))
 
-# no next page
+    elif product.reviews:
+        session.emit(product)
