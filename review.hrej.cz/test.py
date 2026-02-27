@@ -20,7 +20,7 @@ reload = 1
 # grades: 2+
 # pros_cons: 4+
 # conclusion: 4
-# excerpt: 99
+# excerpt: 98
 # log: 7
 
 if __name__ == "__main__":
