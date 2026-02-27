@@ -16,6 +16,8 @@ agent = agents.TECHGUIDE_COM_AU
 # agent = agents.TEST
 reload = 1
 
+# name: 24+
+# excerpt: 23+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

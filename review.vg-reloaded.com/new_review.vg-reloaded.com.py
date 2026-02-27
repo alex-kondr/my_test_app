@@ -61,6 +61,8 @@ def process_review(data, context, session):
     grade = data.xpath('//h1[regexp:test(., "score:", "i")]//text()').string(multiple=True)
     if not grade:
         grade = data.xpath('//div[contains(@class, "entry-content")]/p[regexp:test(., "score:", "i")]/text()').string()
+    if not grade:
+        grade = data.xpath('//h1[regexp:test(normalize-space(text()), "^\d\.?\d?$")]/text()').string()
 
     if grade:
         grade = grade.split(':')[-1].split('/')[0].strip()

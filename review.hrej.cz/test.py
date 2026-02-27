@@ -16,6 +16,12 @@ agent = agents.HREJ_CZ
 # agent = agents.TEST
 reload = 1
 
+# name: 14
+# grades: 2+
+# pros_cons: 4+
+# conclusion: 18
+# excerpt: 101
+# log: 8
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

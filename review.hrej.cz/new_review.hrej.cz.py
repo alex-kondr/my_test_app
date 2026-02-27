@@ -1,6 +1,10 @@
 from agent import *
 from models.products import *
 import simplejson
+import HTMLParser
+
+
+h = HTMLParser.HTMLParser()
 
 
 def strip_namespace(data):
@@ -17,7 +21,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=6000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://hrej.cz/reviews'), process_revlist, dict())
 
 
@@ -65,6 +69,7 @@ def process_review(data, context, session):
         platforms = data.xpath('//div[contains(@class, "chip-group")]/div[contains(@class, "chip--info")]//span[contains(@class, "chip__text")]/text()[normalize-space(.)]').strings()
 
     if platforms:
+        context['platforms'] = True
         product.category += '|' + '/'.join([platform.strip() for platform in platforms]).replace('X/S', 'X\\S')
 
     prod_json = data.xpath('''//script[contains(., '"creator":')]/text()''').string()
@@ -107,7 +112,7 @@ def process_review(data, context, session):
     if user_grade:
         user_grade = float(user_grade) / 10
         if user_grade:
-            review.grades.append(Grade(name='Hodnocení čtenářů', value=grade_overall, best=10.0))
+            review.grades.append(Grade(name='Hodnocení čtenářů', value=user_grade, best=10.0))
 
     pros = data.xpath('//div[contains(@class, "proscons-pros")]//span[contains(@class, "text")]')
     for pro in pros:
@@ -127,6 +132,7 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[@class="post-body__perex"]/p//text()').string(multiple=True)
     if summary:
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/following-sibling::p//text()').string(multiple=True)
@@ -134,6 +140,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('//div[contains(@class, "verdict")]/p//text()').string(multiple=True)
 
     if conclusion:
+        conclusion = h.unescape(conclusion).replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/preceding-sibling::p//text()').string(multiple=True)
@@ -147,9 +154,11 @@ def process_review(data, context, session):
             url = page.xpath('@href').string()
             review.add_property(type='pages', value=dict(title=title, url=url))
 
-        session.do(Request(url), process_review_last, dict(product=product, review=review, excerpt=excerpt))
+        context['is_conclusion'] = 'závěr' in title.lower()
+        session.do(Request(url), process_review_last, dict(context, product=product, review=review, excerpt=excerpt))
 
     elif excerpt:
+        excerpt = h.unescape(excerpt).replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
@@ -164,12 +173,13 @@ def process_review_last(data, context, session):
 
     review = context['review']
 
-    platforms = data.xpath('//div[contains(@class, "content--platform")]/a[contains(@class, "game-platform")]/text()[normalize-space(.)]').strings()
-    if not platforms:
-        platforms = data.xpath('//div[contains(@class, "chip-group")]/div[contains(@class, "chip--info")]//span[contains(@class, "chip__text")]/text()[normalize-space(.)]').strings()
+    if not context.get('platforms'):
+        platforms = data.xpath('//div[contains(@class, "content--platform")]/a[contains(@class, "game-platform")]/text()[normalize-space(.)]').strings()
+        if not platforms:
+            platforms = data.xpath('//div[contains(@class, "chip-group")]/div[contains(@class, "chip--info")]//span[contains(@class, "chip__text")]/text()[normalize-space(.)]').strings()
 
-    if platforms:
-        product.category += '|' + '/'.join([platform.strip() for platform in platforms]).replace('X/S', 'X\\S')
+        if platforms:
+            product.category += '|' + '/'.join([platform.strip() for platform in platforms]).replace('X/S', 'X\\S')
 
     grade_overall = data.xpath('//div[contains(@class, "lg")]/@data-rating').string()
     if grade_overall:
@@ -181,7 +191,7 @@ def process_review_last(data, context, session):
     if user_grade:
         user_grade = float(user_grade) / 10
         if user_grade:
-            review.grades.append(Grade(name='Hodnocení čtenářů', value=grade_overall, best=10.0))
+            review.grades.append(Grade(name='Hodnocení čtenářů', value=user_grade, best=10.0))
 
     pros = data.xpath('//div[contains(@class, "proscons-pros")]//span[contains(@class, "text")]')
     for pro in pros:
@@ -200,21 +210,26 @@ def process_review_last(data, context, session):
                 review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion and context['is_conclusion']:
+        conclusion = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[contains(@class, "verdict")]/p//text()').string(multiple=True)
 
     if conclusion:
+        conclusion = h.unescape(conclusion).replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/preceding-sibling::p//text()').string(multiple=True)
-    if not excerpt:
+    if not excerpt and not context['is_conclusion']:
         excerpt = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
 
     if excerpt:
         context['excerpt'] += ' ' + excerpt
 
-    if context['excerpt']:
-        review.add_property(type='excerpt', value=context['excerpt'])
+    excerpt = context['excerpt']
+    if excerpt:
+        excerpt = h.unescape(excerpt).replace(u'\uFEFF', '').strip()
+        review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
 

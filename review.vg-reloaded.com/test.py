@@ -16,6 +16,10 @@ agent = agents.VG_RELOADED_US
 # agent = agents.TEST
 reload = 1
 
+# name: 9+
+# conclusion: 3+
+# excerpt: 5
+# https://www.vg-reloaded.com/ps5-review-stellar-blade-x-goddess-of-victory-nikke/
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

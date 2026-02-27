@@ -16,7 +16,8 @@ agent = agents.MYTOYS_DE
 # agent = agents.TEST
 reload = 1
 
-# ++++++
+# name: 10+
+# excerpt: 1+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
