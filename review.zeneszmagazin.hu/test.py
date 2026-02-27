@@ -16,9 +16,9 @@ agent = agents.ZENÉSZ_MAGAZIN_HU
 # agent = agents.TEST
 reload = 1
 
-# name: 14
-# author: 1
-# excerpt: 21
+# name: 13
+# author: 1+
+# excerpt: 22
 # logs: 19+
 
 
