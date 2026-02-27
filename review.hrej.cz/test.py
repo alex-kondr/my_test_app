@@ -19,9 +19,9 @@ reload = 1
 # name: 14
 # grades: 2+
 # pros_cons: 4+
-# conclusion: 18
-# excerpt: 101
-# log: 8
+# conclusion: 4
+# excerpt: 99
+# log: 7
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

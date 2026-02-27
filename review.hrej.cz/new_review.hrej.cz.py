@@ -118,7 +118,7 @@ def process_review(data, context, session):
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.strip(' +-*.:;•,–')
+            pro = h.unescape(pro).strip(' +-*.:;•,–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -126,18 +126,18 @@ def process_review(data, context, session):
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.strip(' +-*.:;•,–')
+            con = h.unescape(con).strip(' +-*.:;•,–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="post-body__perex"]/p//text()').string(multiple=True)
     if summary:
-        summary = summary.replace(u'\uFEFF', '').strip()
+        summary = h.unescape(summary).replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/following-sibling::p[not(contains(., "&amp;amp;"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//div[contains(@class, "verdict")]/p//text()').string(multiple=True)
+        conclusion = data.xpath('//div[contains(@class, "verdict")]/p[not(contains(., "&amp;amp;"))]//text()').string(multiple=True)
 
     if conclusion:
         conclusion = h.unescape(conclusion).replace(u'\uFEFF', '').strip()
@@ -145,7 +145,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="post-body"]/p[not(contains(., "&amp;amp;"))]//text()').string(multiple=True)
 
     pages = data.xpath('//a[contains(@class, "post-chapters__item")]')
     if pages:
@@ -197,7 +197,7 @@ def process_review_last(data, context, session):
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.strip(' +-*.:;•,–')
+            pro = h.unescape(pro).strip(' +-*.:;•,–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -205,13 +205,13 @@ def process_review_last(data, context, session):
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.strip(' +-*.:;•,–')
+            con = h.unescape(con).strip(' +-*.:;•,–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/following-sibling::p[not(contains(., "&amp;amp;"))]//text()').string(multiple=True)
     if not conclusion and context['is_conclusion']:
-        conclusion = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
+        conclusion = data.xpath('//div[@class="post-body"]/p[not(contains(., "&amp;amp;"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[contains(@class, "verdict")]/p//text()').string(multiple=True)
 
@@ -219,9 +219,9 @@ def process_review_last(data, context, session):
         conclusion = h.unescape(conclusion).replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(., "ZÁVĚR", "i")]/preceding-sibling::p[not(contains(., "&amp;amp;"))]//text()').string(multiple=True)
     if not excerpt and not context['is_conclusion']:
-        excerpt = data.xpath('//div[@class="post-body"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="post-body"]/p[not(contains(., "&amp;amp;"))]//text()').string(multiple=True)
 
     if excerpt:
         context['excerpt'] += ' ' + excerpt
