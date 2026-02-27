@@ -60,18 +60,22 @@ def process_review(data, context, session):
         product.ssid = context['url'].split('/')[-1].replace('recenze-', '')
 
     product.category = "Games"
-    platforms = data.xpath('//div[contains(@class, "content--platform")]/a[contains(@class, "game-platform")]/text()[normalize-space(.)]').join('/')
+    platforms = data.xpath('//div[contains(@class, "content--platform")]/a[contains(@class, "game-platform")]/text()[normalize-space(.)]').strings()
     if not platforms:
-        platforms = data.xpath('//div[contains(@class, "chip-group")]/div[contains(@class, "chip--info")]//span[contains(@class, "chip__text")]/text()[normalize-space(.)]').join('/')
+        platforms = data.xpath('//div[contains(@class, "chip-group")]/div[contains(@class, "chip--info")]//span[contains(@class, "chip__text")]/text()[normalize-space(.)]').strings()
 
     if platforms:
-        product.category += '|' + platforms
+        product.category += '|' + '/'.join([platform.strip() for platform in platforms])
 
     prod_json = data.xpath('''//script[contains(., '"creator":')]/text()''').string()
     if prod_json:
         prod_json = simplejson.loads(prod_json)
 
-        product.manufacturer = prod_json.get('itemReviewed', {}).get('creator', {}).get('name')
+        item_reviewed = prod_json.get('itemReviewed', {})
+        if item_reviewed and isinstance(item_reviewed, list):
+            item_reviewed = item_reviewed[0]
+
+        product.manufacturer = item_reviewed.get('creator', {}).get('name')
 
     review = Review()
     review.type = "pro"
@@ -160,12 +164,12 @@ def process_review_last(data, context, session):
 
     review = context['review']
 
-    platforms = data.xpath('//div[contains(@class, "content--platform")]/a[contains(@class, "game-platform")]/text()[normalize-space(.)]').join('/')
+    platforms = data.xpath('//div[contains(@class, "content--platform")]/a[contains(@class, "game-platform")]/text()[normalize-space(.)]').strings()
     if not platforms:
-        platforms = data.xpath('//div[contains(@class, "chip-group")]/div[contains(@class, "chip--info")]//span[contains(@class, "chip__text")]/text()[normalize-space(.)]').join('/')
+        platforms = data.xpath('//div[contains(@class, "chip-group")]/div[contains(@class, "chip--info")]//span[contains(@class, "chip__text")]/text()[normalize-space(.)]').strings()
 
     if platforms:
-        product.category += '|' + platforms
+        product.category += '|' + '/'.join([platform.strip() for platform in platforms])
 
     grade_overall = data.xpath('//div[contains(@class, "lg")]/@data-rating').string()
     if grade_overall:
