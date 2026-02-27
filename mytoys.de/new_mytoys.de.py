@@ -71,28 +71,19 @@ def process_catlist(data,context, session):
 def process_prodlist(data, context, session):
     strip_namespace(data)
 
-    prods = data.xpath('//article[contains(@class, "product")]')
+    prods = data.xpath('//article[@data-product-id]')
     for prod in prods:
-        product = Product()
-        product.name = prod.xpath('.//p[contains(@class, "find_tile__name")]/text()').string()
-        product.url = prod.xpath('.//a/@href').string().split('#')[0]
-        product.ssid = prod.xpath('@data-product-id').string()
-        product.sku = product.ssid
-        product.category = context['cat']
-        product.manufacturer = prod.xpath('.//p[contains(@class, "tile__brand")]/text()').string()
+        name = prod.xpath('.//span[contains(@class, "product-title__title")]/text()').string()
+        url = prod.xpath('.//a[contains(@class, "product-title__link")]/@href').string().split('#')[0]
+        ssid = prod.xpath('@data-product-id').string()
 
-        mpn = prod.xpath('@data-article-number').string()
-        if mpn and mpn != product.ssid:
-            product.add_property(type='id.manufacturer', value=mpn)
-
-        prod_json = prod.xpath('.//script[@type="application/ld+json"]/text()').string()
-        if prod_json and simplejson.loads(prod_json).get('aggregateRating', {}).get('reviewCount', 0) > 0:
-            revs_url = 'https://www.otto.de/kundenbewertungen/{}/'.format(product.ssid)
-            session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
+        revs_cnt = prod.xpath('.//span[contains(@class, "rating__amount")]/text()').string()
+        if revs_cnt and int(revs_cnt.stri('( )')) > 0:
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, ssid=ssid, url=url))
         else:
             return
 
-    prods_cnt = data.xpath('//span[contains(@class, "itemCount")]/text()').string()
+    prods_cnt = data.xpath('//span[contains(@class, "search-result__item-count")]/text()').string()
     if prods_cnt:
         prods_cnt = int(prods_cnt.replace('Produkte', '').replace('.', '').strip())
         offset = context.get('offset', 0) + 120
@@ -102,7 +93,30 @@ def process_prodlist(data, context, session):
             else:
                 next_url = context['cat_url'] + '?l=gp&o={}&sortiertnach=bewertung'
 
-            session.queue(Request(next_url.format(offset), use='curl', force_charset='utf-8'), process_prodlist, dict(context, prods_cnt=prods_cnt, offset=offset))
+            session.queue(Request(next_url.format(offset), use='curl', force_charset='utf-8'), process_prodlist, dict(context, offset=offset))
+
+
+def process_product(data, context, session):
+    strip_namespace(data)
+
+    product = Product()
+    product.name = context['name']
+    product.url = context['url']
+    product.ssid = context['ssid']
+    product.sku = data.xpath('//span[contains(@class, "article-number__value")]//text()').string(multiple=True)
+    product.category = context['cat']
+    product.manufacturer = data.xpath('//@data-brand-name').string()
+
+    prod_json = data.xpath('//script[@id="product_data_json"]/text()').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
+
+        ean = prod_json.get('gtin13')
+        if ean and ean.isdigit() and len(ean) > 10:
+            product.add_property(type='id.ean', value=ean)
+
+    revs_url = 'https://www.otto.de/kundenbewertungen/{}/'.format(product.ssid)
+    session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
