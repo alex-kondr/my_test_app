@@ -65,7 +65,7 @@ def process_review(data, context, session):
         platforms = data.xpath('//div[contains(@class, "chip-group")]/div[contains(@class, "chip--info")]//span[contains(@class, "chip__text")]/text()[normalize-space(.)]').strings()
 
     if platforms:
-        product.category += '|' + '/'.join([platform.strip() for platform in platforms])
+        product.category += '|' + '/'.join([platform.strip() for platform in platforms]).replace('X/S', 'X\\S')
 
     prod_json = data.xpath('''//script[contains(., '"creator":')]/text()''').string()
     if prod_json:
@@ -169,7 +169,7 @@ def process_review_last(data, context, session):
         platforms = data.xpath('//div[contains(@class, "chip-group")]/div[contains(@class, "chip--info")]//span[contains(@class, "chip__text")]/text()[normalize-space(.)]').strings()
 
     if platforms:
-        product.category += '|' + '/'.join([platform.strip() for platform in platforms])
+        product.category += '|' + '/'.join([platform.strip() for platform in platforms]).replace('X/S', 'X\\S')
 
     grade_overall = data.xpath('//div[contains(@class, "lg")]/@data-rating').string()
     if grade_overall:
