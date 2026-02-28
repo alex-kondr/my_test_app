@@ -1,6 +1,5 @@
 from agent import *
 from models.products import *
-import simplejson
 
 
 XCAT = ['Ink Cartridges', 'Paper & Notebooks', 'Softwares', 'Gifts & Combos', 'Wires & Cables', 'Wire & Cable Accessories', 'Paints & Coatings', 'USB Data Cables', 'Mobile Cases & Covers', 'Mobile Screen Guards', 'Aux Cables', 'Mobile Camera Protectors', 'Network Cables', 'Services']

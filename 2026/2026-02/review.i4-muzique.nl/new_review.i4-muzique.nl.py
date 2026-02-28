@@ -114,7 +114,6 @@ def process_reviews(data, context, session):
 
             product.reviews.append(review)
 
-
     offset = context.get('offset', 0) + 5
     if offset < context['revs_cnt']:
         next_page = context.get('page', 0) + 1
