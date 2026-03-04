@@ -2,6 +2,7 @@ from agent import *
 from models.products import *
 import re
 import simplejson
+import time
 
 
 def strip_namespace(data):
@@ -42,8 +43,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    # session.queue(Request('https://www.coolgadget.de/collections/klapphullen-iphone', use='curl', force_charset='utf-8'), process_prodlist, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.coolgadget.de/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -126,41 +126,51 @@ def process_reviews(data,context, session):
 
     product = context['product']
 
-    revs_json = simplejson.loads(data.content)
+    try:
+        revs_json = simplejson.loads(data.content)
+        context['repeat'] = False
+    except:
+        if not context.get('repeat'):
+            time.sleep(2)
+            session.queue(Request(data.response_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, repeat=True))
+        return
 
-    revs = data.xpath('//div[@data-refresh-id]')
+    revs = revs_json.get('reviews')
     for rev in revs:
+        if rev.get('product_url') not in product.url:
+            continue
+
         review = Review()
         review.type = 'user'
-        review.url = context['url']
-        review.ssid = rev.xpath('@data-review-id').string()
+        review.url = product.url
+        review.ssid = rev.get('uuid')
 
-        date_author = rev.xpath('.//div[contains(@class, "author")]/text()').string(multiple=True)
-        if date_author:
-            review.date = date_author.rsplit(' ', 1)[0].split()[-1]
+        date = rev.get('created_at')
+        if date:
+            review.date = date.split('T')[0]
 
-            author = date_author.split(' verfasst ')[0]
+        author = rev.get('reviewer_name')
+        if 'Anonym' not in author:
             review.authors.append(Person(name=author, ssid=author))
 
-        # no grade
+        grade_overall = rev.get('rating')
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        is_verified_buyer = rev.xpath('.//span[contains(., "Verifizierter Kauf")]')
+        is_verified_buyer = rev.get('verified_buyer')
         if is_verified_buyer:
             review.add_property(type='is_verified_buyer', value=True)
 
-        hlp_yes_no = rev.xpath('.//small[@class="grey"]/text()').string()
-        if hlp_yes_no:
-            hlp_yes = hlp_yes_no.split(' von ')[0]
-            hlp_no = hlp_yes_no.split(' von ')[1].split()[0]
+        hlp_yes = rev.get('thumb_up')
+        if hlp_yes and int(hlp_yes):
+            review.add_property(type='helpful_votes', value=int(hlp_yes))
 
-            if hlp_yes and hlp_yes.isdigit() and int(hlp_yes) > 0:
-                review.add_property(type='helpful_votes', value=int(hlp_yes))
+        hlp_no = rev.get('thumb_down')
+        if hlp_no and int(hlp_no) > 0:
+            review.add_property(type='not_helpful_votes', value=int(hlp_no))
 
-            if hlp_no and hlp_no.isdigit() and int(hlp_no) > 0:
-                review.add_property(type='not_helpful_votes', value=int(hlp_no))
-
-        title = rev.xpath('.//h4[contains(@class, "item-title")]//text()').string(multiple=True)
-        excerpt = rev.xpath('.//div[contains(@class, "item-comment")]//text()').string(multiple=True)
+        title = rev.get('title')
+        excerpt = data.parse_fragment(rev.get('body_html')).xpath('.//text()').string(multiple=True)
         if excerpt and len(remove_emoji(excerpt).strip(' .+-')) > 2:
             if title:
                 review.title = remove_emoji(title).strip()
@@ -177,7 +187,11 @@ def process_reviews(data,context, session):
 
             product.reviews.append(review)
 
-    if product.reviews:
-        session.emit(product)
+    page_cnt = revs_json.get('pagination', {}).get('total_pages', 0)
+    next_page = context.get('page', 1) + 1
+    if page_cnt and next_page <= page_cnt:
+        next_url = 'https://api.judge.me/reviews/reviews_for_widget?url=df6282-d9.myshopify.com&shop_domain=df6282-d9.myshopify.com&platform=shopify&page={page}&per_page=5&product_id={ssid}'.format(page=next_page, ssid=product.ssid)
+        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product, page=next_page))
 
-# no next page
+    elif product.reviews:
+        session.emit(product)
