@@ -1,6 +1,7 @@
 from agent import *
 from models.products import *
 import re
+import simplejson
 
 
 def strip_namespace(data):
@@ -42,6 +43,7 @@ def remove_emoji(string):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    # session.queue(Request('https://www.coolgadget.de/collections/klapphullen-iphone', use='curl', force_charset='utf-8'), process_prodlist, dict())
     session.queue(Request('https://www.coolgadget.de/', use='curl', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -74,38 +76,19 @@ def process_frontpage(data,context, session):
                 session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name))
 
 
-# def process_catlist(data, context, session):
-#     strip_namespace(data)
-
-#     cats = data.xpath('//li[contains(@class, "level-1")]/a[contains(@class, "item-link")]')
-#     for cat in cats:
-#         name = cat.xpath('span[contains(@class, "title")]/text()').string()
-#         url = cat.xpath('@href').string()
-#         session.queue(Request(url, use='curl', force_charset='utf-8'), process_subcatlist, dict(cat=context['cat'] + '|' + name))
-
-
-# def process_subcatlist(data, context, session):
-#     strip_namespace(data)
-#     sub_cats = data.xpath('//li[contains(@class, "level-2")]/a[contains(@class, "item-link")]')
-#     for sub_cat in sub_cats:
-#         sub_name = sub_cat.xpath('span[contains(@class, "title")]/text()').string()
-#         url = sub_cat.xpath('@href').string()
-#         session.queue(Request(url + '?items=100', use='curl', force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + sub_name))
-
-
 def process_prodlist(data, context, session):
     strip_namespace(data)
 
-    prods = data.xpath('//article[contains(@class, "item")]/div[@data-id]')
+    prods = data.xpath('//div[contains(@class, "card__info-inner")]')
     for prod in prods:
-        name = prod.xpath('div[contains(@class, "title")]/a/text()').string()
-        url = prod.xpath('div[contains(@class, "title")]/a/@href').string()
+        name = prod.xpath('p/a[contains(@class, "card-link")]/text()').string()
+        url = prod.xpath('p/a[contains(@class, "card-link")]/@href').string()
 
-        revs_cnt = prod.xpath('.//span[@class="count"]/text()').string()
-        if revs_cnt and int(revs_cnt) > 0:
+        revs_cnt = prod.xpath('.//div[contains(@class, "rating__count")]/text()').string()
+        if revs_cnt and int(revs_cnt.strip('( )')) > 0:
             session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, url=url))
 
-    next_url = data.xpath('//li[contains(@class, "next-page")]/a/@href').string()
+    next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
         session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_prodlist, dict(context))
 
@@ -116,27 +99,34 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = data.xpath('//input[@id="ArticleId"]/@value').string()
-    product.sku = data.xpath('//span[@itemprop="sku"]/text()').string()
-    product.category = context['cat'].replace('weitere Modelle', '').replace('||', '|').strip()
-    product.manufacturer = data.xpath('(//label[contains(., "Marke")]/following-sibling::span)[1]/text()').string()
+    product.ssid = data.xpath('//div/@data-id').string()
+    product.sku = product.ssid
+    product.category = context['cat']
 
-    mpn = data.xpath('//meta[@itemprop="mpn"]/@content').string()
-    if mpn:
-        product.add_property(type='id.manufacturer', value=mpn)
+    prod_json = data.xpath('''//script[contains(., '"gtin": ')]/text()''').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
 
-    ean = data.xpath('//meta[@itemprop="gtin"]/@content').string()
-    if ean and ean.isdigit() and len(ean) > 10:
-        product.add_property(type='id.ean', value=ean)
+        product.manufacturer = prod_json.get('brand', {}).get('name')
 
-    revs_url = data.xpath('//div[contains(@class, "show-all-reviews")]/a/@href').string()
-    session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product, url=revs_url))
+        mpn = prod_json.get('sku')
+        if mpn:
+            product.add_property(type='id.manufacturer', value=mpn)
+
+        ean = prod_json.get('gtin')
+        if ean and ean.isdigit() and len(ean) > 10:
+            product.add_property(type='id.ean', value=ean)
+
+    revs_url = 'https://api.judge.me/reviews/reviews_for_widget?url=df6282-d9.myshopify.com&shop_domain=df6282-d9.myshopify.com&platform=shopify&page=1&per_page=5&product_id=' + product.ssid
+    session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
 
 
 def process_reviews(data,context, session):
     strip_namespace(data)
 
     product = context['product']
+
+    revs_json = simplejson.loads(data.content)
 
     revs = data.xpath('//div[@data-refresh-id]')
     for rev in revs:
