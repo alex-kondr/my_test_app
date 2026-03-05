@@ -17,7 +17,7 @@ def strip_namespace(data):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request('https://www.moviefone.com/movies/reviews/'), process_revlist, dict())
+    session.queue(Request('https://www.moviefone.com/movies/reviews/', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -26,11 +26,11 @@ def process_revlist(data, context, session):
     revs = data.xpath('//div[contains(@class, "movie-reviews-image")]/a/@href')
     for rev in revs:
         url = rev.string()
-        session.queue(Request(url), process_review_info, dict())
+        session.queue(Request(url, max_age=0), process_review_info, dict())
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_revlist, dict())
+        session.queue(Request(next_url, max_age=0), process_revlist, dict())
 
 
 def process_review_info(data, context, session):
@@ -41,7 +41,7 @@ def process_review_info(data, context, session):
 
     rev_url = data.xpath('//h2/a[contains(text(), " Review")]/@href').string()
     if rev_url:
-        session.do(Request(rev_url), process_review, dict(url=rev_url, prod_url=prod_url, manufacturer=manufacturer))
+        session.do(Request(rev_url, max_age=0), process_review, dict(url=rev_url, prod_url=prod_url, manufacturer=manufacturer))
 
 
 def process_review(data, context, session):

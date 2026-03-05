@@ -44,7 +44,7 @@ def remove_emoji(string):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.coolgadget.de/', use='curl', force_charset='utf-8'), process_frontpage, dict())
+    session.queue(Request('https://www.coolgadget.de/', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data,context, session):
@@ -67,13 +67,13 @@ def process_frontpage(data,context, session):
                             for subcat in subcats:
                                 subcat_name = subcat.xpath('text()').string()
                                 url = subcat.xpath('@href').string()
-                                session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
+                                session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
                         else:
                             url = cat1.xpath('.//a[@class="main-nav__item child-nav__item" or @class="child-nav__item main-nav__item main-nav__item-content"]/@href').string()
-                            session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name+'|'+cat1_name))
+                            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat=name+'|'+cat1_name))
             else:
                 url = cat.xpath('details/summary/a/@href|a/@href').string()
-                session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name))
+                session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
@@ -85,12 +85,14 @@ def process_prodlist(data, context, session):
         url = prod.xpath('p/a[contains(@class, "card-link")]/@href').string()
 
         revs_cnt = prod.xpath('.//div[contains(@class, "rating__count")]/text()').string()
-        if revs_cnt and int(revs_cnt.strip('( )')) > 0:
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, url=url, revs_cnt=int(revs_cnt.strip('( )'))))
+        if revs_cnt:
+            revs_cnt = int(revs_cnt.strip('( )'))
+            if revs_cnt > 0:
+                session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_product, dict(context, name=name, url=url, revs_cnt=revs_cnt))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_prodlist, dict(context))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -118,7 +120,7 @@ def process_product(data, context, session):
             product.add_property(type='id.ean', value=ean)
 
     revs_url = 'https://api.judge.me/reviews/reviews_for_widget?url=df6282-d9.myshopify.com&shop_domain=df6282-d9.myshopify.com&platform=shopify&page=1&per_page=5&product_id=' + product.ssid
-    session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, product=product))
+    session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context, product=product))
 
 
 def process_reviews(data,context, session):
@@ -197,7 +199,7 @@ def process_reviews(data,context, session):
     if offset < context['revs_cnt']:
         next_page = context.get('page', 1) + 1
         next_url = 'https://api.judge.me/reviews/reviews_for_widget?url=df6282-d9.myshopify.com&shop_domain=df6282-d9.myshopify.com&platform=shopify&page={page}&per_page=5&product_id={ssid}'.format(page=next_page, ssid=product.ssid)
-        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, product=product, page=next_page, offset=offset))
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context, product=product, page=next_page, offset=offset))
 
     elif product.reviews:
         session.emit(product)
