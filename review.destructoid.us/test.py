@@ -16,7 +16,7 @@ agent = agents.DESTRUCTOID_US
 # agent = agents.TEST
 reload = 1
 
-# name: 7
+# name: 4+
 # excerpt: 8+
 # logs: 98+
 
