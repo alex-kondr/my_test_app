@@ -86,7 +86,7 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.xpath('.//div[contains(@class, "rating__count")]/text()').string()
         if revs_cnt and int(revs_cnt.strip('( )')) > 0:
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, url=url))
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, url=url, revs_cnt=int(revs_cnt.strip('( )'))))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -118,13 +118,15 @@ def process_product(data, context, session):
             product.add_property(type='id.ean', value=ean)
 
     revs_url = 'https://api.judge.me/reviews/reviews_for_widget?url=df6282-d9.myshopify.com&shop_domain=df6282-d9.myshopify.com&platform=shopify&page=1&per_page=5&product_id=' + product.ssid
-    session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
+    session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, product=product))
 
 
 def process_reviews(data,context, session):
     strip_namespace(data)
 
     product = context['product']
+
+    offset = context.get('offset', 0)
 
     try:
         revs_json = simplejson.loads(data.content)
@@ -135,10 +137,13 @@ def process_reviews(data,context, session):
             session.queue(Request(data.response_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, repeat=True))
         return
 
+
     revs = revs_json.get('reviews')
     for rev in revs:
         if rev.get('product_url') not in product.url:
             continue
+
+        offset += 1
 
         review = Review()
         review.type = 'user'
@@ -173,7 +178,9 @@ def process_reviews(data,context, session):
         excerpt = data.parse_fragment(rev.get('body_html')).xpath('.//text()').string(multiple=True)
         if excerpt and len(remove_emoji(excerpt).strip(' .+-')) > 2:
             if title:
-                review.title = remove_emoji(title).strip()
+                title = remove_emoji(title).strip()
+                if title != remove_emoji(excerpt).strip(' .+-'):
+                    review.title = title
         else:
             excerpt = title
 
@@ -185,13 +192,12 @@ def process_reviews(data,context, session):
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
-    page_cnt = revs_json.get('pagination', {}).get('total_pages', 0)
-    next_page = context.get('page', 1) + 1
-    if page_cnt and next_page <= page_cnt:
+    if offset < context['revs_cnt']:
+        next_page = context.get('page', 1) + 1
         next_url = 'https://api.judge.me/reviews/reviews_for_widget?url=df6282-d9.myshopify.com&shop_domain=df6282-d9.myshopify.com&platform=shopify&page={page}&per_page=5&product_id={ssid}'.format(page=next_page, ssid=product.ssid)
-        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product, page=next_page))
+        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, product=product, page=next_page, offset=offset))
 
     elif product.reviews:
         session.emit(product)
