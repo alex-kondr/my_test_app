@@ -72,7 +72,7 @@ def process_review(data, context, session):
     product.category = 'Tech'
 
     name = data.xpath('//div[@class="verdict"]/strong/text()').string() or context['title']
-    product.name = name.replace('Review – ', '').split(' – ')[0].split(' Review: ')[0].replace(' review', '').replace('Review: ', '').replace('Preview: ', '').strip()
+    product.name = name.replace('Review – ', '').split(' – ')[0].split(' Review: ')[0].replace(' review', '').replace('Review: ', '').replace('Preview: ', '').replace(' Review', '').replace('Review - ', '').strip()
 
     review = Review()
     review.type = 'pro'

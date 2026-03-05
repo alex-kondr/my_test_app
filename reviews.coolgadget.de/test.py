@@ -16,7 +16,7 @@ agent = agents.COOLGADGET_DE
 # agent = agents.TEST
 reload = 1
 
-# log: 2
+# log: 0+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

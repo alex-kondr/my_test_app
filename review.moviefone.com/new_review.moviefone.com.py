@@ -39,7 +39,7 @@ def process_review_info(data, context, session):
     prod_url = data.xpath('//a[contains(text(), "Official Website")]/@href').string()
     manufacturer = data.xpath('//div[strong[contains(text(), "Production Companies:")]]/span/text()').string()
 
-    rev_url = data.xpath('//h2/a[contains(text(), " Review")]/@href').string()
+    rev_url = data.xpath('//h2/a[contains(text(), " Review")]/@href[contains(., "movie-review")]').string()
     if rev_url:
         session.do(Request(rev_url, max_age=0), process_review, dict(url=rev_url, prod_url=prod_url, manufacturer=manufacturer))
 
