@@ -16,6 +16,9 @@ agent = agents.MOVIEFONE_US
 # agent = agents.TEST
 reload = 1
 
+# name: 4+
+# grades: 1
+# logs: 38
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
