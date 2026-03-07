@@ -77,18 +77,15 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//div[div[contains(., "Review Score")]]/@data-score').string()
-    if not grade_overall:
-        grade_overall = data.xpath('//p[contains(., " out of 100")]//text()').string(multiple=True)
-    if not grade_overall:
-        grade_overall = data.xpath('//p[contains(., " out of 10")]//text()').string(multiple=True)
+    grade_overall_raw = data.xpath('//div[div[contains(., "Review Score")]]/@data-score').string()
+    if not grade_overall_raw:
+        grade_overall_raw = data.xpath('//p[contains(., " out of 10")]//text()').string(multiple=True)
 
-    if grade_overall:
-        if ' out of 100' not in grade_overall and ' out of 10' in grade_overall:
-            grade_overall = grade_overall.split('score of ')[-1].split(' out of ')[0]
+    if grade_overall_raw:
+        grade_overall = grade_overall_raw.split('score of ')[-1].split(' receives ')[-1].split(' out of ')[0]
+        if ' out of 100' not in grade_overall_raw and ' out of 10' in grade_overall_raw:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
         else:
-            grade_overall = grade_overall.split('score of ')[-1].split(' out of ')[0]
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
     grades = data.xpath('//div[div[contains(., "Audience Score")]]/@data-score').string()
