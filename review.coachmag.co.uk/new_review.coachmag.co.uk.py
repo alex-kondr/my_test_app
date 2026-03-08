@@ -27,50 +27,51 @@ def process_revlist(data, context, session):
     if page != int(active_page):
         return
 
-    revs = data.xpath('//a[@class="article-link"]')
+    revs = data.xpath('//a[@class="article-link" and .//h3]')
     for rev in revs:
         title = rev.xpath('.//h3[@class="article-name"]/text()').string()
         url = rev.xpath('@href').string()
         session.queue(Request(url), process_review, dict(title=title, url=url))
 
-    next_page = context.get('page', 1) + 1
-    next_url = data.xpath('//link[@rel="next"]/@href').string()
-    if next_url:
-        session.queue(Request(next_url), process_revlist, dict())
+    next_url = 'https://www.coachweb.com/reviews/page/' + str(page+1)
+    session.queue(Request(next_url), process_revlist, dict(page=page+1))
 
 
 def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('', '').strip()
-    product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
-    product.category = 'Tech'
+    product.name = context['title'].split(' Review: ')[0].replace(' Review', '').strip()
+    product.ssid = context['url'].split('/')[-1].replace('-review', '')
+    product.category = data.xpath('(//nav[@class="breadcrumb"]//a[not(regexp:test(., "review", "i"))])[last()]/text()').string()
+
+    product.url = data.xpath('//a[contains(@rel, "sponsored")]/@href').string()
+    if not product.url:
+        product.url = context['url']
 
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content|//time/@datetime').string()
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('/text()').string()
-    author_url = data.xpath('/@href').string()
+    author = data.xpath('//a[@rel="author"]/text()').string()
+    author_url = data.xpath('//a[@rel="author"]/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//text()').string()
+    grade_overall = data.xpath('count((//span[@class="chunk rating"])[1]/span[@class="icon icon-star"]) + count((//span[@class="chunk rating"])[1]/span[@class="icon icon-star half"]) div 2')
     if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-    pros = data.xpath('(//h3[contains(., "Pros")]/following-sibling::*)[1]/li')
+    pros = data.xpath('(//h4[contains(., "For")]/following-sibling::*)[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -78,7 +79,7 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('(//h3[contains(., "Cons")]/following-sibling::*)[1]/li')
+    cons = data.xpath('(//h4[contains(., "Against")]/following-sibling::*)[1]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -86,17 +87,20 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//div[h3[contains(text(), "Summary")]]/div//text()').string(multiple=True)
+    summary = data.xpath('//div[h1[contains(@class, "title")]]/h2[not(@class)]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Worth It?")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[div[contains(@class, "verdict")]]/p//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Worth It?")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="article-body"]/p//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

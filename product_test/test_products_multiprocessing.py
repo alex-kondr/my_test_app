@@ -304,11 +304,11 @@ class ProductValidator:
         self.product_map = self._structure_product(product_data)
         self.errors = defaultdict(list)
 
-        self.xproduct_names_category = ["review", "test", u"\uFEFF", u"\ufeff", "...", "•", "cable", "análise", "u000", u"&amp", "обзор", "тест", "recensione", "Ã", "¼", "hírek", "reseña", "inceleme"]
+        self.xproduct_names_category = ["review", "test", u"\uFEFF", u"\ufeff", "...", "•", "cable", "análise", "u000", u"&amp", "обзор", "тест", "recensione", "Ã", "¼", "hírek", "reseña", "inceleme", "(element)"]
         self.xproduct_names_category_start_end = []
-        self.xreview_title = ["\uFEFF", "\ufeff", u"U000", u"&amp"]
-        self.xreview_excerpt = ["Conclusion", "Verdict", u"\uFEFF", u"\ufeff", "Summary", "Fazit", "href=", "U000", u"&amp", "Les plus", "Les moins", "Résumé", "►", "Выводы", "Slutsats", "CONTRO", "Závěr", "Ã", "¼", "PREGI", "DIFETTI"]
-        self.xreview_pros_cons = ["–", "-", "+", "•", "►", "none found", 'n/a', 'n\\a', u"U000", u"&amp", "etc.", "Ã", "¼"]
+        self.xreview_title = ["\uFEFF", "\ufeff", u"U000", u"&amp", "(element)"]
+        self.xreview_excerpt = ["Conclusion", "Verdict", u"\uFEFF", u"\ufeff", "Summary", "Fazit", "href=", "U000", u"&amp", "Les plus", "Les moins", "Résumé", "►", "Выводы", "Slutsats", "CONTRO", "Závěr", "Ã", "¼", "PREGI", "DIFETTI", "(element)"]
+        self.xreview_pros_cons = ["–", "-", "+", "•", "►", "none found", 'n/a', 'n\\a', u"U000", u"&amp", "etc.", "Ã", "¼", "(element)"]
         # Compile regex for pros/cons check to improve performance
         pros_cons_pattern_parts = [re.escape(x) for x in self.xreview_pros_cons]
         self.pros_cons_regex = re.compile(f"^({'|'.join(pros_cons_pattern_parts)})|({'|'.join(pros_cons_pattern_parts)})$", re.IGNORECASE)
