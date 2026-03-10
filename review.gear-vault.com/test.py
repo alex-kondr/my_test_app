@@ -18,7 +18,7 @@ reload = 1
 
 # name: 0+
 # date: 0+
-# excerpt: 11
+# excerpt: 8
 # logs: 6+
 
 if __name__ == "__main__":
