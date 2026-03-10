@@ -1,6 +1,7 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
 
 
 XCAT = ['Gebrauchtes', 'Black Week', 'Black Friday B-Ware', 'Black Friday Trade-Up', 'Black Friday', 'Retouren']
@@ -18,10 +19,34 @@ def strip_namespace(data):
     os.rename(tmp, data.content_file)
 
 
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
+
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('https://www.projekt-akustik.de/', max_age=0), process_frontpage, dict())
+    session.queue(Request('https://www.projekt-akustik.de/'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -41,10 +66,10 @@ def process_frontpage(data, context, session):
                     for subcat in subcats:
                         subcat_name = subcat.xpath('text()').string()
                         url = subcat.xpath('@href').string()
-                        session.queue(Request(url, max_age=0),  process_cat_id, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
+                        session.queue(Request(url),  process_cat_id, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
                 else:
                     url = cat1.xpath('a/@href').string()
-                    session.queue(Request(url, max_age=0),  process_cat_id, dict(cat=name+'|'+cat1_name))
+                    session.queue(Request(url),  process_cat_id, dict(cat=name+'|'+cat1_name))
 
 
 def process_cat_id(data, context, session):
@@ -53,7 +78,7 @@ def process_cat_id(data, context, session):
     cat_id = data.xpath('//div[@pagetype="articleList"]/@categoryid').string()
     if cat_id:
         url = 'https://www.projekt-akustik.de/apis/react/get-category.php?categoryId={cat_id}/'.format(cat_id=cat_id)
-        session.queue(Request(url, max_age=0), process_prodlist, dict(context))
+        session.queue(Request(url), process_prodlist, dict(context))
 
 
 def process_prodlist(data, context, session):
@@ -66,12 +91,12 @@ def process_prodlist(data, context, session):
         manufacturer = prod.get('brand', '')
         url = 'https://www.projekt-akustik.de/' + prod.get('link', '')
         if url:
-            session.queue(Request(url, max_age=0), process_product, dict(context, url=url, manufacturer=manufacturer))
+            session.queue(Request(url), process_product, dict(context, url=url, manufacturer=manufacturer))
 
     next_page = prods_json.get('pagination', {}).get('nextPageUrl')
     if next_page:
         next_url = 'https://www.projekt-akustik.de/apis/react/get-category.php' + next_page
-        session.queue(Request(next_url, max_age=0), process_prodlist, dict(context))
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -107,7 +132,7 @@ def process_product(data, context, session):
         if date:
             review.date = date.split('am ')[-1]
 
-        author = rev.xpath('span[@class="paFontSizeXS paBold"]/text()').string()
+        author = rev.xpath('span[@class="paFontSizeXS paBold"]/text()[not(regexp:test(., "Annonym", "i"))]').string()
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
@@ -116,12 +141,14 @@ def process_product(data, context, session):
             review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
 
         excerpt = rev.xpath('div[contains(@class, "tsReviewText")]/text()').string()
-        if excerpt and len(excerpt) > 2:
-            review.add_property(type="excerpt", value=excerpt)
+        if excerpt:
+            excerpt = remove_emoji(excerpt).strip()
+            if len(excerpt) > 2:
+                review.add_property(type="excerpt", value=excerpt)
 
-            review.ssid = review.digest() if author else review.digest(excerpt)
+                review.ssid = review.digest() if author else review.digest(excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)

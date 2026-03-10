@@ -41,7 +41,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = re.sub(r'\(.+\)', '', context['title']).split(' – ')[0].replace(' accessories reviewed', '').replace(' Review', '').replace(' Review', '').replace(' reviewed', '').replace('Preview: ', '').replace(' Preview', '').replace(' review', '').replace('Review: ', '').strip()
+    product.name = re.sub(r'\(.+\)', '', context['title']).split(' – ')[0].replace(' accessories reviewed', '').replace(' Review', '').replace(' Review', '').replace(' reviewed', '').replace('Preview: ', '').replace(' Preview', '').replace(' review', '').replace('Review: ', '').replace('Reviewing ', '').replace('Preview + ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = context['cat']
@@ -71,7 +71,7 @@ def process_review(data, context, session):
     if not grade_overall:
         grade_overall = data.xpath('//p[contains(., "Rating:")]//text()').string(multiple=True)
         if grade_overall:
-            grade_overall = grade_overall.replace('Rating:', '').split('/')[0].strip()
+            grade_overall = grade_overall.split(':')[-1].split('/')[0].split('out of')[0].strip()
             if grade_overall and float(grade_overall) > 0:
                 review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 

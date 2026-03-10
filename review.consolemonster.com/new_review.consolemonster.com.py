@@ -2,9 +2,6 @@ from agent import *
 from models.products import *
 
 
-# XCAT = ['Subscription Boxes']
-
-
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"
     out = file(tmp, "w")
@@ -23,18 +20,6 @@ def run(context, session):
     session.queue(Request('https://www.consolemonster.com/category/reviews/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
-# def process_frontpage(data, context, session):
-#     strip_namespace(data)
-
-#     cats = data. xpath('(//div[a[contains(., "Reviews")]])[1]/div/div/a')
-#     for cat in cats:
-#         name = cat.xpath('.//text()').string(multiple=True)
-#         url = cat.xpath('@href').string()
-
-#         if name not in XCAT:
-#             session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name))
-
-
 def process_revlist(data, context, session):
     strip_namespace(data)
 
@@ -42,18 +27,18 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('h2/text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//a[contains(@class, "pagination__next")]//@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' Review: ')[0].replace(' Review', '').strip()
+    product.name = context['title'].split(' Review: ')[0].replace(' Review', '').replace(u'Ã¶', u'ö').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
 
     product.url = data.xpath('//div[contains(@class, "container")]//a[contains(., "Amazon")]/@href').string()
