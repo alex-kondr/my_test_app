@@ -16,6 +16,10 @@ agent = agents.REVIEW_TECHSTAGE_DE
 # agent = agents.TEST
 reload = 1
 
+# name: 72
+# author: 3+
+# excerpt: 85
+# logs: 15+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

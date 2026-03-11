@@ -72,7 +72,14 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('//div[@data-testid="StageLayout.StreamItem"]/p[not(contains(@class, "font-bold"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//div[@data-testid="StageLayout.StreamItem" and p[.//span[text()="Fazit"]]]/following::div[@data-testid="StageLayout.StreamItem"]/p[not(contains(@class, "font-bold"))]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//div[@data-testid="StageLayout.StreamItem" and p[.//span[text()="Fazit"]]]/preceding::div[@data-testid="StageLayout.StreamItem"]/p[not(contains(@class, "font-bold"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@data-testid="StageLayout.StreamItem"]/p[not(contains(@class, "font-bold"))]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

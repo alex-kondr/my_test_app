@@ -16,6 +16,10 @@ agent = agents.T_ONLINE_HANDYS_DE
 # agent = agents.TEST
 reload = 1
 
+# name: 45+
+# author: 172+
+# excerpt: 38+
+# logs: 5+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
