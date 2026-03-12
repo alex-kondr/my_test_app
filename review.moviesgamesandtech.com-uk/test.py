@@ -16,8 +16,8 @@ agent = agents.MOVIES_GAMES_AND_TECH_UK
 # agent = agents.TEST
 reload = 1
 
-# name: 10+
-# excerpt: 6
+# name: 32+
+# excerpt: 14+
 # logs: 189+
 
 if __name__ == "__main__":
