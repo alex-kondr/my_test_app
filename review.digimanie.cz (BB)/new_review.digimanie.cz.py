@@ -1,45 +1,33 @@
 from agent import *
 from models.products import *
-import time
 
 
 XTITLE = ['digitest - ', ' vs. ']
-SLEEP = 2
+OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Alt-Used: digimanie.cz' -H 'Connection: keep-alive' -H 'Cookie: websession=918e0e16-c9cf-4861-a977-01a4a1f624bf; _nss=1' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"""
+
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request('https://www.digimanie.cz/recenze/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+    session.queue(Request('https://www.digimanie.cz/recenze/', use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
     revs = data.xpath('//h2//a')
-
-    if not revs and not context.get('repeat'):
-        time.sleep(SLEEP)
-        session.do(Request(data.response_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict(repeat=True))
-        return
 
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
 
         if url and title and not any(xtitle in title.lower() for xtitle in XTITLE):
-            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_revlist, dict())
 
 
 def process_review(data, context, session):
-    if not data.xpath('//time/@datetime') and not context.get('repeat'):
-        time.sleep(SLEEP)
-        session.do(Request(data.response_url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, repeat=True))
-        return
-
-    context['repeat'] = False
-
     product = Product()
     product.name = context['title'].replace(' v testu', '').strip()
     product.url = context['url']
@@ -98,7 +86,7 @@ def process_review(data, context, session):
         review.add_property(type='pages', value=dict(title=title, url=url))
 
     if pages:
-        session.do(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review_last, dict(product=product, review=review, excerpt=excerpt))
+        session.do(Request(url, use='curl', force_charset='utf-8', max_age=0, options=OPTIONS), process_review_last, dict(product=product, review=review, excerpt=excerpt))
 
     elif excerpt:
         conclusion = data.xpath('//h4[contains(., "Verdikt")]/following-sibling::p//text()').string(multiple=True)
@@ -116,11 +104,6 @@ def process_review(data, context, session):
 
 
 def process_review_last(data, context, session):
-    if not data.xpath('//time/@datetime') and not context.get('repeat'):
-        time.sleep(SLEEP)
-        session.do(Request(data.response_url, use='curl', force_charset='utf-8', max_age=0), process_review_last, dict(context, repeat=True))
-        return
-
     review = context['review']
 
     grade_overall = data.xpath('//div/@data-rating').string()

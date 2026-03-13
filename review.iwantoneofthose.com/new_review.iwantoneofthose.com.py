@@ -28,7 +28,6 @@ def process_frontpage(data, context, session):
                         cat1_name = ''
 
                     subcats = cat1.xpath('div[contains(@class, "nav__grandchild")]/ul/li/a')
-
                     if subcats:
                         for subcat in subcats:
                             subcat_name = subcat.xpath("text()").string().replace('Gifts For', '').replace('Gifts for', '').replace('Gifts', '').strip()
