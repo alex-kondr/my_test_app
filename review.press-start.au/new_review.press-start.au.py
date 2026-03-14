@@ -41,7 +41,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('http://press-start.com.au/category/reviews/'), process_catlist, {})
 
 
@@ -77,7 +77,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' Review')[0].replace('Review: ', '').strip()
+    product.name = context['title'].split(' Review')[0].replace('Review: ', '').replace('REVIEW: ', '').strip()
     product.ssid = context['url'].split('/')[-2]
 
     product.url = data.xpath('//a[contains(., "Amazon")]/@href').string()
@@ -88,7 +88,7 @@ def process_review(data, context, session):
     if category not in ['Movie', 'Tech']:
         category = "Games|" + category
 
-    product.category = context['cat']
+    product.category = category
 
     review = Review()
     review.type = 'pro'
