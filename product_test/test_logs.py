@@ -44,19 +44,19 @@ def process_log_chunk(chunk: list[str]) -> list[list[str]]:
     Processes a chunk of log lines to find errors and their preceding request URL.
     """
     errors_in_chunk = []
-    error_pattern = re.compile(r"error ", re.IGNORECASE)
+    error_pattern = re.compile(r"^error ")
     request_pattern = re.compile(r"Request GET u'([^']*)'")
     for i, line in enumerate(chunk):
         if error_pattern.search(line):
-            context_url = "URL not found"
+            # context_url = "URL not found"
             # Search backwards from the error line for the most recent request URL.
             for j in range(i - 1, max(i - 20, -1), -1):
                 context_line = chunk[j]
                 match = request_pattern.search(context_line)
                 if match:
-                    context_url = match.group(1)
+                    # context_url = match.group(1)
+                    errors_in_chunk.append([match.group(1), line])
                     break
-            errors_in_chunk.append([context_url, line])
     return errors_in_chunk
 
 

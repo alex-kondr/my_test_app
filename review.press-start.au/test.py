@@ -14,8 +14,14 @@ import product_test.list_of_agents as agents
 
 agent = agents.PRESS_START_AU
 # agent = agents.TEST
-reload = 1
+reload = 0
 
+# name: 279
+# grades: 514
+# excerpt: 14
+# logs: 0
+
+# https://press-start.com.au/reviews/2015/10/12/review-transformers-devastation/ -> grades
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
