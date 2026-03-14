@@ -16,6 +16,10 @@ agent = agents.LE_MONDE_NUMERIQUE_FR
 # agent = agents.TEST
 reload = 1
 
+# name: 1
+# grades: 460
+# conclusion: 5
+# excerpt: 19
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
