@@ -16,8 +16,8 @@ agent = agents.PRESS_START_AU
 # agent = agents.TEST
 reload = 1
 
-# name: 3
-# cat: 1139
+# name: 2+
+# cat: 0+
 # grades: 558+
 # excerpt: 7
 # logs: 0
