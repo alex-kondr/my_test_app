@@ -42,17 +42,14 @@ def process_review(data, context, session):
 
     product = Product()
     product.name = context['title'].replace(' review', '').replace(' Review', '').strip()
-    product.ssid = context['url'].split('/')[-1].replace('-review', '')
+    product.url =  context['url']
+    product.ssid = product.url.split('/')[-1].replace('-review', '')
     product.category = 'Tech'
-
-    product.url = data.xpath('//div[@id="article-body"]//a[contains(@rel, "sponsored")]/@href').string()
-    if not product.url:
-        product.url =  context['url']
 
     review = Review()
     review.type = 'pro'
-    review.title = data.xpath('//h1[@class="header__title"]/text()').string()
-    review.url = context['url']
+    review.title = data.xpath('//h1[contains(@class, "title")]/text()').string()
+    review.url = product.url
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()

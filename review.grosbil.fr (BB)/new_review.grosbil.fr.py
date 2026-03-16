@@ -1,9 +1,11 @@
 from agent import *
 from models.products import *
-import simplejson
+# import time
 
 
 XCAT = ['PC GROSBILL & CONFIG SUR MESURE', 'VENTES FLASH & BONS PLANS', 'PC reconditionnés', 'Composants reconditionnés', 'Stockages reconditionnés', 'Réseaux reconditionnés', 'Périphériques reconditionnés', 'Gaming reconditionné', 'Nos bons plans', 'Les Soldes Grosbill']
+# SLEEP = 2
+# OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"""
 
 
 def strip_namespace(data):
@@ -20,7 +22,10 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.queue(Request('https://www.grosbill.com/', use='curl', force_charset='utf-8'), process_frontpage, dict())
+    
+    # url = 'https://www.grosbill.com/peripherique-de-jeu/the-g-lab-k-stand-radon-45488.aspx'
+    # session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_product, dict(cat='cat', name='name', url=url))
+    session.queue(Request('https://www.grosbill.com/', use='curl', force_charset='utf-8', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -68,6 +73,10 @@ def process_prodlist(data, context, session):
 
 def process_product(data, context, session):
     strip_namespace(data)
+    
+    
+    # print data.content
+    # return
 
     product = Product()
     product.name = context['name']
@@ -87,6 +96,9 @@ def process_product(data, context, session):
         product.add_property(type='id.ean', value=ean)
 
     revs = data.xpath('//div[contains(@class, "page__review-item")]')
+    
+    revs.pretty()
+    
     for rev in revs:
         review = Review()
         review.type = 'user'

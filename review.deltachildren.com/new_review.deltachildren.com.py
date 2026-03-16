@@ -33,8 +33,8 @@ def remove_emoji(string):
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request('https://www.deltachildren.com/', max_age=0), process_frontpage, dict())
-    session.queue(Request('https://www.deltachildren.com/collections/wagons', max_age=0), process_prodlist, dict(cat='Wagons'))
+    session.queue(Request('https://www.deltachildren.com/'), process_frontpage, dict())
+    session.queue(Request('https://www.deltachildren.com/collections/wagons'), process_prodlist, dict(cat='Wagons'))
 
 
 def process_frontpage(data, context, session):
@@ -48,15 +48,15 @@ def process_frontpage(data, context, session):
             url = subcat.xpath('a/@href').string()
 
             if subcat_name not in XCAT:
-                session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + subcat_name))
+                session.queue(Request(url), process_prodlist, dict(cat=name + '|' + subcat_name))
 
 
 def process_prodlist(data, context, session):
-    prods = data.xpath('//a[@class="product__title product__item-title"]')
+    prods = data.xpath('//a[contains(@class, "product__title")]')
     for prod in prods:
         name = prod.xpath('text()').string()
         url = prod.xpath('@href').string()
-        session.queue(Request(url, max_age=0), process_product, dict(context, name=name, url=url))
+        session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
 # no next page
 
@@ -81,7 +81,7 @@ def process_product(data, context, session):
     revs_cnt = data.xpath('//span[@class="jdgm-prev-badge__text"]/text()').string()
     if revs_cnt and revs_cnt.replace('reviews', '').strip().isdigit() and int(revs_cnt.replace('reviews', '')) > 0:
         revs_url = 'https://delta-children.vercel.app/reviews/single?id=' + product.ssid
-        session.do(Request(revs_url, max_age=0), process_reviews, dict(product=product))
+        session.do(Request(revs_url), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -107,14 +107,14 @@ def process_reviews(data, context, session):
 
         title = rev.get('title')
         excerpt = rev.get('body')
-        if excerpt and len(remove_emoji(excerpt).strip(' .+-\n\r')) > 1:
+        if excerpt and len(remove_emoji(excerpt).replace('\n', '').replace('\r', '').replace('\t', '').strip(' .+-')) > 1:
             if title:
                 review.title = remove_emoji(title).strip(' .+-\n\r')
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = remove_emoji(excerpt).strip(' .+-\n\r')
+            excerpt = remove_emoji(excerpt).replace('\n', '').replace('\r', '').replace('\t', '').strip(' .+-')
             if len(excerpt) > 1:
                 review.add_property(type='excerpt', value=excerpt)
 

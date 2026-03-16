@@ -69,10 +69,26 @@ def process_review(data, context, session):
     product = Product()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '').replace('review-', '')
-    product.category = 'Tech'
 
     name = data.xpath('//div[@class="verdict"]/strong/text()').string() or context['title']
     product.name = name.replace('Review – ', '').split(' – ')[0].split(' Review: ')[0].replace(' review', '').replace('Review: ', '').replace('Preview: ', '').replace(' Review', '').replace('Review - ', '').strip()
+
+    cats = data.xpath('//p[strong[contains(., "Developer:")]]/strong[em]/a/text()').join('/')
+    if not cats:
+        cats = data.xpath('//p[strong[contains(., "Developer:")]]/strong[em]/text()').string()
+    if not cats:
+        cats = data.xpath('//p[strong[contains(., "Developer:")]]/strong[i]/text()').string(multiple=True)
+    if not cats:
+        cats = data.xpath('//p[.//strong[contains(., "Developer:")]]/strong/text()').string()
+
+    if cats:
+        product.category = 'Games|' + cats.split('Developer:')[0].split('Publisher:')[0].replace(' [reviewed – rig],', '').replace('[Digital-only]', '').replace(', [reviewed]', '').replace('[reviewed]', '').replace(', [', '').replace('[', '').replace(']', '').replace(', ', '/').replace(' /', '/').strip('( )')
+    else:
+        product.category = 'Tech'
+
+    manufacturer = data.xpath('//strong[contains(., "Developer:")]/text()').string(multiple=True)
+    if manufacturer:
+        product.manufacturer = manufacturer.split('Developer:')[-1].split('Publisher:')[0].strip()
 
     review = Review()
     review.type = 'pro'
@@ -117,7 +133,7 @@ def process_review(data, context, session):
         summary = remove_emoji(h.unescape(summary)).replace(u'Å\x8d', u'ō').replace(u'Å\x81', u'ō').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(., "overall", "i")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "overall", "i")]/following-sibling::p[not(contains(., "review is based on a retail") or contains(., "based on a retail build of the game"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="content-full"]//text()').string(multiple=True)
 
@@ -127,10 +143,15 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h2[regexp:test(., "overall", "i")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="post-content"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="post-content"]/p[not(contains(., "review is based on a retail") or contains(., "based on a retail build of the game"))]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = remove_emoji(h.unescape(excerpt)).replace(u'Å\x8d', u'ō').replace(u'Å\x81', u'ō').replace(u'â\x81\xa0', u'').strip()
+
+        excerpt_last = data.xpath('(//div[@class="post-content"]/p)[normalize-space(.)][last()][contains(., "(Previous ")]//text()').string(multiple=True)
+        if excerpt_last:
+            excerpt = excerpt.replace(excerpt_last, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

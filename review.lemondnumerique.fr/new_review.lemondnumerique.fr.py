@@ -37,7 +37,7 @@ def process_review(data, context, session):
     product.category = 'Technologie'
 
     name = context.get('name') or title
-    product.name = name.split('test du')[-1].split('test de')[-1].replace('test complet du ', '').replace('test complet de la ', '').replace('Test de la ', '').replace('test complet de ', '').replace('Test du ', '').replace('Test de ', '').replace(' : notre Test', '').replace(' testé', '').replace('Test ', '').replace(' en test', '').replace('Tests des ', '').replace('Tests de la ', '').replace('Tests de ', '').replace('Tests matériels ', '').replace('Tests du ', '').strip()
+    product.name = name.split('test du')[-1].split('test de')[-1].replace('test complet du ', '').replace('test complet de la ', '').replace('Test de la ', '').replace('test complet de ', '').replace('Test du ', '').replace('Test des ', '').replace('Test de ', '').replace(' : notre Test', '').replace(' testé', '').replace('Test ', '').replace(' en test', '').replace('Tests des ', '').replace('Tests de la ', '').replace('Tests de ', '').replace('Tests matériels ', '').replace('Tests du ', '').strip()
 
     review = Review()
     review.type = 'pro'
@@ -70,6 +70,22 @@ def process_review(data, context, session):
                 review.grades.append(Grade(type='overall', value=float(grade_val), best=5.0))
             else:
                 review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
+
+    pros = data.xpath('(//h4[contains(., "Les plus")]/following-sibling::ul)[1]/li')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('(//h4[contains(., "Les moins")]/following-sibling::ul)[1]/li')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//div[@class="avis_test"]//text()[not(contains(., "Notre avis"))]').string(multiple=True)
     if conclusion:
