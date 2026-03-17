@@ -62,7 +62,7 @@ def process_review(data, context, session):
     else:
         product.category = context['genre']
 
-    product.category = product.category.replace(' (with Xbox Series X still to come/though currently', '').replace(' (Nintendo Switch TBC)', '')
+    product.category = product.category.replace(' (with Xbox Series X still to come/though currently', '').replace(' (Nintendo Switch TBC)', '').replace(' (Announced)', '').replace(' (at a later date)', '').replace('X/S', 'X\\S')
 
     review = Review()
     review.type = 'pro'

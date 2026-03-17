@@ -16,10 +16,10 @@ agent = agents.GAMES_RADAR
 # agent = agents.TEST
 reload = 1
 
-# name: 2
-# category: 4
+# name: 1+
+# category: 0+
 # pros_cons: 9+
-# excerpt: 2
+# excerpt: 2+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
