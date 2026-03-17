@@ -16,7 +16,9 @@ agent = agents.VOLT_HU
 # agent = agents.TEST
 reload = 1
 
-# author: 43
+# author: 44+
+# https://www.220volt.hu/Teszt/Canon-EOS-M50-Mark-II-teszt -> pros/cons +
+# https://www.220volt.hu/Teszt/Nikon-Z7-II-teszt +
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

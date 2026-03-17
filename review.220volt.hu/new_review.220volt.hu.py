@@ -43,6 +43,8 @@ def process_review(data, context, session):
     pros = data.xpath('(//h3[contains(., "pozitívumai")]/following-sibling::*)[1]/li')
     if not pros:
          pros = data.xpath('(//p[contains(., "Pros")]/following-sibling::*)[1]/li')
+    if not pros:
+         pros = data.xpath('(//p[contains(., "pozitívumai")]/following-sibling::*)[1]/li')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -51,9 +53,20 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
+    if not pros:
+        pros = data.xpath('//h3[contains(., "pozitívumai")]/following-sibling::p[starts-with(normalize-space(text()), "+")]/text()[normalize-space(.)]')
+        for pro in pros:
+            pro = pro.string(multiple=True)
+            if pro:
+                pro = pro.strip(' +-*.:;•,–')
+                if len(pro) > 1:
+                    review.add_property(type='pros', value=pro)
+
     cons = data.xpath('(//h3[contains(., "negatívumai")]/following-sibling::*)[1]/li')
     if not cons:
          cons = data.xpath('(//p[contains(., "Cons")]/following-sibling::*)[1]/li')
+    if not cons:
+         cons = data.xpath('(//p[contains(., "negatívumai")]/following-sibling::*)[1]/li')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
@@ -61,6 +74,15 @@ def process_review(data, context, session):
             con = con.strip(' +-*.:;•,–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
+
+    if not cons:
+        cons = data.xpath('//h3[contains(., "negatívumai")]/following-sibling::p[starts-with(normalize-space(text()), "-")]/text()')
+        for con in cons:
+            con = con.string(multiple=True)
+            if con:
+                con = con.strip(' +-*.:;•,–')
+                if len(con) > 1:
+                    review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[contains(@class, "blog-details__intro")]/p//text()').string(multiple=True)
     if summary:
