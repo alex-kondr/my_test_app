@@ -11,7 +11,7 @@ XCAT = ['Open World']
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('https://www.gamesradar.com/reviews', use='curl', max_age=0), process_catlist, dict())
+    session.queue(Request('https://www.gamesradar.com/reviews'), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -21,28 +21,30 @@ def process_catlist(data, context, session):
         url = cat.xpath('.//a/@href').string()
 
         if genre not in XCAT:
-            session.queue(Request(url, use='curl', max_age=0), process_revlist, dict(genre=genre, cat_url=url))
+            session.queue(Request(url), process_revlist, dict(genre=genre, cat_url=url))
 
 
 def process_revlist(data, context, session):
     revs = data.xpath('//a[contains(@class, "item-link")]')
     for rev in revs:
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', max_age=0), process_review, dict(context, url=url))
+        session.queue(Request(url), process_review, dict(context, url=url))
 
     current_page = data.xpath('//span[@class="active"]/text()').string()
     page = context.get('page', 1)
     if current_page and int(current_page) == page:
         next_page = page + 1
         next_url = context['cat_url'] + 'page/{}'.format(next_page)
-        session.queue(Request(next_url, use='curl', max_age=0), process_revlist, dict(context, page=next_page))
+        session.queue(Request(next_url), process_revlist, dict(context, page=next_page))
 
 
 def process_review(data, context, session):
     title = data.xpath('//h1[contains(@class, "title")]/text()').string()
+    if not title:
+        title = data.xpath('//div[contains(@class, "article")]/h1/text()').string()
 
     product = Product()
-    product.name = title.split('review:')[0].split('Review:')[0].replace(' review', '').replace(' Review', '').strip()
+    product.name = title.split('review:')[0].split('Review:')[0].replace(' review', '').replace(' Review', '').replace(' | Preview', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.manufacturer = data.xpath('//strong[contains(., "Developer:")]/following-sibling::text()[1]').string()
 
@@ -59,6 +61,8 @@ def process_review(data, context, session):
         product.category = 'Games|' + context['genre']
     else:
         product.category = context['genre']
+
+    product.category = product.category.replace(' (with Xbox Series X still to come/though currently', '').replace(' (Nintendo Switch TBC)', '')
 
     review = Review()
     review.type = 'pro'
