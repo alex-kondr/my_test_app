@@ -16,9 +16,9 @@ agent = agents.GAMEREACTOR_FI
 # agent = agents.TEST
 reload = 1
 
-# name: 16
-# category: 1
-# excerpt: 12
+# name: 16+
+# category: 1+
+# excerpt: 12+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
