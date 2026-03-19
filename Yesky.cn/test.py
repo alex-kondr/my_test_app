@@ -17,9 +17,9 @@ agent = agents.YESKY_CN
 reload = 1
 session_id = 0
 
-# name: 286
-# author: 68+
-# excerpt: 7+
+# name: 5
+# author: 76+
+# excerpt: 5+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
