@@ -16,6 +16,11 @@ agent = agents.DGL_RU
 # agent = agents.TEST
 reload = 1
 
+# name: 4994+
+# grades: 2097+
+# author: 621+
+# pros_cons: 41+
+# excerpt: 160
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

@@ -6,33 +6,14 @@ import re
 XCAT = ['peijian', 'gps', 'nctech', 'shouyou']   # 404
 
 
-def remove_emoji(string):
-    emoji_pattern = re.compile("["
-                               u"\U0001F600-\U0001F64F"  # emoticons
-                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
-                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-                               u"\U00002500-\U00002BEF"  # chinese char
-                               u"\U00002702-\U000027B0"
-                               u"\U00002702-\U000027B0"
-                               u"\U000024C2-\U0001F251"
-                               u"\U0001f926-\U0001f937"
-                               u"\U00010000-\U0010ffff"
-                               u"\u2640-\u2642"
-                               u"\u2600-\u2B55"
-                               u"\u200d"
-                               u"\u23cf"
-                               u"\u23e9"
-                               u"\u231a"
-                               u"\ufe0f"  # dingbats
-                               u"\u3030"
-                               "]+", flags=re.UNICODE)
-    return emoji_pattern.sub(r'', string)
+def serialize_text(text):
+    text = re.sub(u"^\U00003010.*?\U00003011", '', text).replace(u'�', '')
+    return text
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('http://www.yesky.com/more/22_95575_pingce_1.shtml', max_age=0), process_revlist, dict())
+    session.queue(Request('http://www.yesky.com/more/22_95575_pingce_1.shtml'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -43,16 +24,16 @@ def process_revlist(data, context, session):
 
         cat = url.split('://')[-1].split('.', 1)[0]
         if cat not in XCAT:
-            session.queue(Request(url, max_age=0), process_review, dict(title=title, url=url))
+            session.queue(Request(url), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//div[@class="pages"]/font/a[regexp:test(., "下一页", "i")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, max_age=0), process_revlist, dict())
+        session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data, context, session):
     product = Product()
-    product.name = remove_emoji(context['title']).strip()
+    product.name = serialize_text(context['title']).strip()
     product.url = context["url"]
     product.ssid = context["url"].split('/')[-1].split(".")[0]
 
@@ -63,7 +44,7 @@ def process_review(data, context, session):
         product.category = '技术'
 
     review = Review()
-    review.title = context['title']
+    review.title = serialize_text(context['title']).strip()
     review.url = product.url
     review.type = 'pro'
     review.ssid = product.ssid
@@ -81,7 +62,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[@class="article_infor" or @class="article"]/p[not(.//a[contains(@href, "image")] or .//img[contains(@src, "image")])][not(contains(., "评测总评") or contains(., "写在最后") or contains(., "评测总结") or contains(., "【总结】"))][not(preceding-sibling::p[regexp:test(., "评测总结", "i") or regexp:test(., "评测总评", "i") or regexp:test(., "【总结】", "i") or regexp:test(., "写在最后", "i")])]//text()').string(multiple=True)
     if excerpt:
-        context['excerpt'] = remove_emoji(excerpt).strip()
+        context['excerpt'] = serialize_text(excerpt).strip()
 
     next_url = data.xpath('//div[@class="pages"]/ul/li[a][1]/a/@href').string()
     if not next_url:
@@ -129,7 +110,7 @@ def process_review_next(data, context, session):
         conclusion = data.xpath('//p[contains(., "【总结】")]//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = remove_emoji(conclusion).strip()
+        conclusion = serialize_text(conclusion).strip()
         if conclusion:
             review.add_property(type='conclusion', value=conclusion)
 
@@ -146,7 +127,7 @@ def process_review_next(data, context, session):
             if conclusion:
                 excerpt = excerpt.replace(conclusion, '').strip()
 
-            excerpt = remove_emoji(excerpt).strip()
+            excerpt = serialize_text(excerpt).strip()
             context['excerpt'] = context.get('excerpt', '') + " " + excerpt
 
     next_url = data.xpath('//div[@class="pages"]/ul/li[a][preceding-sibling::*[1][self::li[span]]]/a/@href').string()

@@ -18,7 +18,7 @@ urllib3.disable_warnings()
 load_dotenv()
 
 
-def load_file(agent_id: int, type_file: str = "yaml", size: int|str = "", decode: bool = False) -> str | bytes:
+def load_file(agent_id: int, type_file: str = "yaml", size: int|str = "", decode: bool = False, session_id: int = 0) -> str | bytes:
     """
     type_file: "yaml", "log"
     """
@@ -27,6 +27,9 @@ def load_file(agent_id: int, type_file: str = "yaml", size: int|str = "", decode
         "yaml": "yaml"
     }
     url = f"https://prunesearch.com/manage?action={action[type_file]}&agent_id={agent_id}&lastbytes={size}"
+    if session_id:
+        url += f"&session_id={session_id}"
+
     response = requests.get(
         url,
         verify=False,

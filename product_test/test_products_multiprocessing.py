@@ -24,6 +24,7 @@ def is_include(xnames: list = [], text: str = "", lower: bool = False) -> str|No
     match = re.search(pattern, text, flags)
     return match.group(0) if match else None
 
+
 class ColoredFormatter(logging.Formatter):
     RESET = "\033[0m"
     RED = "\033[31m"
@@ -212,7 +213,7 @@ Wasted time: {self.time}
 
 
 class Product:
-    def __init__(self, agent_id: int, reload=False):
+    def __init__(self, agent_id: int, reload=False, session_id=0):
         self.agent_id = agent_id
         self.emits_dir = Path("product_test/emits")
         self.emits_dir.mkdir(exist_ok=True)
@@ -220,18 +221,18 @@ class Product:
         self.result = ResultParse(self.agent_id)
 
         if not self.file_path.exists() or reload:
-            self.file = self.generate_file()
+            self.file = self.generate_file(session_id=session_id)
         else:
             self.file = self.open_file()
 
         self.agent_name = self.file["meta"]["agent_name"].strip()
 
-    def generate_file(self) -> dict:
+    def generate_file(self, session_id=0) -> dict:
         total_start_time = time.time()
         logger.info(f"Loading YAML for agent {self.agent_id}...")
 
         load_start_time = time.time()
-        content = load_file(agent_id=self.agent_id, type_file="yaml")
+        content = load_file(agent_id=self.agent_id, type_file="yaml", session_id=session_id)
         load_end_time = time.time()
         logger.info(f"YAML loading took: {load_end_time - load_start_time:.2f} seconds")
 

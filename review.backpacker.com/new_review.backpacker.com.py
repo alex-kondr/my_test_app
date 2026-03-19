@@ -1,10 +1,8 @@
 from agent import *
 from models.products import *
 import HTMLParser
-import time
 
 
-SLEEP = 2
 h = HTMLParser.HTMLParser()
 XTITLE = [' Best ']
 
@@ -29,13 +27,11 @@ def strip_namespace(data):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.backpacker.com/gear-reviews/', max_age=0), process_revlist, dict())
+    session.queue(Request('https://www.backpacker.com/gear-reviews/'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
     strip_namespace(data)
-
-    time.sleep(SLEEP)
 
     revs = data.xpath('//article//h3[contains(@class, "title")]/a')
     for rev in revs:
@@ -43,20 +39,18 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
 
         if not any(xtitle in title for xtitle in XTITLE):
-            session.queue(Request(url, max_age=0), process_review, dict(title=title, url=url))
+            session.queue(Request(url), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, max_age=0), process_revlist, dict())
+        session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data, context, session):
     strip_namespace(data)
 
-    time.sleep(SLEEP)
-
     product = Product()
-    product.name = serialize_text(context['title'].split('Gear Review: ')[-1])
+    product.name = serialize_text(context['title']).split('Gear Review: ')[-1].replace(' Reviews', '').replace(' Review', '').replace('More Tester ', '').replace('Field Test: ', '').replace('Four Field-Tested ', '').replace('Gear Guide 2012: ', '').replace('Review: ', '').replace('Gear Test: ', '').replace('Time-Tested Gear: ', '').strip()
     product.ssid = data.xpath('//article/@data-uuid').string()
     product.category = 'Gear'
 
@@ -113,13 +107,24 @@ def process_review(data, context, session):
     summary = data.xpath('//div[@class="c-article-dek"]/p//text()[normalize-space()]').string(multiple=True)
     if summary:
         summary = serialize_text(summary)
-        if summary:
+        if len(summary) > 2:
             review.add_property(type='summary', value=summary)
 
-    excerpt = data.xpath('//div[contains(@class, "in-article")]/p[not(regexp:test(., "^\s*(\$\d*;|pros\s*:|cons\s*:)", "i"))][not(regexp:test(., "^\s*\*\s*Overall", "i"))][not(regexp:test(., "^\s*(Originally published|Published.*;)", "i"))]//text()[not(parent::*[regexp:test(., "^\s*(\$\d*;|pros\s*:|cons\s*:)", "i")])]').string(multiple=True)
+    conclusion = data.xpath('//p[contains(., "Verdict")]//text()[not(contains(., "Verdict"))]').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//p[contains(., "Verdict")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "in-article")]/p[not(regexp:test(., "^\s*(\$\d*;|pros\s*:|cons\s*:)", "i"))][not(regexp:test(., "^\s*\*\s*Overall", "i"))][not(regexp:test(., "^\s*(Originally published|Published.*;)", "i"))]//text()[not(parent::*[regexp:test(., "^\s*(\$\d*;|pros\s*:|cons\s*:)", "i")])]').string(multiple=True)
+
     if excerpt:
         excerpt = serialize_text(excerpt)
-        if excerpt:
+
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
+        if len(excerpt) > 2:
             review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)

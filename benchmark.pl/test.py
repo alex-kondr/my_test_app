@@ -16,6 +16,11 @@ agent = agents.BENCHMARK_PL
 # agent = agents.TEST
 reload = 1
 
+# name: 374+
+# author: 1604
+# pros_cons: 14
+# conclusion: 1
+# excerpt: 987
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)

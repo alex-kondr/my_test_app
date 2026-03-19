@@ -16,12 +16,14 @@ agent = agents.BACKPACKER_US
 # agent = agents.TEST
 reload = 1
 
+# name: 8+
+# excerpt: 105+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload)
     print(product.result)
     test = TestProductMultiprocessing(product)
-    test.run(xproduct_names=[], not_xproduct_name='', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
+    test.run(xproduct_names=[], not_xproduct_name='¼', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
 
     log = LogProduct(agent, reload=reload)
     test_log = TestLogProduct(log)

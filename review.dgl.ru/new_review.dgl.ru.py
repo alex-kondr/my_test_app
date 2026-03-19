@@ -6,7 +6,7 @@ TITLE = ['взгляд', 'обзор']
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('https://www.dgl.ru/reviews', max_age=0), process_revlist, dict())
 
 

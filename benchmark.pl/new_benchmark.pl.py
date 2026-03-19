@@ -39,7 +39,7 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath("//a[@rel='author']").first()
+    author = data.xpath("//a[@rel='author']|//span[@class='authorship-name__link']").first()
     if author:
         author_name = author.xpath('span[contains(@class, "first")]/text() | span[contains(@class, "last")]/text()').string(multiple=True)
         author_url = author.xpath("@href").string()
@@ -60,7 +60,7 @@ def process_review(data, context, session):
         value = grade_overall.replace(',', '.').split('/')[0]
         review.grades.append(Grade(type="overall", value=float(value), best=5.0))
 
-    pros = data.xpath("//div[@class='plus-minus']//div[text()='Plusy' or text()='Pros' or ./span/text()='Plusy' or ./span/text()='Pros']/following-sibling::ul/li|//h3[contains(.,'Plusy')]/following-sibling::ul[following-sibling::h3]/li")
+    pros = data.xpath("(//div[@class='plus-minus']//div[text()='Plusy' or text()='Pros' or ./span/text()='Plusy' or ./span/text()='Pros']/following-sibling::ul|//h3[contains(.,'Plusy')]/following-sibling::ul[following-sibling::h3])[1]/li")
     if not pros:
         pros = data.xpath('(//h3[contains(., "Warto kupić, jeśli:")]/following-sibling::ul)[1]/li')
 
@@ -80,7 +80,7 @@ def process_review(data, context, session):
                 if len(pro) > 1:
                     review.add_property(type='cons', value=pro)
 
-    cons = data.xpath("//div[@class='plus-minus']//div[text()='Minusy' or text()='Minuses' or ./span/text()='Minusy' or ./span/text()='Minuses']/following-sibling::ul/li|//h3[contains(.,'Minusy')]/following-sibling::ul/li")
+    cons = data.xpath("(//div[@class='plus-minus']//div[text()='Minusy' or text()='Minuses' or ./span/text()='Minusy' or ./span/text()='Minuses']/following-sibling::ul|//h3[contains(.,'Minusy')]/following-sibling::ul)[1]/li")
     if not cons:
         cons = data.xpath('(//h3[contains(., "Nie warto, jeśli:")]/following-sibling::ul)[1]/li')
 
@@ -102,25 +102,28 @@ def process_review(data, context, session):
 
     summary = data.xpath("//div[@class='article__preamble']//text()").string(multiple=True)
     if summary:
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type="summary", value=summary.strip())
 
-    excerpt = data.xpath('//*[self::h2 or self::h3 or self::h4][regexp:test(normalize-space(.),"czy.+warto|czy.+wybór", "i")]/preceding::p[not(.//em)]//text()').string(multiple=True)
+    excerpt = data.xpath('//*[self::h2 or self::h3 or self::h4][regexp:test(normalize-space(.),"czy.+warto|czy.+wybór", "i")]/preceding::p[not(.//em or parent::div[@class="article__preamble"])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="content"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="content"]/p[not(.//em or parent::div[@class="article__preamble"])]//text()').string(multiple=True)
 
     next_page = data.xpath("//div[@class='readNext center' or @class='readNext right']//a/@href").string()
     page_title = data.xpath("//div[@class='bbh-p-head']//h1//text()").string()
     if next_page:
         review.add_property(type="pages", value=dict(url=context['url'], title=page_title))
 
-        session.do(Request(next_page, use="curl", max_age=0), process_lastpage, dict(product=product, review=review, excerpt=excerpt))
+        session.do(Request(next_page, use="curl", force_charset="utf-8", max_age=0), process_lastpage, dict(product=product, review=review, excerpt=excerpt))
 
     else:
         conclusion = data.xpath("//*[self::h2 or self::h3 or self::h4][regexp:test(normalize-space(.),'czy.+warto|czy.+wybór', 'i')]/following-sibling::p[following-sibling::h3 or following-sibling::h2 or following-sibling::h4 or following-sibling::div][last() and not(.//em)]//text()").string(multiple=True)
         if conclusion:
+            conclusion = conclusion.replace(u'\uFEFF', '').strip()
             review.add_property(type="conclusion", value=conclusion)
 
         if excerpt:
+            excerpt = excerpt.replace(u'\uFEFF', '').strip()
             review.add_property(type="excerpt", value=excerpt)
 
             product.reviews.append(review)
@@ -142,6 +145,7 @@ def process_lastpage(data, context, session):
         if page_title and "podsumowanie" in page_title.lower():
             conclusion = data.xpath("//div[@id='content']/p//text()").string(multiple=True)
             if conclusion:
+                conclusion = conclusion.replace(u'\uFEFF', '').strip()
                 review.add_property(type="conclusion", value=conclusion)
 
         else:
@@ -149,6 +153,7 @@ def process_lastpage(data, context, session):
             if excerpt:
                 context['excerpt'] += ' ' + excerpt
 
+        context['excerpt'] = context['excerpt'].replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=context['excerpt'])
 
         product= context['product']
