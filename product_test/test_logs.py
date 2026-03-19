@@ -61,21 +61,21 @@ def process_log_chunk(chunk: list[str]) -> list[list[str]]:
 
 
 class LogProduct:
-    def __init__(self, agent_id: int, reload=False):
+    def __init__(self, agent_id: int, reload=False, session_id=0):
         self.agent_id = agent_id
         self.emits_dir = Path("product_test/logs")
         self.emits_dir.mkdir(exist_ok=True)
         self.file_path = self.emits_dir / f"agent-{self.agent_id}.json"
 
         if not self.file_path.exists() or reload:
-            self.file = self.generate_file()
+            self.file = self.generate_file(session_id)
         else:
             logger.info(f"Opening existing log file: {self.file_path}")
             self.file = self.open_file()
 
-    def generate_file(self) -> list:
+    def generate_file(self, session_id=0) -> list:
         logger.info(f"Getting logs for agent {self.agent_id}...")
-        content = load_file(agent_id=self.agent_id, type_file="log", decode=True)
+        content = load_file(agent_id=self.agent_id, type_file="log", decode=True, session_id=session_id)
         content_list = content.split("\n")
         logger.info(f"Get logs complete ({len(content_list)} lines). Saving logs...")
         self.save_file(content_list)

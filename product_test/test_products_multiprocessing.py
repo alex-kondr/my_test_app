@@ -154,9 +154,9 @@ def process_yaml_item(items):
 
 
 class ResultParse:
-    def __init__(self, agent_id: int):
+    def __init__(self, agent_id: int, session_id=0):
         self.agent_id = agent_id
-        self.result()
+        self.result(session_id)
 
     def __str__(self):
         return f"""
@@ -169,8 +169,8 @@ Failed jobs: {self.failed_jobs}
 Wasted time: {self.time}
             """
 
-    def result(self):
-        content = load_file(agent_id=self.agent_id, type_file="log", size=400, decode=True)
+    def result(self, session_id=0):
+        content = load_file(agent_id=self.agent_id, type_file="log", size=400, decode=True, session_id=session_id)
 
         try:
             def find_stat(pattern, text):
@@ -218,7 +218,7 @@ class Product:
         self.emits_dir = Path("product_test/emits")
         self.emits_dir.mkdir(exist_ok=True)
         self.file_path = self.emits_dir / f"agent-{self.agent_id}.json"
-        self.result = ResultParse(self.agent_id)
+        self.result = ResultParse(self.agent_id, session_id=session_id)
 
         if not self.file_path.exists() or reload:
             self.file = self.generate_file(session_id=session_id)
