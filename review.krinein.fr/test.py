@@ -17,11 +17,13 @@ agent = agents.KRINEIN_FR
 reload = 1
 session_id = 0
 
-# name: 67
-# category: 164
+# name: 67+
+# category: 0+
 # title: 0+
-# grades: 1562+ https://jeux-video.krinein.com/death-mark-test-vita/
-# excerpt: 195
+# grades: 1560+ https://jeux-video.krinein.com/death-mark-test-vita/, https://jeux-video.krinein.com/professeur-layton-destin-perdu-test/
+# conclusion: 1
+# excerpt: 181
+# logs: 0+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

@@ -36,7 +36,7 @@ def process_review(data, context, session):
 
     platforms = data.xpath('(//div[contains(text(), "Plateforme")]/following-sibling::ul)[1]/li//text()[normalize-space(.)]').join('/')
     if platforms:
-        product.category += '|' + platforms.replace(' (Steam)', '').replace(' (PS4)', '').replace(' (PS3)', '').replace(' (Epic)', '').replace('Epic) ', '').replace(' (Steam', '').replace(' (Origin)', '').replace(' (eShop)', '').replace(' (PS3 - PSN)', '').replace(' (XBLA)', '')
+        product.category += '|' + platforms.replace(' (Steam)', '').replace(' (PS4)', '').replace(' (PS3)', '').replace(' (Epic)', '').replace('Epic) ', '').replace(' (Steam', '').replace(' (Origin)', '').replace(' (eShop)', '').replace(' (PS3 - PSN)', '').replace(' (XBLA)', '').replace(' (Ps2)', '').replace(' (PS2)', '')
 
     genres = data.xpath('(//div[contains(text(), "Genre")]/following-sibling::ul)[1]/li//text()[normalize-space(.)]').join('/')
     if genres:
@@ -64,21 +64,22 @@ def process_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    grades = data.xpath('//p[regexp:test(., ": \d(,\d)?/\d")]//text()[regexp:test(., ": \d(,\d)?/\d")][normalize-space(.)]').strings()
+    grades = data.xpath('//p[regexp:test(., ": \d(,\d)?/\d")]//text()[regexp:test(., ": \d(,\d)?/\d") and not(contains(., "Note"))][normalize-space(.)]').strings()
     for grade in grades:
         grade_name = grade.split(':')[0].strip(' .-')
         grade_val = grade.split(':')[-1].split('/')[0].replace(',', '.')
-        if grade_name and grade_val and float(grade_val) > 0:
-            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
+        grade_best = grade.split(':')[-1].split('/')[-1].strip().split()[0]
+        if grade_name and grade_val and float(grade_val) > 0 and grade_best.isdigit():
+            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=float(grade_best)))
 
     summary = data.xpath('//p[@class="chapo"]//text()').string(multiple=True)
     if summary:
-        summary = h.unescape(summary).strip()
+        summary = h.unescape(summary).replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(.//img or regexp:test(., ": \d\,?\d?/\d") or contains(., "Résumé"))]//text()').string(multiple=True)
     if conclusion:
-        conclusion = h.unescape(conclusion).strip()
+        conclusion = h.unescape(conclusion).replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(contains(., "Tags") or @class or .//img)]//text()').string(multiple=True)
@@ -86,7 +87,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div/p[not(@class or contains(., "Tags") or .//img or regexp:test(., ": \d\,?\d?/\d") or contains(., "Résumé"))]//text()').string(multiple=True)
 
     if excerpt:
-        excerpt = h.unescape(excerpt).strip()
+        excerpt = h.unescape(excerpt).replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
