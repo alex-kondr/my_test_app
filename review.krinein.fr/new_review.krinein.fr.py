@@ -1,5 +1,9 @@
 from agent import *
 from models.products import *
+import HTMLParser
+
+
+h = HTMLParser.HTMLParser()
 
 
 def run(context, session):
@@ -21,7 +25,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' - Test')[0].strip()
+    product.name = h.unescape(context['title']).split(' - Test')[0].replace('Test Switch - ', '').replace('Le Testament de ', '').replace('Test - ', '').replace('- Test', '').replace(' - TEST', '').replace(' - Preview Steam', '').replace(' - Preview PC', '').replace('Test - ', '').replace(' Test PS4', '').replace(' : le test', '').replace('Thief - Preview : ', '').replace(' - Preview Hands Off', '').replace(' : Preview hands-off', '').replace('Test console - ', '').replace(' - Preview PS Vita', '').replace('Preview - ', '').replace(' - Preview', '').replace('Test de ', '').replace(' -Test', '').replace('Preview ', '').replace('Test ', '').strip()
     product.ssid = context['url'].split('/')[-2]
     product.category = 'Jeux'
     product.manufacturer = data.xpath('(//div[contains(text(), "Développeur")]/following-sibling::ul)[1]/li//text()[normalize-space(.)]').string()
@@ -32,7 +36,7 @@ def process_review(data, context, session):
 
     platforms = data.xpath('(//div[contains(text(), "Plateforme")]/following-sibling::ul)[1]/li//text()[normalize-space(.)]').join('/')
     if platforms:
-        product.category += '|' + platforms
+        product.category += '|' + platforms.replace(' (Steam)', '').replace(' (PS4)', '').replace(' (PS3)', '').replace(' (Epic)', '').replace('Epic) ', '').replace(' (Steam', '')
 
     genres = data.xpath('(//div[contains(text(), "Genre")]/following-sibling::ul)[1]/li//text()[normalize-space(.)]').join('/')
     if genres:
@@ -40,7 +44,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = h.unescape(context['title'])
     review.url = context['url']
     review.ssid = product.ssid
 
@@ -64,14 +68,7 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
-    if conclusion:
-        review.add_property(type='conclusion', value=conclusion)
-
-    excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
-
+    excerpt = data.xpath('//div/p[not(@class or contains(., "Tags") or .//img)]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
