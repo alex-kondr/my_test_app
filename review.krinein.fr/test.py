@@ -17,10 +17,10 @@ agent = agents.KRINEIN_FR
 reload = 1
 session_id = 0
 
-# name: 144
-# category: 622
-# title: 1
-# grades: 1562
+# name: 67
+# category: 164
+# title: 0+
+# grades: 1562+ https://jeux-video.krinein.com/death-mark-test-vita/
 # excerpt: 195
 
 if __name__ == "__main__":
