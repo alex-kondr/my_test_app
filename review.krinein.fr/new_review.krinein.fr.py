@@ -64,7 +64,7 @@ def process_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    grades = data.xpath('//p[regexp:test(., ": \d\,?\d?/\d")]//text()[regexp:test(., ": \d\,?\d?/\d")][normalize-space(.)]').strings()
+    grades = data.xpath('//p[regexp:test(., ": \d(,\d)?/\d")]//text()[regexp:test(., ": \d(,\d)?/\d")][normalize-space(.)]').strings()
     for grade in grades:
         grade_name = grade.split(':')[0].strip(' .-')
         grade_val = grade.split(':')[-1].split('/')[0].replace(',', '.')
