@@ -78,11 +78,16 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('(//h4|//h3)[regexp:test(., "Conclusão|Vale a pena|veredito|Veredicto", "i")]/following-sibling::p[not(contains(., "Nota final"))]//text()').string(multiple=True)
+    conclusion = data.xpath('((//h4|//h3)[regexp:test(., "Conclusão|Condução|veredito|Veredicto", "i")])[last()]/following-sibling::p[not(contains(., "Nota final"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('((//h4|//h3)[regexp:test(., "Vale a pena", "i")])[last()]/following-sibling::p[not(contains(., "Nota final"))]//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('((//h4|//h3)[regexp:test(., "Conclusão|Vale a pena|veredito|Veredicto", "i")])[1]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('(//h4|//h3)[regexp:test(., "Conclusão|Condução|veredito|Veredicto", "i")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('((//h4|//h3)[regexp:test(., "Vale a pena", "i")])[1]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "content-inner")]/p[not(contains(., "Nota final"))]//text()').string(multiple=True)
 

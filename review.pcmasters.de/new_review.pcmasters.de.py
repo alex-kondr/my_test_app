@@ -79,6 +79,9 @@ def process_review(data, context, session):
                 review.add_property(type='cons', value=con)
 
     summary = data.xpath('//body/p/strong//text()').string(multiple=True)
+    if not summary:
+        summary = data.xpath('//p[@itemprop="description"]//text()').string(multiple=True)
+
     if summary:
         review.add_property(type='summary', value=summary)
 

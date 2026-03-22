@@ -157,9 +157,8 @@ def process_reviews(data, context, session):
 
                 product.reviews.append(review)
 
-    next_page = data.xpath('//li[contains(@class, "page-next")][not(contains(@class, "disabled"))]/input/@value').string()
-    if next_page:
-        next_url = context['revs_url'] + '?p=' + next_page
+    next_url = data.xpath('//li[contains(@class, "page-next")][not(contains(@class, "disabled"))]/a[@class="page-link"]/@href').string()
+    if next_url:
         session.do(Request(next_url), process_reviews, dict(context, product=product))
 
     elif product.reviews:

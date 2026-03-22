@@ -7,7 +7,7 @@ SLEEP = 2
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('https://moviesgamesandtech.com/category/reviews/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
@@ -137,6 +137,8 @@ def process_review(data, context, session):
         conclusion = data.xpath('//p[contains(., "Conclusion:")]/following-sibling::p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[(.//strong|.//b)[regexp:test(., "Conclusion|Verdict|Final Thoughts")]]/following-sibling::p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[contains(@class, "review-summary-content")]//text()[not(starts-with(normalize-space(.), "-") or starts-with(normalize-space(.), "+") or contains(., "Price -") or contains(., "(A code was provided"))]').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)

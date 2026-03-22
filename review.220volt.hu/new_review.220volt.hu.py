@@ -94,9 +94,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h3[contains(., "röviden") or contains(., "Röviden")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "blog-details__text")]/p[not(contains(.,"számodra:") or contains(.,"Pros") or contains(.,"Cons") or contains(.,"Pro/Con") or contains(.,"pozitívumai") or contains(.,"negatívumai") or preceding::h3[contains(., "röviden") or contains(., "Röviden")])]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "siteblock_text")]/p[not(contains(.,"számodra:") or contains(.,"Pros") or contains(.,"Cons") or contains(.,"Pro/Con") or contains(.,"pozitívumai") or contains(.,"negatívumai") or preceding::h3[contains(., "röviden") or contains(., "Röviden")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "siteblock_text") or contains(@class, "blog-details__text")]/p[not(contains(.,"számodra:") or contains(.,"Pros") or contains(.,"Cons") or contains(.,"Pro/Con") or contains(.,"pozitívumai") or contains(.,"negatívumai") or preceding::h3[contains(., "röviden") or contains(., "Röviden")])]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

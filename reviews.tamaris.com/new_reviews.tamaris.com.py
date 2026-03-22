@@ -8,7 +8,7 @@ import HTMLParser
 h = HTMLParser.HTMLParser()
 
 
-XCAT = ['Neuheiten', 'Shop By', 'Exklusiv bei Tamaris', 'Kollektionen', 'Sale', 'Aus unserer Werbung', 'Exklusiv bei uns']
+XCAT = ['Neuheiten', 'Shop By', 'Exklusiv bei Tamaris', 'Kollektionen', 'Sale', 'Aus unserer Werbung', 'Exklusiv bei uns', 'Inspirationen']
 DUPE_PRODS = []
 
 

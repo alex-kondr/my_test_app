@@ -55,7 +55,7 @@ def process_prodlist(data, context, session):
     prods = data.xpath('//a[contains(@class, "product__title")]')
     for prod in prods:
         name = prod.xpath('text()').string()
-        url = prod.xpath('@href').string()
+        url = prod.xpath('@href').string().split('?')[0].split('#')[0]
         session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
 # no next page
