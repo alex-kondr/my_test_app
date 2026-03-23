@@ -38,7 +38,7 @@ def process_review(data, context, session):
     title = data.xpath('//h1[contains(@class, "title")]/text()').string()
 
     product = Product()
-    product.name = title.replace('Análise TeK: ', '').strip()
+    product.name = title.replace('Análise TeK: ', '').replace('Análise TEK:', '').replace('Análise TEK Notícias: ', '').replace('Análise: ', '').replace('Análise ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = 'Tecnologia'
@@ -65,9 +65,9 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h3[contains(., "Considerações finais") or contains(., "Veredito")]/following-sibling::p[not(contains(a/@href, "mailto") or small/i)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h3[contains(., "Considerações finais") or contains(., "Veredito")]/following-sibling::p[not(contains(a/@href, "mailto") or .//i)]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//p[contains(., "Aspetos a reter")]/following-sibling::p[not(contains(a/@href, "mailto") or small/i)]//text()').string(multiple=True)
+        conclusion = data.xpath('//p[contains(., "Aspetos a reter")]/following-sibling::p[not(contains(a/@href, "mailto") or .//i)]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
@@ -76,7 +76,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//p[contains(., "Aspetos a reter")]/preceding-sibling::text()|//p[contains(., "Aspetos a reter")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//div[contains(@class, "entry-content")]/p//text()|//div[contains(@class, "entry-content")]/text())[not(contains(., "gspb_gallery_grid") or contains(a/@href, "mailto") or small/i)]').string(multiple=True)
+        excerpt = data.xpath('(//div[contains(@class, "entry-content")]/p//text()|//div[contains(@class, "entry-content")]/text())[not(contains(., "gspb_gallery_grid") or contains(a/@href, "mailto") or .//i)]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
