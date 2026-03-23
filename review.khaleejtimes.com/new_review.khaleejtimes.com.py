@@ -2,6 +2,10 @@ from agent import *
 from models.products import *
 import simplejson
 from datetime import datetime
+import HTMLParser
+
+
+h = HTMLParser.HTMLParser()
 
 
 XTITLE = ['Best of']
@@ -18,7 +22,7 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.get('headline')
         ssid = rev.get('id')
-        url = rev.get('url')
+        url = rev.get('url').split('?')[0]
 
         if title and url and not any(xtitle in title for xtitle in XTITLE):
             session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, title=title, ssid=ssid, url=url))
@@ -70,7 +74,7 @@ def process_review(data, context, session):
     if excerpts:
         excerpt_data = ''.join([excerpt.get('text', '').strip() for excerpt in excerpts if '<p>' in excerpt.get('text')])
 
-        excerpt = excerpt_data.replace('<p>', '').replace('</p>', '').replace('<em>', '').replace('</em>', '').replace('- muzaffarrizvi@khaleejtimes.com', '').strip()
+        excerpt = h.unescape(excerpt_data).replace('<p>', '').replace('</p>', '').replace('<em>', '').replace('</em>', '').replace('- muzaffarrizvi@khaleejtimes.com', '').strip()
 
         if '<strong>Stars</strong>:' in excerpt:
             excerpt, grade_overall = excerpt.split('<strong>Stars</strong>:')
@@ -82,7 +86,7 @@ def process_review(data, context, session):
         if 'CONS' in excerpt:
             excerpt, cons = excerpt.split('CONS')
 
-            cons = cons.split('\t')
+            cons = cons.replace('<strong>', '').replace('</strong>', '').replace('</strong', '').split('\t')
             for con in cons:
                 con = con.strip(' +-*.;•–>')
                 if len(con) > 1:
