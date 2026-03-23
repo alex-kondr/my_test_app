@@ -1,5 +1,9 @@
 from agent import *
 from models.products import *
+import time
+
+
+SLEEP = 2
 
 
 def run(context, session):
@@ -7,6 +11,8 @@ def run(context, session):
 
 
 def process_revlist(data, context, session):
+    time.sleep(SLEEP)
+
     revs = data.xpath('//h2/a')
     for rev in revs:
         title = rev.xpath('text()').string()
@@ -21,6 +27,8 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
+    time.sleep(SLEEP)
+
     product = Product()
     product.name = context['title'].split(' Test - ')[0].split(' im Test')[0].split(' Test der ')[0].split(' auf moderner ')[0].split(' Test & Vergleich')[0].split(' Test/Review')[0].split('Chair/Review')[0].split('Platinum/Review')[0].split(' im Vergleich')[0].split(' Analyse der ')[0].split(' im Langzeit-Test:')[0].split(' im Dauer-Test')[0].split(' und Reviews')[0].split(' Test ')[0].split(' Test: ')[0].replace(' Testbericht', '').replace(' im Schnelltest', '').replace(' im Kurztest', '').replace(' Schnelltest', '').replace(' (Testbericht)', '').replace(' im Multiplayer-Test', '').replace(' im Langzeittest', '').replace('Kurztest:', '').replace(' Kurztest', '').replace('Review: ', '').replace(' im Überblick', '').replace(' Test', '').replace(' Review', '').split('/Review')[0].replace('Test: ', '').replace(' Vergleichstest', '').strip(' :')
     product.url = context['url']
@@ -63,6 +71,9 @@ def process_review(data, context, session):
             review.grades.append(Grade(name=grade_name, value=grade_val, best=100.0))
 
     pros = data.xpath('((//h2|//h3)[@id="pro" or normalize-space(text())="Pro"]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('//font[@color="green"][starts-with(normalize-space(.), "-")]')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -71,6 +82,9 @@ def process_review(data, context, session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('((//h2|//h3)[@id="contra" or normalize-space(text())="Contra"]/following-sibling::*)[1]/li')
+    if not cons:
+        cons = data.xpath('//font[@color="red"][starts-with(normalize-space(.), "-")]')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -87,12 +101,14 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//h2[contains(@id, "fazit") or contains(text(), "Fazit")]/following-sibling::p[not(preceding::h3[contains(text(), "Preise und Marktverfügbarkeit")])]//text()').string(multiple=True)
     if not conclusion:
+        conclusion = data.xpath('//p[contains(b, "Fazit:")]//text()[not(contains(., "Fazit:"))]|//p[contains(b, "Fazit:")]/following-sibling::p[not(contains(., "Autor:"))]//text()').string(multiple=True)
+    if not conclusion:
         conclusion = data.xpath('//div[@class="shortconclusion"]/p//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//div[@class="articleBody"]|//div[@class="articleBody"]/div)/p[not(preceding::h2[contains(@id, "fazit") or contains(text(), "Fazit")] or preceding::h3[contains(text(), "Preise und Marktverfügbarkeit")])]//text()').string(multiple=True)
+    excerpt = data.xpath('(//div[@class="articleBody"]|//div[@class="articleBody"]/div|//body)/p[not(@itemprop or preceding::h2[contains(@id, "fazit") or contains(text(), "Fazit")] or preceding::h3[contains(text(), "Preise und Marktverfügbarkeit")] or contains(., "Autor:") or contains(b, "Fazit:") or preceding::p[contains(b, "Fazit:")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
