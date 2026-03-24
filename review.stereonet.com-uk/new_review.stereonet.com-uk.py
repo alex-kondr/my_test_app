@@ -1,0 +1,73 @@
+from agent import *
+from models.products import *
+
+
+def run(context, session):
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    options = "--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0' -H 'Accept: */*' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'X-Requested-With: XMLHttpRequest' -H 'Alt-Used: www.stereonet.com' -H 'Connection: keep-alive' -H 'Cookie: us_tracker=%7B%220%22%3A%22media%2Fcss%2Farticle-detail.css%22%2C%22token%22%3A%22a24a122ef5014504e43691d5d568c95a82bc2a27ee0c34146e26f9e591321d5c4b493ff487abf7dbe32b6c83a045f0ba%22%7D; merged_new_tracker=%7B%220%22%3A%22reviews%2Freview-ds-audio-ds-002-optical-phono-cartridge%22%2C%221%22%3A%22media%2Fcss%2Fbootstrap.min.css.map%22%2C%222%22%3A%22reviews%2Flehmannaudio-black-cube-se-ii-sven-vaeth-phono-stage-review%22%2C%223%22%3A%22reviews%2Freview-medialight-bias-lighting%22%2C%224%22%3A%22reviews%2Fkii-seven-wireless-music-system-first-impressions%22%2C%22token%22%3A%225db450fdb0a73af4bf395bf9238507198562a1b144fd14d6df25d490acc53c3ac743399a8ecfb9fd1155d05e0e862064%22%7D; sfl_token_state=%257B%2522miss_count%2522%253A0%252C%2522first_miss_at%2522%253A0%252C%2522last_miss_at%2522%253A0%252C%2522last_validated_at%2522%253A0%252C%2522last_seen_forum_at%2522%253A0%252C%2522last_forum_member_id%2522%253A0%252C%2522last_reason%2522%253A%2522no_forum_cookie_no_token%2522%257D; stereonet_tracker=%7B%220%22%3A%22media%2Fcss%2Fbootstrap.min.css.map%22%2C%221%22%3A%22page_templates%2Fforum-data%22%2C%222%22%3A%22reviews%22%2C%22token%22%3A%22a0eaa98615104f61485f9506c736495782f449d8c5f513ff93c74d76b16a3e8459274d489c83b5bce0ebe678e9bd8dd9%22%7D; geotargetlygeoconsent1740635347323cookie=geotargetlygeoconsent1740635347323cookie' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Priority: u=0' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers'"
+    session.queue(Request('https://www.stereonet.com/page_templates/article_list_ajax/reviews/0', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+
+
+def process_revlist(data, context, session):
+    revs = data.xpath('//h4/a')
+    for rev in revs:
+        url = rev.xpath('@href').string()
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(url=url))
+
+    if revs:
+        offset = context.get('offset', 0) + 12
+        options = "--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0' -H 'Accept: */*' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'X-Requested-With: XMLHttpRequest' -H 'Alt-Used: www.stereonet.com' -H 'Connection: keep-alive' -H 'Cookie: us_tracker=%7B%220%22%3A%22media%2Fcss%2Farticle-detail.css%22%2C%22token%22%3A%22a24a122ef5014504e43691d5d568c95a82bc2a27ee0c34146e26f9e591321d5c4b493ff487abf7dbe32b6c83a045f0ba%22%7D; merged_new_tracker=%7B%220%22%3A%22reviews%2Freview-ds-audio-ds-002-optical-phono-cartridge%22%2C%221%22%3A%22media%2Fcss%2Fbootstrap.min.css.map%22%2C%222%22%3A%22reviews%2Flehmannaudio-black-cube-se-ii-sven-vaeth-phono-stage-review%22%2C%223%22%3A%22reviews%2Freview-medialight-bias-lighting%22%2C%224%22%3A%22reviews%2Fkii-seven-wireless-music-system-first-impressions%22%2C%22token%22%3A%225db450fdb0a73af4bf395bf9238507198562a1b144fd14d6df25d490acc53c3ac743399a8ecfb9fd1155d05e0e862064%22%7D; sfl_token_state=%257B%2522miss_count%2522%253A0%252C%2522first_miss_at%2522%253A0%252C%2522last_miss_at%2522%253A0%252C%2522last_validated_at%2522%253A0%252C%2522last_seen_forum_at%2522%253A0%252C%2522last_forum_member_id%2522%253A0%252C%2522last_reason%2522%253A%2522no_forum_cookie_no_token%2522%257D; stereonet_tracker=%7B%220%22%3A%22media%2Fcss%2Fbootstrap.min.css.map%22%2C%221%22%3A%22page_templates%2Fforum-data%22%2C%222%22%3A%22reviews%22%2C%22token%22%3A%22a0eaa98615104f61485f9506c736495782f449d8c5f513ff93c74d76b16a3e8459274d489c83b5bce0ebe678e9bd8dd9%22%7D; geotargetlygeoconsent1740635347323cookie=geotargetlygeoconsent1740635347323cookie' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin' -H 'Priority: u=0' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers'"
+        next_url = 'https://stereonet.com/page_templates/article_list_ajax/reviews/' + str(offset)
+        session.queue(Request(next_url, use='curl', options=options, max_age=0), process_revlist, dict(offset=offset))
+
+
+def process_review(data, context, session):
+    title = data.xpath('//h1[contains(@class, "h1")]//text()').string()
+    if not title:
+        return
+
+    product = Product()
+    product.name = title.replace('Review of ', '').replace('Review: ', '').replace('REVIEW: ', '').replace(' Review', '').replace(' REVIEW', '').replace(' review', '').replace('EXCLUSIVE:', '').strip()
+    product.url = context['url']
+    product.ssid = product.url.split('/')[-1].replace('-review', '')
+    product.category = 'Tech'
+    product.manufacturer = data.xpath('//div[contains(@class, "brand")]/h2/a/text()').string()
+
+    review = Review()
+    review.type = 'pro'
+    review.title = title
+    review.url = product.url
+    review.ssid = product.ssid
+
+    date = data.xpath('//div[@class="postedDate"]/span/text()').string()
+    if date:
+        review.date = date.replace('Posted on', '').strip()
+
+    author =data.xpath('//div[@class="textholder"]/h5/a/text()').string()
+    author_url = data.xpath('//div[@class="textholder"]/h5/a/@href').string()
+    if author and author_url:
+        review.authors.append(Person(name=author, ssid=author, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    summary = data.xpath('//div[contains(@class, "summary")]/p[not(contains(., "Posted in") or contains(., "£"))]//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    conclusion = data.xpath('(//h2[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")]|//h3[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")])/following-sibling::p[not(contains(., "For more information") or contains(., "£"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[contains(@class, "award-conten")]/p[not(contains(., "Posted in") or contains(., "£"))]//text()').string(multiple=True)
+
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('(//h2[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")]|//h3[contains(., "VERDICT") or contains(., "Verdict") or contains(., "verdict")])/preceding-sibling::p[not(contains(., "For more information") or contains(., "£"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@id="thumbnails"]/p[not(contains(., "For more information") or contains(., "£"))]//text()').string(multiple=True)
+
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
