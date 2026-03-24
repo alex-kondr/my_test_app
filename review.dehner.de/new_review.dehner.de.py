@@ -87,9 +87,9 @@ def process_product(data, context, session):
         if author:
             review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = rev.xpath('.//span[contains(@aria-label, "Stars")]/@aria-label').string()
+        grade_overall = rev.xpath('.//span[contains(@aria-label, "Star")]/@aria-label').string()
         if grade_overall:
-            grade_overall = grade_overall.replace('Stars', '')
+            grade_overall = grade_overall.split()[0]
             if grade_overall and float(grade_overall) > 0:
                 review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 

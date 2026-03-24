@@ -17,7 +17,7 @@ agent = agents.DEHNER_DE
 reload = 1
 session_id = 0
 
-# grades: 78
+# grades: 10
 # author: 2+
 
 if __name__ == "__main__":
