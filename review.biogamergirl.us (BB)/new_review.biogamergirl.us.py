@@ -1,10 +1,6 @@
 from agent import *
 from models.products import *
 import re
-import time
-
-
-SLEEP = 2
 
 
 def run(context, session):
@@ -12,8 +8,6 @@ def run(context, session):
 
 
 def process_revlist(data, context, session):
-    time.sleep(SLEEP)
-
     revs = data.xpath('//h3[contains(@class, "post-title")]/a')
     for rev in revs:
         title = rev.xpath('.//text()').string()
@@ -26,8 +20,6 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
-    time.sleep(SLEEP)
-
     product = Product()
     product.name = context['title'].split('Review: ')[-1].split(':')[0].split(' Review ')[0].split(' (')[0].replace(' Review', '').replace('Review -', '').replace('Oh...Sir!', '').strip()
     product.url = context['url']
