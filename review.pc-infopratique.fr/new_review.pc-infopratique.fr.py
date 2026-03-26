@@ -107,6 +107,8 @@ def process_review(data, context, session):
 
 
 def process_review_last(data, context, session):
+    strip_namespace(data)
+
     review = context['review']
 
     pros = data.xpath('//tbody[tr[contains(., "On aime")]]/tr[@valign="top"]//font//text()')
@@ -131,7 +133,7 @@ def process_review_last(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//font[contains(@style, "FONT-FAMILY")]/p[not(strong[regexp:test(., "Résumé|Informations complémentaires")])]//text()').string(multiple=True)
+    conclusion = data.xpath('//font[contains(@style, "FONT-FAMILY")]/p[not(strong[regexp:test(., "Résumé|Informations complémentaires")] or contains(., "Auteur :"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//font[contains(@style, "FONT-FAMILY: Verdana") and br and not(.//tbody or contains(., "Dossier publi"))]//text()').string(multiple=True)
 

@@ -41,7 +41,7 @@ def process_review(data, context, session):
     product.category = 'Golf Clubs|' + context['cat']
     product.manufacturer = data.xpath('//h2[@class="brand"]/text()').string()
 
-    product.url = data.xpath('//a[contains(@class, "buy-link")]/@href').string()
+    product.url = data.xpath('//a[contains(@class, "buy-link") and not(contains(text(), "golf galaxy"))]/@href[not(contains(., "/click-"))]').string()
     if not product.url:
         product.url = context['url']
 
