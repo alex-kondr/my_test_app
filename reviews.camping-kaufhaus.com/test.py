@@ -17,6 +17,8 @@ agent = agents.CAMPING_KAUFHAUS_DE
 reload = 1
 session_id = 0
 
+# name: 1
+# excerpt: 1
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
