@@ -17,6 +17,10 @@ agent = agents.STEREO_RU
 reload = 1
 session_id = 0
 
+# name: 886+
+# category: 12+
+# conclusion: 3+
+# excerpt: 10+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

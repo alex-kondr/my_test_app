@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=6000)]
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request("https://androidinsider.ru/"), process_revlist, dict())
 
 
@@ -57,6 +57,7 @@ def process_product(data, context, session):
         conclusion = data.xpath('//h2[contains(., "Что лучше")][last()]/following-sibling::p[not(a[@class="link-alert"])]//text()').string(multiple=True)
 
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type="conclusion", value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Стоит ли")][last()]/preceding-sibling::p[not(a[@class="link-alert"] or code)]//text()').string(multiple=True)
@@ -66,6 +67,7 @@ def process_product(data, context, session):
         excerpt = data.xpath('//div[@class="article-body"]/p[not(.//a[regexp:test(@href, "://dzen.ru/|://t.me/")])]//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 

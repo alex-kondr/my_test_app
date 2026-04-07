@@ -17,12 +17,16 @@ agent = agents.ETEKNIX_COM_US
 reload = 1
 session_id = 0
 
+# name: 8+
+# author: 0+
+# conclusion: 342
+# excerpt: 12+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
     print(product.result)
     test = TestProductMultiprocessing(product)
-    test.run(xproduct_names=[], not_xproduct_name='', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
+    test.run(xproduct_names=[], not_xproduct_name='cable', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
 
     log = LogProduct(agent, reload=reload)
     test_log = TestLogProduct(log)

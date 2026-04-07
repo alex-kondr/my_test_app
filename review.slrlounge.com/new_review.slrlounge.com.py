@@ -1,27 +1,35 @@
 from agent import *
 from models.products import *
+import time
+
+
+SLEEP = 2
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request('https://www.slrlounge.com/camera/', max_age=0), process_revlist, dict())
+    session.queue(Request('https://www.slrlounge.com/camera/', use='curl', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
+    time.sleep(SLEEP)
+
     revs = data.xpath('//h3[contains(@class, "gb-headline-text")]/a')
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
 
         if 'Best ' not in title and 'review' in title.lower():
-            session.queue(Request(url, max_age=0), process_review, dict(title=title, url=url))
+            session.queue(Request(url, use='curl', max_age=0), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, max_age=0), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
+    time.sleep(SLEEP)
+
     product = Product()
     product.name = context['title'].replace('Review |', '').split(' | ')[0].split(' Preview –')[0].replace(' Test', '').replace('Review:', '').replace(' Review', '').split(' REVIEW: ')[-1].split(' review: ')[-1].strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
