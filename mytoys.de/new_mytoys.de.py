@@ -43,64 +43,48 @@ def remove_emoji(string):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.otto.de/babys/', force_charset='utf-8', max_age=0), process_catlist, dict(cat='Babymode'))
-    session.queue(Request('https://www.otto.de/spielzeug/', force_charset='utf-8', max_age=0), process_catlist, dict(cat='Spielzeug'))
-    session.queue(Request('https://www.otto.de/diy/bastelbedarf/bastelzubehoer/?altersgruppe=kinder', force_charset='utf-8', max_age=0), process_catlist, dict(cat='Basteln'))
-    session.queue(Request('https://www.otto.de/garten/gartenmoebel/gartenmoebel-sets/?altersgruppe=kinder', force_charset='utf-8', max_age=0), process_catlist, dict(cat='Kinder Gartenmöbel-Sets'))
+    session.queue(Request('https://www.otto.de/babys/', force_charset='utf-8'), process_catlist, dict(cat='Babymode'))
+    session.queue(Request('https://www.otto.de/spielzeug/', force_charset='utf-8'), process_catlist, dict(cat='Spielzeug'))
+    session.queue(Request('https://www.otto.de/diy/bastelbedarf/bastelzubehoer/?altersgruppe=kinder', force_charset='utf-8'), process_catlist, dict(cat='Basteln'))
+    session.queue(Request('https://www.otto.de/garten/gartenmoebel/gartenmoebel-sets/?altersgruppe=kinder', force_charset='utf-8'), process_catlist, dict(cat='Kinder Gartenmöbel-Sets'))
+    session.queue(Request('https://www.otto.de/damen/', force_charset='utf-8'), process_catlist, dict(cat='Damenmode'))
+    session.queue(Request('https://www.otto.de/herren/', force_charset='utf-8'), process_catlist, dict(cat='Herrenmode'))
+    session.queue(Request('https://www.otto.de/moebel/kindermoebel/', force_charset='utf-8'), process_catlist, dict(cat='Kinderzimmer'))
 
-    url = 'https://www.mytoys.de/mode-schuhe/?sortiertnach=bewertung'
-    session.queue(Request(url, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Bekleidung', cat_url=url))
-
-    url = 'https://www.otto.de/diy/malen/malvorlagen/malbuecher/?s=teenager&sortiertnach=bewertung'
-    session.queue(Request(url, force_charset='utf-8', max_age=0), process_prodlist, dict(cat='Teenager Malbücher', cat_url=url))
-
-    url = 'https://www.otto.de/moebel/kindermoebel/'
-    session.queue(Request(url, force_charset='utf-8', max_age=0), process_catlist, dict(cat='Kinderzimmer', cat_url=url))
+    url = 'https://www.otto.de/diy/malen/malvorlagen/malbuecher/?s=teenager'
+    session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat='Teenager Malbücher', cat_url=url))
 
 
 def process_catlist(data,context, session):
     strip_namespace(data)
 
-    sub_cats = data.xpath('//div[@class="nav_local-category"]//li[contains(@class, "nav_local-link")]/a')
+    sub_cats = data.xpath('//div[@class="nav_local-category"]//li[contains(@class, "nav_local-link") and not(contains(@class, "headline"))]/a')
     for sub_cat in sub_cats:
         sub_name = sub_cat.xpath('span[@class="nav_link-title"]/text()').string()
         url = sub_cat.xpath('@href').string()
-
-        if not sub_name.lower().startswith('alle'):
-            if '/?' in url:
-                prods_url = url + '&sortiertnach=bewertung'
-            else:
-                prods_url = url + '?sortiertnach=bewertung'
-
-            session.queue(Request(prods_url, force_charset='utf-8', max_age=0), process_prodlist, dict(cat=context['cat'] + '|' + sub_name, cat_url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=context['cat'] + '|' + sub_name, cat_url=url))
 
 
 def process_prodlist(data, context, session):
     strip_namespace(data)
 
-    prods = data.xpath('//article[@data-product-id and .//span[contains(@class, "product-title__title")]]')
+    prods = data.xpath('//article[@data-product-id]')
     for prod in prods:
         name = prod.xpath('.//span[contains(@class, "product-title__title")]/text()').string()
-        url = prod.xpath('.//a[contains(@class, "product-title__link")]/@href').string().split('#')[0]
+        url = prod.xpath('.//a[contains(@class, "link")]/@href').string().split('#')[0]
         ssid = prod.xpath('@data-product-id').string()
+        session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, name=name, ssid=ssid, url=url))
 
-        revs_cnt = prod.xpath('.//span[contains(@class, "rating__amount")]/text()').string()
-        if revs_cnt:
-            session.queue(Request(url, force_charset='utf-8', max_age=0), process_product, dict(context, name=name, ssid=ssid, url=url))
+
+    next_page = data.xpath('//li[.//span[@title="weiter"]]')
+    if next_page:
+        if '/?' in context['cat_url']:
+            next_url = context['cat_url'] + '&l=gp&o={}'
         else:
-            return
+            next_url = context['cat_url'] + '?l=gp&o={}'
 
-    prods_cnt = data.xpath('//span[contains(@class, "search-result__item-count")]/text()').string()
-    if prods_cnt:
-        prods_cnt = int(prods_cnt.replace('Produkte', '').replace('.', '').strip())
-        offset = context.get('offset', 0) + 120
-        if offset < prods_cnt:
-            if '/?' in context['cat_url']:
-                next_url = context['cat_url'] + '&l=gp&o={}&sortiertnach=bewertung'
-            else:
-                next_url = context['cat_url'] + '?l=gp&o={}&sortiertnach=bewertung'
-
-            session.queue(Request(next_url.format(offset), force_charset='utf-8', max_age=0), process_prodlist, dict(context, offset=offset))
+        offset = context.get('offset', 0) + len(prods)
+        session.queue(Request(next_url.format(offset), force_charset='utf-8'), process_prodlist, dict(context, offset=offset))
 
 
 def process_product(data, context, session):
@@ -123,7 +107,7 @@ def process_product(data, context, session):
             product.add_property(type='id.ean', value=ean)
 
     revs_url = 'https://www.otto.de/kundenbewertungen/{}/'.format(product.ssid)
-    session.do(Request(revs_url, force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+    session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -187,7 +171,7 @@ def process_reviews(data, context, session):
     if revs_cnt and offset < int(revs_cnt.replace('.', '').strip('( )')):
         next_page = context.get('page', 1) + 1
         revs_url = 'https://www.otto.de/kundenbewertungen/{ssid}/?page={page}'.format(ssid=product.ssid, page=next_page)
-        session.do(Request(revs_url, force_charset='utf-8', max_age=0), process_reviews, dict(product=product, offset=offset, page=next_page))
+        session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(product=product, offset=offset, page=next_page))
 
     elif product.reviews:
         session.emit(product)
