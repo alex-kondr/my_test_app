@@ -102,3 +102,4 @@ def process_review(data, context, session):
         product.reviews.append(review)
 
         session.emit(product)
+
