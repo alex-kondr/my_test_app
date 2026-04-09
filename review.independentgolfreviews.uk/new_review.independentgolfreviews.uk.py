@@ -6,7 +6,7 @@ XTITLE = ['Best ', 'Top ', 'Most ', 'Longest ']
 
 
 def run(context, session):
-    session.queue(Request('https://www.independentgolfreviews.com/'), process_frontpage, dict())
+    session.queue(Request('https://www.independentgolfreviews.com/', use='curl', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -18,7 +18,7 @@ def process_frontpage(data, context, session):
         for sub_cat in sub_cats:
             sub_name = sub_cat.xpath('text()').string()
             url = sub_cat.xpath('@href').string()
-            session.queue(Request(url), process_revlist, dict(cat=name+'|'+sub_name, cat_url=url))
+            session.queue(Request(url, use='curl', max_age=0), process_revlist, dict(cat=name+'|'+sub_name, cat_url=url))
 
 
 def process_revlist(data, context, session):
@@ -28,13 +28,13 @@ def process_revlist(data, context, session):
         url = rev.xpath('@href').string()
 
         if not any(xtitle in title for xtitle in XTITLE):
-            session.queue(Request(url), process_review, dict(context, title=title, url=url))
+            session.queue(Request(url, use='curl', max_age=0), process_review, dict(context, title=title, url=url))
 
     next_page = data.xpath('//button[@class="data-caret" and @data-action="next"]')
     if next_page:
         next_page = context.get('page', 1) + 1
         next_url = context['cat_url'] + '?page_num=' + str(next_page)
-        session.queue(Request(next_url), process_revlist, dict(context, page=next_page))
+        session.queue(Request(next_url, max_age=0), process_revlist, dict(context, page=next_page))
 
 
 def process_review(data, context, session):

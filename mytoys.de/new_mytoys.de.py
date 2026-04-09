@@ -70,10 +70,9 @@ def process_prodlist(data, context, session):
 
     prods = data.xpath('//article[@data-product-id]')
     for prod in prods:
-        name = prod.xpath('.//span[contains(@class, "product-title__title")]/text()').string()
         url = prod.xpath('.//a[contains(@class, "link")]/@href').string().split('#')[0]
         ssid = prod.xpath('@data-product-id').string()
-        session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, name=name, ssid=ssid, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, ssid=ssid, url=url))
 
 
     next_page = data.xpath('//li[.//span[@title="weiter"]]')
@@ -91,7 +90,7 @@ def process_product(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['name']
+    product.name = data.xpath('//h1//div[contains(@class, "main-name")]/text()').string()
     product.url = context['url']
     product.ssid = context['ssid']
     product.sku = data.xpath('//span[contains(@class, "article-number__value")]//text()').string(multiple=True)
