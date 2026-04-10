@@ -1,25 +1,34 @@
 from agent import *
 from models.products import *
+import time
+
+
+SLEEP = 2
+OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Alt-Used: golfalot.com' -H 'Connection: keep-alive' -H 'Cookie: mcforms-33055082-sessionId="3ef2b5f6-250c-439e-8876-f77a1c68c127"' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"""
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request('https://golfalot.com/equipment-review'), process_revlist, dict())
+    session.queue(Request('https://golfalot.com/equipment-review', use='curl', options=OPTIONS), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
+    time.sleep(SLEEP)
+
     revs = data.xpath('//h2[contains(@class, "title")]//a')
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url), process_review, dict(title=title, url=url))
+        session.queue(Request(url, use='curl', options=OPTIONS), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', options=OPTIONS), process_revlist, dict())
 
 
 def process_review(data, context, session):
+    time.sleep(SLEEP)
+
     product = Product()
     product.name = context['title'].replace(' Review', '').strip()
     product.url = context['url']

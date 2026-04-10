@@ -20,7 +20,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.xtremehardware.com/', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -43,7 +43,7 @@ def process_revlist(data, context, session):
     revs = data.xpath('//a[@class="grid-card"]')
     for rev in revs:
         url = rev.xpath('@href').string()
-        session.queue(Request(url + '?showall=1', force_charset='utf-8'), process_review, dict(context, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(context, url=url))
 
     next_url = data.xpath('//a[@class="page-btn" and contains(., "›")]/@href').string()
     if next_url:
@@ -58,7 +58,7 @@ def process_review(data, context, session):
         return
 
     product = Product()
-    product.name = title.replace('Preview: ', '').replace('Recensione: ', '').split(': ')[0].replace(' - Recensione', '').replace('Recensione ', '').replace(', La Recensione', '').replace(' La Recensione', '').replace(', la nostra recensione', '').replace(', la recensione', '').replace('[Preview] ', '').replace(' – Recensione', '').replace('Videorecensione ', '').replace(' - La recensione!', '').split(', preview del')[0].replace(' Beta Testing', '').replace(', recensione/review', '').replace(', la videorecensione', '').replace('[VideoRecensione] ', '').replace('Review ', '').replace(', LA RECENSIONE', '').split(' Review, ')[0].replace(' - la recensione!', '').replace(' - La recensione', '').replace('La videorecensione di ', '').replace(' - RECENSIONE', '').replace(' recensione', '').strip().capitalize()
+    product.name = title.replace('Preview: ', '').replace('Recensione: ', '').split(': ')[0].replace(' - Recensione', '').replace('Recensione ', '').replace(', La Recensione', '').replace(' La Recensione', '').replace(', la nostra recensione', '').replace(', la recensione', '').replace('[Preview] ', '').replace(' – Recensione', '').replace('Videorecensione ', '').replace(' - La recensione!', '').split(', preview del')[0].replace(' Beta Testing', '').replace(', recensione/review', '').replace(', la videorecensione', '').replace('[VideoRecensione] ', '').replace('Review ', '').replace(', LA RECENSIONE', '').split(' Review, ')[0].replace(' - la recensione!', '').replace(' - La recensione', '').replace('La videorecensione di ', '').replace(' - RECENSIONE', '').replace(' recensione', '').strip()
     product.ssid = context['url'].split('/')[-1].split('-')[0]
     product.category = context['cat']
     product.manufacturer = data.xpath('//div[contains(span, "Brand")]/span[@class="product-value"]/text()').string()
@@ -68,7 +68,7 @@ def process_review(data, context, session):
         product.url = context['url']
 
     mpn = data.xpath('//div[contains(span, "Modello")]/span[@class="product-value"]/text()').string()
-    if mpn:
+    if mpn and mpn.replace(' ', '').isupper():
         product.add_property(type='id.manufacturer', value=mpn)
 
     review = Review()
@@ -132,6 +132,7 @@ def process_review(data, context, session):
         summary = data.xpath('//p[@class="article-excerpt"]//text()').string(multiple=True)
 
     if summary:
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h1[contains(., "Conclusioni")]/following-sibling::p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
