@@ -90,7 +90,7 @@ def process_review(data, context, session):
 
     summary = data.xpath('//div[contains(@class, "description")]/p//text()').string(multiple=True)
     if summary:
-        summary = summary.replace(u'\ufffd', "'").replace(u'\uFEFF', '').replace('�', '').replace(u"Ãƒï¿½ï¿½t", u"'").replace(u"Ã''", "'").strip()
+        summary = summary.replace(u'\ufffd', "'").replace(u'\uFEFF', '').replace('�', '').replace(u"Ãƒï¿½ï¿½", u"'").replace(u"Ã''", "'").strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//h2|//h3|//p)[regexp:test(., "Verdict|Would I Use It")]/following-sibling::p//text()').string(multiple=True)
