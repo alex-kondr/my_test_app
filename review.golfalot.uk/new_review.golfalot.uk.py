@@ -73,7 +73,7 @@ def process_review(data, context, session):
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.replace(u'\ufffd', "'").replace('�', '').replace(u"Ãƒï¿½ï¿½", u"'").strip(' +-*.;•–')
+            pro = pro.replace(u'\ufffd', "'").replace('�', '').replace(u"Ãƒï¿½ï¿½", u"'").replace(u"Ã''", "'").strip(' +-*.;•–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -84,18 +84,18 @@ def process_review(data, context, session):
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.replace(u'\ufffd', "'").replace('�', '').replace(u"Ãƒï¿½ï¿½", u"'").strip(' +-*.;•–')
+            con = con.replace(u'\ufffd', "'").replace('�', '').replace(u"Ãƒï¿½ï¿½", u"'").replace(u"Ã''", "'").strip(' +-*.;•–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[contains(@class, "description")]/p//text()').string(multiple=True)
     if summary:
-        summary = summary.replace(u'\ufffd', "'").replace(u'\uFEFF', '').replace('�', '').replace(u"Ãƒï¿½ï¿½t", u"'").strip()
+        summary = summary.replace(u'\ufffd', "'").replace(u'\uFEFF', '').replace('�', '').replace(u"Ãƒï¿½ï¿½t", u"'").replace(u"Ã''", "'").strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//h2|//h3|//p)[regexp:test(., "Verdict|Would I Use It")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
-        conclusion = conclusion.replace(u'\ufffd', "'").replace(u'\uFEFF', '').replace('�', '').replace(u"Ãƒï¿½ï¿½", u"'").strip()
+        conclusion = conclusion.replace(u'\ufffd', "'").replace(u'\uFEFF', '').replace('�', '').replace(u"Ãƒï¿½ï¿½", u"'").replace(u"Ã''", "'").strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('((//h2|//h3|//p)[regexp:test(., "Verdict|Would I Use It")])[1]/preceding-sibling::p//text()').string(multiple=True)
@@ -103,7 +103,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[contains(@class, "entry-content") and not(@itemprop)]/p//text()').string(multiple=True)
 
     if excerpt:
-        excerpt = excerpt.replace(u'\ufffd', "'").replace(u'\uFEFF', '').replace('�', '').replace(u"Ãƒï¿½ï¿½", u"'").strip()
+        excerpt = excerpt.replace(u'\ufffd', "'").replace(u'\uFEFF', '').replace('�', '').replace(u"Ãƒï¿½ï¿½", u"'").replace(u"Ã''", "'").strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
