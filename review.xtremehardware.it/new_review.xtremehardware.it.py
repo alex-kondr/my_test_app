@@ -36,7 +36,7 @@ def process_frontpage(data, context, session):
 
         if subcat_name not in XCAT:
             url = cat.xpath('@href').string()
-            session.queue(Request(url, force_charset='utf-8'), process_revlist, dict(cat=name + '|' + subcat_name, cat_url=url))
+            session.queue(Request(url, force_charset='utf-8'), process_revlist, dict(cat=name + '|' + subcat_name))
 
 
 def process_revlist(data, context, session):
@@ -146,7 +146,7 @@ def process_review(data, context, session):
         summary = summary.replace(u'\uFEFF', '').replace('[...]', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h1[contains(., "Conclusioni")]/following-sibling::p[not(strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro" or preceding-sibling::p[strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro"])]//text()').string(multiple=True)
+    conclusion = data.xpath('//h1[regexp:test(., "Conclusioni", "i")]/following-sibling::p[not(strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro" or preceding-sibling::p[strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro"])]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[.//strong[contains(., "Conclusioni")]]/following-sibling::p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
     if not conclusion:
@@ -156,7 +156,7 @@ def process_review(data, context, session):
         conclusion = conclusion.replace(u'\uFEFF', '').replace('[...]', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h1[contains(., "Conclusioni")]/preceding-sibling::p[not(@align)]//text()').string(multiple=True)
+    excerpt = data.xpath('//h1[regexp:test(., "Conclusioni", "i")]/preceding-sibling::p[not(@align)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//p[.//strong[contains(., "Conclusioni")]]/preceding-sibling::p[not(@align)]//text()').string(multiple=True)
     if not excerpt:
@@ -244,7 +244,7 @@ def process_review_last(data, context, session):
                 if len(con) > 1:
                     review.add_property(type='cons', value=con)
 
-        conclusion = data.xpath('//h1[contains(., "Conclusioni")]/following-sibling::p[not(strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro" or preceding-sibling::p[strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro"])]//text()').string(multiple=True)
+        conclusion = data.xpath('//h1[regexp:test(., "Conclusioni", "i")]/following-sibling::p[not(strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro" or preceding-sibling::p[strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro"])]//text()').string(multiple=True)
         if not conclusion:
             conclusion = data.xpath('//p[.//strong[contains(., "Conclusioni")]]/following-sibling::p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
         if not conclusion:
@@ -254,7 +254,7 @@ def process_review_last(data, context, session):
             conclusion = conclusion.replace(u'\uFEFF', '').replace('[...]', '').strip()
             review.add_property(type='conclusion', value=conclusion)
 
-        excerpt = data.xpath('//h1[contains(., "Conclusioni")]/preceding-sibling::p[not(@align)]//text()').string(multiple=True)
+        excerpt = data.xpath('//h1[regexp:test(., "Conclusioni", "i")]/preceding-sibling::p[not(@align)]//text()').string(multiple=True)
         if not excerpt and not data.xpath('//h1[contains(., "Conclusioni")]'):
             excerpt = data.xpath('//p[.//strong[contains(., "Conclusioni")]]/preceding-sibling::p[not(@align)]//text()').string(multiple=True)
             if not excerpt:
