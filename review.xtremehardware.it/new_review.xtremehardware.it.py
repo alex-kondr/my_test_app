@@ -255,7 +255,7 @@ def process_review_last(data, context, session):
             review.add_property(type='conclusion', value=conclusion)
 
         excerpt = data.xpath('//h1[regexp:test(., "Conclusioni", "i")]/preceding-sibling::p[not(@align)]//text()').string(multiple=True)
-        if not excerpt and not data.xpath('//h1[contains(., "Conclusioni")]'):
+        if not excerpt and not data.xpath('//h1[regexp:test(., "Conclusioni", "i")]'):
             excerpt = data.xpath('//p[.//strong[contains(., "Conclusioni")]]/preceding-sibling::p[not(@align)]//text()').string(multiple=True)
             if not excerpt:
                 excerpt = data.xpath('//section[contains(@class, "article-content")]/p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
