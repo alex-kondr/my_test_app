@@ -1,8 +1,10 @@
 from agent import *
 from models.products import *
 import re
+import HTMLParser
 
 
+h = HTMLParser.HTMLParser()
 XCAT = ['English Articles']
 
 
@@ -13,14 +15,14 @@ def strip_namespace(data):
         line = line.replace('<ns0', '<')
         line = line.replace('ns0:', '')
         line = line.replace(' xmlns', ' abcde=')
-        out.write(line + "\n")
+        out.write(h.unescape(line) + "\n")
     out.close()
     os.rename(tmp, data.content_file)
 
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
     session.queue(Request('https://www.xtremehardware.com/', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -82,10 +84,13 @@ def process_review(data, context, session):
     if author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//tr[contains(., "Complessivo")]//img/@alt[regexp:test(., "\d+")]').string()
+    grade_overall = data.xpath('//tr[contains(., "Complessivo") and not(preceding::div[@class="related-section"])]//img/@alt[regexp:test(., "\d+")]').string()
     if grade_overall:
         grade_overall = grade_overall.split()[0].replace(',', '.')
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+        try:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+        except:
+            pass
 
     if not grade_overall:
         grade_overall = data.xpath('//span[@class="rating-score"]/text()').string()
@@ -111,7 +116,10 @@ def process_review(data, context, session):
                 if grade_name:
                     review.grades.append(Grade(name=grade_name.strip(' :'), value=float(grade_val), best=5.0))
 
-    pros = data.xpath('(//p[strong[contains(text(), "Pro")]]/following-sibling::*)[1]/li')
+    pros = data.xpath('(//h4[contains(text(), "Pro")]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('(//p[strong[contains(text(), "Pro")]]/following-sibling::*)[1]/li')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -119,7 +127,10 @@ def process_review(data, context, session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('(//p[strong[contains(text(), "Contro")]]/following-sibling::*)[1]/li')
+    cons = data.xpath('(//h4[contains(text(), "Contro")]/following-sibling::*)[1]/li')
+    if not cons:
+        cons = data.xpath('(//p[strong[contains(text(), "Contro")]]/following-sibling::*)[1]/li')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -132,17 +143,17 @@ def process_review(data, context, session):
         summary = data.xpath('//p[@class="article-excerpt"]//text()').string(multiple=True)
 
     if summary:
-        summary = summary.replace(u'\uFEFF', '').strip()
+        summary = summary.replace(u'\uFEFF', '').replace('[...]', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h1[contains(., "Conclusioni")]/following-sibling::p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
+    conclusion = data.xpath('//h1[contains(., "Conclusioni")]/following-sibling::p[not(strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro" or preceding-sibling::p[strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro"])]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[.//strong[contains(., "Conclusioni")]]/following-sibling::p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h3[contains(., "Verdetto") or contains(., "Finale")]/following-sibling::p//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = conclusion.replace(u'\uFEFF', '').strip()
+        conclusion = conclusion.replace(u'\uFEFF', '').replace('[...]', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h1[contains(., "Conclusioni")]/preceding-sibling::p[not(@align)]//text()').string(multiple=True)
@@ -151,7 +162,7 @@ def process_review(data, context, session):
     if not excerpt:
         excerpt = data.xpath('//section[contains(@class, "article-content")]/p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="article-content"]/p[not(regexp:test(strong, "Pro|Contro") or preceding::p[regexp:test(strong, "Pro|Contro")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="article-content"]/p[not(strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro" or preceding-sibling::p[strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro"])]//text()').string(multiple=True)
 
     last_page = data.xpath('//a[contains(@class, "page-btn") and not(contains(@class, "active"))]').last()
     if last_page:
@@ -179,10 +190,13 @@ def process_review_last(data, context, session):
     if context.get('is_last_page'):
         grade_overall = context['grade_overall']
         if not grade_overall:
-            grade_overall = data.xpath('//tr[contains(., "Complessivo")]//img/@alt[regexp:test(., "\d+")]').string()
+            grade_overall = data.xpath('//tr[contains(., "Complessivo") and not(preceding::div[@class="related-section"])]//img/@alt[regexp:test(., "\d+")]').string()
             if grade_overall:
-                grade_overall = grade_overall.split()[0].replace(',', '.')
-                review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+                grade_overall1 = grade_overall.split()[0].replace(',', '.')
+                try:
+                    review.grades.append(Grade(type='overall', value=float(grade_overall1), best=5.0))
+                except:
+                    pass
 
         if not grade_overall:
             grade_overall = data.xpath('//span[@class="rating-score"]/text()').string()
@@ -208,7 +222,10 @@ def process_review_last(data, context, session):
                     if grade_name:
                         review.grades.append(Grade(name=grade_name.strip(' :'), value=float(grade_val), best=5.0))
 
-        pros = data.xpath('(//p[strong[contains(text(), "Pro")]]/following-sibling::*)[1]/li')
+        pros = data.xpath('(//h4[contains(text(), "Pro")]/following-sibling::*)[1]/li')
+        if not pros:
+            pros = data.xpath('(//p[strong[contains(text(), "Pro")]]/following-sibling::*)[1]/li')
+
         for pro in pros:
             pro = pro.xpath('.//text()').string(multiple=True)
             if pro:
@@ -216,7 +233,10 @@ def process_review_last(data, context, session):
                 if len(pro) > 1:
                     review.add_property(type='pros', value=pro)
 
-        cons = data.xpath('(//p[strong[contains(text(), "Contro")]]/following-sibling::*)[1]/li')
+        cons = data.xpath('(//h4[contains(text(), "Contro")]/following-sibling::*)[1]/li')
+        if not cons:
+            cons = data.xpath('(//p[strong[contains(text(), "Contro")]]/following-sibling::*)[1]/li')
+
         for con in cons:
             con = con.xpath('.//text()').string(multiple=True)
             if con:
@@ -224,26 +244,26 @@ def process_review_last(data, context, session):
                 if len(con) > 1:
                     review.add_property(type='cons', value=con)
 
-        conclusion = data.xpath('//h1[contains(., "Conclusioni")]/following-sibling::p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
+        conclusion = data.xpath('//h1[contains(., "Conclusioni")]/following-sibling::p[not(strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro" or preceding-sibling::p[strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro"])]//text()').string(multiple=True)
         if not conclusion:
             conclusion = data.xpath('//p[.//strong[contains(., "Conclusioni")]]/following-sibling::p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
         if not conclusion:
             conclusion = data.xpath('//h3[contains(., "Verdetto") or contains(., "Finale")]/following-sibling::p//text()').string(multiple=True)
 
         if conclusion:
-            conclusion = conclusion.replace(u'\uFEFF', '').strip()
+            conclusion = conclusion.replace(u'\uFEFF', '').replace('[...]', '').strip()
             review.add_property(type='conclusion', value=conclusion)
 
         excerpt = data.xpath('//h1[contains(., "Conclusioni")]/preceding-sibling::p[not(@align)]//text()').string(multiple=True)
-        if not excerpt:
+        if not excerpt and not data.xpath('//h1[contains(., "Conclusioni")]'):
             excerpt = data.xpath('//p[.//strong[contains(., "Conclusioni")]]/preceding-sibling::p[not(@align)]//text()').string(multiple=True)
-        if not excerpt:
-            excerpt = data.xpath('//section[contains(@class, "article-content")]/p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
-        if not excerpt:
-            excerpt = data.xpath('//div[@class="article-content"]/p[not(regexp:test(strong, "Pro|Contro") or preceding::p[regexp:test(strong, "Pro|Contro")])]//text()').string(multiple=True)
+            if not excerpt:
+                excerpt = data.xpath('//section[contains(@class, "article-content")]/p[not(strong[regexp:test(text(), "Pro|Contro")] or @align)]//text()').string(multiple=True)
+            if not excerpt:
+                excerpt = data.xpath('//div[@class="article-content"]/p[not(strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro" or preceding-sibling::p[strong/text()[normalize-space(.)]="Pro" or strong/text()[normalize-space(.)]="Contro"])]//text()').string(multiple=True)
 
         if excerpt:
-            context['excerpt'] = ' ' + excerpt
+            context['excerpt'] += ' ' + excerpt
 
     if context['excerpt']:
         excerpt = context['excerpt'].replace(u'\uFEFF', '').strip()
