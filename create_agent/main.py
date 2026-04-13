@@ -12,29 +12,29 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="20088"
+    agent_id="15263"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='http://wearemobians.com/category/articles/',
-    next_func=ProcessRun.revlist.name,
+    url='https://www.familyfriendlygaming.com/Reviews%20listing.html',
+    next_func=ProcessRun.catlist.name,
     new_parser=False,
-    breakers=0,
+    breakers=5000,
     # curl=False
 )
-# agent.create_frontpage(
-#     cats_xpath='//div[contains(@id, "pageContent")]/a',
-#     name_xpath='text()',
-#     url_xpath='@href'
-# )
+agent.create_frontpage(
+    cats_xpath='//div[@id="content"]//a[text()[string-length(normalize-space(.))>1]]',
+    name_xpath='text()',
+    url_xpath='@href'
+)
 agent.create_revlist(
-    revs_xpath='//h2[contains(@class, "title")]/a',
+    revs_xpath='//td[@align="LEFT"]/a',
     name_title=TypeAgent.review.value,
     name_title_xpath='text()',
     url_xpath='@href',
     prod_rev=TypeAgent.review.name,
-    next_url_xpath='//a[contains(@class, "next")]/@href',
+    next_url_xpath='//link[@rel="next"]/@href|//a[contains(@class, "next")]/@href',
 )
 agent.create_review(
     date_xpath='//meta[@property="article:published_time"]/@content|//time/@datetime',

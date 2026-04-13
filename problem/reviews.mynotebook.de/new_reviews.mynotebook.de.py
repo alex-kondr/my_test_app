@@ -3,7 +3,7 @@ from models.products import *
 import simplejson
 
 
-X_CATS = ['Marken', 'Sale', 'Software', 'Garantien', 'Kabel & Adapter']
+XCAT = ['Marken', 'Sale', 'Software', 'Garantien', 'Kabel & Adapter', 'Service & Wartung']
 
 
 def strip_namespace(data):
@@ -29,6 +29,20 @@ def process_catlist(data, context, session):
     cats = simplejson.loads(data.content).get('level1Categories', [])
     for cat in cats:
         name = cat.get('name', {}).get('entry', [{}])[0].get('value')
+
+        if name not in XCAT:
+            cats1 = cat.get('level2Categories', [])
+            for cat1 in cats1:
+                cat1_name = cat1.get('name', {}).get('entry', [{}])[0].get('value')
+
+                if cat1_name not in XCAT:
+                    subcats = cat1.get('level3Categories', [])
+                    for subcat in subcats:
+                        subcat_name = subcat.get('name', {}).get('entry', [{}])[0].get('value')
+
+                        if subcat_name not in XCAT:
+                            url = 'https://mynotebook.de/de/c/' + subcat.get('code')
+                            session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
 
 
 
