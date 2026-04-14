@@ -1,8 +1,10 @@
 from agent import *
 from models.products import *
 import time
+import HTMLParser
 
 
+h = HTMLParser.HTMLParser()
 OPTIONS = """-H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Referer: https://icrontic.com/' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: same-origin' -H 'Sec-Fetch-User: ?1' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"""
 XCAT = ['Community', 'Announcements']
 SLEEP = 5
@@ -10,7 +12,7 @@ SLEEP = 5
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=5000)]
-    session.queue(Request('https://icrontic.com/', use='curl', options=OPTIONS, max_age=0), process_revlist, dict())
+    session.queue(Request('https://icrontic.com/', use='curl', options=OPTIONS), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -23,25 +25,27 @@ def process_revlist(data, context, session):
         cat = rev.xpath('.//span[contains(@class, "Category")]//text()').string(multiple=True)
 
         if cat not in XCAT:
-            session.queue(Request(url, use='curl', options=OPTIONS, max_age=0), process_review, dict(cat=cat, title=title, url=url))
+            session.queue(Request(url, use='curl', options=OPTIONS), process_review, dict(cat=cat, title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', options=OPTIONS, max_age=0), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', options=OPTIONS), process_revlist, dict())
 
 
 def process_review(data, context, session):
     time.sleep(SLEEP)
 
+    data.content = h.unescape(data.content)
+
     product = Product()
-    product.name = context['title'].replace('///SOLD\\\\\\', '').strip()
+    product.name = h.unescape(context['title']).replace('///SOLD\\\\\\', '').replace('&amp;', '&').replace(' Reviews [SPOILERS]', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = context['cat']
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = h.unescape(context['title']).replace('&amp;', '&')
     review.url = product.url
     review.ssid = product.ssid
 
@@ -59,8 +63,10 @@ def process_review(data, context, session):
 
     excerpt = data.xpath("//div[@class='Discussion']/div[@class='Item-BodyWrap']/div[@class='Item-Body']/div[@class='Message userContent']//text()").string(multiple=True)
     if excerpt:
-        review.add_property(type='excerpt', value=excerpt)
+        excerpt = h.unescape(excerpt).replace('&amp;', '&').strip()
+        if len(excerpt) > 2:
+            review.add_property(type='excerpt', value=excerpt)
 
-        product.reviews.append(review)
+            product.reviews.append(review)
 
-        session.emit(product)
+            session.emit(product)
