@@ -33,9 +33,11 @@ def process_review(data, context, session):
     product.ssid = data.xpath('//body[contains(@class, "postid-")]/@class').string().split('postid-')[-1].split()[0]
     product.category = context['cat']
 
-    product.name = data.xpath('//h5[@class="review-title"]/text()').string()
-    if not product.name:
-        product.name = context['title'].split(' Blu-ray')[0].split(' Review')[0].split(' review')[0]
+    name = data.xpath('//h5[@class="review-title"]/text()').string()
+    if not name:
+        name = context['title']
+
+    product.name = name.split(' Blu-ray')[0].split(' Review')[0].split(' review')[0]
 
     product.url = data.xpath('//a[@class="doblu-amazon__btn"]/@href').string()
     if not product.url:
@@ -108,10 +110,12 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//div[@class="review-desc"]/p[not(@class)]//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[@class="doblu-prose"]/p[not(@class or contains(., "luchshie vechnie ssilki") or contains(., "Full disclosure"))][not(.//a[contains(., "subscription-exclusive")])]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type="excerpt", value=excerpt)
 
         product.reviews.append(review)

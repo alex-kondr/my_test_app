@@ -3,7 +3,7 @@ from models.products import *
 import simplejson
 
 
-URLS = ['https://www.latercera.com/pf/api/v3/content/fetch/story-feed-sections-fetch?query={%22feedOffset%22:offset,%22feedSize%22:12,%22fromComponent%22:%22result-list%22,%22includeSections%22:%22/mouse%22}&d=1098&mxId=00000000&_website=la-tercera', 'https://www.latercera.com/pf/api/v3/content/fetch/story-feed-sections-fetch?query={%22feedOffset%22:offset,%22feedSize%22:12,%22fromComponent%22:%22result-list%22,%22includeSections%22:%22/tecnologia%22}&d=1098&mxId=00000000&_website=la-tercera']
+URLS = ['https://www.latercera.com/pf/api/v3/content/fetch/story-feed-sections-fetch?query=%7B%22feedOffset%22%3Aoffset%2C%22feedSize%22%3A12%2C%22fromComponent%22%3A%22result-list%22%2C%22includeSections%22%3A%22%2Fmouse%22%7D&d=1130&mxId=00000000&_website=la-tercera', 'https://www.latercera.com/pf/api/v3/content/fetch/story-feed-sections-fetch?query=%7B%22feedOffset%22%3Aoffset%2C%22feedSize%22%3A12%2C%22fromComponent%22%3A%22result-list%22%2C%22includeSections%22%3A%22%2Ftecnologia%22%7D&d=1130&mxId=00000000&_website=la-tercera']
 
 
 def run(context, session):
@@ -86,6 +86,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('//h4[regexp:test(., "conclusión", "i")]/following-sibling::p[contains(@class, "article-body") and not(contains(., "*Los precios de los") or contains(., "⭐") or contains(., "✅") or contains(., "❌") or contains(., "(Pros)") or contains(., "(Contras)"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2[contains(., "Vale la pena")]/following-sibling::p//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 

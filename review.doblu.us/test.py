@@ -17,6 +17,8 @@ agent = agents.DOBLU_COM_US
 reload = 1
 session_id = 0
 
+# name: 13, 12+
+# excerpt: 5+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
