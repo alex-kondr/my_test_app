@@ -4,12 +4,12 @@ import re
 import time
 
 
-SLEEP = 2
+SLEEP = 0
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.familyfriendlygaming.com/Reviews%20listing.html', max_age=0), process_catlist, dict())
+    session.queue(Request('https://www.familyfriendlygaming.com/Reviews%20listing.html', force_charset='utf-8'), process_catlist, dict())
 
 
 def process_catlist(data, context, session):
@@ -19,7 +19,7 @@ def process_catlist(data, context, session):
     for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url, max_age=0), process_revlist, dict(cat=name))
+        session.queue(Request(url, force_charset='utf-8'), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
@@ -29,7 +29,7 @@ def process_revlist(data, context, session):
     for rev in revs:
         name = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, max_age=0), process_review, dict(context, name=name, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(context, name=name, url=url))
 
 
 def process_review(data, context, session):
@@ -46,7 +46,7 @@ def process_review(data, context, session):
 
     platforms = data.xpath('//p//text()[contains(., "System:")]').string()
     if platforms:
-        product.category = 'Games' + '|' + platforms.replace('System:', '').replace('(tested)', '').strip()
+        product.category = 'Games' + '|' + platforms.replace('System:', '').split('(')[0].strip()
 
     manufacturer = data.xpath('//p//text()[contains(., "Developer:")]').string()
     if manufacturer:
