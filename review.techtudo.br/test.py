@@ -14,15 +14,18 @@ import product_test.list_of_agents as agents
 
 agent = agents.TECHTUDO_BR
 # agent = agents.TEST
-reload = 1
+reload = 0
 session_id = 0
 
+# name: 15
+# conclusion: 1+
+# excerpt: 365+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
     print(product.result)
     test = TestProductMultiprocessing(product)
-    test.run(xproduct_names=[], not_xproduct_name='', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
+    test.run(xproduct_names=[], not_xproduct_name='Ã', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
 
     log = LogProduct(agent, reload=reload)
     test_log = TestLogProduct(log)

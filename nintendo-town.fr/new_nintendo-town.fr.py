@@ -3,8 +3,8 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=6000)]
-    session.queue(Request('https://www.nintendo-town.fr/category/test/', max_age=0, force_charset='utf-8'), process_revlist, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.queue(Request('https://www.nintendo-town.fr/category/test/', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -12,23 +12,23 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, max_age=0, force_charset='utf-8'), process_review, dict(title=title, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if not next_url:
         next_url = data.xpath('//a[@class="page_nav next"]/@href').string()
 
     if next_url:
-        session.queue(Request(next_url, max_age=0, force_charset='utf-8'), process_revlist, dict())
+        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict())
 
 
 def process_review(data, context, session):
     product = Product()
     product.ssid = context['url'].split('/')[-2].replace('test-', '')
 
-    product.name = context['title'].replace('Test de la manette', '').replace('Test rapide du la manette', '').replace('Test rapide de la manette', '').replace('Présentation et test de la', '').replace('Test complet de la', '').replace('Test matos', '').replace('Test du casque', '').replace('Test Matos –', '').replace('Test matos – ', '').replace('La Preview', '').replace('Test ', '').split(' – ')[0].split('(')[0].strip()
+    product.name = context['title'].replace('Test de la manette', '').replace('Test rapide du la manette', '').replace('Test rapide de la manette', '').replace('Présentation et test de la', '').replace('Test complet de la', '').replace('Test matos', '').replace('Test du casque', '').replace('Test Matos –', '').replace('Test matos – ', '').replace('La Preview', '').replace('Test ', '').split(' – ')[0].replace('Mini test : ', '').replace(' en test', '').split('(')[0].strip()
     if not product.name:
-        product.name = context['title'].replace('Test matos – ', '').strip()
+        product.name = context['title'].replace('Test matos – ', '').replace('Mini test : ', '').replace(' en test', '').strip()
 
     product.url = data.xpath('//a[contains(@class, "amazon")]/@href').string()
     if not product.url:
