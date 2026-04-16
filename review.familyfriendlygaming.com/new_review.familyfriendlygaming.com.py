@@ -1,10 +1,6 @@
 from agent import *
 from models.products import *
 import re
-import time
-
-
-SLEEP = 0
 
 
 def run(context, session):
@@ -13,8 +9,6 @@ def run(context, session):
 
 
 def process_catlist(data, context, session):
-    time.sleep(SLEEP)
-
     cats = data.xpath('//div[@id="content"]//a[text()[string-length(normalize-space(.))>1]]')
     for cat in cats:
         name = cat.xpath('text()').string()
@@ -23,8 +17,6 @@ def process_catlist(data, context, session):
 
 
 def process_revlist(data, context, session):
-    time.sleep(SLEEP)
-
     revs = data.xpath('//td[@align="LEFT"]/a')
     for rev in revs:
         name = rev.xpath('text()').string()
@@ -33,8 +25,6 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
-    time.sleep(SLEEP)
-
     product = Product()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('.html', '').replace('%20', '_')
@@ -67,6 +57,9 @@ def process_review(data, context, session):
     author = data.xpath('//p//text()[contains(., "Publisher:")]').string()
     if author:
         author = author.replace('Publisher:', '').strip()
+        if len(author) < 2:
+            author = data.xpath('//p//text()[contains(., "Publisher:")]/following-sibling::span[1]/text()').string()
+
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//p[contains(text(), "SCORE:")]//text()').string(multiple=True)

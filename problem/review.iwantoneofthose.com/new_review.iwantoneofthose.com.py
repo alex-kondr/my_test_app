@@ -2,45 +2,17 @@ from agent import *
 from models.products import *
 
 
-XCAT = ["Popular", "Gifts For Him", "Gifts For Her", "Blog", 'Brand', 'Offers', 'By Type', 'Film, TV & Gaming', 'Gifts By Recipient', 'Gifts by Occasion', 'Greeting Cards']
-
-
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request("https://www.iwantoneofthose.com/"), process_frontpage, dict())
+    session.queue(Request("https://iwantoneofthose.com/collections/board-games"), process_frontpage, dict(cat='Interests|Board Games'))
+    session.queue(Request("https://iwantoneofthose.com/collections/trading-cards"), process_frontpage, dict(cat='Interests|Trading Cards'))
+    session.queue(Request("https://iwantoneofthose.com/collections/collectables"), process_frontpage, dict(cat='Interests|Collectables'))
+    session.queue(Request("https://iwantoneofthose.com/collections/nasa-gifts"), process_frontpage, dict(cat='Interests|NASA'))
+    session.queue(Request("https://iwantoneofthose.com/collections/stranger-things-gifts"), process_frontpage, dict(cat='Interests|Stranger Things'))
+    session.queue(Request("https://iwantoneofthose.com/collections/t-shirts"), process_frontpage, dict(cat='Clothing|Tees'))
+    session.queue(Request("https://iwantoneofthose.com/collections/hoodies-and-sweatshirts"), process_frontpage, dict(cat='Clothing|Hoodies & Sweatshirts'))
 
 
-def process_frontpage(data, context, session):
-    cats = data.xpath('//ul[@class="main-nav"]/li')
-    for cat in cats:
-        name = cat.xpath("a/text()").string()
-
-        if name not in XCAT:
-            if 'Gifts' in name:
-                name = ''
-
-            cats1 = cat.xpath('div[contains(@class, "nav__child")]/ul/li[summary]')
-            for cat1 in cats1:
-                cat1_name = cat1.xpath('div/a/text()').string()
-
-                if cat1_name not in XCAT:
-                    if 'Type' in cat1_name:
-                        cat1_name = ''
-
-                    subcats = cat1.xpath('div[contains(@class, "nav__grandchild")]/ul/li/a')
-                    if subcats:
-                        for subcat in subcats:
-                            subcat_name = subcat.xpath("text()").string().replace('Gifts For', '').replace('Gifts for', '').replace('Gifts', '').strip()
-
-                            url = subcat.xpath("@href").string()
-                            if subcat_name and url:
-                                
-                                print name+'|'+cat1_name+'|'+subcat_name, url
-                                # session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
-                    else:
-                        url = cat1.xpath('div/a/@href').string()
-                        
-                        print name+'|'+cat1_name, url
 
 
 def process_prodlist(data, context, session):
