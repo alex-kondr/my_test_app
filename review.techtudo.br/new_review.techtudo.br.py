@@ -5,7 +5,7 @@ import simplejson
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=5000)]
-    session.queue(Request('https://falkor-cda.bastian.globo.com/tenants/techtudo/instances/694b2dee-93a8-4065-ac90-41bca2dc88ce/posts/page/1'), process_revlist, {})
+    session.queue(Request('https://falkor-cda.bastian.globo.com/tenants/techtudo/instances/694b2dee-93a8-4065-ac90-41bca2dc88ce/posts/page/1', max_age=0), process_revlist, {})
 
 
 def process_revlist(data, context, session):
@@ -17,11 +17,11 @@ def process_revlist(data, context, session):
         prod_id = rev.get('id')
         date = rev.get('publication')
         url = rev.get('content', {}).get('url')
-        session.queue(Request(url), process_review, dict(prod_id=prod_id, date=date, title=title, url=url))
+        session.queue(Request(url, max_age=0), process_review, dict(prod_id=prod_id, date=date, title=title, url=url))
 
     next_page = data_json.get('nextPage')
     if next_page:
-        session.queue(Request('https://falkor-cda.bastian.globo.com/tenants/techtudo/instances/694b2dee-93a8-4065-ac90-41bca2dc88ce/posts/page/' + str(next_page)), process_revlist, dict())
+        session.queue(Request('https://falkor-cda.bastian.globo.com/tenants/techtudo/instances/694b2dee-93a8-4065-ac90-41bca2dc88ce/posts/page/' + str(next_page), max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
