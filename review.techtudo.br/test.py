@@ -14,10 +14,10 @@ import product_test.list_of_agents as agents
 
 agent = agents.TECHTUDO_BR
 # agent = agents.TEST
-reload = 0
+reload = 1
 session_id = 0
 
-# name: 15
+# name: 5+
 # conclusion: 1+
 # excerpt: 365+
 
