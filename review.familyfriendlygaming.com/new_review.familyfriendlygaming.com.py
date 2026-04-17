@@ -58,9 +58,14 @@ def process_review(data, context, session):
     if author:
         author = author.replace('Publisher:', '').strip()
         if len(author) < 2:
-            author = data.xpath('//p//text()[contains(., "Publisher:")]/following-sibling::span[1]/text()').string()
+            author = data.xpath('//p//text()[contains(., "Publisher:")]/following-sibling::span[1]/text()[normalize-space(.)]').string()
+            if not author:
+                author = data.xpath('//p//text()[contains(., "Publisher:")]/following-sibling::font[1]//text()[normalize-space(.)]').string(multiple=True)
+            if not author:
+                author = data.xpath('//p//text()[contains(., "Publisher:")]/following::text()[normalize-space(.)]').string()
 
-        review.authors.append(Person(name=author, ssid=author))
+        if author and len(author) > 1:
+            review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//p[contains(text(), "SCORE:")]//text()').string(multiple=True)
     if grade_overall:
