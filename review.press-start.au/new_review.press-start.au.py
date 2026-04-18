@@ -42,7 +42,7 @@ def remove_emoji(string):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('http://press-start.com.au/category/reviews/', use='curl'), process_catlist, {})
+    session.queue(Request('http://press-start.com.au/category/reviews/', use='curl', force_charset='utf-8'), process_catlist, {})
 
 
 def process_catlist(data, context, session):
@@ -54,7 +54,7 @@ def process_catlist(data, context, session):
         name = cat.xpath("text()").string()
 
         if url and name:
-            session.queue(Request(url, use='curl'), process_category, dict(cat=name))
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_category, dict(cat=name))
 
 
 def process_category(data, context, session):
@@ -66,11 +66,11 @@ def process_category(data, context, session):
         title = rev.xpath("./text()").string()
 
         if url and title:
-            session.queue(Request(url, use='curl'), process_review, dict(context, url=url, title=title))
+            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, url=url, title=title))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl'), process_category, dict(context))
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_category, dict(context))
 
 
 def process_review(data, context, session):
