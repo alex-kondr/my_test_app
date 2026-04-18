@@ -76,14 +76,14 @@ def process_revlist(data, context, session):
     if offset < int(context.get('revs_cnt', 0)):
         next_page = context.get('page', 1) + 1
         next_url = context['cat_url'] + 'seite/{}/'.format(next_page)
-        session.queue(Request(next_url), process_revlist, dict(context, page=next_page))
+        session.queue(Request(next_url), process_revlist, dict(context, page=next_page, offset=offset))
 
 
 def process_review(data, context, session):
     try:
         revdata_json = simplejson.loads(data.xpath('//script[@id="__NEXT_DATA__"]/text()').string()).get('props', {}).get('pageProps', {}).get('pageData', {}).get('data', {}).get('mobile', [{}])
     except:
-        revdata_json = []
+        return
 
     rev_json = {}
     for rev_json in revdata_json:
@@ -100,7 +100,7 @@ def process_review(data, context, session):
     new_data = data.parse_fragment(new_data)
 
     product = Product()
-    product.name = context['title'].replace(' im Test', '').replace('Im Test: ', '').replace(' im Praxistest', '').replace(' im ersten Test', '').strip()
+    product.name = context['title'].replace(' im Test', '').replace('Im Test: ', '').replace(' im Praxistest', '').replace(' im ersten Test', '').replace(' im Dauertest', '').strip()
     product.ssid = str(rev_json.get('_id'))
     product.category = context['cat']
 
@@ -129,9 +129,14 @@ def process_review(data, context, session):
                 author_name = author_name.strip(' ,.')
                 review.authors.append(Person(name=author_name, ssid=author_ssid, profile_url=author_url))
 
-            elif author_name:
+            elif author_name and len(author_name.strip(' ,.')) > 1:
                 author_name = author_name.strip(' ,.')
                 review.authors.append(Person(name=author_name, ssid=author_name))
+
+            else:
+                author = author.get('brief')
+                if author_name and len(author_name.strip(' ,.')) > 1:
+                    review.authors.append(Person(name=author_name, ssid=author_name))
 
     pros = new_data.xpath('//h3[contains(., "Positiv")]/following::p[contains(., "✅")]')
     for pro in pros:

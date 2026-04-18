@@ -22,7 +22,7 @@ session_id = 0
 # grades: 0+
 # author: 5
 # excerpt: 1+
-# logs: 9
+# logs: 0+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
