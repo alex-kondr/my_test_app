@@ -12,26 +12,26 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="20156"
+    agent_id="13085"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.familyfriendlygaming.com/Reviews%20listing.html',
-    next_func=ProcessRun.catlist.name,
-    new_parser=False,
-    breakers=5000,
+    url='https://www.mixonline.com/technology/reviews',
+    next_func=ProcessRun.revlist.name,
+    new_parser=True,
+    breakers=3000,
     # curl=False
 )
-agent.create_frontpage(
-    cats_xpath='//div[@id="content"]//a[text()[string-length(normalize-space(.))>1]]',
-    name_xpath='text()',
-    url_xpath='@href'
-)
+# agent.create_frontpage(
+#     cats_xpath='//div[@id="content"]//a[text()[string-length(normalize-space(.))>1]]',
+#     name_xpath='text()',
+#     url_xpath='@href'
+# )
 agent.create_revlist(
-    revs_xpath='//td[@align="LEFT"]/a',
+    revs_xpath='//a[@class="post-title"]',
     name_title=TypeAgent.review.value,
-    name_title_xpath='text()',
+    name_title_xpath='h2/text()',
     url_xpath='@href',
     prod_rev=TypeAgent.review.name,
     next_url_xpath='//link[@rel="next"]/@href|//a[contains(@class, "next")]/@href',
