@@ -17,6 +17,10 @@ agent = agents.MIX_MAGAZINE
 reload = 1
 session_id = 0
 
+# name: 818
+# author: 82
+# pros_cons: 5
+# excerpt: 550+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

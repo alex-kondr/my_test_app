@@ -38,7 +38,7 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' – ')[0].replace('Mix Book Review Week: ', '').replace('Mix Book Review: ', '').strip()
+    product.name = context['title'].split(' – ')[0].split(' — ')[0].replace('Mix Book Review Week: ', '').replace('Mix Book Review: ', '').replace('Real-World Review: ', '').replace('Field Test: ', '').replace('Review: ', '').replace(' Review', '').strip()
     product.ssid = data.xpath('//script/@data-post-id').string()
 
     product.url = data.xpath('//td[contains(strong, "COMPANY:")]/a/@href').string()
@@ -68,8 +68,8 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//p[@class="author-name"]/a/text()').string()
-    author_url = data.xpath('//p[@class="author-name"]/a/@href').string()
+    author = data.xpath('(//p[@class="author-name"]/a|//a[@rel="author"])/text()').string()
+    author_url = data.xpath('(//p[@class="author-name"]/a|//a[@rel="author"])/@href').string()
     if author and author_url:
         author = author.strip(' ⋅')
         author_ssid = author_url.split('/')[-1]
@@ -85,7 +85,7 @@ def process_review(data, context, session):
     for pro in pros:
         pro = pro.string(multiple=True)
         if pro:
-            pro = pro.strip(' +-*.:;•,–')
+            pro = pro.replace('None found', '').strip(' +-*.:;•,–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -96,12 +96,13 @@ def process_review(data, context, session):
     for con in cons:
         con = con.string(multiple=True)
         if con:
-            con = con.strip(' +-*.:;•,–')
+            con = con.replace('None found', '').strip(' +-*.:;•,–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
     summary = data.xpath('//p[@class="excerpt"]//text()').string(multiple=True)
     if summary:
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h4[contains(text(), "WHAT TO THINK?")]/following-sibling::p[not(preceding::h4[contains(text(), "PRODUCT SUMMARY")])]//text()').string(multiple=True)
@@ -109,6 +110,7 @@ def process_review(data, context, session):
         conclusion = data.xpath('//td[contains(strong/text(), "TAKEAWAY")]/text()').string(multiple=True)
 
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h4[contains(text(), "WHAT TO THINK?")]/preceding-sibling::p//text()').string(multiple=True)
@@ -116,6 +118,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//section[@class="entry-content"]/p//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
