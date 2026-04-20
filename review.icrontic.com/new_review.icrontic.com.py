@@ -44,7 +44,7 @@ def process_review(data, context, session):
     product.category = context['cat']
 
     review = Review()
-    review.type = 'pro'
+    review.type = 'user'
     review.title = h.unescape(context['title']).replace('&amp;', '&')
     review.url = product.url
     review.ssid = product.ssid

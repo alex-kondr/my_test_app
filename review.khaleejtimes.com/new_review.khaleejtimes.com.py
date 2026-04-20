@@ -2,17 +2,12 @@ from agent import *
 from models.products import *
 import simplejson
 from datetime import datetime
-# import HTMLParser
 
 
-# h = HTMLParser.HTMLParser()
 XTITLE = ['Best of']
 
 
 def run(context, session):
-    
-    # url = 'https://www.khaleejtimes.com/reviews/tech-reviews/sony-bravia-7-mini-led-max-picture'
-    # session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(url=url, ssid='ssid', title='title'))
     session.queue(Request('https://www.khaleejtimes.com/contentapi/v1/getcollectionstories/tech-reviews-reviews?page=1&records=10', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
@@ -67,62 +62,53 @@ def process_review(data, context, session):
         if author_name:
             review.authors.append(Person(name=author_name, ssid=str(author_ssid), profile_url=author_url))
 
+    excerpts_json = rev_json.get('cards', [{}])[0].get('story_elements', [])
+    new_data = '<div>'
+    for excerpt_json in excerpts_json:
+        if excerpt_json.get('type') == 'text':
+            new_data += excerpt_json.get('text')
+
+    new_data += '</div>'
+    new_data = data.parse_fragment(new_data)
+
+    grade_overall = new_data.xpath('//p[contains(strong, "Rating")]//text()').string(multiple=True)
+    if grade_overall:
+        grade_overall = grade_overall.split(':')[-1].strip()
+        if grade_overall:
+            grade_overall = grade_overall.split()[0].replace(u'\u202d', '').replace(u'\u202c', '').strip()
+        else:
+            grade_overall = new_data.xpath('//p[contains(strong, "Rating")]/following-sibling::p[1][contains(., "stars")]//text()').string(multiple=True)
+            if grade_overall:
+                grade_overall = grade_overall.split()[0].replace(u'\u202d', '').replace(u'\u202c', '').strip()
+
+        if grade_overall and float(grade_overall) > 0:
+            review.grades.append((Grade(type='overall', value=float(grade_overall), best=5.0)))
+
+    pros = new_data.xpath('//p[starts-with(normalize-space(.), "-") and preceding-sibling::p[strong][1][contains(strong, "Hits:")]]')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = pros = new_data.xpath('//p[starts-with(normalize-space(.), "-") and preceding-sibling::p[strong][1][contains(strong, "Misses:")]]')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
     summary = rev_json.get('subheadline')
     if summary:
         review.add_property(type='summary', value=summary.strip())
 
-    excerpts_json = rev_json.get('cards', [{}])[0].get('story_elements', [])
-    pros = False
-    cons = False
-    excerpt = ''
-    for excerpt_json in excerpts_json:
-        if excerpt_json.get('type') == 'text':
-            if pros:
-                pro = data.parse_fragment(excerpt_json.get('text')).xpath('//text()[starts-with(normalize-space(.), "-")]').string(multiple=True)
-                if pro:
-                    pro = pro.strip(' +-*.:;•,–')
-                    if len(pro) > 1:
-                        review.add_property(type='pros', value=pro)
+    conclusion = new_data.xpath('//h3[contains(text(), "Verdict")]/following-sibling::p//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclsuion', value=conclusion)
 
-                    continue
-                else:
-                    pros = False
-
-            if cons:
-                con = data.parse_fragment(excerpt_json.get('text')).xpath('//text()[starts-with(normalize-space(.), "-")]').string(multiple=True)
-                if con:
-                    con = con.strip(' +-*.:;•,–')
-                    if len(con) > 1:
-                        review.add_property(type='cons', value=con)
-
-                    continue
-                else:
-                    cons = False
-
-            if data.parse_fragment(excerpt_json.get('text')).xpath('//strong[contains(., "Hits:")]'):
-                pros = True
-                continue
-
-            if data.parse_fragment(excerpt_json.get('text')).xpath('//strong[contains(., "Misses:")]'):
-                cons = True
-                continue
-
-            if data.parse_fragment(excerpt_json.get('text')).xpath('//strong[contains(., "Price")]'):
-                continue
-
-            if data.parse_fragment(excerpt_json.get('text')).xpath('//strong[contains(., "Rating")]'):
-                grade_overall = data.parse_fragment(excerpt_json.get('text')).xpath('//text()').string(multiple=True)
-                if grade_overall:
-                    grade_overall = grade_overall.split(':')[-1].strip().split()[0].replace(u'\u202d', '').replace(u'\u202c', '').strip()
-                    if grade_overall and float(grade_overall) > 0:
-                        review.grades.append((Grade(type='overall', value=float(grade_overall), best=5.0)))
-                break
-
-            if data.parse_fragment(excerpt_json.get('text')).xpath('//strong[contains(., "ALSO READ")]'):
-                break
-
-            excerpt += data.parse_fragment(excerpt_json.get('text')).xpath('//text()').string(multiple=True)
-
+    excerpt = new_data.xpath('//p[not(regexp:test(strong, "Hits:|Misses:|Price|RatingALSO READ|Specifications") or preceding::p[regexp:test(strong, "Hits:|Misses:|Price|RatingALSO READ|Specifications")] or preceding::h3[contains(text(), "Verdict")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

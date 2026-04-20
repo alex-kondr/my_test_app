@@ -55,12 +55,12 @@ def process_review(data, context, session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    context['conclusion'] = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(regexp:test(strong, "Pros|Cons"))]//text()').string(multiple=True)
+    context['conclusion'] = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(regexp:test(strong, "Pros|Cons|Ratings|Specifications"))]//text()').string(multiple=True)
     if context['conclusion']:
         context['conclusion'] = context['conclusion'].replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=context['conclusion'])
 
-    context['excerpt'] = data.xpath('//div[contains(@class, "entry-content")]/p[not(regexp:test(strong, "Pros|Cons"))]//text()').string(multiple=True)
+    context['excerpt'] = data.xpath('//div[contains(@class, "entry-content")]/p[not(regexp:test(strong, "Pros|Cons|Ratings|Specifications"))]//text()').string(multiple=True)
 
     context['product'] = product
 
@@ -107,7 +107,7 @@ def process_review_last(data, context, session):
                 review.add_property(type='cons', value=con)
 
     if context.get('pages'):
-        context['conclusion'] = data.xpath('//div[contains(@class, "entry-content")]/p[not(regexp:test(strong, "Pros|Cons"))]//text()').string(multiple=True)
+        context['conclusion'] = data.xpath('//div[contains(@class, "entry-content")]/p[not(regexp:test(strong, "Pros|Cons|Ratings|Specifications"))]//text()').string(multiple=True)
         if context['conclusion']:
             context['conclusion'] = context['conclusion'].replace(u'\uFEFF', '').strip()
             review.add_property(type='conclusion', value=context['conclusion'])
