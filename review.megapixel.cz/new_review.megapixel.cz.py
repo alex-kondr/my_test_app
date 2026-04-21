@@ -108,6 +108,8 @@ def process_product(data, context, session):
 def process_reviews(data, context, session):
     strip_namespace(data)
 
+    product = context['product']
+
     revs = data.xpath('//div[contains(@class, "comment-list__item")]')
     for rev in revs:
         review = Review()
@@ -123,6 +125,12 @@ def process_reviews(data, context, session):
             author = author.rsplit(', ', 1)[0].strip()
             if len(author) > 1:
                 author = remove_emoji(serialize_text(author)).strip()
+                if len(author) > 1:
+                    review.authors.append(Person(name=author, ssid=author))
+                else:
+                    author = None
+            else:
+                author = None
 
         grade_overall = rev.xpath('.//span[@class="sr-only"]/text()').string()
         if grade_overall:
@@ -140,7 +148,6 @@ def process_reviews(data, context, session):
 
                 review.ssid = review.digest() if author else review.digest(excerpt)
 
-                product = context['product']
                 product.reviews.append(review)
 
     if product.reviews:
