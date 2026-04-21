@@ -122,7 +122,7 @@ def process_reviews(data, context, session):
 
         author = rev.xpath('.//p[contains(@class, "comment__author-content")]/text()[last()]').string()
         if author:
-            author = author.rsplit(', ', 1)[0].strip()
+            author = author.split(', ')[0].strip()
             if len(author) > 1:
                 author = remove_emoji(serialize_text(author)).strip()
                 if len(author) > 1:

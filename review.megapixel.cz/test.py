@@ -17,6 +17,8 @@ agent = agents.MEGAPIXEL_CZ
 reload = 1
 session_id = 0
 
+# name: 4+
+# excerpt: 9+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
