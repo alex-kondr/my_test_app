@@ -108,39 +108,39 @@ def process_product(data, context, session):
 def process_reviews(data, context, session):
     strip_namespace(data)
 
-    product = context['product']
-
     revs = data.xpath('//div[contains(@class, "comment-list__item")]')
     for rev in revs:
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review.date = rev.xpath('.//p[contains(@class, "comment__author-content")]/text()[last()]').string()
 
-        author = ''
-        author_date = rev.xpath('.//p[contains(@class, "author-content")]//text()').string(multiple=True)
-        if author_date:
-            if 'Ověřený zákazník' in author_date:
-                review.add_property(type='is_verified_buyer', value=True)
+        date = rev.xpath('.//p[contains(@class, "comment__author-content")]/text()[last()]').string()
+        if date:
+            review.date = date.split(', ')[-1].strip()
 
-            review.date = author_date.split(',')[-1].strip()
-
-            author = author_date.split('Ověřený zákazník')[-1].split('produkt zakoupili.')[-1].split(',')[0].strip()
-            author = remove_emoji(serialize_text(author)).strip()
-            if author:
-                review.authors.append(Person(name=author, ssid=author))
+        author = rev.xpath('.//p[contains(@class, "comment__author-content")]/text()[last()]').string()
+        if author:
+            author = author.rsplit(', ', 1)[0].strip()
+            if len(author) > 1:
+                author = remove_emoji(serialize_text(author)).strip()
 
         grade_overall = rev.xpath('.//span[@class="sr-only"]/text()').string()
         if grade_overall:
             review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
 
+        is_verified_buyer = rev.xpath('.//p[contains(text(), "Ověřený zákazník")]')
+        if is_verified_buyer:
+            review.add_property(type='is_verified_buyer', value=True)
+
         excerpt = rev.xpath('div[@class="comment__text"]/p/text()').string(multiple=True)
         if excerpt:
             excerpt = remove_emoji(serialize_text(excerpt)).strip()
-            if excerpt:
-                review.properties.append(ReviewProperty(type="excerpt", value=excerpt))
+            if len(excerpt) > 2:
+                review.add_property(type="excerpt", value=excerpt)
 
                 review.ssid = review.digest() if author else review.digest(excerpt)
+
+                product = context['product']
                 product.reviews.append(review)
 
     if product.reviews:
