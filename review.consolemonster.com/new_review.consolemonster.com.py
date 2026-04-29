@@ -1,0 +1,87 @@
+from agent import *
+from models.products import *
+
+
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
+def run(context, session):
+    session.browser.use_new_parser = True
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.queue(Request('https://www.consolemonster.com/category/reviews/'), process_revlist, dict())
+
+
+def process_revlist(data, context, session):
+    strip_namespace(data)
+
+    revs = data.xpath('//a[contains(@class, "title")]')
+    for rev in revs:
+        title = rev.xpath('h2/text()').string()
+        url = rev.xpath('@href').string()
+        session.queue(Request(url), process_review, dict(title=title, url=url))
+
+    next_url = data.xpath('//a[contains(@class, "pagination__next")]//@href').string()
+    if next_url:
+        session.queue(Request(next_url), process_revlist, dict())
+
+
+def process_review(data, context, session):
+    strip_namespace(data)
+
+    product = Product()
+    product.name = context['title'].split(' Review: ')[0].replace(' Review', '').replace(u'Ã¶', u'ö').replace('The Testament of ', '').strip()
+    product.ssid = context['url'].split('/')[-2].replace('-review', '')
+
+    product.url = data.xpath('//div[contains(@class, "container")]//a[contains(., "Amazon")]/@href').string()
+    if not product.url:
+        product.url = context['url']
+
+    product.category = data.xpath('//li[contains(@class, "breadcrumbs__item--paren")]//span[contains(@class, "breadcrumbs__text") and not(regexp:test(., "Home|Review"))]//text()[normalize-space(.)][last()]').string()
+    if not product.category:
+        product.category = 'Games'
+
+    review = Review()
+    review.type = 'pro'
+    review.title = context['title']
+    review.url = context['url']
+    review.ssid = product.ssid
+    review.date = data.xpath('//span[contains(@class, "date")]/time/text()').string()
+
+    author = data.xpath('//span[contains(@class, "type-author")]/text()').string(multiple=True)
+    author_url = data.xpath('//li[@itemprop="author"]/a/@href').string()
+    if author and author_url:
+        author_ssid = author_url.split('/')[-2]
+        review.authors.append(Person(name=author, ssid=author_ssid))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    conclusion = data.xpath('//p[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[contains(., "Verdict")]/following-sibling::p//text()').string(multiple=True)
+
+    if conclusion:
+        conclusion = conclusion.replace(u'Ã©', u'é')
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//p[contains(., "Conclusion")]/preceding-sibling::p[not(regexp:test(., "The Specs|You can buy|discount off"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[contains(., "Verdict")]/preceding-sibling::p[not(regexp:test(., "The Specs|You can buy|discount off"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "container")]/p[not(regexp:test(., "The Specs|You can buy|discount off"))]//text()').string(multiple=True)
+
+    if excerpt:
+        excerpt = excerpt.replace(u'Ã©', u'é')
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
