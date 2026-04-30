@@ -55,6 +55,9 @@ def process_review(data, context, session):
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//div[@class="score"]/text()').string()
+    if not grade_overall:
+        grade_overall = data.xpath('//div[contains(@class, "type-score")]//span[@class="average"]/span/text()').string()
+
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
@@ -85,6 +88,8 @@ def process_review(data, context, session):
         conclusion = data.xpath('//p[.="Fazit" or .="FAZIT"]/following-sibling::p[1]//text()[not(contains(., "["))]').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h4[@id="fazit"]/following-sibling::blockquote/p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[contains(@class, "summary-content")]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
