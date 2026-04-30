@@ -15,7 +15,7 @@ import product_test.list_of_agents as agents
 agent = agents.CONSOLEMONSTER_US
 # agent = agents.TEST
 reload = 1
-session_id = 6842017
+session_id = 0
 
 # name: 13 (12+)
 # category: 1+
