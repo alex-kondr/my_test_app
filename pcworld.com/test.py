@@ -17,6 +17,11 @@ agent = agents.WWW_PCWORLD_COM
 reload = 1
 session_id = 0
 
+# name: 61+
+# category: 0+
+# pros_cons: 11+
+# conclusion: 4+
+# excerpt: 100+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

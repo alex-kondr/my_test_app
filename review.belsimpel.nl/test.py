@@ -17,6 +17,7 @@ agent = agents.BELSIMPEL_NL
 reload = 1
 session_id = 0
 
+# pros_cons: 1+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
