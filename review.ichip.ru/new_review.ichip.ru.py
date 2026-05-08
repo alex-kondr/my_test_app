@@ -1,37 +1,45 @@
 from agent import *
 from models.products import *
 import re
+import time
+import random
 
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('https://ichip.ru/', use='curl', force_charset='utf-8'), process_frontpage, dict())
+    session.queue(Request('https://ichip.ru/', force_charset='utf-8'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     cats = data.xpath('//li[contains(., "Обзоры")]/ul/li/a')
     for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name, cat_url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_revlist, dict(cat=name, cat_url=url))
 
 
 def process_revlist(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     revs = data.xpath('//div[@class="title"]/a')
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
 
         if 'Топ-' not in title:
-            session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
+            session.queue(Request(url, force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
     if revs:
         next_page = context.get('page', 1) + 1
         next_url = context['cat_url'] + '?page={}'.format(next_page)
-        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict(context, page=next_page))
+        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict(context, page=next_page))
 
 
 def process_review(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     title = data.xpath('//h1/text()').string()
 
     product = Product()
