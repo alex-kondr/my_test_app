@@ -117,6 +117,9 @@ def process_review(data, context, session):
             review.add_property(type='cons', value=con)
 
     conclusion = data.xpath('//h2[contains(., "Verdict") or contains(., "verdict") or contains(., "Conclusion")]/following-sibling::p[not(contains(., "[one_half]") or contains(., "su_list") or contains(., "su_box") or contains(., "su_row") or contains(., "[double_paragraph]") or contains(., "[row]"))]//text()[not(starts-with(., ">"))]').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[contains(span//text(), "Verdict")]/p//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
