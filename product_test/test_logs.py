@@ -46,17 +46,30 @@ def process_log_chunk(chunk: list[str]) -> list[list[str]]:
     errors_in_chunk = []
     error_pattern = re.compile(r"^error ")
     request_pattern = re.compile(r"Request GET u'([^']*)'")
+
     for i, line in enumerate(chunk):
+        found_url = None
+        error_type = None
+
+        # Перевіряємо тип помилки
         if error_pattern.search(line):
-            # context_url = "URL not found"
-            # Search backwards from the error line for the most recent request URL.
+            error_type = "STANDARD"
+        elif "ERROR MAKING REQUEST" in line:
+            error_type = "MAKING"
+
+        if error_type:
+            # Шукаємо URL у попередніх 20 рядках
             for j in range(i - 1, max(i - 20, -1), -1):
-                context_line = chunk[j]
-                match = request_pattern.search(context_line)
-                if match:
-                    # context_url = match.group(1)
-                    errors_in_chunk.append([match.group(1), line])
+                if match := request_pattern.search(chunk[j]):
+                    found_url = match.group(1)
                     break
+
+            if found_url:
+                # Зберігаємо тип помилки разом із даними для подальшої фільтрації
+                errors_in_chunk.append([found_url, error_type, line])
+            else:
+                errors_in_chunk.append(["URL not found", error_type, line])
+
     return errors_in_chunk
 
 
@@ -109,7 +122,7 @@ class TestLogProduct:
         chunk_size = max(1000, len(log_lines) // (num_processes * 2))
         chunks = [log_lines[i:i + chunk_size] for i in range(0, len(log_lines), chunk_size)]
 
-        logger.info(f"Starting log analysis with {num_processes} cores, processing {len(chunks)} chunks.")
+        logger.info(f"Starting log analysis with {num_processes} cores...")
 
         error_log = []
         with Pool(num_processes) as p:
@@ -118,8 +131,20 @@ class TestLogProduct:
                 if chunk_errors:
                     error_log.extend(chunk_errors)
 
+        # Розділяємо помилки для статистики
+        standard_errors = [e for e in error_log if e[1] == "STANDARD"]
+        making_errors = [e for e in error_log if e[1] == "MAKING"]
+
         logger.info(f"Analyzed {len(log_lines)} log lines.")
-        logger.error(f"Find error in logs: {len(error_log)}")
+
+        # Вивід згідно з вашими вимогами:
+        # Стандартні помилки (без "MAKING")
+        logger.error(f"Find error in logs: {len(standard_errors)}")
+        # Тільки "MAKING" помилки
+        logger.error(f"Find MAKING error in logs: {len(making_errors)}")
+
+        # Зберігаємо все разом або лише стандартні (за вашим бажанням)
+        # Якщо потрібно зберегти все:
         self.save(error_log)
 
     def save(self, error_log: list):
