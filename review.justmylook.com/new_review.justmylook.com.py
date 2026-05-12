@@ -4,7 +4,7 @@ import simplejson
 
 
 CAT = ['Fragrance', 'Sun & Tan', 'Haircare', 'Skincare', 'Makeup', 'Bath & Body', 'Nails', 'Electricals', 'Home & Candles', 'Health & Wellbeing']
-XCAT = ['Shop All']
+XCAT = ['Shop All', 'Gift Sets for her', 'Gift sets for him', 'BEST-SELLERS', 'Best-Sellers']
 
 
 def strip_namespace(data):
@@ -43,33 +43,25 @@ def process_category(data, context, session):
     subcats = data.xpath('//a[contains(@class, "group/collection-link")]')
     for subcat in subcats:
         subcat_name = subcat.xpath('.//p/text()').string()
-        url = subcat.xpath('@href').string()
+        cat_id = subcat.xpath('@href').string()
 
         if subcat_name not in XCAT:
-            
-            print context['cat']+'|'+subcat_name, url
-            # session.queue(Request(url), process_prodlist, dict(cat=context['cat']+'|'+subcat_name))
+            options = """--compressed -X POST -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:150.0) Gecko/20100101 Firefox/150.0' -H 'Accept: */*' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'content-type: application/x-www-form-urlencoded' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: cross-site' -H 'Priority: u=0' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' --data-raw '{"requests":[{"indexName":"shopify_products","params":"clickAnalytics=true&distinct=true&facetingAfterDistinct=true&facets=%5B%22meta.algolia.colour_description%22%2C%22meta.algolia.fragrance_classification%22%2C%22meta.algolia.fragrance_notes%22%2C%22meta.algolia.fragrance_type%22%2C%22meta.algolia.gender%22%2C%22meta.algolia.hair_type_concern%22%2C%22meta.algolia.healthcare_concern%22%2C%22meta.algolia.home_fragrance_scent%22%2C%22meta.algolia.key_ingredient%22%2C%22meta.algolia.nail_polish_colour%22%2C%22meta.algolia.product_type%22%2C%22meta.algolia.skin_concern%22%2C%22meta.algolia.skin_type%22%2C%22meta.algolia.spf_content%22%2C%22meta.algolia.supplement_format%22%2C%22meta.algolia.supplement_type%22%2C%22price%22%2C%22price_range%22%2C%22product_type%22%2C%22vendor%22%5D&filters=collections%3A""" + cat_id + """&highlightPostTag=__%2Fais-highlight__&highlightPreTag=__ais-highlight__&hitsPerPage=24&maxValuesPerFacet=200&page=1&query=&ruleContexts=%5B%22""" + cat_id + """%22%2C%22shopify_default_collection%22%5D&userToken=anonymous-d8522922-34ba-46a4-9cab-02fe1f574c28"}]}'"""
+            session.queue(Request(url), process_prodlist, dict(cat=context['cat']+'|'+subcat_name))
 
 
 def process_prodlist(data, context, session):
     strip_namespace(data)
 
-    prods = data.xpath('''//script[@id="web-pixels-manager-setup"]/text()''').string()
-    if prods:
-        prods = prods.replace("\n","").split('"collection_viewed",')[-1].split(");},\"https://www.justmylook.com/cdn\",")[0]
-        prods = simplejson.loads(prods)
-        prods = prods.get("collection").get("productVariants")
+    prods_json = data.xpath('''//script[contains(., '"@type": "ItemList"')]/text()''').string()
+    try:
+        prods = simplejson.loads(prods_json).get('itemListElement', [])
+    except:
+        return
 
-        if prods:
-            for prod in prods:
-                name = prod.get("product").get("title")
-                url = "https://www.justmylook.com" + prod.get("product").get("url")
-                sku = prod.get("sku")
-                data_variant_id = prod.get("id")
-                ssid = prod.get("product").get("id")
-                manufacturer = prod.get("product").get("vendord")
-                data_sku = url.replace("https://www.justmylook.com/","") + ";" + sku + ";" + data_variant_id
-                session.queue(Request(url), process_product, dict(context, name=name, url=url, sku=sku, ssid=ssid, data_sku=data_sku, manufacturer=manufacturer))
+    for prod in prods:
+        url = prod.get('url')
+        session.queue(Request(url), process_product, dict(context, url=url))
 
 
 def process_product(data, context, session):
@@ -78,7 +70,7 @@ def process_product(data, context, session):
     product = Product()
     product.name = context["name"]
     product.url = context["url"]
-    product.category = context["cat"]
+    product.category = context["cat"].title()
     product.sku = context["sku"]
     product.ssid = context["ssid"]
     product.manufacturer = context["manufacturer"]

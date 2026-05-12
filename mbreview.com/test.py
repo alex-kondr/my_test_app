@@ -17,8 +17,9 @@ agent = agents.MBREVIEW_COM
 reload = 1
 session_id = 0
 
-# name: 73
-# logs: 1
+# name: 0
+# author: 2206
+# MAKING: 1+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
