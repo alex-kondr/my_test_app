@@ -10,6 +10,8 @@ def run(context, session):
 
 
 def process_revlist(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     revs = data.xpath('//div[contains(@class, "title")]/a')
     for rev in revs:
         title = rev.xpath("text()").string()
@@ -22,10 +24,12 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     product = Product()
     product.name = context['title'].split(' Review: ')[0].split(' Preview: ')[0].split(' Review')[0].strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-1].replace('-review')
+    product.ssid = product.url.split('/')[-1].replace('-review', '')
 
     product.category = data.xpath("//div[@class='breadcrumb']/a[@class='blue last' and not(contains(., 'Review'))]//text()").string()
     if not product.category:
@@ -73,55 +77,60 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h3[contains(., "Summary")]/following-sibling::text()|//h3[contains(., "Summary")]/following-sibling::*//text()').string(multiple=True)
+    conclusion = data.xpath('//h3[contains(., "The Verdict")]/following-sibling::text()|//h3[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h3[contains(., "The Verdict")]/following-sibling::text()|//h3[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::text()|//h3[contains(., "Conclusion")]/following-sibling::*//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('')
-    # //div[@class="cn-body e-content"]/div[@align="left"]
-    # //div[@class="cn-body e-content"]
+    excerpt = data.xpath('//div[@class="cn-body e-content"]//text()[preceding::table[@align="center"] and not(preceding::h3[contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion")] or ancestor::li or parent::h3)]').string(multiple=True)
 
-    # pages = data.xpath("//div[@class='cn-pages']//select/option")
-    # for page in pages:
-    #     page_url = context['url'] + '?page=' + page.xpath("@value").string()
-    #     page_title = page.xpath(".//text()").string()
-    #     review.properties.append(ReviewProperty(type='pages', value={'url': page_url, 'title': page_title}))
+    pages = data.xpath('//li[@class="pages-menu"]/a|//li[@class="pages-menu"]//li')
+    if pages:
+        for page in pages:
+            title = page.xpath('.//text()').string()
+            url = page.xpath('.//@href').string()
+            review.add_property(type='pages', value=dict(title=title, url=url))
 
-    # if pages:
-    #     last_url = context['url'] + '?page=' + pages.last().xpath("@value").string()
-    #     session.do(Request(last_url), process_review_last, dict(context, product=product, review=review))
-    # else:
-    #     context['product'] = product
-    #     context['review'] = review
-    #     process_review_last(data, context, session)
-    
-    
-# def process_review_last(data, context, session):
-#     product = context['product']
-#     review = context['review']
-    
-#     conclusion = data.xpath("//div[@class='cn-body e-content']/h3[contains(.,'Conclusion')]/following-sibling::div//text()").string(multiple=True)
-#     if not conclusion:
-#         conclusion = data.xpath("//div[@class='cn-pagetitle' and contains(.,'Final')]/following-sibling::div[@class='cn-body e-content']//text()").string(multiple=True)
-#     if not conclusion:
-#         conclusion = data.xpath("//div[@class='cn-pagetitle' and contains(.,'Conclusion')]/following-sibling::div[@class='cn-body e-content']//text()").string(multiple=True)
-#     if not conclusion:
-#         conclusion = data.xpath("//div[@class='cn-body e-content']//text()").string(multiple=True)
-#     if conclusion:
-#         review.properties.append(ReviewProperty(type='conclusion', value=conclusion))
-    
-#     pros = data.xpath("//td[1]/ul/li//text()")
-#     for pro in pros:
-#         pro = pro.string().replace('+', '').strip()
-#         if pro:
-#             review.add_property(type='pros', value=pro)
-    
-#     cons = data.xpath("//td[2]/ul/li//text()")
-#     for con in cons:
-#         con = con.string().replace('- ', '').strip()
-#         if con:
-#             review.add_property(type='cons', value=con)
-    
-#     if conclusion:
-#         product.reviews.append(review)
-#         session.emit(product)
+        session.do(Request(url), process_review_last, dict(product=product, review=review, excerpt=excerpt))
+
+    elif excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
+
+
+def process_review_last(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
+    review = context['review']
+
+    conclusion = data.xpath('//h3[contains(., "The Verdict")]/following-sibling::text()|//h3[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h3[contains(., "The Verdict")]/following-sibling::text()|//h3[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::text()|//h3[contains(., "Conclusion")]/following-sibling::*//text()').string(multiple=True)
+
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    is_recommended = data.xpath('//img[contains(@data-src, "hothardware_recommended")]')
+    if is_recommended:
+        review.add_property(type='is_recommended', value=True)
+
+    excerpt = data.xpath('//div[@class="cn-body e-content"]//text()[not(preceding::h3[contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion")] or ancestor::li or parent::h3)]').string(multiple=True)
+    if excerpt:
+        context['excerpt'] += ' ' + excerpt
+
+    if context['excerpt']:
+        review.add_property(type='excerpt', value=context['excerpt'])
+
+        product = context['product']
+        product.reviews.append(review)
+
+        session.emit(product)
