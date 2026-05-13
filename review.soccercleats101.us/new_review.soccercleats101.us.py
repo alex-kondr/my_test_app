@@ -18,29 +18,29 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.queue(Request('https://www.soccercleats101.com/category/cleat-reviews/', use='curl'), process_revlist, dict())
+    session.queue(Request('https://www.soccercleats101.com/category/cleat-reviews/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
     strip_namespace(data)
 
-    time.sleep(random.uniform(1, 3))
+    time.sleep(random.uniform(2, 5))
 
     revs = data.xpath('//h2[contains(@class, "title")]/a')
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl'), process_review, dict(title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl'), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', max_age=0, force_charset='utf-8'), process_revlist, dict())
 
 
 def process_review(data, context, session):
     strip_namespace(data)
 
-    time.sleep(random.uniform(1, 3))
+    time.sleep(random.uniform(2, 5))
 
     product = Product()
     product.name = context['title'].split(' Preview: Who ')[0].split(' Review: ')[0].replace(' – The review', '').replace(' Review', '').replace(' review', '').replace(' Tested', '').strip()

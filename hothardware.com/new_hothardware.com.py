@@ -21,7 +21,7 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title'].split(' (Review): ')[0].split(' Review: ')[0].split(' Preview: ')[0].split(' Review')[0].split(' Tested: ')[0].split(': Testing ')[0].split(' Beta Preview')[0].replace(' Tested', '').replace(' Preview', '').strip()
+    product.name = context['title'].split(' (Review): ')[0].split(' Review: ')[0].split(' Preview: ')[0].split(' Review')[0].split(' Tested: ')[0].split(': Testing ')[0].split(' Beta Preview')[0].replace(' Tested', '').replace(' Preview', '').replace('Preview: ', '').replace(' PREview', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('-review', '')
 
@@ -112,6 +112,8 @@ def process_review_last(data, context, session):
     if not conclusion:
         conclusion = data.xpath('(//h3|//h2)[contains(., "Conclusion")]/following-sibling::text()|(//h3|//h2)[contains(., "Conclusion")]/following-sibling::*//text()').string(multiple=True)
     if not conclusion:
+        conclusion = data.xpath('//text()[(preceding::h3|preceding::h2)[contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion")]][not(preceding::div[contains(@class, "cn-footer")] or ancestor::div[contains(@class, "cn-footer")])]').string(multiple=True)
+    if not conclusion:
         conclusion = data.xpath('//div[@class="cn-body e-content"]//text()[not(ancestor::li or parent::h3)]').string(multiple=True)
 
     if conclusion:
@@ -126,7 +128,12 @@ def process_review_last(data, context, session):
         context['excerpt'] += ' ' + excerpt
 
     if context['excerpt']:
-        review.add_property(type='excerpt', value=context['excerpt'])
+        excerpt = context['excerpt']
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
+        review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
         product.reviews.append(review)
