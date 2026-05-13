@@ -1,37 +1,31 @@
 from agent import *
 from models.products import *
-import time
-import random
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('https://hothardware.com/reviews'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
-    time.sleep(random.uniform(1, 3))
-
     revs = data.xpath('//div[contains(@class, "title")]/a')
     for rev in revs:
-        title = rev.xpath("text()").string()
+        title = rev.xpath("text()").string().replace('&amp;', '&')
         url = rev.xpath("@href").string()
         session.queue(Request(url), process_review, dict(title=title, url=url))
 
-    next_url = data.xpath('//a[contains(text(), "Next")]/@href').string()
+    next_url = data.xpath('//a[contains(text(), "Next") and contains(@href, "pageindex")]/@href').string()
     if next_url:
         session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data, context, session):
-    time.sleep(random.uniform(1, 3))
-
     product = Product()
-    product.name = context['title'].split(' Review: ')[0].split(' Preview: ')[0].split(' Review')[0].strip()
+    product.name = context['title'].split(' (Review): ')[0].split(' Review: ')[0].split(' Preview: ')[0].split(' Review')[0].split(' Tested: ')[0].split(': Testing ')[0].split(' Beta Preview')[0].replace(' Tested', '').replace(' Preview', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1].replace('-review', '')
 
-    product.category = data.xpath("//div[@class='breadcrumb']/a[@class='blue last' and not(contains(., 'Review'))]//text()").string()
+    product.category = data.xpath("//div[@class='breadcrumb']/a[@class='blue last' and not(contains(., 'Review') or contains(., 'News'))]//text()").string()
     if not product.category:
         product.category = 'Tech'
 
@@ -77,21 +71,25 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h3[contains(., "The Verdict")]/following-sibling::text()|//h3[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
+    conclusion = data.xpath('(//h3|//h2)[contains(., "The Verdict")]/following-sibling::text()|(//h3|//h2)[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h3[contains(., "The Verdict")]/following-sibling::text()|//h3[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
+        conclusion = data.xpath('(//h3|//h2)[contains(., "The Verdict")]/following-sibling::text()|(//h3|//h2)[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::text()|//h3[contains(., "Conclusion")]/following-sibling::*//text()').string(multiple=True)
+        conclusion = data.xpath('(//h3|//h2)[contains(., "Conclusion")]/following-sibling::text()|(//h3|//h2)[contains(., "Conclusion")]/following-sibling::*//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="cn-body e-content"]//text()[preceding::table[@align="center"] and not(preceding::h3[contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion")] or ancestor::li or parent::h3)]').string(multiple=True)
+    excerpt = data.xpath('//div[@class="cn-body e-content"]//text()[preceding::table[@align="center"] and not((preceding::h3|preceding::h2)[contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion")] or contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion") or ancestor::li or parent::h3)]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="cn-body e-content"]//text()[preceding::li[@class="pages-menu"] and not((preceding::h3|preceding::h2)[contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion")] or contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion") or ancestor::li or parent::h3)]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@class="cn-body e-content"]//text()[not((preceding::h3|preceding::h2)[contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion")] or contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion") or ancestor::li or parent::h3)]').string(multiple=True)
 
     pages = data.xpath('//li[@class="pages-menu"]/a|//li[@class="pages-menu"]//li')
     if pages:
         for page in pages:
-            title = page.xpath('.//text()').string()
+            title = page.xpath('.//text()').string(multiple=True)
             url = page.xpath('.//@href').string()
             review.add_property(type='pages', value=dict(title=title, url=url))
 
@@ -106,15 +104,15 @@ def process_review(data, context, session):
 
 
 def process_review_last(data, context, session):
-    time.sleep(random.uniform(1, 3))
-
     review = context['review']
 
-    conclusion = data.xpath('//h3[contains(., "The Verdict")]/following-sibling::text()|//h3[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
+    conclusion = data.xpath('(//h3|//h2)[contains(., "The Verdict")]/following-sibling::text()|(//h3|//h2)[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h3[contains(., "The Verdict")]/following-sibling::text()|//h3[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
+        conclusion = data.xpath('(//h3|//h2)[contains(., "The Verdict")]/following-sibling::text()|(//h3|//h2)[contains(., "The Verdict")]/following-sibling::*//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::text()|//h3[contains(., "Conclusion")]/following-sibling::*//text()').string(multiple=True)
+        conclusion = data.xpath('(//h3|//h2)[contains(., "Conclusion")]/following-sibling::text()|(//h3|//h2)[contains(., "Conclusion")]/following-sibling::*//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@class="cn-body e-content"]//text()[not(ancestor::li or parent::h3)]').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
@@ -123,8 +121,8 @@ def process_review_last(data, context, session):
     if is_recommended:
         review.add_property(type='is_recommended', value=True)
 
-    excerpt = data.xpath('//div[@class="cn-body e-content"]//text()[not(preceding::h3[contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion")] or ancestor::li or parent::h3)]').string(multiple=True)
-    if excerpt:
+    if data.xpath('(//h3|//h2)[contains(., "The Verdict") or contains(., "The Verdict") or contains(., "Conclusion")]'):
+        excerpt = data.xpath('//div[@class="cn-body e-content"]//text()[not((preceding::h3|preceding::h2)[contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion")] or contains(., "Summary") or contains(., "The Verdict") or contains(., "Conclusion") or ancestor::li or parent::h3)]').string(multiple=True)
         context['excerpt'] += ' ' + excerpt
 
     if context['excerpt']:
