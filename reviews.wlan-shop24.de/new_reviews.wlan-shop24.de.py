@@ -40,7 +40,9 @@ def process_prodlist(data, context, session):
 
         rating = prod.xpath('div[@aria-label="Bewertungen"]')
         if rating:
-            session.queue(Request(url+'?ratings_nItemsPerPage=-1'), process_product, dict(context, name=name, url=url))
+            session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        else:
+            return
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -51,9 +53,12 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = data.xpath('//input/@data-product-id').string()
     product.sku = data.xpath('//li[contains(strong/text(), "Artikelnummer:")]/span/text()').string()
     product.category = context['cat']
+
+    product.ssid = data.xpath('//input/@data-product-id').string()
+    if not product.ssid:
+        product.ssid = product.sku
 
     manufacturer = data.xpath('//div[contains(strong/text(), "Herstellerinformationen:")]/text()[contains(., "Name:")]').string()
     if manufacturer:

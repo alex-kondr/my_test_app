@@ -63,7 +63,7 @@ def process_review(data, context, session):
         review.date = date.split('T')[0]
 
     author_url = data.xpath('//a[contains(@href, ",autor,")]/@href').string()
-    author = data.xpath('//a[contains(@href, ",autor,")]/text()').string()
+    author = data.xpath('//div[contains(@class, "article-author")]//text()').string(multiple=True)
     if not author and rev_info_json:
         author = rev_info_json.get('author', [{}])[0].get('name')
 
@@ -79,7 +79,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[contains(@class, "content-text")]/p[not(@class)]//text()').string(multiple=True)
     if excerpt:
-        excerpt = excerpt.replace(u'\uFEFF', '').strip()
+        excerpt = excerpt.replace(u'\uFEFF', '').replace(u'\x98', '').replace(u'', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

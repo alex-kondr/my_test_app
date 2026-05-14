@@ -17,6 +17,10 @@ agent = agents.GADZETOMANIA_PL
 reload = 1
 session_id = 0
 
+# name: 215+
+# author: 1
+# excerpt: 4643+
+# MAKING: 3+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
