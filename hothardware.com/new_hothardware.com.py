@@ -93,9 +93,15 @@ def process_review(data, context, session):
             url = page.xpath('.//@href').string()
             review.add_property(type='pages', value=dict(title=title, url=url))
 
-        session.do(Request(url), process_review_last, dict(product=product, review=review, excerpt=excerpt))
+        session.do(Request(url), process_review_last, dict(product=product, review=review, excerpt=excerpt, summary=summary))
 
     elif excerpt:
+        if summary:
+            excerpt = excerpt.replace(summary, '').strip()
+
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
@@ -129,6 +135,9 @@ def process_review_last(data, context, session):
 
     if context['excerpt']:
         excerpt = context['excerpt']
+
+        if context['summary']:
+            excerpt = excerpt.replace(context['summary'], '').strip()
 
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()

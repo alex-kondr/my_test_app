@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import simplejson
 
 
 XCAT = ['Service', 'SALE!']
@@ -25,31 +26,19 @@ def process_frontpage(data, context, session):
                         for subcat in subcats:
                             subcat_name = subcat.xpath('text()').string()
                             url = subcat.xpath('@href').string()
-                            session.queue(Request(url), process_category, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
+                            session.queue(Request(url+'?Sortierung=12'), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
                     else:
                         url = cat1.xpath('a/@href').string()
-                        session.queue(Request(url), process_category, dict(cat=name+'|'+cat1_name))
-
-
-# def process_category(data, context, session):
-#     subcats = data.xpath('//div[@class="sub-categories"]')
-#     if not subcats:
-#         process_prodlist(data, context, session)
-#         return
-
-#     for subcat in subcats:
-#         name = subcat.xpath('div[contains(@class, "caption")]/text()').string()
-#         url = subcat.xpath('a/@href').string()
-#         session.queue(Request(url), process_category, dict(cat=context['cat']+'|'+name))
+                        session.queue(Request(url+'?Sortierung=12'), process_prodlist, dict(cat=name+'|'+cat1_name))
 
 
 def process_prodlist(data, context, session):
-    prods = data.xpath('//div[@class="productbox-inner"]')
+    prods = data.xpath('//div[contains(a/@class, "title")]')
     for prod in prods:
-        name = prod.xpath('.//a[contains(@class, "text")]/text()').string()
-        url = prod.xpath('.//a[contains(@class, "text")]/@href').string()
+        name = prod.xpath('a[contains(@class, "title")]/text()').string()
+        url = prod.xpath('a[contains(@class, "title")]/@href').string()
 
-        rating = prod.xpath('a[@class="rating"]')
+        rating = prod.xpath('div[@aria-label="Bewertungen"]')
         if rating:
             session.queue(Request(url+'?ratings_nItemsPerPage=-1'), process_product, dict(context, name=name, url=url))
 
@@ -62,53 +51,99 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
+    product.ssid = data.xpath('//input/@data-product-id').string()
+    product.sku = data.xpath('//li[contains(strong/text(), "Artikelnummer:")]/span/text()').string()
     product.category = context['cat']
-    product.manufacturer = data.xpath('//div[@itemprop="brand"]/@content').string()
-    product.ssid = data.xpath('//script/@data-product-id').string()
-    product.sku = product.ssid
 
-    ean = data.xpath('//div[contains(@itemprop, "gtin")]/@content').string()
-    if ean:
-        product.properties.append(ProductProperty(type='id.ean', value=ean))
+    manufacturer = data.xpath('//div[contains(strong/text(), "Herstellerinformationen:")]/text()[contains(., "Name:")]').string()
+    if manufacturer:
+        product.manufacturer = manufacturer.replace('Name:', '').strip()
 
-    mpn = data.xpath('//div[@itemprop="mpn"]/@content').string()
+    mpn = data.xpath('//li[contains(strong/text(), "HAN:")]/span/text()').string()
     if mpn and len(mpn) > 5:
-        product.properties.append(ProductProperty(type='id.manufacturer', value=mpn))
+        product.add_property(type='id.manufacturer', value=mpn)
+
+    ean = data.xpath('//li[contains(strong/text(), "GTIN:")]/span/text()').string()
+    if ean and ean.isdigit() and len(ean) > 10:
+        product.add_property(type='id.ean', value=ean)
+
+    revs_unique_excerpt = []
 
     revs = data.xpath('//div[contains(@class, "review-comment")]')
     for rev in revs:
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review.ssid = rev.xpath('@id').string().replace('comment', '')
 
-        title = rev.xpath('.//span[@class="subheadline"]/text()').string(multiple=True)
-        if title:
-            review.title = title.strip()
-
-        date = rev.xpath('.//div[@class="blockquote-footer"]/text()').string(multiple=True)
+        date = rev.xpath('.//blockquote/small/text()').string(multiple=True)
         if date:
-            review.date = date.strip(' ,')
+            review.date = date.replace('| Verifizierter Kauf', '').split('|')[-1].strip()
 
-        author = rev.xpath('.//div[@class="blockquote-footer"]/span/span/text()').string(multiple=True)
-        if author and author.strip():
-            review.authors.append(Person(name=author, ssid=author))
+        author = rev.xpath('.//blockquote/small/text()').string(multiple=True)
+        if author:
+            author = author.split('|')[0].strip()
+            if len(author) > 1:
+                review.authors.append(Person(name=author, ssid=author))
+            else:
+                author = None
 
-        is_verified = rev.xpath('.//span[@class="verified-purchase"]/text()')
+        grade_overall = rev.xpath('.//small[contains(., " von")]/span[1]/text()').string()
+        if grade_overall and float(grade_overall) > 0:
+            review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
+
+        is_verified = rev.xpath('.//blockquote/small[contains(text(), "Verifizierter Kauf")]')
         if is_verified:
             review.add_property(type='is_verified_buyer', value=True)
 
-        grade_overall = rev.xpath('.//span[@class="rating"]/@title').string()
-        if grade_overall:
-            grade_overall = grade_overall.split(': ')[-1].split('/')[0]
-            if grade_overall:
+        title = rev.xpath('.//div[contains(@class, "title")]/strong/text()').string(multiple=True)
+        excerpt = rev.xpath('.//blockquote/p//text()').string(multiple=True)
+        if excerpt and len(excerpt) > 2:
+            review.title = title
+        else:
+            excerpt = title
+
+        if excerpt and len(excerpt) > 2:
+            revs_unique_excerpt.append(excerpt[:20])
+
+            review.add_property(type="excerpt", value=excerpt)
+
+            ssid = rev.xpath('@id').string()
+            if ssid:
+                review.ssid = ssid.replace('comment', '')
+            else:
+                review.ssid = review.digest() if author else review.digest(excerpt)
+
+            product.reviews.append(review)
+
+    if len(revs) > 10:
+        revs = []
+        revs_json_info = data.xpath('''//script[contains(., '"@graph":[{')]/text()''').string()
+        if revs_json_info:
+            revs_json_info = simplejson.loads(revs_json_info).get('@graph', [])
+            for revs_json in revs_json_info:
+                if revs_json.get('review'):
+                    revs = revs_json.get('review', [])
+                    break
+
+        for rev in revs:
+            review = Review()
+            review.type = 'user'
+            review.url = product.url
+            review.date = rev.get('datePublished')
+
+            author = rev.get('author', {}).get('name')
+            if author:
+                review.authors.append(Person(name=author, ssid=author))
+
+            grade_overall = rev.get('reviewRating', {}).get('ratingValue')
+            if grade_overall and float(grade_overall) > 0:
                 review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
 
-        excerpt = rev.xpath('.//blockquote/p//text()').string(multiple=True)
-        if excerpt:
-            excerpt = excerpt.strip()
-            if excerpt:
-                review.properties.append(ReviewProperty(type="excerpt", value=excerpt))
+            excerpt = rev.get('reviewBody')
+            if excerpt and len(excerpt) > 2 and excerpt[:20] not in revs_unique_excerpt:
+                review.add_property(type="excerpt", value=excerpt)
+
+                review.ssid = review.digest() if author else review.digest(excerpt)
 
                 product.reviews.append(review)
 
