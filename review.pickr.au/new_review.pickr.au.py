@@ -58,6 +58,7 @@ def RequestRevs(offset):
 
 def run(context, session):
     session.browser.use_new_parser = True
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.do(RequestRevs(0), process_revlist, dict())
 
 
