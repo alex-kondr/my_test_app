@@ -44,7 +44,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=8000)]
+    session.sessionbreakers = [SessionBreak(max_requests=9000)]
     session.queue(Request('https://top-mob.com/?s=%D0%9E%D0%91%D0%97%D0%9E%D0%A0', force_charset='utf-8'), process_revlist, {})
 
 
@@ -58,7 +58,7 @@ def process_revlist(data, context, session):
         grade_overall = rev.xpath('.//p[contains(., "Оценка:")]/b/text()').string()
         url = rev.xpath(".//h2[@class='entry-title']/a/@href").string()
 
-        if title and 'O нас' not in title and url:
+        if title and 'O нас' not in title and url and '/help/' not in url:
             session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=remove_emoji(title), ssid=ssid, grade_overall=grade_overall, url=url))
 
     page_cnt = context.get('page_cnt', data.xpath('//a[@class="page-numbers"][last()]/text()').string())

@@ -27,7 +27,7 @@ def process_review(data, context, session):
     time.sleep(random.uniform(2, 5))
 
     product = Product()
-    product.name = context['title'].split('review:')[0].split('review -')[0].split(' Review')[0].split('review –')[0].split('review-')[0].split(' reviews ')[0].strip()
+    product.name = context['title'].split('review:')[0].split('review -')[0].split(' Review')[0].split('review –')[0].split('review-')[0].split(' reviews ')[0].replace(' – review', '').split(' review ')[0].replace(' review', '').strip()
     product.ssid = context['url'].split('/')[-1].replace('-review', '')
     product.category = 'Games'
     product.manufacturer = data.xpath('//li[strong[contains(., "Developer")]]/text()').string(multiple=True)

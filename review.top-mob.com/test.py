@@ -17,6 +17,12 @@ agent = agents.TOP_MOB_COM_RU
 reload = 1
 session_id = 0
 
+# name: 178
+# title: 1
+# date: 1
+# author: 1
+# conclusion: 5
+# excerpt: 6
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
