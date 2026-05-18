@@ -2,6 +2,7 @@ from agent import *
 from models.products import *
 import time
 import random
+import re
 
 
 PRODS_NAME = []
@@ -35,7 +36,7 @@ def process_revlist(data, context, session):
         url = prod.xpath('@href').string()
 
         if name:
-            name = name.split('/')[0]
+            name = re.split(r'/ ?\w+$', name, maxsplit=1)[0]
             if name not in PRODS_NAME:
                 PRODS_NAME.append(name)
                 session.queue(Request(url), process_review, dict(name=name, url=url))
@@ -58,7 +59,7 @@ def process_review(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = product.name
+    review.title = data.xpath('//h1[contains(@class, "title")]/text()').string()
     review.url = product.url
     review.ssid = product.ssid
 

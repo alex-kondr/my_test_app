@@ -75,17 +75,23 @@ def process_review(data, context, session):
     if author:
         review.authors.append(Person(name=author, ssid=author))
 
+    grade_overall = data.xpath('//div[@class="rating-stars"]/@aria-label').string()
+    if grade_overall:
+        grade_overall = grade_overall.replace('Rated ', '').split()[0].strip()
+        if grade_overall and grade_overall[0].isdigit() and float(grade_overall) > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
     summary = data.xpath('//h2[contains(@class, "sub-heading")]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[contains(., "Final Thoughts")]/following-sibling::div//text()[not(contains(., "Amazon Link :") or contains(., "Code ") or contains(., "Discount :") or contains(., "https://amzn.to/"))]').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Final Thoughts") or contains(., "Final thoughts")]/following-sibling::div//text()[not(contains(., "Amazon Link :") or contains(., "Code ") or contains(., "Discount :") or contains(., "https://amzn.to/"))]').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[(contains(@class, "review-section-content") or contains(@class, "post-content")) and not(preceding-sibling::h2[contains(., "Specification") or contains(., "Final Thoughts")])]/div//text()[not(contains(., "Amazon Link :") or contains(., "Code ") or contains(., "Discount :") or contains(., "https://amzn.to/"))]').string(multiple=True)
+    excerpt = data.xpath('//div[(contains(@class, "review-section-content") or contains(@class, "post-content")) and not(preceding-sibling::h2[contains(., "Specification") or contains(., "Final Thoughts") or contains(., "Final thoughts")])]/div//text()[not(contains(., "Amazon Link :") or contains(., "Code ") or contains(., "Discount :") or contains(., "https://amzn.to/"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[(contains(@class, "review-section-content") or contains(@class, "post-content")) and not(preceding-sibling::h2[contains(., "Specification") or contains(., "Final Thoughts")])]/p//text()[not(contains(., "Amazon Link :") or contains(., "Code ") or contains(., "Discount :") or contains(., "https://amzn.to/"))]').string(multiple=True)
+        excerpt = data.xpath('//div[(contains(@class, "review-section-content") or contains(@class, "post-content")) and not(preceding-sibling::h2[contains(., "Specification") or contains(., "Final Thoughts") or contains(., "Final thoughts")])]/p//text()[not(contains(., "Amazon Link :") or contains(., "Code ") or contains(., "Discount :") or contains(., "https://amzn.to/"))]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
