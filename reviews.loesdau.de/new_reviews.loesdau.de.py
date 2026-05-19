@@ -122,8 +122,8 @@ def process_reviews(data, context, session):
 
         excerpt = rev.xpath('.//span[@itemprop="description"]/text()').string(multiple=True)
         if excerpt:
-            excerpt = remove_emoji(excerpt).strip()
-            if len(excerpt) > 0:
+            excerpt = remove_emoji(excerpt).replace('\n', '').replace('\r', '').strip(' .+-*')
+            if len(excerpt) > 2:
                 review.add_property(type="excerpt", value=excerpt)
 
                 review.ssid = review.digest() if author else review.digest(excerpt)
@@ -132,7 +132,8 @@ def process_reviews(data, context, session):
 
     next_url = data.xpath('//li[@class="next"]/a/@href').string()
     if next_url:
-        session.do(Request(next_url, max_age=0), process_reviews, dict(revs_url=next_url, product=product))
+        next_url = next_url.split('#')[0]
+        session.do(Request(next_url), process_reviews, dict(revs_url=next_url, product=product))
 
     elif product.reviews:
         session.emit(product)

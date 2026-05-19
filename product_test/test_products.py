@@ -56,7 +56,7 @@ Wasted time: {self.time}
 
 
 class Product:
-    def __init__(self, agent_id: int, reload=False):
+    def __init__(self, agent_id: int, reload=False, session_id=0):
         self.agent_id = agent_id
         self.emits_dir = Path("product_test/emits")
         self.emits_dir.mkdir(exist_ok=True)
@@ -87,6 +87,15 @@ class Product:
                 for item in items:
                     for key, value in item.items():
                         product[key] = value
+                        if key in product:
+                            if isinstance(product[key], list) and isinstance(value, list):
+                                product[key].extend(value)
+                            elif isinstance(product[key], dict) and isinstance(value, dict):
+                                product[key].update(value)
+                            else:
+                                product[key] = value
+                        else:
+                            product[key] = value
 
                 file['products'].append(product)
                 product_count += 1

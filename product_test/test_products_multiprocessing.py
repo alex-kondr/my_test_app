@@ -174,7 +174,15 @@ def process_yaml_item(items):
             product = {}
             for item in items:
                 for key, value in item.items():
-                    product[key] = value
+                    if key in product:
+                        if isinstance(product[key], list) and isinstance(value, list):
+                            product[key].extend(value)
+                        elif isinstance(product[key], dict) and isinstance(value, dict):
+                            product[key].update(value)
+                        else:
+                            product[key] = value
+                    else:
+                        product[key] = value
             return {"product": product}
     except Exception as e:
         logger.error(f"Error processing YAML item: {e}. Item: {str(items)[:200]}")
@@ -264,6 +272,14 @@ class Product:
         load_end_time = time.time()
         logger.info(f"YAML loading took: {load_end_time - load_start_time:.2f} seconds")
 
+        # Save raw YAML for debugging and analysis
+        raw_yaml_path = self.emits_dir / f"agent-{self.agent_id}.yaml"
+        logger.info(f"Saving raw YAML to {raw_yaml_path} for analysis")
+        mode = "wb" if isinstance(content, bytes) else "w"
+        encoding = None if isinstance(content, bytes) else "utf-8"
+        with open(raw_yaml_path, mode, encoding=encoding) as fd:
+            fd.write(content)
+
         processing_start_time = time.time()
         logger.info("Parsing YAML and processing with multiprocessing...")
 
@@ -283,11 +299,20 @@ class Product:
             content_list.append(doc)
 
         file = {"products": []}
+        products_map = {}  # Словник для об'єднання продуктів за URL або SSID
         num_processes = cpu_count()
 
         # Calculate a reasonable chunksize to improve performance
         chunksize = max(10, len(content_list) // (num_processes * 2))
         logger.info(f"Using chunksize: {chunksize} for YAML parsing.")
+
+        # with Pool(num_processes) as p:
+        #     results = p.map(process_yaml_item, content_list, chunksize=chunksize)
+        #     for res in results:
+        #         if res.get("meta"):
+        #             file["meta"] = res["meta"]
+        #         elif res.get("product"):
+        #             file['products'].append(res["product"])
 
         with Pool(num_processes) as p:
             results_iterator = p.imap_unordered(process_yaml_item, content_list, chunksize=chunksize)
@@ -297,7 +322,26 @@ class Product:
                 if res.get("meta"):
                     file["meta"] = res["meta"]
                 elif res.get("product"):
-                    file['products'].append(res["product"])
+                    p_data = res["product"]
+                    # Використовуємо URL як унікальний ключ для об'єднання,
+                    # або SSID, якщо URL відсутній.
+                    p_key = p_data.get("url") or p_data.get("ssid")
+                    
+                    if p_key in products_map:
+                        # Об'єднуємо нові дані з існуючим продуктом
+                        existing = products_map[p_key]
+                        for key, value in p_data.items():
+                            if key in existing:
+                                if isinstance(existing[key], list) and isinstance(value, list):
+                                    existing[key].extend(value)
+                                elif isinstance(existing[key], dict) and isinstance(value, dict):
+                                    existing[key].update(value)
+                            else:
+                                existing[key] = value
+                    else:
+                        products_map[p_key] = p_data
+
+        file['products'] = list(products_map.values())
 
         processing_end_time = time.time()
         logger.info(f"YAML processing took: {processing_end_time - processing_start_time:.2f} seconds")
@@ -345,12 +389,17 @@ class ProductValidator:
     def _structure_product(self, product_data):
         structured = defaultdict(list)
         for section_key, section_value in product_data.items():
-            if isinstance(section_value, dict) and 'properties' in section_value:
-                for prop in section_value.get('properties', []):
-                    prop_type = prop.get('type')
-                    if prop_type:
-                        structured_key = f"{section_key}.{prop_type}"
-                        structured[structured_key].append(prop)
+            items = section_value if isinstance(section_value, list) else [section_value]
+            for item in items:
+                if isinstance(item, dict) and 'properties' in item:
+                    props_list = item.get('properties', [])
+                    for prop in props_list:
+                        prop_type = prop.get('type')
+                        if prop_type:
+                            structured_key = f"{section_key}.{prop_type}"
+                            # Зберігаємо посилання на батьківський список властивостей для звіту
+                            prop['_parent_props'] = props_list
+                            structured[structured_key].append(prop)
         return structured
 
     def validate(self, config):
@@ -376,6 +425,15 @@ class ProductValidator:
             len_excerpt=3,
             not_xrev_excerpt=config.get('not_xproduct_name')
         )
+
+        # Cleanup temporary references to avoid circular dependency in JSON serialization
+        for section_value in self.original_product.values():
+            items = section_value if isinstance(section_value, list) else [section_value]
+            for item in items:
+                if isinstance(item, dict) and 'properties' in item:
+                    for prop in item.get('properties', []):
+                        prop.pop('_parent_props', None)
+
         return self.errors
 
     def test_product_name(self, xproduct_names: list[str]=[], not_xproduct_name: str = None, len_name: int = 6) -> None:
@@ -387,166 +445,180 @@ class ProductValidator:
         if not name_props:
             return
 
-        property = name_props[0]
-        name = property.get("value", "")
-        if not name:
-            return
+        for property in name_props:
+            name = property.get("value", "")
+            if not name: continue
 
-        temp_name = None
-        for xname in self.xproduct_names_category_start_end:
-            if name.startswith(xname) or name.endswith(xname):
-                property["error_start_end"] = f"Starts or ends '{xname}'"
+            temp_name = False
+            for xname in self.xproduct_names_category_start_end:
+                if name.startswith(xname) or name.endswith(xname):
+                    property["error_start_end"] = f"Starts or ends '{xname}'"
+                    temp_name = True
+                    break
+
+            if len(name) < len_name:
+                property["error_len"] = f"Len name < {len_name}"
                 temp_name = True
-                break
 
-        if len(name) < len_name:
-            property["error_len"] = f"Len name < {len_name}"
-            temp_name = True
+            xproduct_name = is_include(xproduct_names_category, name, lower=True)
+            if xproduct_name:
+                property["error_name"] = xproduct_name
+                temp_name = True
 
-        xproduct_name = is_include(xproduct_names_category, name, lower=True)
-        if xproduct_name:
-            property["error_name"] = xproduct_name
-            temp_name = True
-
-        if temp_name:
-            self.errors["prod_name"].append(self.original_product.get("product", {}).get("properties", []))
+            if temp_name:
+                self.errors["prod_name"].append(property.get('_parent_props', []))
 
     def test_product_category(self, xproduct_names: list[str]=[]) -> None:
         xproduct_names_category = self.xproduct_names_category + xproduct_names + [')', '(']
 
-        properties = self.original_product.get("product", {}).get("properties", [])
         cat_props = self.product_map.get("product.category")
         if not cat_props:
             return
 
-        category = cat_props[0].get("value")
+        for property in cat_props:
+            category = property.get("value")
+            temp_cat = False
+            for xname in self.xproduct_names_category_start_end:
+                if not category or category.startswith(xname) or category.endswith(xname):
+                    temp_cat = True
+                    break
 
-        temp_cat = None
-        for xname in self.xproduct_names_category_start_end:
-            if not category or category.startswith(xname) or category.endswith(xname):
-                temp_cat = True
-                break
+            if category:
+                xproduct_name = is_include(xproduct_names_category, category, lower=True)
+                if xproduct_name:
+                    temp_cat = True
 
-        if category:
-            xproduct_name = is_include(xproduct_names_category, category, lower=True)
-            if xproduct_name:
-                temp_cat = properties
-
-        if temp_cat:
-            self.errors["prod_category"].append(properties)
+            if temp_cat:
+                self.errors["prod_category"].append(property.get('_parent_props', []))
 
     def test_product_sku(self):
         sku_props = self.product_map.get("product.id.sku")
-
-        if sku_props:
-            sku_value = sku_props[0].get("value")
+        if not sku_props: return
+        for property in sku_props:
+            sku_value = property.get("value")
             if sku_value and len(sku_value) < 2:
-                self.errors["prod_sku"].append(self.original_product.get("product", {}).get("properties", []))
+                self.errors["prod_sku"].append(property.get('_parent_props', []))
 
     def test_product_id_manufacturer(self):
         id_manufacturer_props = self.product_map.get("product.id.manufacturer")
-
-        if not id_manufacturer_props or not id_manufacturer_props[0].get("value") or len(id_manufacturer_props[0].get("value")) < 2:
-            self.errors["prod_id_manufacturer"].append(self.original_product.get("product", {}).get("properties", []))
+        if not id_manufacturer_props:
+            # Якщо взагала немає виробника, беремо властивості продукту для звіту
+            prod_props = self.product_map.get("product.name", [{}])[0].get('_parent_props', [])
+            self.errors["prod_id_manufacturer"].append(prod_props)
+            return
+            
+        for property in id_manufacturer_props:
+            val = property.get("value")
+            if not val or len(val) < 2:
+                self.errors["prod_id_manufacturer"].append(property.get('_parent_props', []))
 
     def test_product_ean_gtin(self):
         ean_props = self.product_map.get("product.id.ean")
-
-        if ean_props:
-            ean_value = ean_props[0].get("value")
+        if not ean_props: return
+        for property in ean_props:
+            ean_value = property.get("value")
             if ean_value and (len(str(ean_value)) < 11 or not str(ean_value).isdigit()):
-                self.errors["prod_ean"].append(self.original_product.get("product", {}).get("properties", []))
-
-    # ... (Other test methods follow similar pattern, using self.errors instead of self.error_list) ...
-    # For brevity, I'm including the key logic for the rest of the methods implicitly via the Validator structure
-    # You should copy the logic from the original file for test_review_* methods and adapt them to append to self.errors[key]
+                self.errors["prod_ean"].append(property.get('_parent_props', []))
 
     def test_review_title(self, xreview_title: list[str]=[]) -> None:
         xreview_title = self.xreview_title + xreview_title
-        properties = self.original_product.get("review", {}).get("properties", [])
         title_props = self.product_map.get("review.title")
-
         if not title_props: return
 
-        property = title_props[0]
-        title = property.get("value")
-        xtitle = is_include(xreview_title, title)
-        if xtitle:
-            property["error_name"] = xtitle
-            self.errors["rev_title"].append(properties)
+        for property in title_props:
+            title = property.get("value")
+            xtitle = is_include(xreview_title, title)
+            if xtitle:
+                property["error_name"] = xtitle
+                self.errors["rev_title"].append(property.get('_parent_props', []))
 
     def test_review_date(self) -> None:
-        date_props = self.product_map.get("review.publish_date")
-        if not date_props:
-            self.errors["rev_date"].append(self.original_product.get("review", {}).get("properties", []))
+        # Перевіряємо кожен блок відгуку на наявність дати
+        reviews = self.original_product.get("review", [])
+        if not isinstance(reviews, list): reviews = [reviews]
+        for review in reviews:
+            props = review.get("properties", [])
+            if not any(p.get("type") == "publish_date" for p in props):
+                self.errors["rev_date"].append(props)
 
     def test_review_grade(self) -> None:
-        grade_props = self.product_map.get("review.grade")
-        if not grade_props:
-            self.errors["rev_grades"].append(self.original_product.get("review", {}).get("properties", []))
+        reviews = self.original_product.get("review", [])
+        if not isinstance(reviews, list): reviews = [reviews]
+        for review in reviews:
+            props = review.get("properties", [])
+            if not any(p.get("type") == "grade" for p in props):
+                self.errors["rev_grades"].append(props)
 
     def test_review_author(self) -> None:
-        author_props = self.product_map.get("person.name")
-        if not author_props:
-            properties = self.original_product.get("review", {}).get("properties", [])
-            properties.append({"error_no_author": "No author"})
-            self.errors["rev_author"].append(properties)
+        # Складна логіка, бо person може бути окремо. 
+        # Якщо person.name взагалі немає в документі, вважаємо це помилкою для всіх відгуків
+        if not self.product_map.get("person.name"):
+            reviews = self.original_product.get("review", [])
+            if not isinstance(reviews, list): reviews = [reviews]
+            for review in reviews:
+                props = review.get("properties", [])
+                props.append({"error_no_author": "No author"})
+                self.errors["rev_author"].append(props)
 
     def test_review_award(self) -> None:
-        award_props = self.product_map.get("review.awards")
-        if not award_props:
-            properties = self.original_product.get("review", {}).get("properties", [])
-            properties.append({"error_no_award": "No award"})
-            self.errors["rev_award"].append(properties)
+        reviews = self.original_product.get("review", [])
+        if not isinstance(reviews, list): reviews = [reviews]
+        for review in reviews:
+            props = review.get("properties", [])
+            if not any(p.get("type") == "awards" for p in props):
+                props.append({"error_no_award": "No award"})
+                self.errors["rev_award"].append(props)
 
     def test_review_pros_cons(self) -> None:
-        temp_pros_cons = None
-        properties = self.original_product.get("review", {}).get("properties", [])
         property_pros = self.product_map.get("review.pros", [])
         property_cons = self.product_map.get("review.cons", [])
-        pros = [property.get("value") for property in property_pros]
-        cons = [property.get("value") for property in property_cons]
+        all_pros_vals = [p.get("value") for p in property_pros if p.get("value")]
+        all_cons_vals = [p.get("value") for p in property_cons if p.get("value")]
 
-        for i, pro in enumerate(pros):
+        for property in property_pros:
+            pro = property.get("value")
+            if not pro: continue
+            has_err = False
             if pro and len(pro) < 2:
-                property_pros[i]["error_len"] = "< 2"
-                temp_pros_cons = properties
-            if pro in cons:
-                property_pros[i]["error_in_con"] = f"Pro: '{pro}' in cons"
-                temp_pros_cons = properties
-            if pro:
-                match = self.pros_cons_regex.search(pro)
-                if match:
-                    property_pros[i]["error_start_end"] = f"starts or ends with '{match.group(0)}'"
-                    temp_pros_cons = properties
+                property["error_len"] = "< 2"
+                has_err = True
+            if pro in all_cons_vals:
+                property["error_in_con"] = f"Pro: '{pro}' in cons"
+                has_err = True
+            match = self.pros_cons_regex.search(pro)
+            if match:
+                property["error_start_end"] = f"starts or ends with '{match.group(0)}'"
+                has_err = True
+            if has_err:
+                self.errors["rev_pros_cons"].append(property.get('_parent_props', []))
 
-        for i, con in enumerate(cons):
+        for property in property_cons:
+            con = property.get("value")
+            if not con: continue
+            has_err = False
             if con and len(con) < 3:
-                property_cons[i]["error_len"] = "< 3"
-                temp_pros_cons = properties
-            if con in pros:
-                property_cons[i]["error_in_pro"] = f"Con: '{con}' in pros"
-                temp_pros_cons = properties
-            if con:
-                match = self.pros_cons_regex.search(con)
-                if match:
-                    property_cons[i]["error_start_end"] = f"starts or ends with '{match.group(0)}'"
-                    temp_pros_cons = properties
-
-        if temp_pros_cons:
-            self.errors["rev_pros_cons"].append(temp_pros_cons)
+                property["error_len"] = "< 3"
+                has_err = True
+            if con in all_pros_vals:
+                property["error_in_pro"] = f"Con: '{con}' in pros"
+                has_err = True
+            match = self.pros_cons_regex.search(con)
+            if match:
+                property["error_start_end"] = f"starts or ends with '{match.group(0)}'"
+                has_err = True
+            if has_err:
+                self.errors["rev_pros_cons"].append(property.get('_parent_props', []))
 
     def test_review_conclusion(self, xreview_conclusion: list[str] = []) -> None:
         xreview_conclusions = self.xreview_excerpt + xreview_conclusion
-        properties = self.original_product.get("review", {}).get("properties", [])
         conclusion_props = self.product_map.get("review.conclusion")
         if not conclusion_props: return
-        property = conclusion_props[0]
-        conclusion = property.get("value")
-        xreview_conclusion = is_include(xreview_conclusions, conclusion)
-        if xreview_conclusion:
-            property["error_name"] = xreview_conclusion
-            self.errors["rev_conclusion"].append(properties)
+        for property in conclusion_props:
+            conclusion = property.get("value")
+            found = is_include(xreview_conclusions, conclusion)
+            if found:
+                property["error_name"] = found
+                self.errors["rev_conclusion"].append(property.get('_parent_props', []))
 
     def _check_text_chunk(self, text: str, excerpt: str, len_chank: int) -> str | None:
         """Helper to check if an excerpt is found within chunks of a larger text."""
@@ -563,41 +635,41 @@ class ProductValidator:
         if not_xrev_excerpt and not_xrev_excerpt in xreview_excerpts:
             xreview_excerpts.remove(not_xrev_excerpt)
 
-        properties = self.original_product.get("review", {}).get("properties", [])
         excerpt_props = self.product_map.get("review.excerpt")
-
         if not excerpt_props:
-            properties.append({"error_no": "No excerpt"})
-            self.errors["rev_excerpt"].append(properties)
+            # Якщо немає жодного excerpt у всьому документі
+            reviews = self.original_product.get("review", [])
+            if not isinstance(reviews, list): reviews = [reviews]
+            for r in reviews:
+                p = r.get("properties", [])
+                p.append({"error_no": "No excerpt"})
+                self.errors["rev_excerpt"].append(p)
             return
 
-        excerpt_property = excerpt_props[0]
-        excerpt = excerpt_property.get("value")
-        if not excerpt:
-            return
+        for excerpt_property in excerpt_props:
+            excerpt = excerpt_property.get("value")
+            if not excerpt: continue
+            parent_props = excerpt_property.get('_parent_props', [])
+            has_error = False
 
-        has_error = False
-
-        for prop_key, error_key, error_desc in [("summary", "error_in_sum", "summary"), ("conclusion", "error_in_con", "conclusion")]:
-            props = self.product_map.get(f"review.{prop_key}")
-            if props:
-                text_content = props[0].get("value", "")
-                element = self._check_text_chunk(text_content, excerpt, len_chank)
+            for prop_type in ["summary", "conclusion"]:
+                text_val = next((p.get("value") for p in parent_props if p.get("type") == prop_type), "")
+                element = self._check_text_chunk(text_val, excerpt, len_chank)
                 if element:
-                    excerpt_property[error_key] = f"This element in {error_desc}: '{element}'"
+                    excerpt_property[f"error_in_{prop_type[:3]}"] = f"This element in {prop_type}: '{element}'"
                     has_error = True
 
-        if len(excerpt) < len_excerpt:
-            excerpt_property["error_len"] = f"Len excerpt < {len_excerpt}"
-            has_error = True
+            if len(excerpt) < len_excerpt:
+                excerpt_property["error_len"] = f"Len excerpt < {len_excerpt}"
+                has_error = True
 
-        xreview_excerpt_found = is_include(xreview_excerpts, excerpt)
-        if xreview_excerpt_found:
-            excerpt_property["error_name"] = xreview_excerpt_found
-            has_error = True
+            found = is_include(xreview_excerpts, excerpt)
+            if found:
+                excerpt_property["error_name"] = found
+                has_error = True
 
-        if has_error:
-            self.errors["rev_excerpt"].append(properties)
+            if has_error:
+                self.errors["rev_excerpt"].append(parent_props)
 
 
 def validate_product_task(args):
