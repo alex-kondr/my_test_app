@@ -11,7 +11,7 @@ from tqdm import tqdm
 import os
 import difflib
 
-from product_test.functions import load_file
+from product_test.functions import load_file, get_agent_name, get_old_agent
 
 
 def is_include(xnames: list = [], text: str = "", lower: bool = False) -> str|None:
@@ -158,37 +158,6 @@ def check_code_changes(root_dir: str = None):
     logger.info("-" * 40)
 
 
-def process_yaml_item(items):
-    """
-    Processes a single item from the YAML file.
-    Must be a top-level function to be picklable.
-    """
-    try:
-        if not isinstance(items, list) or not items:
-            logger.warning(f"Skipping invalid YAML item (not a list or empty): {str(items)[:200]}")
-            return {}
-        meta = items[0].get("meta")
-        if meta:
-            return {"meta": meta}
-        else:
-            product = {}
-            for item in items:
-                for key, value in item.items():
-                    if key in product:
-                        if isinstance(product[key], list) and isinstance(value, list):
-                            product[key].extend(value)
-                        elif isinstance(product[key], dict) and isinstance(value, dict):
-                            product[key].update(value)
-                        else:
-                            product[key] = value
-                    else:
-                        product[key] = value
-            return {"product": product}
-    except Exception as e:
-        logger.error(f"Error processing YAML item: {e}. Item: {str(items)[:200]}")
-        return {}
-
-
 class ResultParse:
     def __init__(self, agent_id: int, session_id=0):
         self.agent_id = agent_id
@@ -264,97 +233,78 @@ class Product:
         self.agent_name = self.file["meta"]["agent_name"].strip()
 
     def generate_file(self, session_id=0) -> dict:
-        total_start_time = time.time()
         logger.info(f"Loading YAML for agent {self.agent_id}...")
-
-        load_start_time = time.time()
-        content = load_file(agent_id=self.agent_id, type_file="yaml", session_id=session_id)
-        load_end_time = time.time()
-        logger.info(f"YAML loading took: {load_end_time - load_start_time:.2f} seconds")
-
-        # Save raw YAML for debugging and analysis
-        raw_yaml_path = self.emits_dir / f"agent-{self.agent_id}.yaml"
-        logger.info(f"Saving raw YAML to {raw_yaml_path} for analysis")
-        mode = "wb" if isinstance(content, bytes) else "w"
-        encoding = None if isinstance(content, bytes) else "utf-8"
-        with open(raw_yaml_path, mode, encoding=encoding) as fd:
-            fd.write(content)
-
-        processing_start_time = time.time()
-        logger.info("Parsing YAML and processing with multiprocessing...")
+        content = load_file(agent_id=self.agent_id, type_file="yaml", session_id=session_id, decode=True)
 
         try:
-            from yaml import CLoader as Loader
-            logger.info("Use CLoader")
+            from yaml import CSafeLoader as Loader
         except ImportError:
-            from yaml import FullLoader as Loader
-            logger.info("Use FullLoader")
+            from yaml import SafeLoader as Loader
 
-        if isinstance(content, bytes):
-            total_docs = content.count(b'\n---') + 1
-        else:
-            total_docs = content.count('\n---') + 1
-        content_list = []
-        for doc in tqdm(yaml.load_all(content, Loader=Loader), total=total_docs, desc="Parsing YAML"):
-            content_list.append(doc)
+        file_data = {"products": []}
+        meta_data = {}
 
-        file = {"products": []}
-        products_map = {}  # Словник для об'єднання продуктів за URL або SSID
-        num_processes = cpu_count()
+        # yaml.load_all розділяє файл по символам "---"
+        # Кожен doc — це дані про один товар (список об'єктів у вашому випадку)
+        logger.info("Parsing and merging YAML documents...")
+        for doc in yaml.load_all(content, Loader=Loader):
+            if not doc:
+                continue
 
-        # Calculate a reasonable chunksize to improve performance
-        chunksize = max(10, len(content_list) // (num_processes * 2))
-        logger.info(f"Using chunksize: {chunksize} for YAML parsing.")
+            # Якщо документ — це список (один товар та його компоненти)
+            if isinstance(doc, list):
+                combined_product = {}
+                for item in doc:
+                    if not isinstance(item, dict): continue
 
-        # with Pool(num_processes) as p:
-        #     results = p.map(process_yaml_item, content_list, chunksize=chunksize)
-        #     for res in results:
-        #         if res.get("meta"):
-        #             file["meta"] = res["meta"]
-        #         elif res.get("product"):
-        #             file['products'].append(res["product"])
+                    if "meta" in item:
+                        meta_data.update(item["meta"])
+                        continue
 
-        with Pool(num_processes) as p:
-            results_iterator = p.imap_unordered(process_yaml_item, content_list, chunksize=chunksize)
+                    for key, value in item.items():
+                        if key in combined_product:
+                            # Якщо ключ вже є (наприклад, декілька review), робимо список
+                            if not isinstance(combined_product[key], list):
+                                combined_product[key] = [combined_product[key]]
+                            combined_product[key].append(value)
+                        else:
+                            combined_product[key] = value
 
-            # Wrap the iterator with tqdm for a progress bar
-            for res in tqdm(results_iterator, total=len(content_list), desc=f"Parsing YAML (chunksize={chunksize})"):
-                if res.get("meta"):
-                    file["meta"] = res["meta"]
-                elif res.get("product"):
-                    p_data = res["product"]
-                    # Використовуємо URL як унікальний ключ для об'єднання,
-                    # або SSID, якщо URL відсутній.
-                    p_key = p_data.get("url") or p_data.get("ssid")
-                    
-                    if p_key in products_map:
-                        # Об'єднуємо нові дані з існуючим продуктом
-                        existing = products_map[p_key]
-                        for key, value in p_data.items():
-                            if key in existing:
-                                if isinstance(existing[key], list) and isinstance(value, list):
-                                    existing[key].extend(value)
-                                elif isinstance(existing[key], dict) and isinstance(value, dict):
-                                    existing[key].update(value)
-                            else:
-                                existing[key] = value
-                    else:
-                        products_map[p_key] = p_data
+                if combined_product:
+                    file_data["products"].append(combined_product)
 
-        file['products'] = list(products_map.values())
+            # Якщо документ — це словник (наприклад, блок meta)
+            elif isinstance(doc, dict):
+                if "meta" in doc:
+                    meta_data.update(doc["meta"])
+                else:
+                    file_data["products"].append(doc)
 
-        processing_end_time = time.time()
-        logger.info(f"YAML processing took: {processing_end_time - processing_start_time:.2f} seconds")
+        # Перевірка наявності імені агента
+        if not meta_data.get("agent_name"):
+            try:
+                from product_test.functions import get_agent_name, get_old_agent
+                logger.info(f"Agent name not found in YAML. Fetching from API for ID {self.agent_id}...")
+                html = get_old_agent(self.agent_id)
+                meta_data["agent_name"] = get_agent_name(html)
+            except Exception:
+                meta_data["agent_name"] = f"Agent-{self.agent_id}"
 
-        logger.info(f"Total products processed: {len(file['products'])}")
-        save_start_time = time.time()
-        self.save_file(file)
-        save_end_time = time.time()
-        logger.info(f"Saving to JSON took: {save_end_time - save_start_time:.2f} seconds")
+        file_data["meta"] = meta_data
 
-        total_end_time = time.time()
-        logger.info(f"Total generate_file time: {total_end_time - total_start_time:.2f} seconds")
-        return file
+        # Логування результатів
+        for p in file_data["products"]:
+            p_name = "Unknown"
+            # Дістаємо ім'я з properties продукту
+            props = p.get("product", {}).get("properties", [])
+            p_name = next((pr["value"] for pr in props if pr["type"] == "name"), "Unknown")
+
+            revs = p.get("review", [])
+            rev_count = len(revs) if isinstance(revs, list) else (1 if revs else 0)
+            logger.info(f"Product '{p_name}' aggregated with {rev_count} reviews.")
+
+        self.save_file(file_data)
+        return file_data
 
     def open_file(self):
         logger.info(f"Opening existing file: {self.file_path}")

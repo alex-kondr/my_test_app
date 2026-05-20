@@ -103,7 +103,7 @@ def process_product(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = data.xpath('//h1[contains(@class, "product-title")]/text()').string()
+    product.name = data.xpath('//h1[contains(@class, "title")]//text()').string(multiple=True)
     product.url = context['url']
     product.ssid = data.xpath('//input[contains(@class, "current_article")]/@value').string()
     product.sku = product.ssid
@@ -119,7 +119,7 @@ def process_product(data, context, session):
             product.add_property(type='id.manufacturer', value=mpn)
 
         ean = prod_json.get('gtin13')
-        if ean:
+        if ean and str(ean).isdigit() and len(str(ean)) > 10:
             product.add_property(type='id.ean', value=str(ean))
 
     revs = data.xpath('//div[@class="modal-body"]//div[@class="row"]/div[div[contains(@class, "tsReviewText")]]')

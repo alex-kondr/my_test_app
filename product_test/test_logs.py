@@ -45,7 +45,7 @@ def process_log_chunk(chunk: list[str]) -> list[list[str]]:
     """
     errors_in_chunk = []
     error_pattern = re.compile(r"^error ")
-    request_pattern = re.compile(r"Request GET u'([^']*)'")
+    request_pattern = re.compile(r"Request [A-Z]+ u?'([^']*)'")
 
     for i, line in enumerate(chunk):
         found_url = None
@@ -139,7 +139,7 @@ class TestLogProduct:
 
         # Вивід згідно з вашими вимогами:
         # Стандартні помилки (без "MAKING")
-        logger.error(f"Find error in logs: {len(standard_errors)}")
+        logger.error(f"Find error in {self.log_product.agent_id} logs: {len(standard_errors)}")
         # Тільки "MAKING" помилки
         logger.error(f"Find MAKING error in logs: {len(making_errors)}")
 

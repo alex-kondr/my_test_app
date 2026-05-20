@@ -1,0 +1,140 @@
+{
+  "product": {
+    "name": "Technics EAH-A800",
+    "url": "https://www.projekt-akustik.de/technics-eah-a800",
+    "ssid": "31769",
+    "sku": "31769",
+    "category": "Kopfhörer|Over-Ear Kopfhörer",
+    "manufacturer": "Technics",
+    "id.manufacturer": "TE-PC/HP.01-EAH-A800",
+	 "id.ean": "",
+    "reviews": [
+      {
+        "type": "user",
+		"title": "",
+        "url": "https://www.projekt-akustik.de/technics-eah-a800",
+        "ssid": "92d701acad3094c15ae08bc82be04496",
+		"publish_date": "08.04.2026",
+		"children": [
+			{
+			"type": "value",
+			"value": 5.0
+			},
+			{
+			"type": "best",
+			"value": 5.0
+			},
+			{
+			"type": "worst",
+			"value": 0
+			},
+			{
+			"type": "description",
+			"value": null
+			},
+			{
+			"type": "type",
+			"value": "overall"
+			}
+		],
+            "type": "grade"
+          },
+          {
+            "type": "excerpt",
+            "value": "Zum Wandern, für Freizeit und zum relaxen"
+          }
+        ]
+      },
+      {
+        "properties": [
+          {
+            "type": "publish_date",
+            "value": "02.04.2026"
+          },
+          {
+            "type": "ssid",
+            "value": "1137993ff4e4aa3d2dd85ff8339e8c47"
+          },
+          {
+            "type": "url",
+            "value": "https://www.projekt-akustik.de/technics-eah-a800"
+          },
+          {
+            "type": "type",
+            "value": "user"
+          },
+          {
+            "children": [
+              {
+                "type": "value",
+                "value": 5.0
+              },
+              {
+                "type": "best",
+                "value": 5.0
+              },
+              {
+                "type": "worst",
+                "value": 0
+              },
+              {
+                "type": "description",
+                "value": null
+              },
+              {
+                "type": "type",
+                "value": "overall"
+              }
+            ],
+            "type": "grade"
+          },
+          {
+            "type": "excerpt",
+            "value": "Alles gut  Technics EAH"
+          }
+        ]
+      }
+    ],
+    "product_has_review": [
+      {
+        "properties": [
+          {
+            "type": "from_ssid",
+            "value": "31769"
+          },
+          {
+            "type": "from_url",
+            "value": "https://www.projekt-akustik.de/technics-eah-a800"
+          },
+          {
+            "type": "to_ssid",
+            "value": "92d701acad3094c15ae08bc82be04496"
+          },
+          {
+            "type": "to_url",
+            "value": "https://www.projekt-akustik.de/technics-eah-a800"
+          }
+        ]
+      },
+      {
+        "properties": [
+          {
+            "type": "from_ssid",
+            "value": "31769"
+          },
+          {
+            "type": "from_url",
+            "value": "https://www.projekt-akustik.de/technics-eah-a800"
+          },
+          {
+            "type": "to_ssid",
+            "value": "1137993ff4e4aa3d2dd85ff8339e8c47"
+          },
+          {
+            "type": "to_url",
+            "value": "https://www.projekt-akustik.de/technics-eah-a800"
+          }
+        ]
+      }
+    ]
+}

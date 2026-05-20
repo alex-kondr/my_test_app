@@ -14,9 +14,13 @@ import product_test.list_of_agents as agents
 
 agent = agents.PROJEKT_AKUSTIK_DE
 # agent = agents.TEST
-reload = 1
+reload = True
 session_id = 0
 
+# name: 20+
+# excerpt: 1+
+# logs: 0+
+# MAKING: 4+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

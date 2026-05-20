@@ -7,25 +7,23 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 
 
-# from product_test.test_products import Product, TestProduct#, check_code_changes
 from product_test.test_products_multiprocessing import Product, TestProductMultiprocessing, check_code_changes
 from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.LOESDAU_DE
+agent = agents.NAFISA_CO_ZA
 # agent = agents.TEST
-reload = 0
+reload = 1
 session_id = 0
 
-# name: 1+
-# excerpt: 0+
-# MAKING: 2874
+# pros_cons: 2+
+# excerpt: 8
+# MAKING: 7
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
     print(product.result)
-    # test = TestProduct(product)
     test = TestProductMultiprocessing(product)
     test.run(xproduct_names=[], not_xproduct_name='', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
 

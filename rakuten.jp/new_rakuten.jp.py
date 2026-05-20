@@ -29,7 +29,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.queue(Request('https://search.rakuten.co.jp/search/mall/meta+quest/', force_charset='utf-8', max_age=0), process_prodlist, dict())
+    session.queue(Request('https://search.rakuten.co.jp/search/mall/meta+quest/', force_charset='utf-8', max_age=0, use='curl'), process_prodlist, dict())
 
 
 def process_prodlist(data, context, session):

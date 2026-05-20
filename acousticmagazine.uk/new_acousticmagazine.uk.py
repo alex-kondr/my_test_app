@@ -10,7 +10,7 @@ def process_revlist(data, context, session):
     revs = data.xpath('//div[contains(@class, "listingResult small result") and .//h3[@class="article-name"]]')
     for rev in revs:
         title = rev.xpath('.//h3[@class="article-name"]//text()').string()
-        cat = data.xpath('.//a[@class="category-link"]/text()').string()
+        cat = data.xpath('.//a[contains(@class, "category-link")]/text()').string()
         url = rev.xpath('.//a[@class="article-link"]/@href').string()
         session.queue(Request(url), process_review, dict(title=title, cat=cat, url=url))
 
@@ -52,7 +52,8 @@ def process_review(data, context, session):
     grade_overall = data.xpath('//div[contains(@class, "verdict")]//span/@aria-label').string()
     if grade_overall:
         grade_overall = grade_overall.split(':')[-1].split('out')[0]
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+        if grade_overall and grade_overall[0].isdigit() and float(grade_overall) > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
     pros = data.xpath('//div[@class="pretty-verdict__pros"]/ul//p')
     for pro in pros:
@@ -85,7 +86,6 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[@id="article-body"]/p[not(contains(., "MuscRadar verdict:") or contains(., "MusicRadar verdict:") or (.//strong[contains(., "MusicTech")] and .//a) or (.//strong[contains(., "Epicomposer")] and .//a))]//text()').string(multiple=True)
 
     if excerpt:
-
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 
