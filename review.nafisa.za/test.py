@@ -18,8 +18,8 @@ reload = 1
 session_id = 0
 
 # pros_cons: 2+
-# excerpt: 8
-# MAKING: 7
+# excerpt: 3
+# MAKING: 4
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

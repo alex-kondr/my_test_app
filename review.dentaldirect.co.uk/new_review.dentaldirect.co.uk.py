@@ -9,7 +9,7 @@ XCAT = ['By Brand', 'View All', 'Brands']
 
 
 def run(context, session):
-    session.queue(Request('https://www.dentaldirect.co.uk/', force_charset='utf-8'), process_frontpage, dict())
+    session.queue(Request('https://www.dentaldirect.co.uk/'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -67,7 +67,7 @@ def process_product(data, context, session):
         pass
 
     revs_url = "https://5i27ysv3j8.execute-api.us-west-2.amazonaws.com/prod/stores/d67635f6-ab51-496d-bcc0-d867216f0825/products/" + context['ssid'] + "/reviews?limit=5"
-    session.do(Request(revs_url, force_charset="utf-8"), process_reviews, dict(product=product))
+    session.do(Request(revs_url), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
@@ -114,20 +114,22 @@ def process_reviews(data, context, session):
 
         title= rev.get('title')
         excerpt = rev.get('body')
-        if excerpt:
+        if excerpt and len(excerpt.replace('\n', '').replace('\r', '').strip()) > 2:
             review.title = title
         else:
             excerpt = title
 
         if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+            excerpt = excerpt.replace('\n', '').replace('\r', '').replace(u'â€œ', u'"').replace(u'\x9D', '"').replace(u'â€˜', "'").strip()
+            if len(excerpt) > 2:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     next_url = revs_json.get('nextUrl')
     if next_url:
         next_url = 'https://5i27ysv3j8.execute-api.us-west-2.amazonaws.com/prod' + next_url
-        session.do(Request(next_url, force_charset="utf-8"), process_reviews, dict(product=product))
+        session.do(Request(next_url), process_reviews, dict(product=product))
 
     elif product.reviews:
         session.emit(product)
