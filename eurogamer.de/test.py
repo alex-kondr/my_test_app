@@ -15,14 +15,14 @@ import product_test.list_of_agents as agents
 agent = agents.EUROGAMER
 # agent = agents.TEST
 reload = 1
-session_id = 6846503
+session_id = 0
 
 # name: 44+
-# grades: 855
-# pros_cons: 6
-# conclusion: 11
-# excerpt: 101
-# MAKING: 18
+# grades: 855+
+# pros_cons: 6+
+# conclusion: 11+
+# excerpt: 98+
+# MAKING: 3
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
