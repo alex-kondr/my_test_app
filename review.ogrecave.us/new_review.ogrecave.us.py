@@ -89,11 +89,12 @@ def process_review(data, context, session):
         grade_overall = data.xpath('//text()[contains(., "Rating:")]').string()
 
     if grade_overall:
+        grade_overall = grade_overall.replace('Rating:', '').replace('Overall Rating:', '').strip()
         if '/' in grade_overall:
-            grade_overall = grade_overall.replace('Rating:', '').split('/')[0]
+            grade_overall = grade_overall.split('/')[0]
             grade_best = 10.0
         else:
-            grade_overall = grade_overall.replace('Rating:', '').strip().split()[0]
+            grade_overall = grade_overall.split()[0]
             grade_best = 5.0
 
         if grade_overall and float(grade_overall) > 0:
