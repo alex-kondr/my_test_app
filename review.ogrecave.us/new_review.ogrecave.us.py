@@ -92,8 +92,8 @@ def process_review(data, context, session):
         if '/' in grade_overall:
             grade_overall = grade_overall.replace('Rating:', '').split('/')[0]
             grade_best = 10.0
-        elif ' of ' in grade_overall:
-            grade_overall = grade_overall.replace('Rating:', '').split(' of ')[0]
+        else:
+            grade_overall = grade_overall.replace('Rating:', '').strip().split()[0]
             grade_best = 5.0
 
         if grade_overall and float(grade_overall) > 0:
