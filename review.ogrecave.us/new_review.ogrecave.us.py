@@ -84,12 +84,14 @@ def process_review(data, context, session):
         author = author.replace('by ', '').strip()
         review.authors.append(Person(name=author, ssid=author))
 
+    scores = {'A': 5, 'A-': 4.5, 'B+': 4.5, 'B': 4, 'B-': 3.5, 'C+': 3.5, 'C': 3, 'D': 2, 'E': 1}
+
     grade_overall = data.xpath('//b[contains(., "Overall Rating:")]/following-sibling::text()[1][contains(., " of ")]').string()
     if not grade_overall:
         grade_overall = data.xpath('//text()[contains(., "Rating:")]').string()
 
     if grade_overall:
-        grade_overall = grade_overall.replace('Rating:', '').replace('Overall Rating:', '').strip()
+        grade_overall = grade_overall.split(':')[-1].strip()
         if '/' in grade_overall:
             grade_overall = grade_overall.split('/')[0]
             grade_best = 10.0
@@ -97,7 +99,9 @@ def process_review(data, context, session):
             grade_overall = grade_overall.split()[0]
             grade_best = 5.0
 
-        if grade_overall and float(grade_overall) > 0:
+        if grade_overall in scores:
+            review.grades.append(Grade(type='overall', value=float(scores[grade_overall]), best=5.0))
+        elif grade_overall and grade_overall[0].isdigit() and float(grade_overall) > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=grade_best))
 
     grades = data.xpath('//p[contains(.//b, "Ratings")]/b[not(contains(., "Rating"))]')
@@ -106,7 +110,10 @@ def process_review(data, context, session):
         grade_val = grade.xpath('following-sibling::text()[1][contains(., " of ")]').string()
         if grade_name and grade_val:
             grade_val = grade_val.split(' of ')[0]
-            if grade_val and grade_val[0].isdigit() and float(grade_val) > 0:
+
+            if grade_overall in scores:
+                review.grades.append(Grade(name=grade_name, value=float(scores[grade_overall]), best=5.0))
+            elif grade_val and grade_val[0].isdigit() and float(grade_val) > 0:
                 review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
 
     pros = data.xpath('//text()[preceding::p[b][1][contains(., "The Good")] or preceding-sibling::b[contains(., "The Good")]][not(preceding::b[contains(., "Should You Buy") or contains(., "Conclusion")  or contains(., "The Bad")] or contains(., "Should You Buy") or contains(., "Conclusion")  or contains(., "The Bad"))]').string(multiple=True)
