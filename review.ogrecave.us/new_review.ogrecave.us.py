@@ -16,7 +16,6 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('http://ogrecave.com/'), process_revlist, dict())
 
 
@@ -52,6 +51,8 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     title = data.xpath('//body/table//td[a/@title="Back to home"]/table/tbody/tr[1]//font/b/text()').string()
+    if not title:
+        title = data.xpath('//td[@background="/gifs/scrolltile.gif"]/font/b/text()').string()
 
     product = Product()
     product.ssid = context['url'].split('/')[-1].replace('.shtml', '')
@@ -59,7 +60,9 @@ def process_review(data, context, session):
 
     product.name = data.xpath('//font/h2/text()').string()
     if not product.name:
-        product.name = title
+        product.name = data.xpath('//td/font[contains(., "by ")]/p[b][1]/b/text()').string()
+    if not product.name:
+        product.name = title.replace('Reviews - ', '').replace('Reviews: ', '').strip()
 
     product.url = data.xpath('(//text()[contains(., "Published by")]/following-sibling::*)[1]/@href').string()
     if not product.url:
@@ -80,6 +83,9 @@ def process_review(data, context, session):
         review.date = date.split('T')[0]
 
     author = data.xpath('(//font/h2/preceding-sibling::text()[contains(., "by ")])[1][normalize-space(.)]').string()
+    if not author:
+        author = data.xpath('//td/font/text()[contains(., "by ")]').string()
+
     if author:
         author = author.replace('by ', '').strip()
         review.authors.append(Person(name=author, ssid=author))
@@ -127,13 +133,6 @@ def process_review(data, context, session):
     if cons:
         review.add_property(type='cons', value=cons)
 
-    summary = data.xpath('//font[contains(., "Published by") or contains(., "Rating:")]/p[not(preceding::h3 or preceding::p[b])][not(b)]//text()').string(multiple=True)
-    if not summary:
-        summary = data.xpath('//font[contains(., "Published by") or contains(., "Rating:")]/p[not(b)]//text()[not(preceding::p[b])]').string(multiple=True)
-
-    if summary:
-        review.add_property(type='summary', value=summary)
-
     conclusion = data.xpath('//text()[preceding-sibling::h3[1][contains(., "Conclusions")]]').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('(//p[contains(b, "Conclusion")]|//p[contains(b, "Conclusion")]/following-sibling::p[1])//text()[not(contains(., "Conclusion"))]').string(multiple=True)
@@ -143,11 +142,18 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//font[contains(., "Published by") or contains(text(), "Rating:")]//text()[preceding-sibling::h3 and not(preceding::h3[contains(., "Conclusions") or contains(., "The Cons")])]|//font[contains(., "Published by") or contains(text(), "Rating:")]/p[preceding-sibling::h3 and not(preceding::h3[contains(., "Conclusions") or contains(., "The Cons")] or preceding::p[contains(b, "Conclusion") or contains(b, "Should You Buy")])]//text()').string(multiple=True)
+    excerpt = data.xpath('(//font[contains(., "Published by") or contains(text(), "Rating:")]//text()[not(preceding::h3[contains(., "Conclusions") or contains(., "The Cons")])]|//font[contains(., "Published by") or contains(text(), "Rating:")]/p[not(preceding::h3[contains(., "Conclusions") or contains(., "The Cons")] or preceding::p[contains(b, "Conclusion") or contains(b, "Should You Buy")])]//text())[not(preceding::*[contains(., "Links:") or contains(., "Should You Buy") or contains(., "Conclusion")] or contains(., "Links:") or contains(., "Should You Buy") or contains(., "Conclusion") or regexp:test(normalize-space(.), "^\$"))][preceding::text()[contains(., "Art by")]][ancestor::p]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//font[contains(., "Published by") or contains(text(), "Rating:")]/p[b or preceding-sibling::p[b]][not(preceding::h3[contains(., "Conclusions") or contains(., "The Cons")] or preceding::p[contains(b, "Conclusion") or contains(b, "Should You Buy") or contains(b, "The Bad") or contains(b, "The Good")] or contains(b, "Conclusion") or contains(b, "Should You Buy") or contains(b, "The Bad") or contains(b, "The Good"))]//text()').string(multiple=True)
+        excerpt = data.xpath('(//font[contains(., "Published by") or contains(text(), "Rating:")]//text()[not(preceding::h3[contains(., "Conclusions") or contains(., "The Cons")])]|//font[contains(., "Published by") or contains(text(), "Rating:")]/p[not(preceding::h3[contains(., "Conclusions") or contains(., "The Cons")] or preceding::p[contains(b, "Conclusion") or contains(b, "Should You Buy")])]//text())[not(preceding::*[contains(., "Links:") or contains(., "Should You Buy") or contains(., "Conclusion")] or contains(., "Links:") or contains(., "Should You Buy") or contains(., "Conclusion") or regexp:test(normalize-space(.), "^\$"))][preceding::text()[contains(., "Written by")]][ancestor::p]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('(//font[contains(., "Published by") or contains(text(), "Rating:")]//text()[not(preceding::h3[contains(., "Conclusions") or contains(., "The Cons")])]|//font[contains(., "Published by") or contains(text(), "Rating:")]/p[not(preceding::h3[contains(., "Conclusions") or contains(., "The Cons")] or preceding::p[contains(b, "Conclusion") or contains(b, "Should You Buy")])]//text())[not(preceding::*[contains(., "Links:") or contains(., "Should You Buy") or contains(., "Conclusion")] or contains(., "Links:") or contains(., "Should You Buy") or contains(., "Conclusion") or regexp:test(normalize-space(.), "^\$"))][preceding::text()[contains(., "Published by")]][ancestor::p]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//font[contains(., "Published by") or contains(text(), "Rating:")]/p[b or preceding-sibling::p[b]][not(preceding::h3[contains(., "Conclusions") or contains(., "The Cons")] or preceding::p[contains(b, "Conclusion") or contains(b, "Should You Buy") or contains(b, "The Bad") or contains(b, "The Good")] or contains(b, "Conclusion") or contains(b, "Should You Buy") or contains(b, "The Bad") or contains(b, "The Good"))]//text()[not(preceding::*[contains(., "Links:") or contains(., "Should You Buy")] or contains(., "Links:") or contains(., "Should You Buy") or regexp:test(normalize-space(.), "^\$"))][preceding::text()[contains(., "Art by")]][ancestor::p]').string(multiple=True)
 
     if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

@@ -17,6 +17,13 @@ agent = agents.OGRECAVE_US
 reload = 1
 session_id = 0
 
+# name: 2+
+# author: 0
+# grades: 206
+# excerpt: 4
+# logs: 0+
+# MAKING: 1+
+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

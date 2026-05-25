@@ -52,17 +52,17 @@ def process_review(data, context, session):
 
     prod_json = data.xpath('//script[@id="__NEXT_DATA__"]/text()').string()
     try:
-        prod_json = simplejson.loads(prod_json).get('props', {}).get('pageProps', {}).get('data', {}).get('page', {}).get('product')
+        prod_json = simplejson.loads(prod_json).get('props', {}).get('pageProps', {}).get('data', {}).get('page', {})
 
-        product.name = prod_json.get('name')
+        product.name = prod_json.get('product').get('name')
         product.ssid = prod_json.get('uuid')
-        product.manufacturer = prod_json.get('shopProductData', {}).get('brand')
+        product.manufacturer = prod_json.get('product').get('shopProductData', {}).get('brand')
 
-        mpn = prod_json.get('asinCode')
+        mpn = prod_json.get('product').get('asinCode')
         if mpn:
             product.add_property(type='id.manufacturer', value=mpn)
 
-        ean = prod_json.get('eanCode')
+        ean = prod_json.get('product').get('eanCode')
         if ean and ean.isdigit() and len(ean) > 10:
             product.add_property(type='id.ean', value=ean)
     except:
@@ -99,6 +99,9 @@ def process_review(data, context, session):
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
     pros = data.xpath('//tr[contains(th/text(), "Vorteile")]/td//li')
+    if not pros:
+        pros = data.xpath('//table[contains(.//tr/th/text(), "Vorteile")]/following-sibling::table[1]//tr[not(contains(., "Nachteile"))]//ul/li')
+
     for pro in pros:
         pro = pro.xpath('text()').string()
         if pro:

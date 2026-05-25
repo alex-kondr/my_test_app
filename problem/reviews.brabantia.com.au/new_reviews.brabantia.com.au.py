@@ -1,12 +1,12 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
 import time
 import random
-import re
 
 
-XCAT = ['New', 'Brands', 'Sale %', 'Inspiration']
+XCAT = ['New', 'Collections', 'Corporate Enquiries', 'Inspiration', 'Shop All', 'Sale']
 
 
 def remove_emoji(string):
@@ -33,68 +33,93 @@ def remove_emoji(string):
     return emoji_pattern.sub(r'', string)
 
 
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.wardow.com/en/', max_age=0, use='curl'), process_frontpage, dict())
+    session.browser.use_new_parser = True
+    session.queue(Request('https://brabantia.com.au/', force_charset='utf-8'), process_frontpage, {})
 
 
 def process_frontpage(data, context, session):
-    time.sleep(random.uniform(2, 5))
+    strip_namespace(data)
 
-    cats = data.xpath('//li[contains(@class, "menu-list")]')
+    time.sleep(random.uniform(1, 3))
+
+    cats = data.xpath('//nav[@role="navigation"]/div/div')
     for cat in cats:
-        name = cat.xpath('a//text()').string(multiple=True)
+        name = cat.xpath('a/text()').string()
 
         if name not in XCAT:
-            subcats = cat.xpath('.//li[div/a/span[contains(text(), "Categories")]]/div/ul/li/a[not(contains(., "Show all"))]')
-            for subcat in subcats:
-                subcat_name = subcat.xpath('.//text()').string(multiple=True)
-                url = subcat.xpath('@href').string()
-                session.queue(Request(url, max_age=0, use='curl'), process_prodlist, dict(cat=name+'|'+subcat_name))
+            cats1 = cat.xpath('div/div/div[contains(@class, "content")]/div')
+
+            for cat1 in cats1:
+                cat1_name = cat1.xpath('a[contains(@class, "[700]")]/text()').string()
+
+                if cat1_name not in XCAT:
+                    subcats = cat1.xpath('a[contains(@class, "[16px]")]')
+                    if subcats:
+                        for subcat in subcats:
+                            subcats_name = subcat.xpath('text()').string()
+                            url = subcat.xpath('@href').string()
+                            session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcats_name))
+                    else:
+                        url = cat1.xpath('a/@href').string()
+                        session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=name+'|'+cat1_name))
 
 
 def process_prodlist(data, context, session):
-    time.sleep(random.uniform(2, 5))
+    strip_namespace(data)
 
-    prods = data.xpath('//a[@class="product-card__link"]')
+    time.sleep(random.uniform(1, 3))
+
+    prods = data.xpath('//div[@data-product-id]')
     for prod in prods:
-        name = prod.xpath('.//text()').string(multiple=True)
-        url = 'https://www.wardow.com/en/products/' + prod.xpath('@href').string().split('/')[-1]
-        session.queue(Request(url, max_age=0, use='curl'), process_product, dict(context, name=name, url=url))
+        prod_name = prod.xpath('.//h3/a/text()').string()
+        url = prod.xpath('.//h3/a/@href').string().split('?')[0]
+        ssid = prod.xpath('.//@data-product-id').string()
+        session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, name=prod_name, url=url, ssid=ssid))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, max_age=0, use='curl'), process_prodlist, dict(context))
+        session.queue(Request(next_url, force_charset='utf-8'), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
-    time.sleep(random.uniform(2, 5))
+    strip_namespace(data)
+
+    time.sleep(random.uniform(1, 3))
 
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.ssid = data.xpath('//div/@data-yotpo-product-id').string()
-    product.sku = data.xpath('//strong[contains(text(), "Product No.:")]/following-sibling::text()').string()
+    product.ssid = context['ssid']
+    product.sku = data.xpath('//tr[contains(td/text(), "SKU")]/td[not(contains(., "SKU"))]/text()').string()
     product.category = context['cat']
-    product.manufacturer = data.xpath('//a[@class="product-vendor"]/text()').string()
+    product.manufacturer = 'Brabantia'
 
-    mpn = data.xpath('//strong[contains(text(), "Model number:")]/following-sibling::text()').string()
-    if mpn:
-        product.add_property(type='id.manufacturer', value=mpn)
-
-    prod_json = data.xpath("""//script[contains(., '"@type":"Product"')]/text()""").string()
-    if prod_json:
-        prod_json = simplejson.loads(prod_json)
-
-        ean = prod_json.get('gtin')
-        if ean and ean.isdigit() and len(ean) > 0:
+    ean = data.xpath('//tr[contains(td/text(), "EAN")]/td[not(contains(., "EAN"))]/text()').string()
+    if ean:
+        ean = ean.strip(" '")
+        if ean.isdigit() and len(ean) > 10:
             product.add_property(type='id.ean', value=ean)
 
-    revs_url = 'https://api-cdn.yotpo.com/v3/storefront/store/juPydjP7F5lNKZqAAkBS8XjnFJaiWnVEaQq9xmxN/product/{}/reviews?page=1&perPage=5'.format(product.ssid)
-    session.do(Request(revs_url, max_age=0), process_reviews, dict(product=product))
+    revs_url = 'https://api-cdn.yotpo.com/v3/storefront/store/cKoXl68lGe6bxTnuIHwKxMhTqrXL8Wy7CPseJnLa/product/{}/reviews?page=1&perPage=5&sort=date,images,badge,rating'.format(product.ssid)
+    session.queue(Request(revs_url, force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
+    strip_namespace(data)
+
     product = context['product']
 
     revs_json = simplejson.loads(data.content)
@@ -151,12 +176,12 @@ def process_reviews(data, context, session):
 
                 product.reviews.append(review)
 
-    revs_cnt = revs_json.get('pagination', {}).get('total', 0)
+    revs_cnt = context.get('revs_cnt', revs_json.get('pagination', {}).get('total', 0))
     offset = context.get('offset', 0) + 5
     if offset < revs_cnt:
         next_page = context.get('page', 1) + 1
-        revs_url = 'https://api-cdn.yotpo.com/v3/storefront/store/juPydjP7F5lNKZqAAkBS8XjnFJaiWnVEaQq9xmxN/product/{ssid}/reviews?page={page}&perPage=5'.format(ssid=product.ssid, page=next_page)
-        session.do(Request(revs_url, max_age=0), process_reviews, dict(product=product, page=next_page, offset=offset))
+        revs_url = 'https://api-cdn.yotpo.com/v3/storefront/store/cKoXl68lGe6bxTnuIHwKxMhTqrXL8Wy7CPseJnLa/product/{ssid}/reviews?page={page}&perPage=5&sort=date,images,badge,rating'.format(ssid=product.ssid, page=next_page)
+        session.do(Request(revs_url, max_age=0, force_charset='utf-8'), process_reviews, dict(product=product, page=next_page, offset=offset))
 
     elif product.reviews:
         session.emit(product)
