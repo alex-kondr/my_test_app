@@ -1,9 +1,10 @@
 from agent import *
 from models.products import *
+import re
 
 
 XCAT = ["Free product tests"]
-XPROSCONS = ['-', 'no', 'na', 'a', 'non', 'none', 'none.', 'none!', 'none !', 'none!!!', 'none?', 'none???!', 'nothing', 'nothing.', 'nothing!', 'Nothing :)', 'unavailable', 'hard', 'not found', 'not found one', 'not applicable', 'no cons', 'no cons.', 'n/a', 'n\\a']
+XPROSCONS = ['-', 'no', 'na', 'a', 'non', 'none', 'none.', 'none!', 'none !', 'none!!!', 'none?', 'none???!', 'nothing', 'nothing.', 'nothing!', 'Nothing :)', 'unavailable', 'hard', 'not found', 'none found', 'not found one', 'not applicable', 'no cons', 'no cons.', 'n/a', 'n\\a']
 
 
 def run(context, session):
@@ -91,18 +92,23 @@ def process_reviews(data,context, session):
 
         pros = rev.xpath('following::ul[li[@class="pros"]][1]/li[@class="pros"]//text()').string(multiple=True)
         if pros and pros.replace("Strengths:", "").strip().lower() not in XPROSCONS:
-            pros = pros.replace("Strengths:", "").strip()
-            review.add_property(type="pros", value=pros)
+            pros = pros.replace("Strengths:", "").strip(' +-:.<>')
+            if len(pros) > 1:
+                review.add_property(type="pros", value=pros)
 
         cons = rev.xpath('following::ul[li[@class="cons"]][1]/li[@class="cons"]//text()').string(multiple=True)
         if cons and cons.replace("Weaknesses:", "").strip().lower() not in XPROSCONS:
-            cons = cons.replace("Weaknesses:", "").strip()
-            review.add_property(type="cons", value=cons)
+            cons = cons.replace("Weaknesses:", "").strip(' +-:.')
+            if len(cons) > 1:
+                review.add_property(type="cons", value=cons)
 
         title = rev.xpath('.//div[@class="meta-data"]//strong/text()').string()
         excerpt = rev.xpath('following::div[@class="reviewBody"][1]//text()').string(multiple=True)
         if excerpt:
-            excerpt = excerpt.replace('•', '').replace('<p>', '').replace('</p>', '').replace('</a>', '').replace('<a href="https://www.consobaby.co.uk/silicone-breast-pump-with-suction-base-150ml-haakaa.html">', '').strip()
+            excerpt = excerpt.replace('•', '').replace('<p>', '').replace('</p>', '').replace('</a>', '').strip()
+            if 'href=' in excerpt:
+                excerpt = re.sub('<a href="[^"]+">', '', excerpt).strip()
+
             if len(excerpt) > 2:
                 review.title = title
             else:

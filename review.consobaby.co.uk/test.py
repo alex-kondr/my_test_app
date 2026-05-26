@@ -17,6 +17,11 @@ agent = agents.CONSOBABY_UK
 reload = 1
 session_id = 0
 
+# name: 22+
+# title: 11+
+# pros_cons: 491
+# excerpt: 81+
+# MAKING: 5
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

@@ -161,6 +161,7 @@ cython_debug/
 .vscode/
 
 product_test/emits
+product_test/raw_yamls
 product_test/error
 product_test/logs
 .vs/

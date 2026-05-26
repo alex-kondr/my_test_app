@@ -1,8 +1,8 @@
-with open("review.eurogamer.it/new_review.eurogamer.it.py", "r", encoding="utf-8") as file:
+with open("review.gamevicio.br/new_review.gamevicio.br.py", "r", encoding="utf-8") as file:
     agent = file.read()
 
 
-with open("review.eurogamer.it/agent.py", "w", encoding="utf-8") as file:
+with open("review.gamevicio.br/agent.py", "w", encoding="utf-8") as file:
     file.write(agent.replace(
             "(data: Response, context: dict[str, str], session: Session)",
             "(data, context, session)"

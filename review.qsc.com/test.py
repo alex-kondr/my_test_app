@@ -12,7 +12,7 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.EUROGAMER_IT
+agent = agents.QSC_US
 # agent = agents.TEST
 reload = 1
 session_id = 0

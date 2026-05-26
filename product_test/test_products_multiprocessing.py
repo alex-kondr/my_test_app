@@ -225,16 +225,25 @@ class Product:
         self.file_path = self.emits_dir / f"agent-{self.agent_id}.json"
         self.result = ResultParse(self.agent_id, session_id=session_id)
 
+        # New directory for raw YAML files
+        self.raw_yaml_dir = Path("product_test/raw_yamls")
+        self.raw_yaml_dir.mkdir(exist_ok=True)
+        self.raw_yaml_path = self.raw_yaml_dir / f"agent-{self.agent_id}.yaml"
+
         if not self.file_path.exists() or reload:
             self.file = self.generate_file(session_id=session_id)
         else:
             self.file = self.open_file()
-
         self.agent_name = self.file["meta"]["agent_name"].strip()
 
     def generate_file(self, session_id=0) -> dict:
         logger.info(f"Loading YAML for agent {self.agent_id}...")
         content = load_file(agent_id=self.agent_id, type_file="yaml", session_id=session_id, decode=True)
+
+        # Save the original YAML content
+        logger.info(f"Saving original YAML content to: {self.raw_yaml_path}")
+        with open(self.raw_yaml_path, "w", encoding="utf-8") as f:
+            f.write(content)
 
         try:
             from yaml import CSafeLoader as Loader

@@ -17,6 +17,13 @@ agent = agents.NEXGAM_DE
 reload = 1
 session_id = 0
 
+# name: 51+
+# grades: 39
+# author: 1697
+# pros_cons: 16
+# conclusion: 109
+# excerpt: 128
+# MAKING: 76
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
