@@ -74,10 +74,10 @@ def process_review(data, context, session):
     product.ssid = product.url.split('/')[-1].replace('-review', '')
     product.manufacturer = data.xpath('//li[strong[contains(., "Developer:")]]/text()').string()
 
-    product.category = data.xpath('//li[strong[contains(., "Availability:")]]/a/text()').strings()
-    if product.category:
-        product.category = '|'.join(product.category).replace('|Official Launcher', '')
-    if not product.category or '...' in product.category:
+    cats = data.xpath('//li[strong[contains(., "Availability:")]]/a/text()').strings()
+    if cats:
+        product.category = 'Games|' + '/'.join([cat.replace('/', '\\') for cat in cats if cat]).replace('|Official Launcher', '').replace(' (and PSVR2)', '').replace('Xbox), ', '').replace(' (and it’s on Game Pass)', '').replace('|(Steam)', '').replace('|Steam)', '').replace('Released 31st August on Steam for £9.29 (currently £7.89)', '').strip()
+    if not product.category or len(product.category) < 8 or '...' in product.category:
         product.category = 'Games'
 
     review = Review()
@@ -111,6 +111,8 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('(//p[strong[contains(., "Conclusions")]]|//h2[contains(., "Conclusions")])/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
+        conclusion = data.xpath('//p[strong[contains(., "Verdict")]]/following::p[not(preceding::hr)]//text()').string(multiple=True)
+    if not conclusion:
         conclusion = data.xpath('//div[contains(@class, "body_content")]/div[not(@class)]//text()').string(multiple=True)
 
     if conclusion:
@@ -119,7 +121,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('(//p[strong[contains(., "Conclusions")]]|//h2[contains(., "Conclusions")])/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "body_content")]//p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "body_content")]//p[not(preceding::p[contains(strong, "Verdict")] or contains(strong, "Verdict"))]//text()').string(multiple=True)
 
     next_url = data.xpath('//div[@class="next"]/a/@href').string()
     if next_url:
