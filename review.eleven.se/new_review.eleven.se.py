@@ -84,12 +84,11 @@ def process_prodlist(data, context, session):
     for prod in prods:
         name = prod.xpath('@aria-label').string()
         url = prod.xpath('a/@href').string()
-        ssid = prod.xpath('@data-lc-id').string()
-        sku = prod.xpath('@data-prod-id').string()
+        ssid = prod.xpath('@data-prod-id').string()
 
-        if sku and sku not in DUPE_PRODS and name and url:
-            DUPE_PRODS.append(sku)
-            session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, name=name, url=url, ssid=ssid, sku=sku))
+        if ssid and ssid not in DUPE_PRODS and name and url:
+            DUPE_PRODS.append(ssid)
+            session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, name=name, url=url, ssid=ssid))
 
     next_url = data.xpath('//li/a[contains(@aria-label, "next page")]/@href').string()
     if next_url:
@@ -103,7 +102,7 @@ def process_product(data, context, session):
     product.name = context['name']
     product.url = context['url']
     product.ssid = context['ssid']
-    product.sku = context['sku']
+    product.sku = product.ssid
     product.category = context['cat']
     product.manufacturer = data.xpath('//span[@class="brand-link__text"]/text()').string()
 
@@ -111,7 +110,7 @@ def process_product(data, context, session):
     if prod_json:
         prod_json = simplejson.loads(prod_json)
         for info in prod_json:
-            if isinstance(info, str) and 'cr.testfreaks.com/reviews' in info:
+            if isinstance(info, unicode) and 'cr.testfreaks.com/reviews' in info:
                 session.do(Request(info, force_charset='utf-8'), process_reviews, dict(product=product))
                 break
 
@@ -123,9 +122,9 @@ def process_reviews(data, context, session):
 
     revs_json = simplejson.loads(data.content)
 
-    revs = revs_json.get('productReviews', [])
+    revs = revs_json.get('reviews', [])
     for rev in revs:
-        if rev.get('lang') not in ('sv', 'se'):
+        if rev.get('lang') not in ('sv', 'se') or rev.get('client_id') != 'eleven.se':
             continue
 
         review = Review()
@@ -155,7 +154,7 @@ def process_reviews(data, context, session):
 
         excerpt = rev.get('extract')
         if excerpt:
-            excerpt = remove_emoji(excerpt.replace('\n', ' ').replace('\\n', ' ')).strip()
+            excerpt = remove_emoji(excerpt.replace('\n', '').replace('\r', '')).strip()
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 

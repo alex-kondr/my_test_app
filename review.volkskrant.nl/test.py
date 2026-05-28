@@ -12,14 +12,15 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.ELEVEN_SE
+agent = agents.VOLKSKRANT_NL
 # agent = agents.TEST
 reload = 1
 session_id = 0
 
-# name: 0+
-# excerpt: 0+
-# MAKING: 6+
+# name: 37+
+# title: 3998+
+# grades: 767+
+# excerpt: 304
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     test = TestProductMultiprocessing(product)
     test.run(xproduct_names=[], not_xproduct_name='', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
 
-    log = LogProduct(agent, reload=reload, session_id=session_id)
+    log = LogProduct(agent, reload=reload)
     test_log = TestLogProduct(log)
     test_log.test_log()
 

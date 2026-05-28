@@ -18,7 +18,7 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.queue(Request('https://www.frogu.cz/', force_charset='utf-8', max_age=0), process_frontpage, {})
+    session.queue(Request('https://www.frogu.cz/', force_charset='utf-8'), process_frontpage, {})
 
 
 def process_frontpage(data, context, session):
@@ -30,7 +30,7 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath("@href").string()
-        session.queue(Request(url, force_charset='utf-8', max_age=0), process_revlist, dict(cat=name))
+        session.queue(Request(url, force_charset='utf-8'), process_revlist, dict(cat=name))
 
 
 def process_revlist(data, context, session):
@@ -43,11 +43,11 @@ def process_revlist(data, context, session):
         title = rev.xpath('.//h3[contains(@class, "post-title")]/a/text()').string()
         url = rev.xpath('.//h3[contains(@class, "post-title")]/a/@href').string()
         ssid = rev.xpath('@id').string()
-        session.queue(Request(url, force_charset='utf-8', max_age=0), process_review, dict(context, title=title, url=url, ssid=ssid))
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(context, title=title, url=url, ssid=ssid))
 
     next_url = data.xpath('//a[@class="next page-numbers"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, force_charset='utf-8', max_age=0), process_revlist, dict(context))
+        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict(context))
 
 
 def process_review(data, context, session):
@@ -86,9 +86,8 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(contains(., "Affiliate program"))]//text()').string(multiple=True)
     if excerpt:
-        excerpt = excerpt.strip()
-        if excerpt:
-            review.add_property(type='excerpt', value=excerpt)
+        review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
-            session.emit(product)
+        product.reviews.append(review)
+
+        session.emit(product)

@@ -35,7 +35,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.wardow.com/en/', max_age=0, use='curl'), process_frontpage, dict())
+    session.queue(Request('https://www.wardow.com/en/', use='curl'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -50,21 +50,24 @@ def process_frontpage(data, context, session):
             for subcat in subcats:
                 subcat_name = subcat.xpath('.//text()').string(multiple=True)
                 url = subcat.xpath('@href').string()
-                session.queue(Request(url, max_age=0, use='curl'), process_prodlist, dict(cat=name+'|'+subcat_name))
+                session.queue(Request(url, use='curl'), process_prodlist, dict(cat=name+'|'+subcat_name))
+            else:
+                url = cat.xpath('a/@href').string()
+                session.queue(Request(url, use='curl'), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data, context, session):
     time.sleep(random.uniform(2, 5))
 
-    prods = data.xpath('//a[@class="product-card__link"]')
+    prods = data.xpath('//a[contains(@class, "product-card__link") and contains(@ref, "productCardLink")]')
     for prod in prods:
         name = prod.xpath('.//text()').string(multiple=True)
         url = 'https://www.wardow.com/en/products/' + prod.xpath('@href').string().split('/')[-1]
-        session.queue(Request(url, max_age=0, use='curl'), process_product, dict(context, name=name, url=url))
+        session.queue(Request(url, use='curl'), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, max_age=0, use='curl'), process_prodlist, dict(context))
+        session.queue(Request(next_url, use='curl'), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
