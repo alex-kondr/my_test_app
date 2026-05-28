@@ -18,8 +18,8 @@ reload = 1
 session_id = 0
 
 # name: 18+
-# category: 6
-# excerpt: 9
+# category: 2
+# excerpt: 8
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
