@@ -17,10 +17,10 @@ agent = agents.VOLKSKRANT_NL
 reload = 1
 session_id = 0
 
-# name: 37+
+# name: 51+
 # title: 3998+
 # grades: 767+
-# excerpt: 304
+# excerpt: 328
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

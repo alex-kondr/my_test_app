@@ -60,6 +60,10 @@ def process_prodlist(data, context, session):
     time.sleep(random.uniform(2, 5))
 
     prods = data.xpath('//a[contains(@class, "product-card__link") and contains(@ref, "productCardLink")]')
+    if not prods and not context.get('restarted'):
+        session.queue(Request(data.response_url, use='curl', max_age=0), process_prodlist, dict(context, restarted=True))
+        return
+
     for prod in prods:
         name = prod.xpath('.//text()').string(multiple=True)
         url = 'https://www.wardow.com/en/products/' + prod.xpath('@href').string().split('/')[-1]
