@@ -1,8 +1,8 @@
-with open("reviews.mynotebook.de/new_reviews.mynotebook.de.py", "r", encoding="utf-8") as file:
+with open("review.gear-vault.com/new_review.gear-vault.com.py", "r", encoding="utf-8") as file:
     agent = file.read()
 
 
-with open("reviews.mynotebook.de/agent.py", "w", encoding="utf-8") as file:
+with open("review.gear-vault.com/agent.py", "w", encoding="utf-8") as file:
     file.write(agent.replace(
             "(data: Response, context: dict[str, str], session: Session)",
             "(data, context, session)"
