@@ -33,9 +33,17 @@ def remove_emoji(string):
     return emoji_pattern.sub(r'', string)
 
 
+def RequestProds(cat_id, page):
+    options = """--compressed -X POST -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:151.0) Gecko/20100101 Firefox/151.0' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Content-Type: application/json' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: cross-site' --data-raw '{"pageSize":48,"page":""" + str(page) + ''',"placement":"projects/retail-catalog-488412/locations/global/catalogs/default_catalog/servingConfigs/default_search","query":"","filters":[{"field":"attributes.rcc_collection_id","value":["'''+ cat_id + """\"]}],"filterFields":["brands","attributes.series","colorFamilies","price","attributes.product_type","materials","genders","patterns","attributes.occasion","attributes.discount","attributes.laptop","attributes.luggage_type","attributes.luggage_size","attributes.rollsystem","attributes.capacity_group","attributes.weight_group","attributes.sustainability"],"visitorId":"46c71c91-2754-4d78-9f8e-2ac3cf80ddcb","languageCode":"en-DE"}'"""
+    url = 'https://storefront.retailconnect.app/v1/search'
+    r = Request(url, use='curl', options=options, max_age=0)
+    return r
+
+
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.wardow.com/en/', use='curl'), process_frontpage, dict())
+    # session.queue(Request('https://www.wardow.com/en/collections/laptop-backpacks', use='curl'), process_category, dict(cat='Backpacks|Laptop Backpacks'))
+    session.queue(Request('https://www.wardow.com/en/', use='curl', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -45,45 +53,58 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('a//text()').string(multiple=True)
 
-        if name not in XCAT:
+        if name and name not in XCAT:
             subcats = cat.xpath('.//li[div/a/span[contains(text(), "Categories")]]/div/ul/li/a[not(contains(., "Show all"))]')
             for subcat in subcats:
                 subcat_name = subcat.xpath('.//text()').string(multiple=True)
                 url = subcat.xpath('@href').string()
-                session.queue(Request(url, use='curl'), process_prodlist, dict(cat=name+'|'+subcat_name))
+                session.queue(Request(url, use='curl', max_age=0), process_category, dict(cat=name+'|'+subcat_name))
             else:
                 url = cat.xpath('a/@href').string()
-                session.queue(Request(url, use='curl'), process_prodlist, dict(cat=name))
+                session.queue(Request(url, use='curl', max_age=0), process_category, dict(cat=name))
+
+
+def process_category(data, context, session):
+    time.sleep(random.uniform(2, 5))
+
+    cat_id = data.xpath('//div/@data-collection-id').string()
+    if cat_id:
+        session.do(RequestProds(cat_id, 1), process_prodlist, dict(context, cat_id=cat_id))
 
 
 def process_prodlist(data, context, session):
     time.sleep(random.uniform(2, 5))
 
-    prods = data.xpath('//a[contains(@class, "product-card__link") and contains(@ref, "productCardLink")]')
-    if not prods and not context.get('restarted'):
-        session.queue(Request(data.response_url, use='curl', max_age=0), process_prodlist, dict(context, restarted=True))
-        return
+    try:
+        prods_json = simplejson.loads(data.content).get('value', {})
+    except:
+        prods_json = {}
 
+    prods = prods_json.get('results', [])
     for prod in prods:
-        name = prod.xpath('.//text()').string(multiple=True)
-        url = 'https://www.wardow.com/en/products/' + prod.xpath('@href').string().split('/')[-1]
-        session.queue(Request(url, use='curl'), process_product, dict(context, name=name, url=url))
+        product = Product()
+        product.name = prod.get('product', {}).get('title')
+        product.url = prod.get('product', {}).get('uri')
+        product.ssid = str(prod.get('id'))
+        product.sku = prod.get('product', {}).get('variants', [{}])[0].get('id')
+        product.category = context['cat']
+        product.manufacturer = prod.get('product', {}).get('brands', [''])[0]
 
-    next_url = data.xpath('//link[@rel="next"]/@href').string()
-    if next_url:
-        session.queue(Request(next_url, use='curl'), process_prodlist, dict(context))
+        revs_cnt = prod.get('product', {}).get('variants', [{}])[0].get('rating', {}).get('ratingCount', 0)
+        if revs_cnt and int(revs_cnt) > 0:
+            session.queue(Request(product.url, use='curl', max_age=0), process_product, dict(product=product))
+
+    prods_cnt = prods_json.get('pagination', {}).get('totalSize', 0)
+    offset = context.get('offset', 0) + 48
+    if offset < prods_cnt:
+        next_page = context.get('page', 1) + 1
+        session.do(RequestProds(context['cat_id'], next_page), process_prodlist, dict(context, page=next_page, offset=offset))
 
 
 def process_product(data, context, session):
     time.sleep(random.uniform(2, 5))
 
-    product = Product()
-    product.name = context['name']
-    product.url = context['url']
-    product.ssid = data.xpath('//div/@data-yotpo-product-id').string()
-    product.sku = data.xpath('//strong[contains(text(), "Product No.:")]/following-sibling::text()').string()
-    product.category = context['cat']
-    product.manufacturer = data.xpath('//a[@class="product-vendor"]/text()').string()
+    product = context['product']
 
     mpn = data.xpath('//strong[contains(text(), "Model number:")]/following-sibling::text()').string()
     if mpn:

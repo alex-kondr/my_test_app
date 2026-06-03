@@ -106,7 +106,7 @@ def process_review(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//section[@class="review-content"]//text()').string(multiple=True)
+    excerpt = data.xpath('//section[@class="review-content"]//text()[not(parent::div[@class="title"])]').string(multiple=True)
     if excerpt:
         if 'Mein Fazit:' in excerpt:
             excerpt, conclusion = excerpt.rsplit('Mein Fazit:', 1)
