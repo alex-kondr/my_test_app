@@ -26,6 +26,8 @@ def run(context, session):
 
 def process_frontpage(data, context, session):
     strip_namespace(data)
+    
+    print data.content
 
     cats = data.xpath('//li[contains(@class, "main-menu-bar")]')
     
