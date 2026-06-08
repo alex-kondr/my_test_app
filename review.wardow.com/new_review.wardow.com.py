@@ -42,7 +42,6 @@ def RequestProds(cat_id, page):
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    # session.queue(Request('https://www.wardow.com/en/collections/laptop-backpacks', use='curl'), process_category, dict(cat='Backpacks|Laptop Backpacks'))
     session.queue(Request('https://www.wardow.com/en/', use='curl', max_age=0), process_frontpage, dict())
 
 
@@ -92,13 +91,13 @@ def process_prodlist(data, context, session):
 
         revs_cnt = prod.get('product', {}).get('variants', [{}])[0].get('rating', {}).get('ratingCount', 0)
         if revs_cnt and int(revs_cnt) > 0:
-            session.queue(Request(product.url, use='curl', max_age=0), process_product, dict(product=product))
+            session.queue(Request(product.url, use='curl', max_age=0), process_product, dict(product=product, revs_cnt=revs_cnt))
 
-    prods_cnt = prods_json.get('pagination', {}).get('totalSize', 0)
+    prods_cnt = context.get('prods_cnt', prods_json.get('pagination', {}).get('totalSize', 0))
     offset = context.get('offset', 0) + 48
     if offset < prods_cnt:
         next_page = context.get('page', 1) + 1
-        session.do(RequestProds(context['cat_id'], next_page), process_prodlist, dict(context, page=next_page, offset=offset))
+        session.do(RequestProds(context['cat_id'], next_page), process_prodlist, dict(context, page=next_page, offset=offset, prods_cnt=prods_cnt))
 
 
 def process_product(data, context, session):
@@ -119,7 +118,7 @@ def process_product(data, context, session):
             product.add_property(type='id.ean', value=ean)
 
     revs_url = 'https://api-cdn.yotpo.com/v3/storefront/store/juPydjP7F5lNKZqAAkBS8XjnFJaiWnVEaQq9xmxN/product/{}/reviews?page=1&perPage=5'.format(product.ssid)
-    session.do(Request(revs_url, max_age=0), process_reviews, dict(product=product))
+    session.do(Request(revs_url, max_age=0), process_reviews, dict(context, product=product))
 
 
 def process_reviews(data, context, session):
@@ -179,12 +178,12 @@ def process_reviews(data, context, session):
 
                 product.reviews.append(review)
 
-    revs_cnt = revs_json.get('pagination', {}).get('total', 0)
+    revs_cnt = context.get('revs_cnt', 0)
     offset = context.get('offset', 0) + 5
     if offset < revs_cnt:
         next_page = context.get('page', 1) + 1
         revs_url = 'https://api-cdn.yotpo.com/v3/storefront/store/juPydjP7F5lNKZqAAkBS8XjnFJaiWnVEaQq9xmxN/product/{ssid}/reviews?page={page}&perPage=5'.format(ssid=product.ssid, page=next_page)
-        session.do(Request(revs_url, max_age=0), process_reviews, dict(product=product, page=next_page, offset=offset))
+        session.do(Request(revs_url, max_age=0), process_reviews, dict(context, product=product, page=next_page, offset=offset))
 
     elif product.reviews:
         session.emit(product)
