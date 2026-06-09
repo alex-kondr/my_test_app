@@ -61,16 +61,21 @@ def process_review(data, context, session):
     grade_overall = data.xpath('count((//div[@class="rating"])[1]/div[@class="star full"])')
     if not grade_overall:
         grade_overall = data.xpath('count(//p[contains(., "Оценка в звездах")][1]//i[@class="td-icon-star"])')
+    if not grade_overall:
+        grade_overall = data.xpath('//p[contains(., "Итоговый балл:")]//text()').string(multiple=True)
+        if grade_overall:
+            grade_overall = grade_overall.count('★')
 
-    if grade_overall:
-        review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
+    if grade_overall and float(grade_overall) > 0:
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
 
     grades = data.xpath('//div[@class="article-part"]//tr[td[@colspan="1"] and not(@style)]')
     for grade in grades:
         grade_name = grade.xpath('td/strong/text()').string()
         grade_val = grade.xpath('count(.//i[@class="td-icon-star"])')
         if grade_name and grade_val:
-            review.grades.append(Grade(name=grade_name, value=grade_val, best=5.0))
+            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
 
     pros = data.xpath('//div[@class="verdict-info-top plus"]/following-sibling::ul/li')
     if not pros:
@@ -93,7 +98,7 @@ def process_review(data, context, session):
         summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('(//h1|//h2)[contains(., "Вердикт") or contains(., "вердикт") or contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")]/following-sibling::p[not(.//script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+    conclusion = data.xpath('((//h1|//h2)[contains(., "Вердикт") or contains(., "вердикт") or contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")])[last()]/following-sibling::p[not(.//script or contains(., "Оценка в звездах") or strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or contains(., "Итоговый балл:"))][normalize-space()]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="verdict-text"]//text()').string(multiple=True)
 
@@ -101,11 +106,11 @@ def process_review(data, context, session):
         conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//h1|//h2)[contains(., "Вердикт") or contains(., "вердикт") or contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")]/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or .//b[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h1|//h2)[contains(., "Вердикт") or contains(., "вердикт") or contains(., "Подведем итоги") or contains(., "Краткий отзыв") or contains(., "Вывод")]/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or .//b[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or contains(., "Итоговый балл:"))][normalize-space()]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h1[contains(., "Часто задаваемые вопросы")]/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+        excerpt = data.xpath('//h1[contains(., "Часто задаваемые вопросы")]/preceding-sibling::p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or contains(., "Итоговый балл:"))][normalize-space()]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="article-part"]/p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or .//b[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")])][normalize-space()]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="article-part"]/p[not(.//script or contains(., "Оценка в звездах") or .//strong[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or .//b[contains(., "Стоимость от") or contains(., "Характеристики") or contains(., "Плюсы") or contains(., "Минусы")] or contains(., "Итоговый балл:"))][normalize-space()]//text()').string(multiple=True)
 
     if excerpt:
         if summary:
