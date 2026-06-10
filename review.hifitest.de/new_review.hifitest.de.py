@@ -8,10 +8,11 @@ def run(context, session):
 
 
 def process_revlist(data, context, session):
-    revs = data.xpath('//div[contains(@class, "testOverviewPart")]/a/@href')
+    revs = data.xpath('//div[contains(@class, "testOverviewPart")]')
     for rev in revs:
-        url = rev.string()
-        session.queue(Request(url, force_charset='utf-8'), process_review, dict(url=url))
+        title = rev.xpath('div[@class="testOverviewFac"]//text()').string(multiple=True)
+        url = rev.xpath('a/@href').string()
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(url=url, title=title))
 
     next_url = data.xpath('//a[img[@alt="eine Seite vor"]]/@href').string()
     if next_url:
@@ -19,9 +20,7 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
-    title = data.xpath('//*[@class="singleTestHeadline"]//text()').string(multiple=True)
-    if not title:
-        title = context['title']
+    title = data.xpath('//*[@class="singleTestHeadline"]//text()').string(multiple=True) or context['title']
 
     product = Product()
     product.url = context['url']

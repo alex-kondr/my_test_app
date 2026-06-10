@@ -1,5 +1,7 @@
 from agent import *
 from models.products import *
+import time
+import random
 
 
 def run(context, session):
@@ -8,6 +10,8 @@ def run(context, session):
 
 
 def process_revlist(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     revs = data.xpath('//table[@align="center"]/tr[td[@class="listItem"]]')
     for rev in revs:
         title = rev.xpath('td[@class="listItem"]/a//text()').string(multiple=True)
@@ -21,6 +25,8 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     title = data.xpath('//td[@class="title"]//text()').string(multiple=True) or context['title']
 
     product = Product()
