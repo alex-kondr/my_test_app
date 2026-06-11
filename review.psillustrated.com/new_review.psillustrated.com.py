@@ -6,7 +6,7 @@ import random
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=4000)]
-    session.queue(Request('https://www.psillustrated.com/psillustrated/index_reviews.php/1', use='curl'), process_revlist, dict())
+    session.queue(Request('https://www.psillustrated.com/psillustrated/index_reviews.php/1', use='curl', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -17,11 +17,11 @@ def process_revlist(data, context, session):
         title = rev.xpath('td[@class="listItem"]/a//text()').string(multiple=True)
         platform = rev.xpath('td/img/@alt').string()
         url = rev.xpath('td[@class="listItem"]/a/@href').string()
-        session.queue(Request(url, use='curl'), process_review, dict(title=title, platform=platform, url=url))
+        session.queue(Request(url, use='curl', max_age=0), process_review, dict(title=title, platform=platform, url=url))
 
     next_url = data.xpath('//a[contains(text(), "Next")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl'), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
