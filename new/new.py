@@ -32,7 +32,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    # session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request("https://www.bargainmax.co.uk/"), process_frontpage, dict())
 
 
@@ -83,17 +83,37 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    
+    product.ssid = data.xpath('//span[@class="product_id"]/text()').string()
+    product.sku = data.xpath('//p[contains(strong/text(), "SKU:")]/text()').string(multiple=True)
+    product.category = context['cat']
+
+    prod_json = data.xpath('''//script[contains(., '"gtin":')]/text()''').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
+
+        product.manufacturer = prod_json.get('brand', {}).get('name')
+
+        ean = prod_json.get('gtin')
+        if ean and ean.isdigit() and len(ean) > 10:
+            product.add_property(type='id.ean', value=ean)
+
+    sku_code = data.xpath('''//script[contains(., 'sku: "')]/text()''').string()
+    if sku_code:
+        sku_code = sku_code.split('sku: "')[-1].split('",')[0]
+
+        revs_url = 'https://api.reviews.io/timeline/data?type=product_review&store=bargainmax&sort=date_desc&page=1&per_page=100&sku={}&enable_avatars=false&include_subrating_breakdown=1&must_have_comments=true&branch=&tag=&include_product_reviews=1&lang=en'.format(sku_code)
+        session.do(Request(revs_url), process_reviews, dict(product=product, sku_code=sku_code))
 
 
 def process_reviews(data, context, session):
     product = context["product"]
 
     try:
-        revs = simplejson.loads(data.content).get('timeline', [])
+        revs_json = simplejson.loads(data.content)
     except:
         return
 
+    revs = revs_json.get('timeline', [])
     for rev in revs:
         rev = rev.get('_source', {})
 
@@ -117,11 +137,11 @@ def process_reviews(data, context, session):
             review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
 
         is_recommended = rev.get('would_recommend_product')
-        if is_recommended:
+        if is_recommended is True:
             review.add_property(value=True, type='is_recommended')
 
         is_verified = rev.get('verified_by_shop')
-        if is_verified:
+        if is_verified is True:
             review.add_property(type='is_verified_buyer', value=True)
 
         hlp_yes = rev.get('helpful')
@@ -147,11 +167,12 @@ def process_reviews(data, context, session):
 
                 product.reviews.append(review)
 
-    offset = context.get('offset', 0) + 10
-    if offset < context['revs_cnt']:
+    revs_cnt = context.get('revs_cnt', revs_json.get('stats', {}).get('review_count', 0))
+    offset = context.get('offset', 0) + 100
+    if offset < revs_cnt:
         next_page = context.get('page', 1) + 1
-        next_url = 'https://api.reviews.io/timeline/data?type=product_review&store=bargainmax&sort=date_desc&page={next_page}&per_page=100&sku={sku_code}%3B{sku}%3B{ssid}%3B{url}&enable_avatars=false&include_subrating_breakdown=1&must_have_comments=true&branch=&tag=&include_product_reviews=1&lang=en'.format(sku_code=context['sku_code'], sku=product.sku, ssid=product.ssid, url=product.url.split('/')[-1], next_page=next_page)
-        session.queue(Request(next_url, use="curl", force_charset='utf-8', max_age=0), process_reviews, dict(context, product=product, offset=offset, page=next_page))
+        next_url = 'https://api.reviews.io/timeline/data?type=product_review&store=bargainmax&sort=date_desc&page={page}&per_page=100&sku={sku_code}&enable_avatars=false&include_subrating_breakdown=1&must_have_comments=true&branch=&tag=&include_product_reviews=1&lang=en'.format(page=next_page, sku_code=context['sku_code'])
+        session.queue(Request(next_url, use="curl", force_charset='utf-8', max_age=0), process_reviews, dict(context, product=product, offset=offset, page=next_page, revs_cnt=revs_cnt))
 
     elif product.reviews:
         session.emit(product)

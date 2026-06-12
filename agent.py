@@ -1,18 +1,17 @@
-from typing import Optional, List, Dict, Union
-from enum import Enum, auto
+from typing import Optional, List, Dict, Union, Literal, Any
 import sys
 
 
 class Request:
-    def __init__(self, url, use=None, force_charset=None, max_age=None, options: Optional[str]=None):...
+    def __init__(self, url: str, use: Optional[str] = None, force_charset: Optional[str] = None, max_age: Optional[int] = None, options: Optional[str] = None): ...
 
 
 class Session:
-    sessionbreakers: list
+    sessionbreakers: List[Any]
 
-    def queue(self, request: Request, func, context: Dict):...
-    def do(self, request: Request, func, context: Dict):...
-    def emit(self, product: "Product"):...
+    def queue(self, request: Request, func: Any, context: Dict[str, Any]) -> None: ...
+    def do(self, request: Request, func: Any, context: Dict[str, Any]) -> None: ...
+    def emit(self, product: "Product") -> None: ...
 
 
 class NodeSet:
@@ -53,15 +52,15 @@ class Response:
 
 
 class Person:
-    def __init__(self, name: str, ssid: str, profile_url: Optional[str] = None):...
+    def __init__(self, name: str, ssid: str, profile_url: Optional[str] = None): ...
 
 
 class Grade:
-    def __init__(self, value: float, best: float, name: Optional[str] = None, type: Optional[str] = None, description: Optional[str] = None):...
+    def __init__(self, value: float, best: float, name: Optional[str] = None, type: Optional[str] = None, description: Optional[str] = None): ...
 
 
 class Review:
-    type: str = "pro"
+    type: Literal["pro", "user"] = "pro"
     title: str
     url: str
     ssid: str
@@ -69,8 +68,8 @@ class Review:
     authors: List[Person] = []
     grades: List[Grade] = []
 
-    def add_property(self, type: str, value: str|dict):...
-    def digest(self, text: Optional[str] = None):...
+    def add_property(self, type: Literal["pros", "cons", "is_recommended", "is_verified_buyer", "helpful_votes", "not_helpful_votes", "awards", "pages", "summary", "conclusion", "excerpt"], value: Union[str, dict, int]) -> None: ...
+    def digest(self, text: Any = None) -> str: ...
 
 
 class Product:
@@ -82,7 +81,7 @@ class Product:
     manufacturer: Optional[str] = None
     reviews: List[Review] = []
 
-    def add_property(type: str, value: str):...
+    def add_property(self, type: Literal["id.manufacturer", "id.ean"], value: str) -> None: ...
 
 
 # session = Session()
