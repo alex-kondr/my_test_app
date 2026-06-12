@@ -4,7 +4,7 @@ from models.products import *
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.netties.be/index.php?arc=Hardware&arc_start=0', force_charset='utf-8'), process_revlist, dict())
+    session.queue(Request('https://www.netties.be/index.php?arc=Hardware&arc_start=0', force_charset='utf-8', use='curl'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -13,12 +13,12 @@ def process_revlist(data, context, session):
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
         if title and url:
-            session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, url=url))
+            session.queue(Request(url, force_charset='utf-8', use='curl'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//button[contains(., "Volgende pagina")]/@onclick').string()
     if next_url:
         next_url = next_url.replace("location.href='", "").replace("';", "")
-        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict())
+        session.queue(Request(next_url, force_charset='utf-8', use='curl'), process_revlist, dict())
 
 
 def process_review(data, context, session):
