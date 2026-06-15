@@ -1,3 +1,5 @@
+from typing import Literal
+
 import yaml
 import json
 import logging
@@ -218,7 +220,7 @@ Wasted time: {self.time}
 
 
 class Product:
-    def __init__(self, agent_id: int, reload=False, session_id=0):
+    def __init__(self, agent_id: int, reload: Literal[0, 1, True, False]=False, session_id=0):
         self.agent_id = agent_id
         self.emits_dir = Path("product_test/emits")
         self.emits_dir.mkdir(exist_ok=True)

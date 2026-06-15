@@ -40,6 +40,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//div[contains(@id, "tekst_prom")]/a[@class="link_tekst"]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'�', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

@@ -2,6 +2,8 @@ from agent import *
 from models.products import *
 import simplejson
 import re
+import time
+import random
 
 
 XCAT = ['Offers', 'The Outdoor Shop', 'Outdoor Toys', 'Arts & Crafts']
@@ -32,11 +34,13 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    # session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request("https://www.bargainmax.co.uk/"), process_frontpage, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.queue(Request("https://www.bargainmax.co.uk/", use='curl'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     cats = data.xpath('//div[@class="group/child"]')
     for cat in cats:
         name = cat.xpath('button/text()').string()
@@ -53,7 +57,7 @@ def process_frontpage(data, context, session):
                         url = subcat.xpath('@href').string()
 
                         if subcat_name and subcat_name not in XCAT:
-                            session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
+                            session.queue(Request(url, use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
             else:
                 cats1 = cat.xpath('.//div[nav]/a')
                 for cat1 in cats1:
@@ -61,10 +65,12 @@ def process_frontpage(data, context, session):
                     url = cat1.xpath('@href').string()
 
                     if cat1_name and cat1_name not in XCAT:
-                        session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name))
+                        session.queue(Request(url, use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name))
 
 
 def process_prodlist(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     prods = data.xpath('//div[ul]/div[contains(@class, "card-product")]/div[a and p]')
     for prod in prods:
         name = prod.xpath('p[contains(@class, "title")]/text()').string()
@@ -72,14 +78,16 @@ def process_prodlist(data, context, session):
 
         rating = prod.xpath('p/span/span[contains(@class, "text")]/text()')
         if rating:
-            session.queue(Request(url), process_product, dict(context, name=name, url=url))
+            session.queue(Request(url, use='curl'), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_prodlist, dict(context))
+        session.queue(Request(next_url, use='curl'), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     product = Product()
     product.name = context['name']
     product.url = context['url']
@@ -102,7 +110,7 @@ def process_product(data, context, session):
         sku_code = sku_code.split('sku: "')[-1].split('",')[0]
 
         revs_url = 'https://api.reviews.io/timeline/data?type=product_review&store=bargainmax&sort=date_desc&page=1&per_page=100&sku={}&enable_avatars=false&include_subrating_breakdown=1&must_have_comments=true&branch=&tag=&include_product_reviews=1&lang=en'.format(sku_code)
-        session.do(Request(revs_url), process_reviews, dict(product=product, sku_code=sku_code))
+        session.do(Request(revs_url, use="curl", force_charset='utf-8', max_age=0), process_reviews, dict(product=product, sku_code=sku_code))
 
 
 def process_reviews(data, context, session):

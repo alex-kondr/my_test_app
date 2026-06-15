@@ -4,6 +4,7 @@ import logging
 import sys
 import re
 from multiprocessing import Pool, cpu_count
+from typing import Literal
 from tqdm import tqdm
 
 from product_test.functions import load_file
@@ -74,7 +75,10 @@ def process_log_chunk(chunk: list[str]) -> list[list[str]]:
 
 
 class LogProduct:
-    def __init__(self, agent_id: int, reload=False, session_id=0):
+
+    def __init__(
+        self, agent_id: int, reload: Literal[0, 1, True, False]=False, session_id=0
+    ):
         self.agent_id = agent_id
         self.emits_dir = Path("product_test/logs")
         self.emits_dir.mkdir(exist_ok=True)

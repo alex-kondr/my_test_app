@@ -3,15 +3,19 @@ import sys
 
 
 class Request:
-    def __init__(self, url: str, use: Optional[str] = None, force_charset: Optional[str] = None, max_age: Optional[int] = None, options: Optional[str] = None): ...
+    def __init__(self, url: str, use: Literal['curl', None] = None, force_charset: Literal['utf-8', None] = None, max_age: Optional[int] = None, options: Optional[str] = None):
+        pass
 
 
 class Session:
-    sessionbreakers: List[Any]
+    sessionbreakers: List["SessionBreak"]
 
-    def queue(self, request: Request, func: Any, context: Dict[str, Any]) -> None: ...
-    def do(self, request: Request, func: Any, context: Dict[str, Any]) -> None: ...
-    def emit(self, product: "Product") -> None: ...
+    def queue(self, request: Request, func: Any, context: Dict[str, Any]) -> None:
+        pass
+    def do(self, request: Request, func: Any, context: Dict[str, Any]) -> None:
+        pass
+    def emit(self, product: "Product") -> None:
+        pass
 
 
 class NodeSet:
@@ -82,6 +86,10 @@ class Product:
     reviews: List[Review] = []
 
     def add_property(self, type: Literal["id.manufacturer", "id.ean"], value: str) -> None: ...
+
+
+class SessionBreak:
+    def __init__(self, max_requests):...
 
 
 # session = Session()
