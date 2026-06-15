@@ -18,7 +18,7 @@ class TypeAgent(Enum):
 
 
 class AgentForm:
-    def __init__(self, agent_id: int):
+    def __init__(self, agent_id: str):
         self.agent_id = agent_id
         self.name = get_source_name(agent_id)
         self.agent_dir = Path(self.name)
@@ -39,7 +39,7 @@ class AgentForm:
         # name_agent_for_test: str,
         # agent_id: str,
         url: str,
-        next_func: ProcessRun,
+        next_func: str,
         new_parser: bool,
         breakers: Union[int, bool],
         # curl: bool

@@ -62,7 +62,7 @@ def is_include(xnames: list = [], text: str = "", lower: bool = False) -> str|No
                 return xname
 
 
-def get_old_agent(agent_id: int) -> List[str]:
+def get_old_agent(agent_id: str) -> List[str]:
     url = f"https://prunesearch.com/manage?action=agent&agent_id={agent_id}"
 
     session = HTMLSession()
