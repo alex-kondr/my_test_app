@@ -23,14 +23,14 @@ def process_revlist(data, context, session):
 
 def process_review(data, context, session):
     product = Product()
-    product.name = context['title']
+    product.name = context["title"].replace(u'�', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-1]
     product.category = 'Hardware'
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = context['title'].replace(u'�', '').strip()
     review.url = product.url
     review.ssid = product.ssid
 

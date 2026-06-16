@@ -34,7 +34,7 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request("https://www.bargainmax.co.uk/", use='curl'), process_frontpage, dict())
 
 
@@ -78,7 +78,7 @@ def process_prodlist(data, context, session):
 
         rating = prod.xpath('p/span/span[contains(@class, "text")]/text()')
         if rating:
-            session.queue(Request(url, use='curl'), process_product, dict(context, name=name, url=url))
+            session.queue(Request(url, use='curl', max_age=0), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -126,7 +126,7 @@ def process_reviews(data, context, session):
         rev = rev.get('_source', {})
 
         review = Review()
-        review.type = "user"
+        review.type = 'user'
         review.url = product.url
 
         date = rev.get('date_created')

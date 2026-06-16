@@ -101,27 +101,26 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.category = context['cat']
-    product.manufacturer = 'Rollei'
-
     product.ssid = data.xpath('//product-info/@data-product-id').string()
     product.sku = data.xpath('//span[@data-current-sku]/text()[normalize-space()]').string()
+    product.category = context['cat']
+    product.manufacturer = 'Rollei'
 
     ean = data.xpath('//span[@data-current-barcode]/text()[normalize-space()]').string()
     if ean and ean.isdigit() and len(ean) > 10:
         product.add_property(type='id.ean', value=ean)
 
     revs_url = "https://cdn.fera.ai/api/v3/public/products/{}/reviews.json?client=fjs-3.3.6&api_key=pk_7f2fd279edefe8b4c08623df6c92c01b6dfa1996ea6fac42a2b22945361b8faa&page_size=6&sort_by=quality%3Adesc&include_aggregate_rating=true&offset=0&limit=6&include_product=true".format(product.ssid)
-    session.do(Request(revs_url, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
-
-    if product.reviews:
-        session.emit(product)
+    session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):
     product = context['product']
 
-    revs_json = simplejson.loads(data.content)
+    try:
+        revs_json = simplejson.loads(data.content)
+    except:
+        revs_json = {}
 
     revs = revs_json.get('data', [])
     for rev in revs:
@@ -167,7 +166,10 @@ def process_reviews(data, context, session):
                 product.reviews.append(review)
 
     offset = context.get('offset', 0) + 6
-    revs_cnt = revs_json.get('meta', {}).get('total_count', 0)
+    revs_cnt = context.get('revs_cnt', revs_json.get('meta', {}).get('total_count', 0))
     if offset < revs_cnt:
         next_url = 'https://cdn.fera.ai/api/v3/public/products/{ssid}/reviews.json?client=fjs-3.3.6&api_key=pk_7f2fd279edefe8b4c08623df6c92c01b6dfa1996ea6fac42a2b22945361b8faa&page_size=6&sort_by=quality%3Adesc&include_aggregate_rating=true&offset={offset}&limit=6&include_product=true'.format(ssid=product.ssid, offset=offset)
-        session.do(Request(next_url, use='curl', force_charset='utf-8'), process_reviews, dict(context, product=product, offset=offset))
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context, product=product, offset=offset, revs_cnt=revs_cnt))
+
+    elif product.reviews:
+        session.emit(product)

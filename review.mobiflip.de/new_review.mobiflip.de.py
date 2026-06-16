@@ -28,7 +28,7 @@ def process_revlist(data, context, session):
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
 
-        if ' vs. ' not in title:
+        if ' vs. ' not in title and 'mobiflip.de/go/amzde/' not in url:
             session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
@@ -40,10 +40,10 @@ def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('Flaggschiff-Test: ', '').replace('Im Test: ', '').split(' im Test: ')[0].split(' im Test ')[0].split(': Mein Test ')[0].split(' im ersten Test: ')[0].split(' Langzeit-Test: ')[0].split(' im Langzeittest: ')[0].split(' Test: ')[0].split(' Test nach ')[0].split(' Kurztest ')[0].split(': Test ')[0].replace('Technik im Alltag: ', '').replace(' im persönlichen Langzeit-Test', '').replace(' im ausführlichen Test', '').replace(' im Härtetest', '').replace(' im Test', '').replace('Meine Baby-Testreihe: ', '').replace(' im Langzeit-Test', '').replace(' im kurzen Test', '').replace(' im ersten Test', '').replace(' im Langzeittest', '').replace(' im Alltagstest', '').replace('Mein o2-Netztest: ', '').replace('Testbericht: ', '').replace(' Testbericht', '').replace('Test: ', '').replace('Kurztest: ', '').replace(' mit MusicCast getestet', '').replace(' im Outdoor-Test', '').replace(' vorgestellt und getestet', '').replace(' getestet', '').replace(' im Kurztest', '').replace(' im Dauertest', '').replace(' im knallharten Selfietest', '').replace(' zum Test eingetroffen', '').replace(' im Videotest', '').replace(' Test', '').replace('Testbericht ', '').replace(' im Praxistest', '').replace(' Kurztest', '').replace(' im Kamera-Test', '').replace(' (Video)', '').replace(' im Lesertest', '').replace('Praxistest: ', '').replace('Getestet: ', '').strip()
+    product.name = context['title'].replace('Flaggschiff-Test: ', '').replace('Im Test: ', '').split(' im Test: ')[0].split(' im Test ')[0].split(': Mein Test ')[0].split(' im ersten Test: ')[0].split(' Langzeit-Test: ')[0].split(' im Langzeittest: ')[0].split(' Test: ')[0].split(' Test nach ')[0].split(' Kurztest ')[0].split(': Test ')[0].replace('Technik im Alltag: ', '').replace(' im persönlichen Langzeit-Test', '').replace(' im ausführlichen Test', '').replace(' im Härtetest', '').replace(' im Test', '').replace('Meine Baby-Testreihe: ', '').replace(' im Langzeit-Test', '').replace(' im kurzen Test', '').replace(' im ersten Test', '').replace(' im Langzeittest', '').replace(' im Alltagstest', '').replace('Mein o2-Netztest: ', '').replace('Testbericht: ', '').replace(' Testbericht', '').replace('Test: ', '').replace('Kurztest: ', '').replace(' mit MusicCast getestet', '').replace(' im Outdoor-Test', '').replace(' vorgestellt und getestet', '').replace(' getestet', '').replace(' im Kurztest', '').replace(' im Dauertest', '').replace(' im knallharten Selfietest', '').replace(' zum Test eingetroffen', '').replace(' im Videotest', '').replace(' Test', '').replace('Testbericht ', '').replace(' im Praxistest', '').replace(' Kurztest', '').replace(' im Kamera-Test', '').replace(' (Video)', '').replace(' im Lesertest', '').replace('Praxistest: ', '').replace('Getestet: ', '').replace('TEST: ', '').replace('Ausgepackt und angetestet – ', '').replace(' angetestet', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
-    product.category = data.xpath('//span[@class="kurzspancatsingle" and not(regexp:test(., "Testberichte"))]/text()').string() or 'Technik'
+    product.category = data.xpath('//span[@class="kurzspancatsingle" and not(regexp:test(., "Testberichte|Kommentar"))]/text()').string() or 'Technik'
 
     review = Review()
     review.type = 'pro'

@@ -136,7 +136,7 @@ def process_product(data, context, session):
 
         title = rev.xpath('.//p[@class="h5"]//text()').string(multiple=True)
         excerpt = rev.xpath('.//p[@itemprop="description"]//text()').string(multiple=True)
-        if excerpt and h.unescape(remove_emoji(excerpt).replace('\r', '').replace('\n', ' ')).strip(' +*,').lstrip('.'):
+        if excerpt and len(h.unescape(remove_emoji(excerpt).replace('\r', '').replace('\n', ' ')).strip(' +*,').lstrip('.')) > 2:
             if title:
                 review.title = h.unescape(remove_emoji(title)).replace('\r', '').replace('\n', ' ').strip(' .+*,')
         else:
@@ -144,7 +144,7 @@ def process_product(data, context, session):
 
         if excerpt:
             excerpt = h.unescape(remove_emoji(excerpt).replace('\r', '').replace('\n', ' ')).strip(' +*,').lstrip('.')
-            if excerpt:
+            if excerpt and len(excerpt) > 2:
                 review.add_property(type="excerpt", value=excerpt)
 
                 review.ssid = review.digest() if author else review.digest(excerpt)

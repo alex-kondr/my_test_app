@@ -40,7 +40,7 @@ def process_get_token(data, context, session):
 
 def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.gomibo.de/', max_age=0), process_frontpage, dict())
+    session.queue(Request('https://www.gomibo.de/'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
@@ -48,7 +48,7 @@ def process_frontpage(data, context, session):
 
     cats = data.xpath('//li[contains(@class, "desktop_nav_menu_item")]')
     for cat in cats:
-        name = cat.xpath('a/text()').string()
+        name = cat.xpath('div/a//text()').string(multiple=True)
 
         if name and name not in XCAT:
             subcats = cat.xpath('.//ul[not(contains(., "Beliebte"))]/li[not(contains(@class, "title"))]/a')
@@ -57,7 +57,7 @@ def process_frontpage(data, context, session):
                 url = subcat.xpath('@href').string().split('?')[0]
 
                 if subcat_name not in XCAT:
-                    session.queue(Request(url, max_age=0), process_prodlist, dict(cat=name + '|' + subcat_name))
+                    session.queue(Request(url), process_prodlist, dict(cat=name + '|' + subcat_name))
 
 
 def process_prodlist(data, context, session):
@@ -72,11 +72,11 @@ def process_prodlist(data, context, session):
         if revs_cnt:
             revs_cnt = revs_cnt.strip('( )')
             if revs_cnt.isdigit() and int(revs_cnt) > 0:
-                session.queue(Request(url, max_age=0), process_product, dict(context, name=name, url=url))
+                session.queue(Request(url), process_product, dict(context, name=name, url=url, revs_cnt=int(revs_cnt)))
 
     next_url = data.xpath('//a[@aria-label="Nächste Seite"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, max_age=0), process_prodlist, dict(context))
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data, context, session):
@@ -110,7 +110,7 @@ def process_product(data, context, session):
     token = session.do(Request('https://www.gomibo.de/API/vergelijk/Exchange?response_type=token&client_id=nl.belsimpel.public.web&scope=Reviews', max_age=0), process_get_token, dict())
     revs_url = 'https://www.gomibo.de/API/Reviews/v1.0/ProductReviews/{}?locale=de_DE'.format(product.ssid)
     options = "--compressed -H 'Accept-Encoding: deflate' -H 'Authorization: Bearer " + token + "'"
-    session.do(Request(revs_url, use='curl', force_charset='utf-8', options=options, max_age=0), process_reviews, dict(product=product, token=token))
+    session.do(Request(revs_url, use='curl', force_charset='utf-8', options=options, max_age=0), process_reviews, dict(context, product=product, token=token))
 
 
 def process_reviews(data, context, session):
@@ -119,11 +119,11 @@ def process_reviews(data, context, session):
     product = context['product']
 
     revs_json = simplejson.loads(data.content)
-    if revs_json.get('status') != 'success':
+    if revs_json.get('status') != 'success' and not context.get('repeat'):
         token = session.do(Request('https://www.gomibo.de/API/vergelijk/Exchange?response_type=token&client_id=nl.belsimpel.public.web&scope=Reviews', max_age=0), process_get_token, dict())
         revs_url = 'https://www.gomibo.de/API/Reviews/v1.0/ProductReviews/{}?locale=de_DE'.format(product.ssid)
         options = "--compressed -H 'Accept-Encoding: deflate' -H 'Authorization: Bearer " + token + "'"
-        session.do(Request(revs_url, use='curl', force_charset='utf-8', options=options, max_age=0), process_reviews, dict(context, token=token))
+        session.do(Request(revs_url, use='curl', force_charset='utf-8', options=options, max_age=0), process_reviews, dict(context, token=token, repeat=True))
         return
 
     revs = revs_json.get('data', {}).get('review_list', [])
@@ -193,9 +193,8 @@ def process_reviews(data, context, session):
 
                 product.reviews.append(review)
 
-    revs_cnt = revs_json.get('data', {}).get('reviews_available', {}).get('total', 0)
     offset = context.get('offset', 0) + 15
-    if offset < int(revs_cnt):
+    if offset < context['revs_cnt']:
         next_page = context.get('page', 1) + 1
         next_url = 'https://www.gomibo.de/API/Reviews/v1.0/ProductReviews/{ssid}?locale=de_DE&page={page}'.format(ssid=product.ssid, page=next_page)
         options = "--compressed -H 'Accept-Encoding: deflate' -H 'Authorization: Bearer " + context['token'] + "'"
