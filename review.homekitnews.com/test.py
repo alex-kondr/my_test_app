@@ -15,7 +15,7 @@ import product_test.list_of_agents as agents
 agent = agents.HOMEKIT_NEWS_AND_REVIEWS_TW
 # agent = agents.TEST
 reload = 1
-session_id = 6852507
+session_id = 0
 
 # name: 3+
 # title: 3+

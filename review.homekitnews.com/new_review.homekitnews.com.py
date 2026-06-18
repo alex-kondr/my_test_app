@@ -2,9 +2,6 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['apple', 'aqara', 'eve', 'mi', 'mijia', 'hpm', 'reviews', 'lifesmart', 'd-link', 'vocolinc', 'youtube', 'ikea', 'velux', 'wozart', 'opus', 'ge', 'athom', 'philips', 'zemismart', 'how to...']
-
-
 def run(context, session):
     session.queue(Request('https://homekitnews.com/category/reviews/', force_charset='utf-8'), process_revlist, dict())
 

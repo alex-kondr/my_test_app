@@ -8,7 +8,7 @@ def run(context, session):
     cats_links = ['makeup', 'skin-care', 'perfumes-1', 'hair-1', 'bath-body-1', 'nails', 'men-collection', 'kids-babies']
     for link in cats_links:
         url = 'https://www.searchanise.com/getresults?api_key=7I9N0F6L4v&q=&sortBy=total_reviews&sortOrder=desc&startIndex=0&maxResults=250&collection={link}&output=jsonp'.format(link=link)
-        session.queue(Request(url), process_prodlist, dict(link=link, start=0))
+        session.queue(Request(url, max_age=0), process_prodlist, dict(link=link))
 
 
 def process_prodlist(data, context, session):
@@ -30,13 +30,13 @@ def process_prodlist(data, context, session):
         revs_cnt = prod.get('total_reviews')
         if revs_cnt and int(revs_cnt) > 0:
             revs_url = 'https://stamped.io/api/widget?productId={ssid}&apiKey=pubkey-9DajnAm17lctkg5Q1Jn859D09iIcT8&storeUrl=glam22.myshopify.com&take=5&sort=most-votes'.format(ssid=product.ssid)
-            session.do(Request(revs_url), process_reviews, dict(product=product, revs_cnt=int(revs_cnt)))
+            session.queue(Request(revs_url, max_age=0), process_reviews, dict(product=product, revs_cnt=int(revs_cnt)))
 
     prods_count = context.get('prods_count', prods_json.get('totalItems', 0))
     offset = context.get('offset', 0) + 250
     if offset < prods_count:
         next_url = 'https://www.searchanise.com/getresults?api_key=7I9N0F6L4v&q=&sortBy=total_reviews&sortOrder=desc&startIndex={start}&maxResults=250&collection={link}&output=jsonp'.format(start=offset, link=context['link'])
-        session.queue(Request(next_url), process_prodlist, dict(context, offset=offset, prods_count=prods_count))
+        session.queue(Request(next_url, max_age=0), process_prodlist, dict(context, offset=offset, prods_count=prods_count))
 
 
 def process_reviews(data, context, session):
@@ -78,11 +78,11 @@ def process_reviews(data, context, session):
             review.add_property(value=True, type='is_recommended')
 
         hlp_yes = rev.xpath('.//i[@class="stamped-fa stamped-fa-thumbs-up"]//text()').string()
-        if hlp_yes:
+        if hlp_yes and int(hlp_yes) > 0:
             review.add_property(type='helpful_votes', value=int(hlp_yes))
 
         hlp_no = rev.xpath('.//i[@class="stamped-fa stamped-fa-thumbs-down"]//text()').string()
-        if hlp_no:
+        if hlp_no and int(hlp_no) > 0:
             review.add_property(type='not_helpful_votes', value=int(hlp_no))
 
         title = rev.xpath('.//h3[@class="stamped-review-header-title"]//text()').string()
@@ -109,7 +109,7 @@ def process_reviews(data, context, session):
     if offset < context['revs_cnt']:
         next_page = context.get('page', 1) + 1
         next_url = 'https://stamped.io/api/widget?productId={ssid}&apiKey=pubkey-9DajnAm17lctkg5Q1Jn859D09iIcT8&storeUrl=glam22.myshopify.com&take=5&sort=most-votes&page={page}'.format(ssid=product.ssid, page=next_page)
-        session.do(Request(next_url), process_reviews, dict(context, offset=offset, page=next_page))
+        session.do(Request(next_url, max_age=0), process_reviews, dict(context, product=product, offset=offset, page=next_page))
 
     elif product.reviews:
         session.emit(product)
