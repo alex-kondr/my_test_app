@@ -1,6 +1,8 @@
 from agent import *
 from models.products import *
 import simplejson
+import time
+import random
 
 
 def run(context, session):
@@ -12,6 +14,8 @@ def run(context, session):
 
 
 def process_prodlist(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     try:
         prods_json = simplejson.loads(data.content)
     except:
@@ -30,7 +34,7 @@ def process_prodlist(data, context, session):
         revs_cnt = prod.get('total_reviews')
         if revs_cnt and int(revs_cnt) > 0:
             revs_url = 'https://stamped.io/api/widget?productId={ssid}&apiKey=pubkey-9DajnAm17lctkg5Q1Jn859D09iIcT8&storeUrl=glam22.myshopify.com&take=5&sort=most-votes'.format(ssid=product.ssid)
-            session.queue(Request(revs_url, max_age=0), process_reviews, dict(product=product, revs_cnt=int(revs_cnt)))
+            session.do(Request(revs_url, max_age=0), process_reviews, dict(product=product, revs_cnt=int(revs_cnt)))
 
     prods_count = context.get('prods_count', prods_json.get('totalItems', 0))
     offset = context.get('offset', 0) + 250
@@ -40,6 +44,8 @@ def process_prodlist(data, context, session):
 
 
 def process_reviews(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     product = context['product']
 
     if product.sku:
