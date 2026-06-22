@@ -52,7 +52,7 @@ def remove_emoji(string):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.sessionbreakers = [SessionBreak(max_requests=6000)]
     session.queue(Request('https://www.rollei.de/collections/', use='curl', force_charset='utf-8'), process_catlist, dict())
 
 
@@ -65,6 +65,7 @@ def process_catlist(data, context, session):
     for cat in cats:
         name = cat.xpath('div[contains(@class, "content")]//span[contains(@class, "text")]/text()[normalize-space()]').string()
         url = cat.xpath('@href').string()
+
         if url and name not in XCAT and 'Mach ' not in name and 'top producte' not in name.lower():
             session.queue(Request(url, use='curl', force_charset='utf-8'), process_prodlist, dict(cat=name))
 
@@ -78,9 +79,9 @@ def process_prodlist(data, context, session):
 
     time.sleep(random.uniform(1, 3))
 
-    prods = data.xpath('//div[contains(@id, "Product")]//motion-list/div[contains(@class, "product-card")]')
+    prods = data.xpath('//div[contains(@class, "product-card--card")]')
     for prod in prods:
-        name = prod.xpath('.//a[contains(@class, "title")]/text()[normalize-space()]').string()
+        name = prod.xpath('.//a[contains(@class, "title")]/text()').string()
         url = prod.xpath('.//a[contains(@class, "title")]/@href').string()
 
         revs_cnt = prod.xpath('.//div[contains(@class, "rating")]/@title').string()
@@ -88,7 +89,7 @@ def process_prodlist(data, context, session):
             revs_cnt = revs_cnt.split()[0]
             if revs_cnt.isdigit() and int(revs_cnt) > 0:
                 url = 'https://www.rollei.de/products/' + url.split('/products/')[-1]
-                session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, url=url))
+                session.queue(Request(url, use='curl', force_charset='utf-8'), process_product, dict(context, name=name, url=url, revs_cnt=int(revs_cnt)))
 
     #   Loaded all prods
 
@@ -111,10 +112,12 @@ def process_product(data, context, session):
         product.add_property(type='id.ean', value=ean)
 
     revs_url = "https://cdn.fera.ai/api/v3/public/products/{}/reviews.json?client=fjs-3.3.6&api_key=pk_7f2fd279edefe8b4c08623df6c92c01b6dfa1996ea6fac42a2b22945361b8faa&page_size=6&sort_by=quality%3Adesc&include_aggregate_rating=true&offset=0&limit=6&include_product=true".format(product.ssid)
-    session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+    session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context, product=product))
 
 
 def process_reviews(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     product = context['product']
 
     try:
@@ -154,22 +157,21 @@ def process_reviews(data, context, session):
         excerpt = rev.get('body')
         if excerpt and len(remove_emoji(serialize_text(excerpt))) > 2:
             if title:
-                review.title = remove_emoji(serialize_text(title))
+                review.title = remove_emoji(serialize_text(title)).replace('&amp;', '&')
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = remove_emoji(serialize_text(excerpt))
+            excerpt = remove_emoji(serialize_text(excerpt)).replace('&amp;', '&')
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
                 product.reviews.append(review)
 
     offset = context.get('offset', 0) + 6
-    revs_cnt = context.get('revs_cnt', revs_json.get('meta', {}).get('total_count', 0))
-    if offset < revs_cnt:
+    if offset < context['revs_cnt']:
         next_url = 'https://cdn.fera.ai/api/v3/public/products/{ssid}/reviews.json?client=fjs-3.3.6&api_key=pk_7f2fd279edefe8b4c08623df6c92c01b6dfa1996ea6fac42a2b22945361b8faa&page_size=6&sort_by=quality%3Adesc&include_aggregate_rating=true&offset={offset}&limit=6&include_product=true'.format(ssid=product.ssid, offset=offset)
-        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context, product=product, offset=offset, revs_cnt=revs_cnt))
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context, product=product, offset=offset))
 
     elif product.reviews:
         session.emit(product)
