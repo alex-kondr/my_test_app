@@ -19,11 +19,18 @@ def process_prodlist(data, context, session):
 
 
 def process_product(data, context, session):
+    title = data.xpath("//h1[@class='noflir']//text()").string()
+
     product = Product()
-    product.name = data.xpath("//h2//a//text()").string()
-    product.ssid = context['url'].split('/')[-2]
+    product.name = data.xpath("//h2//a//text()").string() or title
     product.url = context['url']
     product.category = 'Games'
+
+    ssid = context['url'].split('-')[-1].strip(' /')
+    if ssid.isdigit():
+        product.ssid = ssid
+    else:
+        product.ssid = context['url'].split('/')[-3]
 
     cat = data.xpath("(//ul[@class='infobox']//li[contains(.,'Plataforma')]//text())[2]").string()
     if not cat:
@@ -38,7 +45,7 @@ def process_product(data, context, session):
 
     review = Review()
     review.type = 'pro'
-    review.title = data.xpath("//h1[@class='noflir']//text()").string()
+    review.title = title
     review.url = context['url']
     review.ssid = product.ssid
 
@@ -52,23 +59,35 @@ def process_product(data, context, session):
         author_name = author.xpath(".//text()").string()
         review.authors.append(Person(name=author_name, ssid=author_name, profile_url=author_url))
 
-    grade = data.xpath("//div[@class='scoreSplit']//meter").first()
-    if grade:
-        grade_val = grade.xpath("@value").string()
-        grade_max = grade.xpath("@max").string()
+    grade_overall = data.xpath("//div[@class='scoreSplit' and not(.//a)]//meter").first()
+    if grade_overall:
+        grade_val = grade_overall.xpath("@value").string()
+        grade_max = grade_overall.xpath("@max").string()
         review.grades.append(Grade(type='overall', value=float(grade_val), best=float(grade_max)))
+
+    grades = data.xpath('//div[@class="scoreSplit"]//a')
+    for grade in grades:
+        grade_name = grade.xpath('text()').string(multiple=True)
+        grade_val = grade.xpath('meter/@value').string()
+        if grade_name and grade_val and grade_val.isdigit() and float(grade_val) > 0:
+            grade_name = grade_name.split('/ 10')[-1].strip()
+            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
     pros = data.xpath("//div[@class='goodbad'][1]//text()").string(multiple=True)
     if pros:
         pros = pros.split('.')
-        for value in pros:
-            review.add_property(type='pros', value=value.strip())
+        for pro in pros:
+            pro = pro.strip(' +-*.:;•,–"')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
 
     cons = data.xpath("//div[@class='goodbad'][2]//text()").string(multiple=True)
     if cons:
         cons = cons.split('.')
-        for value in cons:
-            review.add_property(type='cons', value=value.strip())
+        for con in cons:
+            con = con.strip(' +-*.:;•,–"')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
 
     summary = data.xpath("//h2[@class='intro']//text()").string(multiple=True)
     if summary:

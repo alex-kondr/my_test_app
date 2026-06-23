@@ -1,6 +1,8 @@
 from agent import *
 from models.products import *
 import re
+import time
+import random
 
 
 XCAT = ['Аналитика']
@@ -45,11 +47,13 @@ def remove_emoji(string):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=9000)]
-    session.queue(Request('https://top-mob.com/?s=%D0%9E%D0%91%D0%97%D0%9E%D0%A0', force_charset='utf-8', use='curl'), process_revlist, {})
+    session.queue(Request('https://top-mob.com/?s=%D0%9E%D0%91%D0%97%D0%9E%D0%A0', force_charset='utf-8', max_age=0), process_revlist, {})
 
 
 def process_revlist(data, context, session):
     strip_namespace(data)
+
+    time.sleep(random.uniform(1, 3))
 
     revs = data.xpath('//article[contains(@class, "post-")]')
     for rev in revs:
@@ -59,17 +63,19 @@ def process_revlist(data, context, session):
         url = rev.xpath(".//h2[@class='entry-title']/a/@href").string()
 
         if title and 'O нас' not in title and url and '/help/' not in url:
-            session.queue(Request(url, force_charset='utf-8', use='curl'), process_review, dict(title=remove_emoji(title), ssid=ssid, grade_overall=grade_overall, url=url))
+            session.queue(Request(url, force_charset='utf-8', max_age=0), process_review, dict(title=remove_emoji(title), ssid=ssid, grade_overall=grade_overall, url=url))
 
     page_cnt = context.get('page_cnt', data.xpath('//a[@class="page-numbers"][last()]/text()').string())
     next_page = context.get('page', 1) + 1
     if next_page <= int(page_cnt):
         next_url = 'https://top-mob.com/page/{}/?s=%D0%9E%D0%91%D0%97%D0%9E%D0%A0'.format(next_page)
-        session.queue(Request(next_url, force_charset='utf-8', use='curl'), process_revlist, dict(page_cnt=page_cnt, page=next_page))
+        session.queue(Request(next_url, force_charset='utf-8', max_age=0), process_revlist, dict(page_cnt=page_cnt, page=next_page))
 
 
 def process_review(data, context, session):
     strip_namespace(data)
+
+    time.sleep(random.uniform(1, 3))
 
     product = Product()
     product.name = context['title'].split(' ОБЗОР: ')[0].split(' Обзор, ')[0].replace('Объективный обзор: ', '').split(': обзор ')[-1].replace(' ОБЗОР', '').replace('Обзор ', '').replace(' на обзоре', '').strip()

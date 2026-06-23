@@ -145,7 +145,7 @@ class TestLogProduct:
         # Стандартні помилки (без "MAKING")
         logger.error(f"Find error in {self.log_product.agent_id} logs: {len(standard_errors)}")
         # Тільки "MAKING" помилки
-        logger.error(f"Find MAKING error in logs: {len(making_errors)}")
+        logger.error(f"Find error in logs MAKING: {len(making_errors)}")
 
         # Зберігаємо все разом або лише стандартні (за вашим бажанням)
         # Якщо потрібно зберегти все:
