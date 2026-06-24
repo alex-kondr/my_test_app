@@ -47,7 +47,7 @@ def remove_emoji(string):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=9000)]
-    session.queue(Request('https://top-mob.com/?s=%D0%9E%D0%91%D0%97%D0%9E%D0%A0', force_charset='utf-8', max_age=0), process_revlist, {})
+    session.queue(Request('https://top-mob.com/?s=%D0%9E%D0%91%D0%97%D0%9E%D0%A0', force_charset='utf-8'), process_revlist, {})
 
 
 def process_revlist(data, context, session):
@@ -63,13 +63,13 @@ def process_revlist(data, context, session):
         url = rev.xpath(".//h2[@class='entry-title']/a/@href").string()
 
         if title and 'O нас' not in title and url and '/help/' not in url:
-            session.queue(Request(url, force_charset='utf-8', max_age=0), process_review, dict(title=remove_emoji(title), ssid=ssid, grade_overall=grade_overall, url=url))
+            session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=remove_emoji(title), ssid=ssid, grade_overall=grade_overall, url=url))
 
     page_cnt = context.get('page_cnt', data.xpath('//a[@class="page-numbers"][last()]/text()').string())
     next_page = context.get('page', 1) + 1
     if next_page <= int(page_cnt):
         next_url = 'https://top-mob.com/page/{}/?s=%D0%9E%D0%91%D0%97%D0%9E%D0%A0'.format(next_page)
-        session.queue(Request(next_url, force_charset='utf-8', max_age=0), process_revlist, dict(page_cnt=page_cnt, page=next_page))
+        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict(page_cnt=page_cnt, page=next_page))
 
 
 def process_review(data, context, session):
@@ -114,6 +114,9 @@ def process_review(data, context, session):
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     pros = data.xpath('(//h2[contains(., "Преимущества")]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('(//h2[contains(., "Что мне нравится")]/following-sibling::*)[1]/li')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -122,6 +125,9 @@ def process_review(data, context, session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('(//h2[contains(., "Недостатки")]/following-sibling::*)[1]/li')
+    if not cons:
+        cons = data.xpath('(//h2[contains(., "Что мне не понравилось")]/following-sibling::*)[1]/li')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -129,9 +135,11 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[regexp:test(., "Стоит ли покупать|Итог|Вывод|Рекомендац", "i")]/following-sibling::p[not(@class or small or regexp:test(., "Не забудьте заглянуть"))]//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2[regexp:test(., "Стоит ли покупать|Итог|Вывод|Рекомендац", "i")])[last()]/following-sibling::p[not(@class or small or regexp:test(., "Не забудьте заглянуть"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[strong[contains(text(), "Выводы")]]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[normalize-space(text())="Conclusion"]/following-sibling::p[not(preceding-sibling::h2[contains(., "Что мне нравится")])]//text()').string(multiple=True)    
 
     if conclusion:
         conclusion = remove_emoji(conclusion).strip()
@@ -140,6 +148,8 @@ def process_review(data, context, session):
     excerpt = data.xpath('//h2[regexp:test(., "Стоит ли покупать|Итог|Вывод|Рекомендац", "i")]/preceding-sibling::p[not(@class or @style or small or regexp:test(., "Не забудьте заглянуть"))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//p[strong[contains(text(), "Выводы")]]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[normalize-space(text())="Conclusion"]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="entry-content"]//p[not(@class or @style or small or regexp:test(., "Не забудьте заглянуть"))]//text()').string(multiple=True)
 
