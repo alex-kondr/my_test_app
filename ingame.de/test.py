@@ -17,6 +17,13 @@ agent = agents.INGAME_DE
 reload = 1
 session_id = 0
 
+# name: 1+
+# category: 0+
+# author: 39+
+# pros_cons: 4
+# conclusion: 8
+# excerpt: 15
+# MAKING: 7+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
