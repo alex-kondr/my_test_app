@@ -17,6 +17,11 @@ agent = agents.NINTENDOWORLDREPORT_COM
 reload = 1
 session_id = 0
 
+# name: 16+
+# author: 7+
+# pros_cons: 60+
+# conclusion: 1+
+# excerpt: 10+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

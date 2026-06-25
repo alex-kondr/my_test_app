@@ -8,3 +8,16 @@ b = re.sub(r'<span[\w\d\s\”\=\_\-\:\’\/\;]+”>|\</span\>', '', a.replace(u'
 
 # print(a)
 print(b)
+
+# bjorn3d.com
+# review.gadling.com
+# review.recordinghacks.com
+# review.patmissin.com
+# review.mforum.ru
+# review.iceinspace.au
+# review.equip2golf.com
+# review.gpstracklog.com
+# reviews.tires-easy.com
+# electronics.newbie.org
+# gamesport.cz
+# review.gamereactor.it

@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
     session.queue(Request('https://www.nintendoworldreport.com/review'), process_category, dict())
 
 
@@ -82,15 +82,21 @@ def process_review(data, context, session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    summary = data.xpath('p[@class="biline"]//text()').string(multiple=True)
+    summary = data.xpath('//p[@class="biline"]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//div[@id="scorespage"]/p//text()').string(multiple=True)
+    conclusion = data.xpath('//p[normalize-space(text())="Conclusion"]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[@id="scorespage"]/p//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@id="body"]/p//text()').string(multiple=True)
+    excerpt = data.xpath('//p[normalize-space(text())="Conclusion"]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@id="body"]/p//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
