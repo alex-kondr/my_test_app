@@ -42,7 +42,7 @@ def strip_namespace(data):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('http://www.funkykit.com/reviews/', use='curl'), process_revlist, dict())
+    session.queue(Request('http://www.funkykit.com/reviews/', use='curl', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -52,18 +52,18 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl'), process_review, dict(title=title, url=url))
+        session.queue(Request(url, use='curl', max_age=0), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url.replace('dev1.', ''), use='curl'), process_revlist, dict())
+        session.queue(Request(next_url.replace('dev1.', ''), use='curl', max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('Review: ', '').replace('Review of the ', '').replace(' Review', '').strip()
+    product.name = context['title'].replace('Review: ', '').replace('Review of the ', '').replace(' Preview', '').replace(' Review', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = data.xpath('//span[contains(@class, "cat-links")]/a[not(regexp:test(., "Reviews|Unboxing|Articles|Featured"))]/text()').string() or 'Tech'
     product.manufacturer = data.xpath('//div[strong[contains(., "Brand")]]/text()').string()
@@ -106,7 +106,7 @@ def process_review(data, context, session):
             title = review.title + " - Pagina " + page_num
             review.add_property(type='pages', value=dict(title=title, url=page_url))
 
-        session.do(Request(page_url, use='curl'), process_review_last, dict(context, product=product, review=review, pages=True))
+        session.do(Request(page_url, use='curl', max_age=0), process_review_last, dict(context, review=review, product=product, pages=True))
 
     else:
         context['review'] = review
@@ -118,10 +118,6 @@ def process_review_last(data, context, session):
     strip_namespace(data)
 
     review = context['review']
-    if context.get('pages'):
-        excerpt = data.xpath('(//div[contains(@class, "entry-content")]/p[not(regexp:test(., "(^\s*Conclusion|^\s*Pros|^\s*Cons|^\s*Final word|^\s*Final tho)", "i"))][not(a[contains(@href, "amzn") or contains(@href, "amazon")])][not(contains(., "Related article") or contains(., "More information on") or contains(., "Verdict") or contains(., "Conclusion") or contains(., "Final Words") or strong[contains(., "Final words")])] | //div[contains(@class, "entry-content")]/blockquote[preceding-sibling::h3[contains(., "Benchmark")]])[not(preceding-sibling::*[contains(., "Verdict") or contains(., "Conclusion") or contains(., "Final Words") or strong[contains(., "Final words")]])]//text()').string(multiple=True)
-        if excerpt:
-            context['excerpt'] = context.get('excerpt', '') + " " + excerpt
 
     grade_overall = data.xpath('(//div[contains(@class, "review-score-num")])[1]/text()').string()
     if not grade_overall:
@@ -137,27 +133,35 @@ def process_review_last(data, context, session):
         grade_name = grade.xpath('.//div[contains(@class, "-point")]/text()').string()
         grade_value = grade.xpath('.//div[contains(@class, "-score")]/text()').string()
         if grade_name and grade_value:
-            grade_name = remove_emoji(grade_name).strip('(. )')
+            grade_name = remove_emoji(grade_name).replace('&amp;','&').strip('(. )')
             grade_value = float(grade_value.replace(',', '.').strip('( )'))
-            review.grades.append(Grade(name=grade_name, value=grade_value, best=10.0))
 
-    pros = data.xpath('(//div[contains(@class, "review-good")]/ul)[1]/li/text()').strings()
+            if grade_value <= 10:
+                review.grades.append(Grade(name=grade_name, value=grade_value, best=10.0))
+            else:
+                review.grades.append(Grade(name=grade_name, value=grade_value, best=grade_value))
+
+    pros = data.xpath('(//div[contains(@class, "review-good")]/ul)[1]/li')
     if not pros:
-        pros = data.xpath('//div[contains(@class, "entry-content")]/ul[preceding-sibling::*[1][self::p[regexp:test(., "^Pro", "i")]]]/li/text()').strings()
+        pros = data.xpath('(//p[normalize-space(strong/text())="Pros:"]/following-sibling::*)[1]/li')
 
     for pro in pros:
-        pro = remove_emoji(pro).strip(' +-*.:;•,–') if pros.count(pro) < 2 else None
-        if pro and pro not in ['None', 'No', 'Zero', 'Couldn’t find any', "Can't find any"]:
-            review.add_property(type='pros', value=pro)
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = remove_emoji(pro).strip(' +-*.:;•,–')
+            if pro and pro not in ['None', 'No', 'Zero', 'Couldn’t find any', "Can't find any"]:
+                review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('(//div[contains(@class, "review-bad")]/ul)[1]/li/text()').strings()
+    cons = data.xpath('(//div[contains(@class, "review-bad")]/ul)[1]/li')
     if not cons:
-        cons = data.xpath('//div[contains(@class, "entry-content")]/ul[preceding-sibling::*[1][self::p[regexp:test(., "^Con", "i")]]]/li/text()').strings()
+        cons = data.xpath('(//p[normalize-space(strong/text())="Cons:"]/following-sibling::*)[1]/li ')
 
     for con in cons:
-        con = remove_emoji(con).strip(' +-*.:;•,–') if cons.count(con) < 2 else None
-        if con and con not in ['None', 'No', 'Zero', 'Couldn’t find any', "Can't find any"]:
-            review.add_property(type='cons', value=con)
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = remove_emoji(con).strip(' +-*.:;•,–')
+            if con and con not in ['None', 'No', 'Zero', 'Couldn’t find any', "Can't find any"]:
+                review.add_property(type='cons', value=con)
 
     award = data.xpath('//div[contains(@class, "entry-content")]//img[regexp:test(@src,"(choice|recommend)", "i")]//@src').string()
     if award:
@@ -175,7 +179,12 @@ def process_review_last(data, context, session):
         if conclusion:
             review.add_property(type='conclusion', value=conclusion)
 
-    if context.get('excerpt'):
+    if context.get('pages'):
+        excerpt = data.xpath('(//div[contains(@class, "entry-content")]/p[not(regexp:test(., "(^\s*Conclusion|^\s*Pros|^\s*Cons|^\s*Final word|^\s*Final tho)", "i"))][not(a[contains(@href, "amzn") or contains(@href, "amazon")])][not(contains(., "Related article") or contains(., "More information on") or contains(., "Verdict") or contains(., "Conclusion") or contains(., "Final Words") or strong[contains(., "Final words")])] | //div[contains(@class, "entry-content")]/blockquote[preceding-sibling::h3[contains(., "Benchmark")]])[not(preceding-sibling::*[contains(., "Verdict") or contains(., "Conclusion") or contains(., "Final Words") or strong[contains(., "Final words")]])]//text()').string(multiple=True)
+        if excerpt:
+            context['excerpt'] = context.get('excerpt', '') + " " + excerpt
+
+    if context['excerpt']:
         excerpt = remove_emoji(context['excerpt']).strip()
         if len(excerpt) > 2:
             review.add_property(type="excerpt", value=excerpt)

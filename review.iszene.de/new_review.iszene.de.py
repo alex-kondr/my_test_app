@@ -1,40 +1,34 @@
 from agent import *
 from models.products import *
-import time
-import random
 
 
 def run(context, session):
-    session.queue(Request('http://iszene.com/forum-244.html', max_age=0, use='curl'), process_revlist, dict())
+    session.queue(Request('http://iszene.com/forum-244.html', use='curl'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
-    time.sleep(random.uniform(1, 3))
-
     revs = data.xpath("//div[@data-rate-thread='1']//span[contains(@class, 'subject')]/a")
     for rev in revs:
         title = rev.xpath(".//text()").string()
         url = rev.xpath("@href").string()
 
         if '[review]' in title.lower():
-            session.queue(Request(url, max_age=0, use='curl'), process_product, dict(title=title, url=url))
+            session.queue(Request(url, use='curl'), process_product, dict(title=title, url=url))
 
     next_url = data.xpath("//a[@class='pagination_next']/@href").string()
     if next_url:
-        session.queue(Request(next_url, max_age=0, use='curl'), process_revlist, dict())
+        session.queue(Request(next_url, use='curl'), process_revlist, dict())
 
 
 def process_product(data, context, session):
-    time.sleep(random.uniform(1, 3))
-
     product = Product()
     product.name = context['title'].replace('[Review]', '').replace('[review]', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('-')[-1].replace('.html', '')
 
-    category = data.xpath('//li[contains(., "Genre")]/text()').string(multiple=True)
+    category = data.xpath('//li[contains(., "Genre")]//text()').string(multiple=True)
     if category:
-        product.category = category.strip(': ')
+        product.category = category.replace('Genre:', '').split('(')[0].strip(': ')
     else:
         product.category = 'Tech'
 
@@ -70,15 +64,15 @@ def process_product(data, context, session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[contains(span/span/text(), "Bewertung")]/preceding-sibling::div[contains(@class, "mycode") and not(ul or img)]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[contains(span/span/text(), "Bewertung")]/preceding-sibling::div[contains(@class, "mycode") and not(img)]//text()[not(ancestor::ul)]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@id="posts"]/div[1]//div[contains(@class, "post_body")]/div[contains(@class, "mycode") and not(ul or img)]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@id="posts"]/div[1]//div[contains(@class, "post_body")]/div[contains(@class, "mycode") and not(img)]//text()[not(ancestor::ul)]').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@id="posts"]/div[1]//div[contains(@class, "post_body")]//text()[not(ancestor::ul)]').string(multiple=True)
 
     if excerpt:
-        if "Bewertung" in excerpt and not conclusion:
-            excerpt_conclusion = excerpt.rsplit("Bewertung", 1)
+        if "Bewertung:" in excerpt and not conclusion:
+            excerpt_conclusion = excerpt.rsplit("Bewertung:", 1)
             if len(excerpt_conclusion) == 2:
                 excerpt, conclusion = excerpt_conclusion
                 if conclusion and len(conclusion.strip()) > 2:
@@ -91,9 +85,10 @@ def process_product(data, context, session):
             if len(conclusion.strip()) > 2:
                 review.add_property(type='conclusion', value=conclusion.strip())
 
-        excerpt = excerpt.replace('Bewertung', '').replace('Zusammenfassung', '').strip(' :')
-        review.add_property(type='excerpt', value=excerpt.strip())
+        excerpt = excerpt.replace('Bewertung:', '').replace('Zusammenfassung', '').strip(' :')
+        if len(excerpt) > 2:
+            review.add_property(type='excerpt', value=excerpt.strip())
 
-        product.reviews.append(review)
+            product.reviews.append(review)
 
-        session.emit(product)
+            session.emit(product)

@@ -17,6 +17,11 @@ agent = agents.FUNKYKIT_COM_US
 reload = 1
 session_id = 0
 
+# name: 2
+# pros_cons: 5
+# conclusion: 1
+# excerpt: 239
+# 16950 logs: 2
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
