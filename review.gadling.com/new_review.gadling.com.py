@@ -1,7 +1,5 @@
 from agent import *
 from models.products import *
-import time
-import random
 
 
 def run(context, session):
@@ -9,8 +7,6 @@ def run(context, session):
 
 
 def process_revlist(data, context, session):
-    time.sleep(random.uniform(2, 5))
-
     revs = data.xpath('//h2[@class="article-title"]/a')
     for rev in revs:
         title = rev.xpath('text()').string()
@@ -25,18 +21,8 @@ def process_revlist(data, context, session):
 
 
 def process_review(data, context, session):
-    time.sleep(random.uniform(2, 5))
-
-    if not data.xpath('//div[@class="article-content"]/p') and not context.get('repeat'):
-        time.sleep(10)
-        session.do(Request(data.response_url, use='curl', max_age=0), process_review, dict(context, repeat=True))
-        return
-    
-    elif not data.xpath('//div[@class="article-content"]/p'):
-        print data.content
-
     product = Product()
-    product.name = context['title'].split(' Review: ')[-1].strip()
+    product.name = context['title'].split(' – Gadling reviews the ')[-1].split(' Review: ')[-1].split(' review: ')[-1].replace('Review: ', '').replace('Review – ', '').replace(' – the Gadling review', '').replace(' — Gadling review', '').split(' review – ')[-1].split(' Review – ')[-1].strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('gadling-gear-review-', '')
     product.category = 'Gear'
