@@ -12,16 +12,11 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.FUNKYKIT_COM_US
+agent = agents.GADLING
 # agent = agents.TEST
 reload = 1
 session_id = 0
 
-# name: 16+
-# pros_cons: 2+
-# conclusion: 1
-# excerpt: 338+
-# 16950 logs: 0+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

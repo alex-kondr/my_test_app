@@ -41,8 +41,8 @@ def strip_namespace(data):
 
 def run(context, session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('http://www.funkykit.com/reviews/', use='curl', max_age=0), process_revlist, dict())
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
+    session.queue(Request('http://www.funkykit.com/reviews/', use='curl'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -52,18 +52,18 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', max_age=0), process_review, dict(title=title, url=url))
+        session.queue(Request(url, use='curl'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url.replace('dev1.', ''), use='curl', max_age=0), process_revlist, dict())
+        session.queue(Request(next_url.replace('dev1.', ''), use='curl'), process_revlist, dict())
 
 
 def process_review(data, context, session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('Review: ', '').replace('Review of the ', '').replace(' Preview', '').replace(' Review', '').strip()
+    product.name = context['title'].replace('Review: ', '').replace('Review of the ', '').replace(' Preview', '').replace(' Review', '').replace('®Review', '').replace(' review', '').strip()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = data.xpath('//span[contains(@class, "cat-links")]/a[not(regexp:test(., "Reviews|Unboxing|Articles|Featured"))]/text()').string() or 'Tech'
     product.manufacturer = data.xpath('//div[strong[contains(., "Brand")]]/text()').string()
@@ -106,7 +106,7 @@ def process_review(data, context, session):
             title = review.title + " - Pagina " + page_num
             review.add_property(type='pages', value=dict(title=title, url=page_url))
 
-        session.do(Request(page_url, use='curl', max_age=0), process_review_last, dict(context, review=review, product=product, pages=True))
+        session.do(Request(page_url, use='curl'), process_review_last, dict(context, review=review, product=product, pages=True))
 
     else:
         context['review'] = review
@@ -170,13 +170,13 @@ def process_review_last(data, context, session):
     summary = data.xpath('(//div[strong[contains(., "Description")]])[1]/text()[normalize-space()]').string(multiple=True)
     if summary:
         summary = remove_emoji(summary).strip()
-        if summary:
+        if len(summary) > 2:
             review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//div[contains(@class, "entry-content")]/p[not(regexp:test(., "(^\s*Conclusion|^\s*Pros|^\s*Cons|^\s*Final word|^\s*Final tho)", "i"))][preceding-sibling::*[contains(., "Verdict") or contains(., "Conclusion") or contains(., "Final Words") or strong[contains(., "Final words")]]][not(contains(., "SCORE"))][not(preceding-sibling::p[contains(., "SCORE")])][not(a[contains(@href, "amzn") or contains(@href, "amazon")])][not(contains(., "Related article") or contains(., "More information on"))][not(strong[regexp:test(., "^\s*Similar") or regexp:test(., "^\s*Silimar")])][not(regexp:test(., "buy", "i") and regexp:test(., "at", "i")) or not(regexp:test(., "can buy", "i") and regexp:test(., "from Amazon", "i"))][not(contains(., "http"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//div[contains(@class, "entry-content")]/p[not(regexp:test(., "(^\s*Conclusion|^\s*Pros|^\s*Cons|^\s*Final word|^\s*Final tho)", "i"))][preceding-sibling::*[contains(., "Verdict") or contains(., "Conclusion") or contains(., "Final Words") or strong[contains(., "Final words")]]][not(contains(., "SCORE"))][not(preceding-sibling::p[contains(., "SCORE")])][not(a[contains(@href, "amzn") or contains(@href, "amazon")])][not(contains(., "Related article") or contains(., "More information on") or contains(., "Thanks for reading!"))][not(strong[regexp:test(., "^\s*Similar") or regexp:test(., "^\s*Silimar")])][not(regexp:test(., "buy", "i") and regexp:test(., "at", "i")) or not(regexp:test(., "can buy", "i") and regexp:test(., "from Amazon", "i"))][not(contains(., "http"))]//text()').string(multiple=True)
     if conclusion:
         conclusion = remove_emoji(conclusion).strip()
-        if conclusion:
+        if len(conclusion) > 2:
             review.add_property(type='conclusion', value=conclusion)
 
     if context.get('pages'):
