@@ -29,7 +29,7 @@ def process_review(data, context, session):
 
     if not data.xpath('//div[@class="article-content"]/p') and not context.get('repeat'):
         time.sleep(10)
-        session.queue(Request(data.response_url, use='curl', max_age=0), process_review, dict(context, repeat=True))
+        session.do(Request(data.response_url, use='curl', max_age=0), process_review, dict(context, repeat=True))
         return
     
     elif not data.xpath('//div[@class="article-content"]/p'):
