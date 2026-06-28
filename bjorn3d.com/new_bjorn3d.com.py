@@ -118,7 +118,7 @@ def process_review_last(data, context, session):
         for grade in grades:
             grade_name = grade.xpath('td[@class="first_column"]/text()').string()
             grade_val = grade.xpath('td[@class="score_column"]/text()').string()
-            if grade_name and grade_val and float(grade_val) > 0:
+            if grade_name and grade_val and grade_val[0].isdigit() and float(grade_val) > 0:
                 review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
 
     pros = data.xpath('(//p[regexp:test(normalize-space(strong),"^Pro[s:\n]")]/following-sibling::ul)[1]/li')
