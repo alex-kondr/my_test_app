@@ -86,10 +86,12 @@ def process_review_last(data, context, session):
     if not grade_overall:
         grade_overall = data.xpath('//tr[contains(td, "Total")]/td[@class="second_column"]/text()').string()
 
-    if grade_overall and float(grade_overall) > 10:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
-    elif grade_overall and float(grade_overall) > 0:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+    if grade_overall:
+        grade_overall = grade_overall.split('/')[0]
+        if grade_overall[0].isdigit() and float(grade_overall) > 10:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
+        elif grade_overall[0].isdigit() and float(grade_overall) > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     if not grade_overall:
         grade_overall = data.xpath('//div[@class="review-final-score"]/span[contains(@class, "stars")]//@style').string()
