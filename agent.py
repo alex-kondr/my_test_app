@@ -85,7 +85,7 @@ class Product:
     manufacturer: Optional[str] = None
     reviews: List[Review] = []
 
-    def add_property(self, type: Literal["id.manufacturer", "id.ean"], value: str) -> None: ...
+    def add_property(self, type: Literal["id.manufacturer", "id.ean", "image"], value: str|dict) -> None: ...
 
 
 class SessionBreak:
