@@ -20,8 +20,11 @@ def process_review(data, context, session):
     product = Product()
     product.name = context['title'].replace(' Review', '').replace(' Test', '').split(' review: ')[0].replace(' reviews', '').replace(' review', '').strip()
     product.url = context['url']
-    product.ssid = data.xpath('//input[@name="comment_post_ID"]/@value').string()
     product.category = 'Microphones'
+
+    product.ssid = data.xpath('//input[@name="comment_post_ID"]/@value').string()
+    if not product.ssid:
+        product.ssid = product.url.split('/')[-2].replace('-review', '')
 
     img = data.xpath("//div[@class='entrywrap']//img[contains(@src,'.jpg')]//@src").string()
     if img:
@@ -40,7 +43,7 @@ def process_review(data, context, session):
     if date:
         review.date = date.split(',', 1)[-1].split('|')[0].strip()
 
-    author = data.xpath('//a[@rel="author"]/text()').string()
+    author = data.xpath('(//a[@rel="author"]|//p[span[contains(., "Reviewer")]]/a)/text()').string()
     author_url = data.xpath('//a[@rel="author"]/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-2]
@@ -56,7 +59,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xapth('//h4[contains(., "In Summary")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+        excerpt = data.xpath('//h4[contains(., "In Summary")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[@class="entrywrap"]/p[not(@class)]//text()').string(multiple=True)
 

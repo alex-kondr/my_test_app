@@ -17,11 +17,11 @@ agent = agents.RECORDING_HACKS_US
 reload = 1
 session_id = 0
 
-# name: 5
+# name: 1
 # date: 27
 # author: 27
 # excerpt: 7
-# 13202 logs: 2
+# 13202 logs: 0+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
