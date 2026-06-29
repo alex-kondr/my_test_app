@@ -87,7 +87,7 @@ def process_review_last(data, context, session):
         grade_overall = data.xpath('//tr[contains(td, "Total")]/td[@class="second_column"]/text()').string()
 
     if grade_overall:
-        grade_overall = grade_overall.split('/')[0]
+        grade_overall = grade_overall.split('/')[0].split(' out ')[0]
         if grade_overall[0].isdigit() and float(grade_overall) > 10:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
         elif grade_overall[0].isdigit() and float(grade_overall) > 0:
@@ -169,7 +169,15 @@ def process_review_last(data, context, session):
 
     if conclusion:
         conclusion = conclusion.replace(u'�', '').strip()
-        review.add_property(type='conclusion', value=conclusion) 
+        review.add_property(type='conclusion', value=conclusion)
+
+    summary = data.xpath('//td[contains(strong, "Summary:")]//text()[not(contains(., "Summary:"))]').string(multiple=True)
+    if summary:
+        summary = summary.replace(u'�', '').strip()
+        if conclusion:
+            review.add_property(type='summary', value=summary)
+        else:
+            review.add_property(type='conclusion', value=summary)
 
     if not conclusion and context.get('pages'):
         excerpt = data.xpath('//div[@class="entry"]/div[@data-id]/p[not(@class or preceding-sibling::h2[regexp:test(.,"Conclusion|Final Thoughts", "i")] or preceding-sibling::h3[regexp:test(.,"Conclusion|Final Thoughts", "i")] or preceding-sibling::p[regexp:test(.,"Conclusion|Final Thoughts", "i")] or preceding-sibling::p[regexp:test(normalize-space(strong),"^Pro[s:\n]|^Con[s:\n]")] or regexp:test(normalize-space(strong),"Pro[s:\n]|^Con[s:\n]"))]//text()').string(multiple=True)

@@ -1,6 +1,8 @@
 from agent import *
 from models.products import *
 import re
+import time
+import random
 
 
 def remove_emoji(string):
@@ -42,25 +44,29 @@ def strip_namespace(data):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=5000)]
-    session.queue(Request('http://www.funkykit.com/reviews/', use='curl', force_charset='utf-8'), process_revlist, dict())
+    session.queue(Request('http://www.funkykit.com/reviews/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
     strip_namespace(data)
 
+    time.sleep(random.uniform(1, 3))
+
     revs = data.xpath('//h2[contains(@class, "title")]/a')
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url.replace('dev1.', ''), use='curl', force_charset='utf-8'), process_revlist, dict())
+        session.queue(Request(next_url.replace('dev1.', ''), use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
 def process_review(data, context, session):
     strip_namespace(data)
+
+    time.sleep(random.uniform(1, 3))
 
     product = Product()
     product.name = context['title'].replace('Review: ', '').replace('Review of the ', '').replace(' Preview', '').replace(' Review', '').replace('®Review', '').replace(' review', '').strip()
@@ -106,7 +112,7 @@ def process_review(data, context, session):
             title = review.title + " - Pagina " + page_num
             review.add_property(type='pages', value=dict(title=title, url=page_url))
 
-        session.do(Request(page_url, use='curl', force_charset='utf-8'), process_review_last, dict(context, review=review, product=product, pages=True))
+        session.do(Request(page_url, use='curl', force_charset='utf-8', max_age=0), process_review_last, dict(context, review=review, product=product, pages=True))
 
     else:
         context['review'] = review
@@ -116,6 +122,8 @@ def process_review(data, context, session):
 
 def process_review_last(data, context, session):
     strip_namespace(data)
+
+    time.sleep(random.uniform(1, 3))
 
     review = context['review']
 
