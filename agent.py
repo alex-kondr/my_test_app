@@ -3,7 +3,7 @@ import sys
 
 
 class Request:
-    def __init__(self, url: str, use: Literal['curl', None] = None, force_charset: Literal['utf-8', None] = None, max_age: Literal[0, None] = None, options: Optional[str] = None):
+    def __init__(self, url: str, use: Literal['curl', None] = None, force_charset: Literal['utf-8', None] = None, max_age: Literal[0, None] = None, options: Optional[str] = None, method: Optional[Literal["POST"]]=None, data: Optional[dict]=None):
         pass
 
 
