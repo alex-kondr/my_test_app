@@ -80,16 +80,14 @@ def process_review(data, context, session):
 
     conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(contains(b, "Pros") or contains(b, "Cons"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h3[contains(., "Final Thoughts")]/following-sibling::p[not(contains(b, "Pros") or contains(b, "Cons"))]//text()')
+        conclusion = data.xpath('//h3[contains(., "Final Thoughts")]/following-sibling::p[not(contains(b, "Pros") or contains(b, "Cons"))]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "container")]/div/p[not(preceding::h2[contains(., "Conclusion")] or preceding::h3[contains(., "Final Thoughts")])]')
-    if not excerpt:
-        excerpt = data.xpath('(//div[contains(@class, "container")]/p|//div[contains(@class, "container")]/div)[not(preceding::h2[contains(., "Conclusion")] or preceding::h3[contains(., "Final Thoughts")] or .//ul or .//li)]//text()').string(multiple=True)
+        excerpt = data.xpath('(//div[contains(@class, "container")]/p|//div[contains(@class, "container")]/div[@class="separator" or not(@class)])[not(preceding::h2[contains(., "Conclusion")] or preceding::h3[contains(., "Final Thoughts")])]//text()[not(ancestor::ul or ancestor::table or preceding::h2[contains(., "Conclusion")] or preceding::h3[contains(., "Final Thoughts")] or ancestor::h2 or ancestor::h3)]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
