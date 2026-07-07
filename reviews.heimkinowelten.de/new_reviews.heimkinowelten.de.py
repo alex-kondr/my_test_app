@@ -119,7 +119,6 @@ def process_product(data, context, session):
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review.ssid = rev.xpath('@id').string().split('-')[-1]
 
         author = rev.xpath('.//p[@class="meta"]/strong[contains(@class, "author")]/text()').string()
         if author:
@@ -131,19 +130,26 @@ def process_product(data, context, session):
         if date:
             review.date = date.split('T')[0]
 
-        is_verified = rev.xpath('.//p[contains(@class, "is-verified")]')
-        if is_verified:
-            review.add_property(type='is_verified_buyer', value=True)
-
         grade_overall = rev.xpath('.//div[@class="star-rating"]/@title').string()
         if grade_overall:
             review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
+
+        is_verified = rev.xpath('.//p[contains(@class, "is-verified")]')
+        if is_verified:
+            review.add_property(type='is_verified_buyer', value=True)
 
         excerpt = rev.xpath('.//div[@class="description"]/p//text()[normalize-space()]').string(multiple=True)
         if excerpt and not is_english(excerpt):
             excerpt = remove_emoji(excerpt).strip('\n *')
             if excerpt:
                 review.add_property(type="excerpt", value=excerpt)
+
+                ssid = rev.xpath('@id').string()
+                if ssid:
+                    review.ssid = ssid.split('-')[-1]
+                else:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
+
                 product.reviews.append(review)
 
     if product.reviews:
