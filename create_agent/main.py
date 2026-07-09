@@ -12,24 +12,24 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="12452"
+    agent_id="19774"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://bloguedegeek.net/posts/',
-    next_func=ProcessRun.revlist.name,
+    url='https://vacuum-cleaner-advisor.com/',
+    next_func=ProcessRun.frontpage.name,
     new_parser=False,
     breakers=10000,
     # curl=False
 )
-# agent.create_frontpage(
-#     cats_xpath='//a[@class="id-LinkOverlay-link"]',
-#     name_xpath='text()',
-#     url_xpath='@href'
-# )
+agent.create_frontpage(
+    cats_xpath='//div[contains(div/h2, "Reviews by brand")]/div/ul/li/a',
+    name_xpath='text()',
+    url_xpath='@href'
+)
 agent.create_revlist(
-    revs_xpath='//h2[contains(@class, "title")]/a',
+    revs_xpath='//h2/a',
     name_title=TypeAgent.review.value,
     name_title_xpath='text()',
     url_xpath='@href',

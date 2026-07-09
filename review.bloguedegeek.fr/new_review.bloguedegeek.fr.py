@@ -50,33 +50,36 @@ def process_review(data, context, session):
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    # pros = data.xpath('(//h3[contains(., "Pros")]/following-sibling::*)[1]/li')
-    # for pro in pros:
-    #     pro = pro.xpath('.//text()').string(multiple=True)
-    #     if pro:
-    #         pro = pro.strip(' +-*.:;•,–')
-    #         if len(pro) > 1:
-    #             review.add_property(type='pros', value=pro)
+    grades = data.xpath('//div[contains(@id, "progress-bar")]/div[@class="progress-name"]')
+    for grade in grades:
+        grade_name = grade.xpath('text()').string()
+        grade_val = grade.xpath('(following-sibling::*)[1][@class="progress-score"]/text()').string()
+        if grade_name and grade_val and grade_val[0].isdigit() and float(grade_val) > 0:
+            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=10.0))
 
-    # cons = data.xpath('(//h3[contains(., "Cons")]/following-sibling::*)[1]/li')
-    # for con in cons:
-    #     con = con.xpath('.//text()').string(multiple=True)
-    #     if con:
-    #         con = con.strip(' +-*.:;•,–')
-    #         if len(con) > 1:
-    #             review.add_property(type='cons', value=con)
+    pros = data.xpath('(//p[contains(strong, "Points positifs")]/following-sibling::*)[1]/li')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
 
-    # summary = data.xpath('//div[h3[contains(text(), "Summary")]]/div//text()').string(multiple=True)
-    # if summary:
-    #     review.add_property(type='summary', value=summary)
+    cons = data.xpath('(//p[contains(strong, "Points négatifs")]/following-sibling::*)[1]/li')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Conclusion")]/following-sibling::p[not(contains(strong, "Points positifs") or contains(strong, "Points négatifs"))]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(contains(strong, "Points positifs") or contains(strong, "Points négatifs"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[@class="post__content"]/p//text()').string(multiple=True)
+        excerpt = data.xpath('//div[@class="post__content"]/p[not(contains(strong, "Points positifs") or contains(strong, "Points négatifs"))]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
