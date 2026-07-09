@@ -45,7 +45,7 @@ def process_prodlist(data, context, session):
         product = Product()
         product.name = prod.get('name')
         product.url = 'https://www.bouyguestelecom.fr' + prod.get('url')
-        product.ssid = prod.get('id')
+        product.ssid = prod.get('gencode')
         product.category = 'Smartphone'
         product.manufacturer = prod.get('brand')
 
