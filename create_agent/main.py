@@ -12,19 +12,19 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="19774"
+    agent_id="4819"
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://vacuum-cleaner-advisor.com/',
+    url='https://www.musik-produktiv.de/',
     next_func=ProcessRun.frontpage.name,
-    new_parser=False,
+    new_parser=True,
     breakers=10000,
     # curl=False
 )
 agent.create_frontpage(
-    cats_xpath='//div[contains(div/h2, "Reviews by brand")]/div/ul/li/a',
+    cats_xpath='//div[contains(@class, "category")]/a[contains(@class, "link")]',
     name_xpath='text()',
     url_xpath='@href'
 )

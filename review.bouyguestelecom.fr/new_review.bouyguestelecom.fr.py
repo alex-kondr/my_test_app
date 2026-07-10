@@ -33,17 +33,19 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('https://www.bouyguestelecom.fr/webapi/wall?type=phone&options={"sort":"meilleures-ventes","page":1,"limit":28,"filters":{},"plan":"7017","stickers":["0","1","6","7","8","9","14","15"]}&shouldBeProspect=false', force_charset='utf-8', max_age=0), process_prodlist, dict())
 
 
 def process_prodlist(data, context, session):
-    prods_json = simplejson.loads(data.content)
+    try:
+        prods_json = simplejson.loads(data.content)
+    except:
+        prods_json = {}
 
     prods = prods_json.get('products', [])
     for prod in prods:
         product = Product()
-        product.name = prod.get('name')
         product.url = 'https://www.bouyguestelecom.fr' + prod.get('url')
         product.ssid = prod.get('gencode')
         product.category = 'Smartphone'
@@ -53,7 +55,7 @@ def process_prodlist(data, context, session):
         if revs_cnt and int(revs_cnt) > 0:
             session.queue(Request(product.url, force_charset='utf-8', max_age=0), process_product, dict(product=product, revs_cnt=int(revs_cnt)))
 
-    prods_cnt = context.get('prods_cnt', prod.get('count'))
+    prods_cnt = context.get('prods_cnt', prods_json.get('count'))
     offset = context.get('offset', 0) + len(prods)
     if offset < prods_cnt:
         next_page = context.get('page', 1) + 1
@@ -63,6 +65,8 @@ def process_prodlist(data, context, session):
 
 def process_product(data, context, session):
     product = context['product']
+
+    product.name = data.xpath('//div[@class="product-title"]//h1[contains(@class, "title")]/text()').string()
 
     prod_json = data.xpath('''//script[contains(., '"@type":"Product"')]/text()''').string()
     if prod_json:
@@ -101,19 +105,21 @@ def process_reviews(data, context, session):
         author = rev.get('user', {}).get('login')
         if author:
             author = h.unescape(author).strip(".*-+_;' ")
-            if author:
+            if author and 'anonymous' != author:
                 review.authors.append(Person(name=author, ssid=author))
+            else:
+                author = None
 
         grade_overall = rev.get('note')
         if grade_overall:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
         is_recommended = rev.get('isRecommended')
-        if is_recommended:
+        if is_recommended is True:
             review.add_property(type='is_recommended', value=True)
 
         is_verified = rev.get('user', {}).get('isVerified')
-        if is_verified:
+        if is_verified is True:
             review.add_property(type='is_verified_buyer', value=True)
 
         title = rev.get('title')
