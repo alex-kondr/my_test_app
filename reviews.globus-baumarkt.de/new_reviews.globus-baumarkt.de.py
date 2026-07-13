@@ -1,6 +1,7 @@
 from agent import *
 from models.products import *
 import re
+import simplejson
 
 
 XCAT = ['Alle anzeigen', 'Geschenkgutscheine', 'Hochbeete', 'Oster- & Frühjahrsdeko', 'Sortiment']
@@ -79,8 +80,9 @@ def process_prodlist(data, context, session):
 
     prods = data.xpath('//div[@data-product-id][not(contains(@data-product-id, ".Master"))]//a')
     for prod in prods:
-        name = prod.xpath('@title').string()
+        name = prod.xpath('.//span[@class="product-name "]/text()').string()
         url = prod.xpath('@href').string()
+
         if name and url:
             session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
@@ -95,25 +97,30 @@ def process_product(data, context, session):
     product = Product()
     product.name = context['name']
     product.url = context['url']
-    product.category = context['cat']
-
-    product.manufacturer = data.xpath('//meta[@property="product:brand"]/@content').string()
     product.ssid = data.xpath('//div[contains(@class, "product-id")]/text()').string().strip()
-    product.sku = data.xpath('//meta[@itemprop="sku"]/@content').string()
+    product.sku = data.xpath('//*[@id-type="productNumber"]/@record-id').string()
+    product.category = context['cat']
+    product.manufacturer = data.xpath('//meta[@property="product:brand"]/@content').string()
 
-    mpn = data.xpath('//meta[@itemprop="mpn"]/@content').string()
-    if mpn and len(mpn) > 5:
-        product.add_property(type='id.manufacturer', value=mpn)
+    prod_json = data.xpath('''//script[contains(., '"@type":"Product"')]/text()''').string()
+    if prod_json:
+        prod_json = simplejson.loads(prod_json)
 
-    ean = data.xpath('//meta[contains(@itemprop, "gtin")]/@content').string()
-    if ean:
-        product.add_property(type='id.ean', value=ean)
+        mpn = prod_json.get('mpn')
+        if mpn and len(mpn) > 5:
+            product.add_property(type='id.manufacturer', value=mpn)
 
-    revs_cnt = data.xpath('//meta[@itemprop="ratingCount"]/@content').string()
+        ean = prod_json.get('gtin13')
+        if ean and ean.isdigit() and len(ean) > 10:
+            product.add_property(type='id.ean', value=ean)
 
-    if revs_cnt and int(revs_cnt) > 0:
-        context['product'] = product
-        process_reviews(data, context, session)
+    revs_cnt = data.xpath('//a[contains(@class, "reviews-link")]/text()').string()
+    if revs_cnt and revs_cnt[0].isdigit():
+        revs_cnt = int(revs_cnt.split()[0])
+        if revs_cnt > 0:
+            payload = {'p': '1'}
+            url = 'https://www.globus-baumarkt.de/product/{}/reviews'.format(product.ssid)
+            session.do(Request(url, method="POST", data=payload), process_reviews, dict(product=product, revs_cnt=revs_cnt))
 
 
 def process_reviews(data, context, session):
@@ -121,60 +128,63 @@ def process_reviews(data, context, session):
 
     product = context['product']
 
-    revs = data.xpath('//div[@id="review-tab-pane"]//div[@itemprop="review"]') or data.xpath('//div[@itemprop="review"]')
+    revs = data.xpath('//div[@id="review-list"]/div/div[contains(@class, "review-item")]')
     for rev in revs:
         review = Review()
-        review.url = product.url
         review.type = 'user'
+        review.url = product.url
 
-        title = rev.xpath('.//div[contains(@class, "title")]/h3/text()').string()
-        if title:
-            review.title = remove_emoji(title).strip()
+        # no date
 
-        author = rev.xpath('div[@itemprop="author"]/meta/@content').string()
+        author = rev.xpath('.//span[contains(@class, "review-author")]//text()').string(multiple=True)
         if author:
             author = remove_emoji(author).strip()
-            if author:
+            if author and len(author) > 2:
                 review.authors.append(Person(name=author, ssid=author))
+            else:
+                author = None
 
-        date = rev.xpath('meta[@itemprop="datePublished"]/@content').string()
-        if date:
-            review.date = date.split(', ')[0]
+        grade_overall = rev.xpath('count(.//div[contains(@class, "point-full")]) + count(.//div[contains(@class, "point-partial-placeholder")]) div 2')
+        if float(grade_overall) > 0:
+            review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
 
         is_verified = rev.xpath('.//div[contains(@class, "review-item-verify")]//text()').string(multiple=True)
-        if is_verified and is_verified.strip():
+        if is_verified:
             review.add_property(type='is_verified_buyer', value=True)
 
-        hlp = rev.xpath('div[contains(@class, "rating-info")]/p/text()').string()
+        hlp = rev.xpath('.//div[contains(@class, "rating-info")]/p/text()').string()
         if hlp:
             hlp_yes = hlp.split(' von ')[0].strip()
-            if hlp_yes and hlp_yes.isdigit():
+            if hlp_yes and hlp_yes.isdigit() and int(hlp_yes) > 0:
                 review.add_property(type='helpful_votes', value=int(hlp_yes))
 
             hlp_total = hlp.split(' von ')[-1].split()[0].strip()
-            if hlp_total and hlp_total.isdigit():
+            if hlp_total and hlp_total.isdigit() and int(hlp_total) > 0:
                 review.add_property(type='not_helpful_votes', value=int(hlp_total) - int(hlp_yes))
 
-        grade_overall = rev.xpath('count(.//div[contains(@class, "point-full")])')
-        half_grade = rev.xpath('count(.//div[contains(@class, "point-partial-placeholder")]) div 2')
-        grade_overall += half_grade
-        if grade_overall > 0:
-            review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
+        title = rev.xpath('.//div[contains(@class, "title")]/h3//text()').string(multiple=True)
+        excerpt = rev.xpath('.//p[contains(@class, "review-item-content")]//text()').string(multiple=True)
+        if excerpt and len(remove_emoji(excerpt).strip()) > 2:
+            if title:
+                review.title = remove_emoji(title).strip()
+        else:
+            excerpt = title
 
-        excerpt = rev.xpath('p[@itemprop="description"]/text()').string(multiple=True)
         if excerpt:
             excerpt = remove_emoji(excerpt).strip()
-            if excerpt:
-                review.properties.append(ReviewProperty(type="excerpt", value=excerpt))
+            if len(excerpt) > 2:
+                review.add_property(type="excerpt", value=excerpt)
 
                 review.ssid = review.digest() if author else review.digest(excerpt)
+
                 product.reviews.append(review)
 
-    next_url = data.xpath('//li[@class="page-item page-next"]')
-    if next_url:
+    offset = context.get('offset', 0) + 10
+    if offset < context['revs_cnt']:
         next_page = context.get('page', 1) + 1
-        revs_url = 'https://www.globus-baumarkt.de/product/{}/reviews?p={}'.format(product.ssid, next_page)
-        session.do(Request(revs_url), process_reviews, dict(product=product, page=next_page))
+        payload = {'p': next_page}
+        url = 'https://www.globus-baumarkt.de/product/{}/reviews'.format(product.ssid)
+        session.do(Request(url, method="POST", data=payload), process_reviews, dict(context, product=product))
 
     elif product.reviews:
         session.emit(product)

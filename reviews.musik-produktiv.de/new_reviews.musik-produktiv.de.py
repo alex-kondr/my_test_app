@@ -86,16 +86,16 @@ def process_product(data, context, session):
     product.manufacturer = data.xpath('//div/a[contains(@class, "product-manufacturer")]/@title').string()
 
     prod_json = data.xpath('''//script[contains(., '"@type":"Product"') and not(@data-ga-product-id)]/text()''').string()
-    if not prod_json:
-        return
+    # if not prod_json:
+    #     return
 
-    prod_json = simplejson.loads(prod_json)
+    prod_json = simplejson.loads(prod_json)[0]
 
-    mpn = prod_json[0].get('mpn')
+    mpn = prod_json.get('mpn')
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
 
-    ean = prod_json[0].get('gtin13')
+    ean = prod_json.get('gtin13')
     if ean and str(ean).isdigit() and len(str(ean)) > 10:
         product.add_property(type='id.ean', value=str(ean))
 
@@ -105,7 +105,7 @@ def process_product(data, context, session):
     if len(revs) != int(revs_cnt):
         raise ValueError("!!!!!!!!!!!")
 
-    revs = prod_json[0].get('review', [])
+    revs = prod_json.get('review', [])
     for rev in revs:
         review = Review()
         review.type = 'user'

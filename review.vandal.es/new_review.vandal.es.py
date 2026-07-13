@@ -1,5 +1,7 @@
 from agent import *
 from models.products import *
+import time
+import random
 
 
 def run(context, session):
@@ -7,38 +9,63 @@ def run(context, session):
 
 
 def process_revlist(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     revs = data.xpath("//div[@class='span4']/div[@class='caja300 afterclearer']")
     for rev in revs:
-        name = rev.xpath("./a/@title").string()
-        url = rev.xpath("./a/@href").string()
-        cat = "Games|" + rev.xpath(".//div[@class='subtitulocaja afterclearer']//span/text()").string(multiple=True)
-        session.queue(Request(url), process_review, dict(context, name=name, url=url, cat=cat))
+        title = rev.xpath('.//div[contains(@class, "titulo")]/text()').string()
+        url = rev.xpath("a/@href").string()
+        session.queue(Request(url), process_review, dict(title=title, url=url))
 
-    next_url = data.xpath("//a[@id='siguientelink']/@href").string()
+    next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_revlist, dict(context))
+        session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data, context, session):
+    time.sleep(random.uniform(1, 3))
+
     product = Product()
-    product.name = data.xpath("//div[@class='titulojuego']/a[@class='linkversion']//text()").string() or context["name"]
-    product.ssid = context["url"].split('/')[-1].split('#')[0]
-    product.category = context["cat"]
     product.url = context["url"]
-    product.manufacturer = data.xpath("//div[@class='fichatecnica']//li[contains(.,'Producción')]/a//text()").string()
+    product.ssid = product.url.split('/')[-1].split('#')[0]
+    product.category = 'Juegos'
+    product.manufacturer = data.xpath("(//div[@class='fichatecnica']//li[contains(.,'Producción')])[1]//text()").string(multiple=True)
+
+    product.name = data.xpath('//div[@itemprop="name"]/a/text()').string()
+    if not product.name:
+        product.name = context['title'].replace(' - Análisis', '').strip()
+
+    platforms = data.xpath('//td[@class="tablaplataformas"]/a/img/@alt').join('/')
+    if platforms:
+        product.category += '|' + platforms
+
+    genres = data.xpath('//div[contains(text(), "Género/s:")]/a/text()').join('/')
+    if genres:
+        product.category += '|' + genres
 
     review = Review()
-    review.title = context["name"]
-    review.ssid = product.ssid
     review.type = "pro"
+    review.title = data.xpath('//h1[@class="item"]//text()').string(multiple=True)
     review.url = context["url"]
-    review.date = data.xpath("//span[@class='dtreviewed']/span/@title").string()
+    review.ssid = product.ssid
 
-    authors = data.xpath("//div[@class='cuadro_autor_nombre']/a")
-    for author in authors:
-        author_name = author.xpath(".//text()").string()
-        author_url = author.xpath("@href").string()
-        review.authors.append(Person(name=author_name, profile_url=author_url, ssid=author_name))
+    date = data.xpath('//time/@datetime').string()
+    if date:
+        review.date = date.split('T')[0]
+
+    author = data.xpath("//div[@class='cuadro_autor_nombre']//text()").string()
+    author_url = data.xpath("//div[@class='cuadro_autor_nombre']/a/@href").string()
+    if author and author_url:
+        author_ssid = author_url.split('/')[-1]
+        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    grade_overall = data.xpath("//div[contains(@class,'circuloanalisis_nota')]/text()[not(self::strong)]").string()
+    if grade_overall:
+        grade_overall = grade_overall.replace(',', '.').replace('%', '').replace("width:", '').strip()
+        if grade_overall and grade_overall.isdigit() and float(grade_overall) > 0:
+            review.grades.append(Grade(type="overall", value=float(grade_overall), best=10.0))
 
     grades = data.xpath("//div[@class='mt15']/div[contains(@class,'celtatexto')]")
     for grade in grades:
@@ -47,29 +74,40 @@ def process_review(data, context, session):
         if grade_name != "Overall":
             review.grades.append(Grade(name=grade_name, value=int(grade_val), best=100))
 
-    grade_overall = data.xpath("//div[contains(@class,'circuloanalisis_nota')]/text()[not(self::strong)]").string()
-    if grade_overall:
-        grade_overall = grade_overall.replace(',', '.').replace('%', '').replace("width:", '')
-        review.grades.append(Grade(type="overall", value=float(grade_overall), best=10.0))
-
-    pros = data.xpath("//div[@class='span4 mb1']/h3[contains(.,'positivos')]/following-sibling::div")
+    pros = data.xpath("//div[contains(h3,'positivos')]/div")
     for pro in pros:
-        pro = pro.xpath(".//text()").string(multiple=True).replace('+', '').replace('.', '').strip()
+        pro = pro.xpath(".//text()").string(multiple=True)
         if pro:
-            review.add_property(type="pros", value=pro)
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type="pros", value=pro)
 
-    cons = data.xpath("//div[@class='span4 mb1']/h3[contains(.,'negativos')]/following-sibling::div")
+    cons = data.xpath("//div[contains(h3,'negativos')]/div")
     for con in cons:
-        con = con.xpath(".//text()").string(multiple=True).replace("- ", '').replace('.', '').strip()
+        con = con.xpath(".//text()").string(multiple=True)
         if con:
-            review.add_property(type="cons", value=con)
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type="cons", value=con)
 
-    conclusion = data.xpath("//span[@class='summary']/text()").string()
+    summary = data.xpath('//span[@class="summary"]//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    conclusion = data.xapth('//h2[contains(., "Conclusión")]/following-sibling::p[not(contains(i, "Hemos analizado este juego"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//div[contains(h3, "En resumen")]/div//text()').string(multiple=True)
+
     if conclusion:
         review.add_property(type="conclusion", value=conclusion)
 
-    excerpt = data.xpath("//div[@class='textart']/p//text()").string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Conclusión")]/preceding-sibling::p//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@itemprop="reviewBody"]/p//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type="excerpt", value=excerpt)
+
         product.reviews.append(review)
+
         session.emit(product)
