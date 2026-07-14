@@ -2,6 +2,8 @@ from agent import *
 from models.products import *
 import re
 import simplejson
+import time
+import random
 
 
 XCAT = ['Alle anzeigen', 'Geschenkgutscheine', 'Hochbeete', 'Oster- & Frühjahrsdeko', 'Sortiment']
@@ -44,13 +46,15 @@ def remove_emoji(string):
 
 
 def run(context, session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.browser.use_new_parser = True
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.globus-baumarkt.de/'), process_frontpage, dict())
 
 
 def process_frontpage(data, context, session):
     strip_namespace(data)
+
+    time.sleep(random.uniform(1, 3))
 
     cats = data.xpath('//div[contains(@class, "dropdown-menu")]/ul/li[contains(@class, "item")]/a')
     for cat in cats:
@@ -63,6 +67,8 @@ def process_frontpage(data, context, session):
 
 def process_category(data, context, session):
     strip_namespace(data)
+
+    time.sleep(random.uniform(1, 3))
 
     subcats = data.xpath('//a[contains(@class, "subcategory-item")]')
     for subcat in subcats:
@@ -77,6 +83,8 @@ def process_category(data, context, session):
 
 def process_prodlist(data, context, session):
     strip_namespace(data)
+
+    time.sleep(random.uniform(1, 3))
 
     prods = data.xpath('//div[@data-product-id][not(contains(@data-product-id, ".Master"))]//a')
     for prod in prods:
@@ -93,6 +101,8 @@ def process_prodlist(data, context, session):
 
 def process_product(data, context, session):
     strip_namespace(data)
+
+    time.sleep(random.uniform(1, 3))
 
     product = Product()
     product.name = context['name']
@@ -184,7 +194,7 @@ def process_reviews(data, context, session):
         next_page = context.get('page', 1) + 1
         payload = {'p': next_page}
         url = 'https://www.globus-baumarkt.de/product/{}/reviews'.format(product.ssid)
-        session.do(Request(url, method="POST", data=payload), process_reviews, dict(context, product=product))
+        session.do(Request(url, method="POST", data=payload), process_reviews, dict(context, product=product, offset=offset, page=next_page))
 
     elif product.reviews:
         session.emit(product)

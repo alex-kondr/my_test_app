@@ -29,7 +29,6 @@ def process_review(data, context, session):
     product.url = context["url"]
     product.ssid = product.url.split('/')[-1].split('#')[0]
     product.category = 'Juegos'
-    product.manufacturer = data.xpath("(//div[@class='fichatecnica']//li[contains(.,'Producción')])[1]//text()").string(multiple=True)
 
     product.name = data.xpath('//div[@itemprop="name"]/a/text()').string()
     if not product.name:
@@ -43,6 +42,10 @@ def process_review(data, context, session):
     if genres:
         product.category += '|' + genres
 
+    manufacturer = data.xpath("(//div[@class='fichatecnica']//li[contains(.,'Producción')])[1]//text()").string(multiple=True)
+    if manufacturer:
+        product.manufacturer = manufacturer.replace('Producción', '').strip(' .:').title()
+
     review = Review()
     review.type = "pro"
     review.title = data.xpath('//h1[@class="item"]//text()').string(multiple=True)
@@ -53,8 +56,8 @@ def process_review(data, context, session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath("//div[@class='cuadro_autor_nombre']//text()").string()
-    author_url = data.xpath("//div[@class='cuadro_autor_nombre']/a/@href").string()
+    author = data.xpath("(//div[@class='cuadro_autor_nombre']|//span[@itemprop='author' and .//text()])//text()").string(multiple=True)
+    author_url = data.xpath("(//div[@class='cuadro_autor_nombre']|//span[@itemprop='author' and .//text()])//a/@href").string()
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
@@ -94,7 +97,7 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xapth('//h2[contains(., "Conclusión")]/following-sibling::p[not(contains(i, "Hemos analizado este juego"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[contains(., "Conclusión")]/following-sibling::p[not(contains(i, "Hemos analizado este juego"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[contains(h3, "En resumen")]/div//text()').string(multiple=True)
 
@@ -106,6 +109,7 @@ def process_review(data, context, session):
         excerpt = data.xpath('//div[@itemprop="reviewBody"]/p//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(u'�', '').strip()
         review.add_property(type="excerpt", value=excerpt)
 
         product.reviews.append(review)

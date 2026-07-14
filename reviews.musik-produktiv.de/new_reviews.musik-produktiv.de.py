@@ -77,6 +77,12 @@ def process_prodlist(data, context, session):
 def process_product(data, context, session):
     strip_namespace(data)
 
+    prod_json = data.xpath('''//script[contains(., '"@type":"Product"') and not(@data-ga-product-id)]/text()''').string()
+    try:
+        prod_json = simplejson.loads(prod_json)[0]
+    except:
+        return
+
     product = Product()
     product.name = context['name']
     product.url = context['url']
@@ -85,12 +91,6 @@ def process_product(data, context, session):
     product.category = context['cat'].replace(' und mehr', '').strip('| ')
     product.manufacturer = data.xpath('//div/a[contains(@class, "product-manufacturer")]/@title').string()
 
-    prod_json = data.xpath('''//script[contains(., '"@type":"Product"') and not(@data-ga-product-id)]/text()''').string()
-    # if not prod_json:
-    #     return
-
-    prod_json = simplejson.loads(prod_json)[0]
-
     mpn = prod_json.get('mpn')
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
@@ -98,12 +98,6 @@ def process_product(data, context, session):
     ean = prod_json.get('gtin13')
     if ean and str(ean).isdigit() and len(str(ean)) > 10:
         product.add_property(type='id.ean', value=str(ean))
-
-    revs = data.xpath('//div[@id="review-list"]/div/div[contains(@class, "review-item")]')
-    revs_cnt = prod_json.get('aggregateRating', {}).get('ratingCount', 0)
-    
-    if len(revs) != int(revs_cnt):
-        raise ValueError("!!!!!!!!!!!")
 
     revs = prod_json.get('review', [])
     for rev in revs:
@@ -146,3 +140,5 @@ def process_product(data, context, session):
 
     if product.reviews:
         session.emit(product)
+
+# no next page

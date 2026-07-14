@@ -17,6 +17,9 @@ agent = agents.MUSIK_PRODUKTIV_DE
 reload = 1
 session_id = 0
 
+# name: 3+
+# category: 10+
+# excerpt: 17
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
