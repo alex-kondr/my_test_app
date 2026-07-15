@@ -136,6 +136,8 @@ def process_product(data, context, session):
 def process_reviews(data, context, session):
     strip_namespace(data)
 
+    time.sleep(random.uniform(1, 3))
+
     product = context['product']
 
     revs = data.xpath('//div[@id="review-list"]/div/div[contains(@class, "review-item")]')
@@ -183,6 +185,7 @@ def process_reviews(data, context, session):
         if excerpt:
             excerpt = remove_emoji(excerpt).strip()
             if len(excerpt) > 2:
+                excerpt = excerpt.replace(u'Ã¢Â€Âž', '"').replace(u'Ã¢Â€Âœ', '"')
                 review.add_property(type="excerpt", value=excerpt)
 
                 review.ssid = review.digest() if author else review.digest(excerpt)

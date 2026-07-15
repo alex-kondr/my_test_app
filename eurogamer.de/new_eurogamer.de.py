@@ -52,7 +52,7 @@ def process_review(data, context, session):
 
     platforms = data.xpath('//li[regexp:test(., "Plattformen:|Erhältlich für:")]//text()').string(multiple=True)
     if platforms:
-        product.category += '|' + re.sub(r'\(.+\)', '', platforms.replace('Plattformen:', '').replace('Erhältlich für:', '').strip().replace(', ', '/')).replace('Auch erhältlich: ', '').replace(' (', '/').strip()
+        product.category += '|' + re.sub(r'\(.+\)', '', platforms.replace('Plattformen:', '').replace('Erhältlich für:', '').strip().replace('/', '\\').replace(', ', '/')).replace('Auch erhältlich: ', '').replace(' (', '/').strip()
 
     manufacturer = data.xpath('//li[regexp:test(., "Entwickler:|Hersteller:")]//text()').string(multiple=True)
     if manufacturer:

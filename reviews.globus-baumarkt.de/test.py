@@ -17,6 +17,10 @@ agent = agents.GLOBUS_FACHMÄRKTE_DE
 reload = 1
 session_id = 0
 
+# name: 1+
+# date: 713+
+# author: 465+
+# excerpt: 11 (10+)
 # MAKING: 2979
 
 if __name__ == "__main__":

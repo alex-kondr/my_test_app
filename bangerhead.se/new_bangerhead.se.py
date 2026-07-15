@@ -1,6 +1,7 @@
 from agent import *
 from models.products import *
 import re
+import simplejson
 
 
 XCAT = ['Varumärken', 'Kampanjer', 'Support']
@@ -84,7 +85,7 @@ def process_prodlist(data, context, session):
     prods = data.xpath('//a[contains(@class, "card__name")]')
     for prod in prods:
         name = prod.xpath('text()').string()
-        url = prod.xpath('@href').string()
+        url = prod.xpath('@href').string().split('#')[0]
         session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
@@ -109,32 +110,65 @@ def process_product(data, context, session):
         if ean and ean.isdigit() and len(ean) > 10:
             product.add_property(type='id.ean', value=ean)
 
-    revs = data.xpath('//ul[contains(@class, "review-list")]/li')
+    revs_cnt = data.xpath('//span[contains(@class, "review-count")]/text()').string()
+    if revs_cnt:
+        revs_cnt = int(revs_cnt.strip('( )'))
+        if revs_cnt > 0:
+            revs_url = 'https://www.bangerhead.se/__nuxt/productreviews?productId={}&market=se'.format(product.ssid)
+            session.do(Request(revs_url, force_charset='utf-8'), process_reviews, dict(product=product, revs_cnt=revs_cnt))
+
+
+def process_reviews(data, context, session):
+    strip_namespace(data)
+
+    product = context['product']
+
+    try:
+        revs_json = simplejson.loads(data.content)
+    except:
+        revs_json = {}
+
+    revs = revs_json.get('productReviews', [])
     for rev in revs:
+        if rev.get('language') != 'sv':
+            continue
+
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review.date = rev.xpath('.//span[contains(@class, "review-date")]/text()').string( )
+        review.date = rev.get('createdAt')
 
-        author = rev.xpath('p[contains(@class, "review-author")]/text()').string()
+        author = rev.get('consumer', {}).get('displayName')
         if author:
-            review.authors.append(Person(name=author, ssid=author))
+            author = remove_emoji(author).strip()
+            if len(author) > 1:
+                review.authors.append(Person(name=author, ssid=author))
+            else:
+                author = None
 
-        grade_overall = rev.xpath('count(.//span[contains(@class, "review-star--active")])')
+        grade_overall = rev.get('stars')
         if grade_overall and float(grade_overall) > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        excerpt = rev.xpath('p[contains(@class, "review-content")]//text()').string(multiple=True)
+        excerpt = rev.get('content')
         if excerpt:
             excerpt = remove_emoji(excerpt).replace('\t', '').replace('\n', ' ').replace('  ', ' ').strip(' +-*.')
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
-                review.ssid = review.digest() if author else review.digest(excerpt)
+                ssid = rev.get('id')
+                if ssid:
+                    review.ssid = ssid.split('/')[-2]
+                else:
+                    review.ssid = review.digest() if author else review.digest(excerpt)
 
                 product.reviews.append(review)
 
-    if product.reviews:
-        session.emit(product)
+    offset = context.get('offset', 0) + 10
+    if offset < context['revs_cnt']:
+        next_page = context.get('page', 1) + 1
+        next_url = 'https://www.bangerhead.se/__nuxt/productreviews?productId={ssid}&market=se&page={page}'.format(ssid=product.ssid, page=next_page)
+        session.do(Request(next_url, force_charset='utf-8'), process_reviews, dict(context, product=product, offset=offset, page=next_page))
 
-# no next page
+    elif product.reviews:
+        session.emit(product)
