@@ -15,12 +15,13 @@ import product_test.list_of_agents as agents
 agent = agents.SENSES_SE_SE
 # agent = agents.TEST
 reload = 1
-session_id = 6859617
+session_id = 0
 
-# name: 8
+# name: 5+
 # author: 579+
 # pros_cons: 2+
-# excerpt: 14
+# conclusion: 1
+# excerpt: 160
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

@@ -18,13 +18,14 @@ class TypeAgent(Enum):
 
 
 class AgentForm:
-    def __init__(self, agent_id: str):
+    def __init__(self, agent_id: str, new_agent: bool = True):
         self.agent_id = agent_id
         self.name = get_source_name(agent_id)
         self.agent_dir = Path(self.name)
         self.agent_dir.mkdir(exist_ok=True)
         self.file_path = self.agent_dir / Path("new_" + self.name + ".py")
         self.new_parser = False
+        self.new_agent = new_agent
         self.funcs = {
             "frontpage": self.create_frontpage,
             "revlist": self.create_revlist,
@@ -62,16 +63,22 @@ class AgentForm:
     out.close()
     os.rename(tmp, data.content_file)\n\n\n""" if new_parser else ""
 
-        text += "def run(context, session):\n"
+        text += "def run(context: dict[str, str], session: Session):\n"
         text += "    session.browser.use_new_parser = True\n" if new_parser else ""
         text += f"    session.sessionbreakers = [SessionBreak(max_requests={breakers})]\n" if breakers else ""
         text += """    session.queue(Request('{url}', use='curl', force_charset='utf-8'), process_{next_func}, dict())\n""".format(url=url, next_func=next_func)
 
-        with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8") as file:
-            file.writelines(get_agent_code(html))
+        old_code = get_agent_code(html)
 
-        with open(self.file_path, "w", encoding="utf-8") as file:
-            file.write(text)
+        with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8") as file:
+            file.writelines(old_code)
+
+        if self.new_agent:
+            with open(self.file_path, "w", encoding="utf-8") as file:
+                file.write(text)
+        else:
+            with open(self.file_path, "w", encoding="utf-8") as file:
+                file.writelines(old_code)
 
         # self.funcs.get(next_func)()
 
@@ -81,7 +88,7 @@ class AgentForm:
         name_xpath: str,
         url_xpath: str
         ):
-        text = "\n\ndef process_frontpage(data, context, session):\n"
+        text = "\n\ndef process_frontpage(data: Response, context: dict[str, str], session: Session):\n"
 
         text += "    strip_namespace(data)\n\n" if self.new_parser else ""
 
@@ -93,8 +100,9 @@ class AgentForm:
             "        session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name))\n"
         )
 
-        with open(self.file_path, "a", encoding="utf-8") as file:
-            file.write(text)
+        if self.new_agent:
+            with open(self.file_path, "a", encoding="utf-8") as file:
+                file.write(text)
 
         # self.create_revlist()
 
@@ -110,7 +118,7 @@ class AgentForm:
 
         # text = "\n\ndef process_prodlist"
 
-        text = "\n\ndef process_revlist(data, context, session):\n"
+        text = "\n\ndef process_revlist(data: Response, context: dict[str, str], session: Session):\n"
         text += "    strip_namespace(data)\n\n" if self.new_parser else ""
         text += (
             f"    revs = data.xpath('{revs_xpath}')\n"
@@ -123,8 +131,9 @@ class AgentForm:
             "        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())\n"
         )
 
-        with open(self.file_path, "a", encoding="utf-8") as file:
-            file.write(text)
+        if self.new_agent:
+            with open(self.file_path, "a", encoding="utf-8") as file:
+                file.write(text)
 
         # self.funcs.get(prod_rev)()
 
@@ -134,7 +143,7 @@ class AgentForm:
         mpn_xpath = input("mpn_xpath?: ")
         ean_xpath = input("ean_xpath?: ")
 
-        text = "\n\ndef process_product(data, context, session):\n"
+        text = "\n\ndef process_product(data: Response, context: dict[str, str], session: Session):\n"
         text += "    strip_namespace(data)\n\n" if self.new_parser else ""
         text += (
             "    product = Product()\n"
@@ -185,7 +194,7 @@ class AgentForm:
         excerpt_xpath: str,
         ):
 
-        text = "\n\ndef process_review(data, context, session):\n"
+        text = "\n\ndef process_review(data: Response, context: dict[str, str], session: Session):\n"
         text += "    strip_namespace(data)\n\n" if self.new_parser else ""
         text += (
             "    product = Product()\n"
@@ -265,8 +274,9 @@ class AgentForm:
             "\n        session.emit(product)\n"
         )
 
-        with open(self.file_path, "a", encoding="utf-8") as file:
-            file.write(text)
+        if self.new_agent:
+            with open(self.file_path, "a", encoding="utf-8") as file:
+                file.write(text)
 
     def create_reviews(self):
         revs_xpath = input("revs_xpath: ")
@@ -362,11 +372,11 @@ class AgentForm:
         with open(self.agent_dir / Path("test.py"), "w", encoding="utf-8") as file:
             file.write(test_template.format(name_agent_for_test=name_agent_for_test))
 
-        with open("create_agent/clean_agent.txt", "r", encoding="utf-8") as file:
-            clean_agent = file.read()
+        with open("create_agent/upload_code.txt", "r", encoding="utf-8") as file:
+            upload_code = file.read()
 
-        with open(self.agent_dir / Path("clean_agent.py"), "w", encoding="utf-8") as file:
-            file.write(clean_agent.format(agent_name="new_" + self.name + ".py", agent_path=self.agent_dir))
+        with open(self.agent_dir / Path("upload_code.py"), "w", encoding="utf-8") as file:
+            file.write(upload_code.format(agent_name="new_" + self.name + ".py", agent_path=self.agent_dir, name_agent_for_test=name_agent_for_test))
 
         with open("product_test/list_of_agents.py", "a", encoding="utf-8") as file:
             file.write(f"{name_agent_for_test} = {agent_id}\n")

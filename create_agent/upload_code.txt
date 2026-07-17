@@ -11,14 +11,14 @@ from product_test.functions import upload_code
 import product_test.list_of_agents as agents
 
 
-agent = agents.SENSES_SE_SE
+agent = agents.{name_agent_for_test}
 
 
-with open("review.senses.se/new_review.senses.se.py", "r", encoding="utf-8") as file:
+with open("{agent_path}/{agent_name}", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 
-# with open("review.senses.se/agent.py", "w", encoding="utf-8") as file:
+# with open("{agent_path}/agent.py", "w", encoding="utf-8") as file:
 #     file.write(agent.replace(
 #             "(data: Response, context: dict[str, str], session: Session)",
 #             "(data, context, session)"

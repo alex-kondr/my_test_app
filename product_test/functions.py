@@ -1,6 +1,7 @@
 import os
 from typing import List
 import sys
+import logging
 
 from dotenv import load_dotenv
 from tqdm import tqdm
@@ -16,6 +17,36 @@ sys.path.append(parent)
 
 urllib3.disable_warnings()
 load_dotenv()
+
+
+class ColoredFormatter(logging.Formatter):
+    RESET = "\033[0m"
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
+    BOLD = "\033[1m"
+
+    COLORS = {
+        'DEBUG': BLUE,
+        'INFO': GREEN,
+        'WARNING': YELLOW,
+        'ERROR': RED,
+        'CRITICAL': RED + BOLD,
+    }
+
+    def format(self, record):
+        log_color = self.COLORS.get(record.levelname, self.RESET)
+        message = super().format(record)
+        return f"{log_color}{message}{self.RESET}"
+
+
+logger = logging.getLogger("LogTest")
+logger.setLevel(logging.DEBUG)
+if not logger.handlers:
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(ColoredFormatter("%(asctime)s - %(levelname)s - %(message)s", datefmt="%H:%M:%S"))
+    logger.addHandler(handler)
 
 
 def load_file(agent_id: int, type_file: str = "yaml", size: int|str = "", decode: bool = False, session_id: int = 0) -> str | bytes:
@@ -62,7 +93,7 @@ def is_include(xnames: list = [], text: str = "", lower: bool = False) -> str|No
                 return xname
 
 
-def get_old_agent(agent_id: str) -> List[str]:
+def get_old_agent(agent_id: str):
     url = f"https://prunesearch.com/manage?action=agent&agent_id={agent_id}"
 
     session = HTMLSession()
@@ -89,7 +120,15 @@ def get_agent_name(html):
 
 
 def get_agent_code(html):
-    return html.find("textarea", clean=True, first=True).full_text.split('\n')
+    return html.find(
+            "textarea", clean=True, first=True
+        ).full_text.replace(
+            "(data, context, session)",
+            "(data: Response, context: dict[str, str], session: Session)"
+        ).replace(
+            "(context, session)",
+            "(context: dict[str, str], session: Session)"
+        ).split('\n')
 
 
 def get_source_name(agent_id):
@@ -105,3 +144,38 @@ def get_source_name(agent_id):
         )
     )
     return response.html.xpath('//input[@name="source_name"]/@value')[0]
+
+
+def upload_code(agent_id, code):
+    # payload = f'agent_id={agent_id}&action=editagentcode&code=555&subaction=Save%20and%20run'
+    url = f"https://prunesearch.com/manage?action=agent&agent_id={agent_id}"
+    # headers = {
+    #     'Content-Type': 'application/x-www-form-urlencoded',
+    # }
+    # payload = f'agent_id={agent_id}&action=editagentcode&code={code}&subaction=Save%20and%20continue%20editing'
+    payload = {
+        'agent_id': agent_id,
+        'action': 'editagentcode',
+        'code': code,  # Тут ваш текст файлу з будь-якими UTF-8 символами
+        'subaction': 'Save and run' # Пробіли закодуються автоматично
+        # 'subaction': 'Save and continue editing'
+    }
+
+    response = requests.post(
+        url,
+        # headers=headers,
+        data=payload,
+        verify=False,
+        auth=HTTPBasicAuth(
+            username=os.getenv("USER-NAME"),
+            password=os.getenv("PASS")
+        ),
+        stream=True
+    )
+
+    if response.status_code == 200:
+        logger.info("Code uploaded successfully")
+    else:
+        logger.error(f"Some error uploaded: code: {response.status_code}")
+
+# upload_file(19734)
