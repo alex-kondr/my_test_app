@@ -13,7 +13,7 @@ from tqdm import tqdm
 import os
 import difflib
 
-from product_test.functions import load_file, get_agent_name, get_old_agent
+from product_test.functions import load_file, get_agent_name, get_old_agent, get_end_date_agent
 
 
 def is_include(xnames: list = [], text: str = "", lower: bool = False) -> str|None:
@@ -163,10 +163,13 @@ def check_code_changes(root_dir: str = None):
 class ResultParse:
     def __init__(self, agent_id: int, session_id=0):
         self.agent_id = agent_id
+
+        self.date = get_end_date_agent(agent_id)
         self.result(session_id)
 
     def __str__(self):
         return f"""
+End date: {self.date}
 Agent id: {self.agent_id}
 Found {self.emitted} emitted objects
 Completed_jobs: {self.completed_jobs}
@@ -304,15 +307,15 @@ class Product:
         file_data["meta"] = meta_data
 
         # Логування результатів
-        for p in file_data["products"]:
-            p_name = "Unknown"
+        # for p in file_data["products"]:
+            # p_name = "Unknown"
             # Дістаємо ім'я з properties продукту
-            props = p.get("product", {}).get("properties", [])
-            p_name = next((pr["value"] for pr in props if pr["type"] == "name"), "Unknown")
+            # props = p.get("product", {}).get("properties", [])
+            # p_name = next((pr["value"] for pr in props if pr["type"] == "name"), "Unknown")
 
-            revs = p.get("review", [])
-            rev_count = len(revs) if isinstance(revs, list) else (1 if revs else 0)
-            logger.info(f"Product '{p_name}' aggregated with {rev_count} reviews.")
+            # revs = p.get("review", [])
+            # rev_count = len(revs) if isinstance(revs, list) else (1 if revs else 0)
+            # logger.info(f"Product '{p_name}' aggregated with {rev_count} reviews.")
 
         self.save_file(file_data)
         return file_data
@@ -338,7 +341,7 @@ class ProductValidator:
         self.product_map = self._structure_product(product_data)
         self.errors = defaultdict(list)
 
-        self.xproduct_names_category = ["review", "test", u"\uFEFF", u"\ufeff", "...", "•", "cable", "análise", "u000", u"&amp", "обзор", "тест", "recensione", "Ã", "¼", "hírek", "reseña", "inceleme", "(element)"]
+        self.xproduct_names_category = ["review", "test", u"\uFEFF", u"\ufeff", "...", "•", "análise", "u000", u"&amp", "обзор", "тест", "recensione", "Ã", "¼", "hírek", "reseña", "inceleme", "(element)"]
         self.xproduct_names_category_start_end = []
         self.xreview_title = ["\uFEFF", "\ufeff", u"U000", u"&amp", "(element)"]
         self.xreview_excerpt = ["Conclusion", "Verdict", u"\uFEFF", u"\ufeff", "Summary", "Fazit", "href=", "U000", u"&amp", "Les plus", "Les moins", "Résumé", "►", "Выводы", "Slutsats", "CONTRO", "Závěr", "Ã", "¼", "PREGI", "DIFETTI", "(element)"]

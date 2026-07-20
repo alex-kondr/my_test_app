@@ -11,10 +11,10 @@ from product_test.functions import upload_code
 import product_test.list_of_agents as agents
 
 
-agent = agents.{name_agent_for_test}
+agent = agents.PC_GAMER
 
 
-with open("{agent_path}/{agent_name}", "r", encoding="utf-8") as file:
+with open("pcgamer.com/new_pcgamer.com.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(
@@ -25,4 +25,4 @@ agent_code = agent_code.replace(
             "(context, session)"
         )
 
-upload_code(agent, agent_code, run=True)
+upload_code(agent, agent_code)

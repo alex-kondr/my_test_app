@@ -17,17 +17,6 @@ agent = agents.HI_FI_PLUS_US
 with open("review.hifiplus.com/new_review.hifiplus.com.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
-
-# with open("review.hifiplus.com/agent.py", "w", encoding="utf-8") as file:
-#     file.write(agent.replace(
-#             "(data: Response, context: dict[str, str], session: Session)",
-#             "(data, context, session)"
-#         ).replace(
-#             "(context: dict[str, str], session: Session)",
-#             "(context, session)"
-#         )
-#     )
-
 agent_code = agent_code.replace(
             "(data: Response, context: dict[str, str], session: Session)",
             "(data, context, session)"

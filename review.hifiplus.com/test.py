@@ -17,6 +17,10 @@ agent = agents.HI_FI_PLUS_US
 reload = 1
 session_id = 0
 
+# name: 8
+# category: 0+
+# author: 2
+# excerpt: 59
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

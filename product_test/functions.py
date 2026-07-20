@@ -1,7 +1,9 @@
 import os
-from typing import List
+from typing import List, Optional
 import sys
 import logging
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 from tqdm import tqdm
@@ -106,13 +108,6 @@ def get_old_agent(agent_id: str):
         )
     )
     return response.html
-    # agent_code = response.html.find("textarea", clean=True, first=True).full_text.split('\n')
-    # agent_name = response.html.xpath("//body/b/text()")[0]
-    # return dict(agent_code=agent_code, agent_name=agent_name)
-    # return agent_code
-    # with open("agent_test.py", "w", encoding="utf-8") as file:
-    #     file.writelines(strings)
-# get_old_agent(20182)
 
 
 def get_agent_name(html):
@@ -146,24 +141,18 @@ def get_source_name(agent_id):
     return response.html.xpath('//input[@name="source_name"]/@value')[0]
 
 
-def upload_code(agent_id, code):
-    # payload = f'agent_id={agent_id}&action=editagentcode&code=555&subaction=Save%20and%20run'
+def upload_code(agent_id, code, run: bool = True):
     url = f"https://prunesearch.com/manage?action=agent&agent_id={agent_id}"
-    # headers = {
-    #     'Content-Type': 'application/x-www-form-urlencoded',
-    # }
-    # payload = f'agent_id={agent_id}&action=editagentcode&code={code}&subaction=Save%20and%20continue%20editing'
+
     payload = {
         'agent_id': agent_id,
         'action': 'editagentcode',
-        'code': code,  # Тут ваш текст файлу з будь-якими UTF-8 символами
-        'subaction': 'Save and run' # Пробіли закодуються автоматично
-        # 'subaction': 'Save and continue editing'
+        'code': code,
+        'subaction': 'Save and run' if run else 'Save and continue editing'
     }
 
     response = requests.post(
         url,
-        # headers=headers,
         data=payload,
         verify=False,
         auth=HTTPBasicAuth(
@@ -178,4 +167,25 @@ def upload_code(agent_id, code):
     else:
         logger.error(f"Some error uploaded: code: {response.status_code}")
 
-# upload_file(19734)
+
+def get_end_date_agent(agent_id) -> Optional[str]:
+    url = f"https://prunesearch.com/manage?action=sessions&agent_id={agent_id}"
+
+    session = HTMLSession()
+    response = session.get(
+        url,
+        verify=False,
+        auth=HTTPBasicAuth(
+            username=os.getenv("USER-NAME"),
+            password=os.getenv("PASS")
+        )
+    )
+    date = response.html.xpath('(//td)[1]/parent::*/td[4]/text()')[0].strip()
+    if date == 'None':
+        error = response.html.xpath('(//td)[1]/parent::*/td[16]/text()')[0]
+        emit_count = response.html.xpath('(//td)[1]/parent::*/td[8]/text()')[0]
+        raise ValueError(f"{error = }\n{emit_count = }\nNot end")
+
+    return datetime.fromisoformat(date).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Europe/Kyiv")).strftime("%d.%m.%Y %H:%M")
+
+
