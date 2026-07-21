@@ -11,10 +11,10 @@ from product_test.functions import upload_code
 import product_test.list_of_agents as agents
 
 
-agent = agents.ICRONTIC
+agent = agents.DERMASTORE_SE
 
 
-with open("review.icrontic.com/new_review.icrontic.com.py", "r", encoding="utf-8") as file:
+with open("review.dermastore.se/new_review.dermastore.se.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(

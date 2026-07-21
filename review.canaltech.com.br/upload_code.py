@@ -11,10 +11,10 @@ from product_test.functions import upload_code
 import product_test.list_of_agents as agents
 
 
-agent = agents.TECHNPLAY_FR
+agent = agents.CANALTECH_BR
 
 
-with open("reviews.technplay.com-fr/new_reviews.technplay.com-fr.py", "r", encoding="utf-8") as file:
+with open("review.canaltech.com.br/new_review.canaltech.com.br.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(
@@ -25,4 +25,4 @@ agent_code = agent_code.replace(
             "(context, session)"
         )
 
-upload_code(agent, agent_code)
+upload_code(agent, agent_code, run=True)

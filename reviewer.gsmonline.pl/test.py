@@ -19,9 +19,9 @@ session_id = 0
 
 # name: 3+
 # author: 76+
-# pros_cons: 18
-# conclusion: 2
-# excerpt: 2+
+# pros_cons: 0+
+# conclusion: 1+
+# excerpt: 5+
 # MAKING: 0+
 
 if __name__ == "__main__":

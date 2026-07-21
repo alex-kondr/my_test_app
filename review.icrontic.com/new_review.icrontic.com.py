@@ -6,9 +6,7 @@ import HTMLParser
 
 
 h = HTMLParser.HTMLParser()
-# OPTIONS = """-H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Referer: https://icrontic.com/' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: same-origin' -H 'Sec-Fetch-User: ?1' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"""
-XCAT = ['Community', 'Announcements']
-# SLEEP = 5
+XCAT = ['Community', 'Announcements', 'Events']
 
 
 def run(context: dict[str, str], session: Session):
@@ -39,7 +37,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     data.content = h.unescape(data.content)
 
     product = Product()
-    product.name = h.unescape(context['title']).replace('///SOLD\\\\\\', '').replace('&', '&').replace(' Reviews [SPOILERS]', '').strip()
+    product.name = h.unescape(context['title']).replace('///SOLD\\\\\\', '').replace(' Reviews [SPOILERS]', '').replace(' Review', '').replace(' review', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = context['cat']
@@ -62,9 +60,13 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    excerpt = data.xpath("//div[@class='Discussion']/div[@class='Item-BodyWrap']/div[@class='Item-Body']/div[@class='Message userContent']//text()").string(multiple=True)
+    conclusion = data.xpath('//p[normalize-space(strong/text())="Conclusion"]/following-sibling::p//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath("//div[@class='Discussion']/div[@class='Item-BodyWrap']/div[@class='Item-Body']/div[@class='Message userContent']//text()[not(preceding::p[normalize-space(strong/text())='Conclusion'] or normalize-space(.)='Conclusion')]").string(multiple=True)
     if excerpt:
-        excerpt = h.unescape(excerpt).replace('&', '&').strip()
+        excerpt = h.unescape(excerpt).strip()
         if len(excerpt) > 2:
             review.add_property(type='excerpt', value=excerpt)
 
