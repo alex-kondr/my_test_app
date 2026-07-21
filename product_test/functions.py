@@ -163,7 +163,7 @@ def upload_code(agent_id, code, run: bool = True):
     )
 
     if response.status_code == 200:
-        logger.info("Code uploaded successfully")
+        logger.info(f"Code '{payload['subaction']}' successfully")
     else:
         logger.error(f"Some error uploaded: code: {response.status_code}")
 

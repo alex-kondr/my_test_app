@@ -18,7 +18,7 @@ def strip_namespace(data):
 def run(context, session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.nexgam.de/Datenbank?Tags=Reviews', force_charset='utf-8', use='curl'), process_revlist, dict())
+    session.queue(Request('https://www.nexgam.de/Datenbank?Tags=Reviews', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_revlist(data, context, session):
@@ -28,11 +28,11 @@ def process_revlist(data, context, session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, force_charset='utf-8', use='curl'), process_review, dict(title=title, url=url))
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, force_charset='utf-8', use='curl'), process_revlist, dict())
+        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict())
 
 
 def process_review(data, context, session):

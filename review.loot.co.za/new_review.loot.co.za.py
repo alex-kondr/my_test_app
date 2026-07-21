@@ -7,13 +7,13 @@ import random
 
 def run(context: dict[str, str], session: Session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request("https://www.loot.co.za/search?offset=0&cat=b", use='curl', max_age=0, force_charset='utf-8'), process_prodlist, dict())
+    session.queue(Request("https://www.loot.co.za/search?offset=0&cat=b", max_age=0, force_charset='utf-8'), process_prodlist, dict())
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
     time.sleep(random.uniform(1, 3))
 
-    prods_cnt = context.get('prod_cnt', 0)
+    prods_cnt = context.get('prod_cnt')
     offset = context.get("offset", 0) + 24
 
     resp = data.xpath('//script[@id="__NEXT_DATA__"]//text()').string()
@@ -31,13 +31,13 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
             rating_cnt = int(prod_info.get('ratingCount'))
             if rating_cnt and rating_cnt > 0:
                 url = "https://www.loot.co.za" + prod_info["shareLink"]["uri"]
-                session.queue(Request(url, use='curl', max_age=0, force_charset='utf-8'), process_product, dict(url=url))
+                session.queue(Request(url, max_age=0, force_charset='utf-8'), process_product, dict(url=url))
     else:
         offset -= 23    # Error 502
 
     if offset < int(prods_cnt):
         url = "https://www.loot.co.za/search?offset=" + str(offset) + "&cat=b"
-        session.queue(Request(url, use='curl', max_age=0, force_charset='utf-8'), process_prodlist, dict(context, offset=offset, prods_cnt=prods_cnt))
+        session.queue(Request(url, max_age=0, force_charset='utf-8'), process_prodlist, dict(context, offset=offset, prods_cnt=prods_cnt))
 
 
 def process_product(data: Response, context: dict[str, str], session: Session):
@@ -50,6 +50,7 @@ def process_product(data: Response, context: dict[str, str], session: Session):
         return
 
     prod_data = json.get('props', {}).get('pageProps', {}).get('initialProps', {}).get('product', {})
+
     product = Product()
     product.name = prod_data.get('productInfo', {}).get("fullTitle")
     product.url = context["url"]
