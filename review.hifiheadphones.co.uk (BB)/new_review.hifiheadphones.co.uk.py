@@ -24,6 +24,7 @@ def process_frontpage(data, context, session):
     for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
+
         if name not in XCAT:
             session.queue(Request(url, use="curl", force_charset='utf-8', max_age=0), process_subcategory, dict(cat=name))
 
@@ -81,8 +82,8 @@ def process_product(data, context, session):
 
     revs = data.xpath('//span[@class="jdgm-prev-badge__text"][not(contains(., "No"))]/text()').string()
     if revs and int(revs.split()[0]) > 0:
-            revs_url = 'https://judge.me/reviews/reviews_for_widget?url=hifi-headphones.myshopify.com&shop_domain=hifi-headphones.myshopify.com&platform=shopify&page=1&per_page=10&product_id={}'.format(product.ssid)
-            session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+        revs_url = 'https://judge.me/reviews/reviews_for_widget?url=hifi-headphones.myshopify.com&shop_domain=hifi-headphones.myshopify.com&platform=shopify&page=1&per_page=10&product_id={}'.format(product.ssid)
+        session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
 
 
 def process_reviews(data, context, session):

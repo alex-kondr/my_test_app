@@ -17,7 +17,8 @@ agent = agents.LOESDAU_DE
 reload = 1
 session_id = 0
 
-# MAKING: 2928
+# 20155 logs: 1141
+# MAKING: 2932
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

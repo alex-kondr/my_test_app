@@ -75,15 +75,15 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    prods = data.xpath('//div[contains(@class, "product  tileproduct")]')
+    prods = data.xpath('//div[regexp:test(@class, "product\s+tileproduct")]')
     for prod in prods:
         product = Product()
-        product.name = prod.xpath('.//h2//span[@itemprop="name"]/text()').string()
+        product.name = prod.xpath('.//h2/a[@class="title link"]//text()').string(multiple=True)
         product.url = prod.xpath('.//h2/a[@class="title link"]/@href').string().split('?')[0]
         product.ssid = product.url.split('/')[-1].replace('.html', '')
         product.sku = prod.xpath('@data-rel').string()
         product.category = context['cat']
-        product.manufacturer = prod.xpath('.//div[@class="brand"]/meta/@content').string()
+        product.manufacturer = prod.xpath('.//div[@class="brand"]/img/@alt').string()
 
         revs_url = "https://www.loesdau.de/bewertungen/" + product.ssid + '.html'
         session.queue(Request(revs_url), process_reviews, dict(product=product, revs_url=revs_url))
