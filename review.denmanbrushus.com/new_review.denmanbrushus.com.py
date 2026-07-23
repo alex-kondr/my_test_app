@@ -100,7 +100,7 @@ def process_reviews(data, context, session):
 
         date = rev.get('date_created')
         if date:
-            review.date = date.split()[0]
+            review.date = date.split('T')[0]
 
         first_name = rev.get('reviewer', {}).get('first_name') or ''
         last_name = rev.get('reviewer', {}).get('last_name') or ''

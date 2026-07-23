@@ -22,8 +22,9 @@ def process_revlist(data, context, session):
 def process_review_short(data, context, session):
     name = data.xpath('//p[contains(., " lire ")]/a/text()').string()
     url = data.xpath('//p[contains(., " lire ")]/a/@href').string()
+
     if url and 'lemondenumerique.ouest-france.fr' in url:
-        session.do(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(name=name, url=url))
+        session.do(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, name=name))
     else:
         process_review(data, context, session)
 
@@ -33,7 +34,7 @@ def process_review(data, context, session):
 
     product = Product()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.strip('/').split('/')[-1].replace('.html', '')
     product.category = 'Technologie'
 
     name = context.get('name') or title

@@ -56,7 +56,11 @@ def process_review(data, context, session):
     if not pros:
         pros = data.xpath('(//p[normalize-space(b/text())="Pros"]/following-sibling::ul)[1]/li')
     if not pros:
+        pros = data.xpath('(//p[normalize-space(strong/text())="Pros"]/following-sibling::ul)[1]/li')
+    if not pros:
         pros = data.xpath('(//div[contains(.//b, "Pros")]/following-sibling::ul)[1]/li')
+    if not pros:
+        pros = data.xpath('(//h4[contains(., "Pros")]/following-sibling::ul)[1]/li')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -69,7 +73,11 @@ def process_review(data, context, session):
     if not cons:
         cons = data.xpath('(//p[normalize-space(b/text())="Cons"]/following-sibling::ul)[1]/li')
     if not cons:
+        cons = data.xpath('(//p[normalize-space(strong/text())="Cons"]/following-sibling::ul)[1]/li')
+    if not cons:
         cons = data.xpath('(//div[contains(.//b, "Cons")]/following-sibling::ul)[1]/li')
+    if not cons:
+        cons = data.xpath('(//h4[contains(., "Cons")]/following-sibling::ul)[1]/li')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
@@ -86,7 +94,7 @@ def process_review(data, context, session):
     if not conclusion:
         conclusion = data.xpath('//h3[contains(., "Final Thoughts")]/following-sibling::p[not(contains(b, "Pros") or contains(b, "Cons"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Final thoughts")]/following-sibling::p[not(contains(b, "Pros") or contains(b, "Cons"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Final thoughts") or contains(., "Final Thoughts")]/following-sibling::p[not(contains(b, "Pros") or contains(b, "Cons"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h2[contains(., "Should you buy")]/following-sibling::p[not(contains(b, "Pros") or contains(b, "Cons"))]//text()').string(multiple=True)
     if not conclusion:
@@ -102,7 +110,7 @@ def process_review(data, context, session):
 
     excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//div[contains(@class, "container")]/p[not(contains(strong, "Verdict"))]|//div[contains(@class, "container")]/div[@class="separator" or not(@class)])[not(preceding::h2[contains(., "Conclusion")] or preceding::h3[contains(., "Final Thoughts")])]//text()[not(ancestor::ul or ancestor::table or ancestor::script or preceding::h2[contains(., "Conclusion")] or preceding::h3[contains(., "Final Thoughts")] or preceding::h2[contains(., "Final thoughts") or contains(., "Should you buy")] or ancestor::h2 or ancestor::h3 or preceding::p[contains(strong, "Verdict")] or preceding::div[normalize-space(b/text())="Verdict"] or preceding::p[contains(b/text(), "Verdict")] or normalize-space(.)="Verdict" or contains(., "Thoughts and Verdict"))]').string(multiple=True)
+        excerpt = data.xpath('(//div[contains(@class, "container")]/p[not(contains(strong, "Verdict"))]|//div[contains(@class, "container")]/div[@class="separator" or not(@class)])[not(preceding::h2[contains(., "Conclusion")] or preceding::h3[contains(., "Final Thoughts")])]//text()[not(ancestor::ul or ancestor::table or ancestor::script or preceding::h2[contains(., "Conclusion")] or preceding::h3[contains(., "Final Thoughts")] or preceding::h2[contains(., "Final thoughts") or contains(., "Should you buy") or contains(., "Final Thoughts")] or ancestor::h2 or ancestor::h3 or preceding::p[contains(strong, "Verdict")] or preceding::div[normalize-space(b/text())="Verdict"] or preceding::p[contains(b/text(), "Verdict")] or normalize-space(.)="Verdict" or contains(., "Thoughts and Verdict"))]').string(multiple=True)
 
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').replace(u'�', '').strip()

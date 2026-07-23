@@ -75,11 +75,11 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    prods = data.xpath('//div[regexp:test(@class, "product\s+tileproduct")]')
+    prods = data.xpath('//div[contains(@class, "tileproduct") and .//h2]')
     for prod in prods:
         product = Product()
-        product.name = prod.xpath('.//h2/a[@class="title link"]//text()').string(multiple=True)
-        product.url = prod.xpath('.//h2/a[@class="title link"]/@href').string().split('?')[0]
+        product.name = prod.xpath('.//h2/a[contains(@class, "title")]//text()').string(multiple=True)
+        product.url = prod.xpath('.//h2/a[contains(@class, "title")]/@href').string().split('?')[0]
         product.ssid = product.url.split('/')[-1].replace('.html', '')
         product.sku = prod.xpath('@data-rel').string()
         product.category = context['cat']

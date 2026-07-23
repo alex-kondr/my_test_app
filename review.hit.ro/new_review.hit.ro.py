@@ -38,6 +38,9 @@ def process_review(data, context, session):
         review.date = date.split('T')[0]
 
     pros = data.xpath('//strong[contains(., "aspecte pozitive putem")]/following-sibling::text()[preceding-sibling::strong[1][contains(., "aspecte pozitive putem")] and starts-with(., "–")]')
+    if not pros:
+        pros = data.xpath('(//p[strong[contains(., "Plusuri:")]]/following-sibling::p)[1][br]//text()')
+
     for pro in pros:
         pro = pro.string(multiple=True)
         if pro:
@@ -46,6 +49,9 @@ def process_review(data, context, session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('//strong[contains(., "aspectele mai putin")]/following-sibling::text()[preceding-sibling::strong[1][contains(., "aspectele mai putin")] and starts-with(., "–")]')
+    if not cons:
+        cons = data.xpath('(//p[strong[contains(., "Minusuri:")]]/following-sibling::p)[1][br]//text()')
+
     for con in cons:
         con = con.string(multiple=True)
         if con:
@@ -57,11 +63,11 @@ def process_review(data, context, session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//strong[regexp:test(., "Concluzi", "i")]/following-sibling::text()|(//strong[regexp:test(., "Concluzi", "i")]/following-sibling::a|//strong[regexp:test(., "Concluzi", "i")]/following-sibling::p|//strong[regexp:test(., "Concluzi", "i")]/following-sibling::strong)//text()').string(multiple=True)
+    conclusion = data.xpath('//strong[contains(., "Concluzi")]/following-sibling::text()|(//strong[contains(., "Concluzi")]/following-sibling::a|//strong[regexp:test(., "Concluzi", "i")]/following-sibling::p|//strong[contains(., "Concluzi")]/following-sibling::strong)//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//body//div/p[not(@class)]//text()[not(preceding::strong[regexp:test(., "Concluzi", "i")] or regexp:test(., "Concluzi|Specificatii complete", "i"))]').string(multiple=True)
+    excerpt = data.xpath('//body//div/p[not(@class)]//text()[not(preceding::strong[contains(., "Concluzi") or contains(., "Plusuri:") or contains(., "Minusuri:")] or regexp:test(., "Concluzi|Specificatii complete|Plusuri:|Minusuri:"))]').string(multiple=True)
     if excerpt:
         excerpt = excerpt.split('Criteriu Nota Plusuri')[0]
         if conclusion:
