@@ -89,6 +89,11 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
     pros = data.xpath('(//p[.//img[contains(@data-fileid, "uppng")]]/following-sibling::ul)[1]/li')
+    if not pros:
+        pros = data.xpath('(//p[strong[contains(text(), "Πλεονεκτήματα")]]/following-sibling::ul)[1]/li')
+    if not pros:
+        pros = data.xpath('//p[strong[contains(text(), "Πλεονεκτήματα")]]/following-sibling::p[starts-with(normalize-space(span/text()), "+")]')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -97,6 +102,11 @@ def process_review(data: Response, context: dict[str, str], session: Session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('(//p[.//img[contains(@data-fileid, "downpng")]]/following-sibling::ul)[1]/li')
+    if not cons:
+        cons = data.xpath('(//p[strong[contains(text(), "Ουδέτερα")]]/following-sibling::ul)[1]/li')
+    if not cons:
+        cons = data.xpath('//p[strong[contains(text(), "Μειονεκτήματα")]]/following-sibling::p[starts-with(normalize-space(span/text()), "-")]')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -110,7 +120,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     excerpt = data.xpath('//p[normalize-space(.//span/text())="Συμπεράσματα" or normalize-space(.//span/text())="Εν κατακλείδι:" or normalize-space(.//span/text())="Επίλογος"]/preceding-sibling::p//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[section]/p[not(preceding::p//img[contains(@data-fileid, "uppng") or contains(@data-fileid, "downpng")] or contains(., "πλεονεκτήματα και μειονεκτήματα"))][not(preceding-sibling::p[contains(., "Βαθμολογία:")] or contains(., "Βαθμολογία:"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[section]/p[not(preceding::p//img[contains(@data-fileid, "uppng") or contains(@data-fileid, "downpng")] or contains(., "πλεονεκτήματα και μειονεκτήματα"))][not(preceding-sibling::p[contains(., "Βαθμολογία:")] or contains(., "Βαθμολογία:"))]//text()[not(preceding::strong[contains(., "Πλεονεκτήματα") or contains(., "Μειονεκτήματα")] or contains(., "Πλεονεκτήματα") or contains(., "Μειονεκτήματα"))]').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

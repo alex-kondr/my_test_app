@@ -89,6 +89,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     pros = data.xpath('//h3[normalize-space(.)="Zalety"]/following-sibling::ul[1]/li')
     if not pros:
         pros = data.xpath('(//p[strong[contains(., "Zalety:")]]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('(//p[b[contains(., "Zalety")]]/following-sibling::*)[1]/li')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -109,6 +111,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     cons = data.xpath('//h3[normalize-space(.)="Wady"]/following-sibling::ul[1]/li')
     if not cons:
         cons = data.xpath('(//p[strong[contains(., "Wady:")]]/following-sibling::*)[1]/li')
+    if not cons:
+        cons = data.xpath('(//p[b[contains(., "Wady")]]/following-sibling::*)[1]/li')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)

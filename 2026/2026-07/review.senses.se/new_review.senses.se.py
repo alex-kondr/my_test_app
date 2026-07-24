@@ -145,12 +145,14 @@ def process_review(data, context, session):
         conclusion = data.xpath('//h2[contains(., "Kontentan")]/following-sibling::p[not(contains(., "This post is also available") or contains(., "skickade recensionsexemplar för detta test") or contains(., "Spellista för testning") or contains(., "skickade testprodukt för denna recension") or contains(., "skickade recensionskod för detta test"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h3[contains(., "Sammanfattning")]/following-sibling::p[not(contains(., "This post is also available") or contains(., "skickade recensionsexemplar för detta test") or contains(., "Spellista för testning") or contains(., "skickade testprodukt för denna recension") or contains(., "skickade recensionskod för detta test"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[contains(strong, "Summa summarum")]//text()[not(contains(., "Summa summarum"))]').string(multiple=True)
 
     if conclusion:
         conclusion = conclusion.replace('Summering', '').strip(': ')
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="inner-post-entry entry-content"]/p[not(contains(., "med er läsare och konsumenter i fokus"))][not(contains(., "inflytande på våra tester"))][not(contains(text(), "Mått:"))][not(.//a[contains(., "Här köper du")])][not(.//a[contains(., "Ska du köpa")])][not(em[a[contains(@aria-label, "Här köper du")]])][not(em[a][contains(., "Här köper du")])][not(em[a][contains(., "bästa pris och")])][not(em[a][contains(., "tjackar du")])][not(preceding::p[contains(strong/text(), "Summering")] or contains(strong/text(), "Summering") or preceding::h2[contains(text(), "Slutsats") or contains(text(), "Summering") or contains(., "Kontentan")] or preceding::h3[contains(., "Sammanfattning")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="inner-post-entry entry-content"]/p[not(contains(., "med er läsare och konsumenter i fokus") or contains(strong, "Summa summarum:") or contains(., "This post is also available"))][not(contains(., "inflytande på våra tester"))][not(contains(text(), "Mått:"))][not(.//a[contains(., "Här köper du")])][not(.//a[contains(., "Ska du köpa")])][not(em[a[contains(@aria-label, "Här köper du")]])][not(em[a][contains(., "Här köper du")])][not(em[a][contains(., "bästa pris och")])][not(em[a][contains(., "tjackar du")])][not(preceding::p[contains(strong/text(), "Summering")] or contains(strong/text(), "Summering") or preceding::h2[contains(text(), "Slutsats") or contains(text(), "Summering") or contains(., "Kontentan")] or preceding::h3[contains(., "Sammanfattning")])]//text()').string(multiple=True)
     if excerpt and len(data.xpath('//div[@class="inner-post-entry entry-content"]/p')) > 4:
 
         if summary:

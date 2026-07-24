@@ -75,6 +75,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         review.authors.append(Person(name=author, ssid=author))
 
     pros = data.xpath('(//div[contains(h3, "Prós")]/following-sibling::ul)[1]/li')
+    if not pros:
+        pros = data.xpath('(//div[contains(h2, "Prós")]/following-sibling::div/ul)[1]/li')
+
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -83,6 +86,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('(//div[contains(h3, "Contras")]/following-sibling::ul)[1]/li')
+    if cons:
+        cons = data.xpath('(//div[contains(h2, "Contras")]/following-sibling::div/ul)[1]/li')
+
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
