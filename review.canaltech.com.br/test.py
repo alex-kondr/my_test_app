@@ -14,21 +14,21 @@ import product_test.list_of_agents as agents
 
 agent = agents.CANALTECH_BR
 # agent = agents.TEST
-reload = 1
+reload = 0
 session_id = 0
 
-# name: 10
+# name: 104
 # author: 5+
 # pros_cons: 2+
 # conclusion: 1+
 # excerpt: 6+
-# MAKING: 1+
+# MAKING: 2+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
     print(product.result)
     test = TestProductMultiprocessing(product)
-    test.run(xproduct_names=[], not_xproduct_name='', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
+    test.run(xproduct_names=[], not_xproduct_name='ã', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
 
     log = LogProduct(agent, reload=reload, session_id=session_id)
     test_log = TestLogProduct(log)

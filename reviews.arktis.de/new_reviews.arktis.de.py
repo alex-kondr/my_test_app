@@ -123,8 +123,10 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
             review.date = datetime.fromtimestamp(int(date) / 1000).strftime("%d.%m.%Y")
 
         author = rev.xpath('div[contains(@class, "title")]/text()').string()
-        if author:
+        if author and 'anonym' not in author.lower():
             review.authors.append(Person(name=author, ssid=author))
+        else:
+            author = None
 
         grade_overall = rev.xpath('count(.//svg[@data-lx-fill="full"])')
         if grade_overall and float(grade_overall) > 0:
@@ -142,7 +144,7 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
 
                 ssid = rev.xpath('div/@data-testid').string()
                 if ssid:
-                    review.ssid = ssid.split('-')[1]
+                    review.ssid = ssid.replace('review-', '').replace('-title', '').strip('- ')
                 else:
                     review.ssid = review.digest() if author else review.digest(excerpt)
 

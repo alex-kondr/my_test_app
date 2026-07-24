@@ -86,7 +86,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
                 review.add_property(type='pros', value=pro)
 
     cons = data.xpath('(//div[contains(h3, "Contras")]/following-sibling::ul)[1]/li')
-    if cons:
+    if not cons:
         cons = data.xpath('(//div[contains(h2, "Contras")]/following-sibling::div/ul)[1]/li')
 
     for con in cons:
