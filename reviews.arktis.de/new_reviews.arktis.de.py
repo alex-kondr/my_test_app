@@ -36,7 +36,7 @@ def remove_emoji(string):
 
 def run(context: dict[str, str], session: Session):
     session.sessionbreakers = [SessionBreak(max_requests=6000)]
-    session.queue(Request('https://www.arktis.de/', force_charset='utf-8', use='curl'), process_frontpage, dict())
+    session.queue(Request('https://www.arktis.de/', force_charset='utf-8', use='curl', max_age=0), process_frontpage, dict())
 
 
 def process_frontpage(data: Response, context: dict[str, str], session: Session):
@@ -55,10 +55,10 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
                 if subcats:
                     for subcat in subcats:
                         subcat_name = subcat.xpath('text()').string()
-                        session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
+                        session.queue(Request(url, force_charset='utf-8', use='curl', max_age=0), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
                 else:
                     url = cat1.xpath('a/@href').string()
-                    session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name))
+                    session.queue(Request(url, force_charset='utf-8', use='curl', max_age=0), process_prodlist, dict(cat=name+'|'+cat1_name))
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
@@ -68,11 +68,11 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
     for prod in prods:
         name = prod.xpath('text()').string()
         url = prod.xpath('@href').string().split('?')[0]
-        session.queue(Request(url, force_charset='utf-8', use='curl'), process_product, dict(context, name=name, url=url))
+        session.queue(Request(url, force_charset='utf-8', use='curl', max_age=0), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, force_charset='utf-8', use='curl'), process_prodlist, context)
+        session.queue(Request(next_url, force_charset='utf-8', use='curl', max_age=0), process_prodlist, context)
 
 
 def process_product(data: Response, context: dict[str, str], session: Session):
@@ -104,7 +104,7 @@ def process_product(data: Response, context: dict[str, str], session: Session):
         revs_cnt = int(revs_cnt)
         if revs_cnt > 0:
             revs_url = 'https://loox.io/widget/BHZP4E4jXM/reviews/{ssid}?language=de'.format(ssid=product.ssid)
-            session.do(Request(revs_url, force_charset='utf-8', use='curl'), process_reviews, dict(product=product, revs_cnt=revs_cnt))
+            session.do(Request(revs_url, force_charset='utf-8', use='curl', max_age=0), process_reviews, dict(product=product, revs_cnt=revs_cnt))
 
 
 def process_reviews(data: Response, context: dict[str, str], session: Session):
@@ -154,7 +154,7 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
     if offset < context['revs_cnt']:
         next_page = context.get('page', 1) + 1
         revs_url = 'https://loox.io/widget/BHZP4E4jXM/reviews/{ssid}?language=de&page={page}'.format(ssid=product.ssid, page=next_page)
-        session.do(Request(revs_url, force_charset='utf-8', use='curl'), process_reviews, dict(context, product=product, offset=offset, page=next_page))
+        session.do(Request(revs_url, force_charset='utf-8', use='curl', max_age=0), process_reviews, dict(context, product=product, offset=offset, page=next_page))
 
     elif product.reviews:
         session.emit(product)
