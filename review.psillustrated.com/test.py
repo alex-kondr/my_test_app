@@ -17,6 +17,9 @@ agent = agents.PSI_US
 reload = 1
 session_id = 0
 
+# name: 7+
+# author: 7+
+# excerpt: 2+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

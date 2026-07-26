@@ -7,7 +7,7 @@ import time
 import random
 
 
-XCAT = ['Angebote', 'Online Kurse']
+XCAT = ['Angebote', 'Online Kurse', 'Stories', 'SALE %']
 
 
 def remove_emoji(string):
@@ -51,6 +51,7 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
 
         if name not in XCAT:
             cats1 = cat.xpath('ul/li')
+
             if cats1:
                 for cat1 in cats1:
                     cat1_name = cat1.xpath('a/text()').string() or cat1.xpath('text()').string(multiple=True)
@@ -59,13 +60,19 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
                     if subcats:
                         for subcat in subcats:
                             subcat_name = subcat.xpath('text()').string()
-                            session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
+                            
+                            print name+'|'+cat1_name+'|'+subcat_name, url
+                            # session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
                     else:
                         url = cat1.xpath('a/@href').string()
-                        session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name))
+                        
+                        print name+'|'+cat1_name, url
+                        # session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name))
             else:
                 url = cat.xpath('a/@href').string()
-                session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name))
+                
+                print name, url
+                # session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
