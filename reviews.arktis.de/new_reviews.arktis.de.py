@@ -36,29 +36,36 @@ def remove_emoji(string):
 
 def run(context: dict[str, str], session: Session):
     session.sessionbreakers = [SessionBreak(max_requests=6000)]
-    session.queue(Request('https://www.arktis.de/', force_charset='utf-8', use='curl', max_age=0), process_frontpage, dict())
+    
+    
+    # 'https://www.arktis.de/products/arktispro-iphone-15-pro-hulle-ultraslim-hardcase'
+    session.queue(Request('https://www.arktis.de/', force_charset='utf-8', use='curl'), process_frontpage, dict())
 
 
 def process_frontpage(data: Response, context: dict[str, str], session: Session):
     time.sleep(random.uniform(1, 3))
 
-    cats = data.xpath('//ul[contains(@class, "list-menu--inline")]/li ')
+    cats = data.xpath('//ul[contains(@class, "list-menu--inline")]/li')
     for cat in cats:
-        name = cat.xpath('span/text()').string()
+        name = cat.xpath('span/text()').string() or cat.xpath('a//text()').string(multiple=True)
 
         if name not in XCAT:
             cats1 = cat.xpath('ul/li')
-            for cat1 in cats1:
-                cat1_name = cat1.xpath('a/text()').string() or cat1.xpath('text()').string(multiple=True)
+            if cats1:
+                for cat1 in cats1:
+                    cat1_name = cat1.xpath('a/text()').string() or cat1.xpath('text()').string(multiple=True)
 
-                subcats = cat1.xpath('ul/li/a')
-                if subcats:
-                    for subcat in subcats:
-                        subcat_name = subcat.xpath('text()').string()
-                        session.queue(Request(url, force_charset='utf-8', use='curl', max_age=0), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
-                else:
-                    url = cat1.xpath('a/@href').string()
-                    session.queue(Request(url, force_charset='utf-8', use='curl', max_age=0), process_prodlist, dict(cat=name+'|'+cat1_name))
+                    subcats = cat1.xpath('ul/li/a')
+                    if subcats:
+                        for subcat in subcats:
+                            subcat_name = subcat.xpath('text()').string()
+                            session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
+                    else:
+                        url = cat1.xpath('a/@href').string()
+                        session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name))
+            else:
+                url = cat.xpath('a/@href').string()
+                session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
@@ -68,11 +75,11 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
     for prod in prods:
         name = prod.xpath('text()').string()
         url = prod.xpath('@href').string().split('?')[0]
-        session.queue(Request(url, force_charset='utf-8', use='curl', max_age=0), process_product, dict(context, name=name, url=url))
+        session.queue(Request(url, force_charset='utf-8', use='curl'), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, force_charset='utf-8', use='curl', max_age=0), process_prodlist, context)
+        session.queue(Request(next_url, force_charset='utf-8', use='curl'), process_prodlist, context)
 
 
 def process_product(data: Response, context: dict[str, str], session: Session):
