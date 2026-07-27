@@ -15,10 +15,10 @@ import product_test.list_of_agents as agents
 from models import AgentModel, async_session, Status
 
 
-agent = agents.{name_agent_for_test}
+agent = agents.PHOTO_REVIEW_AU
 
 
-with open("{agent_path}/{agent_name}", "r", encoding="utf-8") as file:
+with open("photoreview.com.au/new_photoreview.com.au.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(

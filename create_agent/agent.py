@@ -1,8 +1,10 @@
 from pathlib import Path
 from enum import Enum, auto
 from typing import Union
+import asyncio
 
 from product_test.functions import get_old_agent, get_agent_code, get_agent_name, get_source_name
+from models import AgentModel, async_session
 
 
 class ProcessRun(Enum):
@@ -48,8 +50,8 @@ class AgentForm:
 
         self.new_parser = new_parser
         html = get_old_agent(self.agent_id)
-        name_agent_for_test = get_agent_name(html)
-        self.create_test_file(name_agent_for_test, self.agent_id)
+        self.name_agent_for_test = get_agent_name(html)
+        self.create_test_file()
 
         text = "from agent import *\nfrom models.products import *\n\n\n"
         text += """def strip_namespace(data):
@@ -68,17 +70,18 @@ class AgentForm:
         text += f"    session.sessionbreakers = [SessionBreak(max_requests={breakers})]\n" if breakers else ""
         text += """    session.queue(Request('{url}', use='curl', force_charset='utf-8'), process_{next_func}, dict())\n""".format(url=url, next_func=next_func)
 
-        old_code = get_agent_code(html)
+        self.old_code = get_agent_code(html)
+        asyncio.run(self.create_agent_for_db())
 
         with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8") as file:
-            file.writelines(old_code)
+            file.writelines(self.old_code)
 
         if self.new_agent:
             with open(self.file_path, "w", encoding="utf-8") as file:
                 file.write(text)
         else:
             with open(self.file_path, "w", encoding="utf-8") as file:
-                file.writelines(old_code)
+                file.writelines(self.old_code)
 
         # self.funcs.get(next_func)()
 
@@ -363,8 +366,8 @@ class AgentForm:
         with open(self.file_path, "a", encoding="utf-8") as file:
             file.write(text)
 
-    def create_test_file(self, name_agent_for_test: str, agent_id: str):
-        name_agent_for_test = name_agent_for_test.upper().replace(" [", "_").replace("[", "_").replace("]", "").replace(".", "_").replace("-", "_").replace(" ", "_").replace("'", "").replace(",", "")
+    def create_test_file(self):
+        name_agent_for_test = self.name_agent_for_test.upper().replace(" [", "_").replace("[", "_").replace("]", "").replace(".", "_").replace("-", "_").replace(" ", "_").replace("'", "").replace(",", "")
 
         with open("create_agent/test_template.txt", "r", encoding="utf-8") as file:
             test_template = file.read()
@@ -379,4 +382,15 @@ class AgentForm:
             file.write(upload_code.format(agent_name="new_" + self.name + ".py", agent_path=self.agent_dir, name_agent_for_test=name_agent_for_test))
 
         with open("product_test/list_of_agents.py", "a", encoding="utf-8") as file:
-            file.write(f"{name_agent_for_test} = {agent_id}\n")
+            file.write(f"{name_agent_for_test} = {self.agent_id}\n")
+
+    async def create_agent_for_db(self):
+        async with async_session() as session:
+            agent = AgentModel(
+                agent_id=self.agent_id,
+                name=self.name_agent_for_test,
+                source_name=self.name,
+                code="".join(self.old_code),
+            )
+            session.add(agent)
+            await session.commit()
