@@ -1,5 +1,8 @@
 import sys
 import os
+import asyncio
+
+from sqlalchemy import select
 
 
 current = os.path.dirname(os.path.realpath(__file__))
@@ -9,6 +12,7 @@ sys.path.append(parent)
 
 from product_test.functions import upload_code
 import product_test.list_of_agents as agents
+from models import AgentModel, async_session, Status
 
 
 agent = agents.ARKTIS_DE
@@ -26,3 +30,16 @@ agent_code = agent_code.replace(
         )
 
 upload_code(agent, agent_code, run=True)
+
+# async def change_statuc_agent():
+#     async with async_session() as db:
+#         result = await db.execute(
+#             select(AgentModel).filter_by(agent_id=str(agent), status=Status.in_progress)
+#         )
+#         agent_db = result.scalar_one_or_none()
+#         if agent_db:
+#             agent_db.status = Status.running
+#             await db.commit()
+
+
+# asyncio.run(change_statuc_agent())

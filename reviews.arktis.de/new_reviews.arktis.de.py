@@ -35,10 +35,7 @@ def remove_emoji(string):
 
 
 def run(context: dict[str, str], session: Session):
-    session.sessionbreakers = [SessionBreak(max_requests=6000)]
-    
-    
-    # 'https://www.arktis.de/products/arktispro-iphone-15-pro-hulle-ultraslim-hardcase'
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('https://www.arktis.de/', force_charset='utf-8', use='curl'), process_frontpage, dict())
 
 
@@ -60,19 +57,14 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
                     if subcats:
                         for subcat in subcats:
                             subcat_name = subcat.xpath('text()').string()
-                            
-                            print name+'|'+cat1_name+'|'+subcat_name, url
-                            # session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
+                            url = subcat.xpath('@href').string()
+                            session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
                     else:
                         url = cat1.xpath('a/@href').string()
-                        
-                        print name+'|'+cat1_name, url
-                        # session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name))
+                        session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name+'|'+cat1_name))
             else:
                 url = cat.xpath('a/@href').string()
-                
-                print name, url
-                # session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name))
+                session.queue(Request(url, force_charset='utf-8', use='curl'), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
@@ -138,7 +130,11 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
 
         author = rev.xpath('div[contains(@class, "title")]/text()').string()
         if author and 'anonym' not in author.lower():
-            review.authors.append(Person(name=author, ssid=author))
+            author = remove_emoji(author).strip()
+            if len(author) > 1:
+                review.authors.append(Person(name=author, ssid=author))
+            else:
+                author = None
         else:
             author = None
 

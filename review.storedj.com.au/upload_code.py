@@ -15,10 +15,10 @@ import product_test.list_of_agents as agents
 from models import AgentModel, async_session, Status
 
 
-agent = agents.{name_agent_for_test}
+agent = agents.STORE_DJ_AU
 
 
-with open("{agent_path}/{agent_name}", "r", encoding="utf-8") as file:
+with open("review.storedj.com.au/new_review.storedj.com.au.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(
@@ -41,6 +41,5 @@ async def change_statuc_agent():
         if agent_db:
             agent_db.status = Status.running
             await db.commit()
-
 
 asyncio.run(change_statuc_agent())
