@@ -12,6 +12,8 @@ from requests.auth import HTTPBasicAuth
 import urllib3
 from requests_html import HTMLSession
 
+from models import AgentModel
+
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
@@ -95,7 +97,27 @@ def is_include(xnames: list = [], text: str = "", lower: bool = False) -> str|No
                 return xname
 
 
-def get_old_agent(agent_id: str):
+def get_agent_name(html):
+    return html.xpath('//input[@name="name"]/@value')[0]
+
+
+def get_source_name(html):
+    return html.xpath('//input[@name="source_name"]/@value')[0]
+
+
+def get_description(html):
+    return html.xpath('//textarea[@name="description"]/text()')[0]
+
+
+def get_priority(html):
+    return html.xpath('//input[@name="priority"]/@value')[0]
+
+
+def get_group(html):
+    return html.xpath('//input[@name="group"]/@value')[0]
+
+
+def get_agent_code(agent_id):
     url = f"https://prunesearch.com/manage?action=agent&agent_id={agent_id}"
 
     session = HTMLSession()
@@ -107,15 +129,7 @@ def get_old_agent(agent_id: str):
             password=os.getenv("PASS")
         )
     )
-    return response.html
-
-
-def get_agent_name(html):
-    return html.xpath("//body/b/text()")[0]
-
-
-def get_agent_code(html):
-    return html.find(
+    return response.html.find(
             "textarea", clean=True, first=True
         ).full_text.replace(
             "(data, context, session)",
@@ -126,7 +140,7 @@ def get_agent_code(html):
         ).split('\n')
 
 
-def get_source_name(agent_id):
+def get_edit_page_agent(agent_id):
     url = f"https://prunesearch.com/manage?action=editagent&agent_id={agent_id}"
 
     session = HTMLSession()
@@ -138,7 +152,7 @@ def get_source_name(agent_id):
             password=os.getenv("PASS")
         )
     )
-    return response.html.xpath('//input[@name="source_name"]/@value')[0]
+    return response.html
 
 
 def upload_code(agent_id, code, run: bool = True):
@@ -187,5 +201,34 @@ def get_end_date_agent(agent_id) -> Optional[str]:
         raise ValueError(f"{error = }\n{emit_count = }\nNot end")
 
     return datetime.fromisoformat(date).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Europe/Kyiv")).strftime("%d.%m.%Y %H:%M")
+
+
+def post_edit_page_agent(agent: AgentModel, done: bool = False):
+    url = f"https://prunesearch.com/manage?action=editagent&agent_id={agent.agent_id}"
+    data = {
+        "action": "editagent",
+        "agent_id": agent.agent_id,
+        "name": agent.name,
+        "source_name": agent.source_name,
+        "description": agent.description,
+        "state_id": "3" if done else "2",
+        "priority": agent.priority,
+        "group": agent.group
+    }
+
+    if done:
+        data["active"] = "1"
+
+    session = HTMLSession()
+    response = session.post(
+        url,
+        data=data,
+        verify=False,
+        auth=HTTPBasicAuth(
+            username=os.getenv("USER-NAME"),
+            password=os.getenv("PASS")
+        ),
+        stream=True
+    )
 
 

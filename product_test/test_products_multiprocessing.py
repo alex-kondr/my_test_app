@@ -13,7 +13,8 @@ from tqdm import tqdm
 import os
 import difflib
 
-from product_test.functions import load_file, get_agent_name, get_old_agent, get_end_date_agent
+from product_test.functions import load_file, get_end_date_agent
+from models import AgentModel, DBSession
 
 
 def is_include(xnames: list = [], text: str = "", lower: bool = False) -> str|None:
@@ -161,7 +162,7 @@ def check_code_changes(root_dir: str = None):
 
 
 class ResultParse:
-    def __init__(self, agent_id: int, session_id=0):
+    def __init__(self, agent_id: str, session_id=0):
         self.agent_id = agent_id
 
         self.date = get_end_date_agent(agent_id)
@@ -212,6 +213,11 @@ Wasted time: {self.time}
             seconds = int(time_in_seconds % 3600 % 60)
             self.time = f"Hours: {hours}, minutes: {minutes}, seconds: {seconds}"
 
+            with DBSession() as db:
+                agent = db.query(AgentModel).filter_by(agent_id=self.agent_id).one()
+                agent.count_emit = self.emitted
+                db.commit()
+
         except Exception as e:
             logger.error(f"Error parsing result logs: {e}")
             self.emitted = 0
@@ -223,7 +229,7 @@ Wasted time: {self.time}
 
 
 class Product:
-    def __init__(self, agent_id: int, reload: Literal[0, 1, True, False]=False, session_id=0):
+    def __init__(self, agent_id: str, reload: Literal[0, 1, True, False]=False, session_id=0):
         self.agent_id = agent_id
         self.emits_dir = Path("product_test/emits")
         self.emits_dir.mkdir(exist_ok=True)
@@ -470,7 +476,7 @@ class ProductValidator:
             prod_props = self.product_map.get("product.name", [{}])[0].get('_parent_props', [])
             self.errors["prod_id_manufacturer"].append(prod_props)
             return
-            
+
         for property in id_manufacturer_props:
             val = property.get("value")
             if not val or len(val) < 2:

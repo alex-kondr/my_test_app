@@ -15,10 +15,10 @@ import product_test.list_of_agents as agents
 from models import AgentModel, DBSession, Status
 
 
-agent_id = agents.{name_agent_for_test}
+agent_id = agents.WWW_THE_GADGETEER_COM
 
 
-with open("{agent_path}/{agent_name}", "r", encoding="utf-8") as file:
+with open("the-gadgeteer.com/new_the-gadgeteer.com.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(
@@ -30,7 +30,6 @@ agent_code = agent_code.replace(
         )
 
 upload_code(agent_id, agent_code, run=True)
-
 
 with DBSession() as db:
     agent = db.query(AgentModel).filter_by(agent_id=str(agent_id), status=Status.in_progress).one_or_none()

@@ -15,10 +15,10 @@ import product_test.list_of_agents as agents
 from models import AgentModel, DBSession, Status
 
 
-agent_id = agents.{name_agent_for_test}
+agent_id = agents.NINTENDO_TOWN_FR
 
 
-with open("{agent_path}/{agent_name}", "r", encoding="utf-8") as file:
+with open("nintendo-town.fr/new_nintendo-town.fr.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(

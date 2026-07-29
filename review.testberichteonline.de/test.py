@@ -12,20 +12,23 @@ from product_test.test_logs import LogProduct, TestLogProduct
 import product_test.list_of_agents as agents
 
 
-agent = agents.ARKTIS_DE
+agent_id = agents.TESTBERICHTE_ONLINE_DE
 # agent = agents.TEST
 reload = 1
 session_id = 0
 
-# 20173 logs: 21
+# name: 1+
+# category: ++
+# conclusion: 3+
+# excerpt: 15+
 
 if __name__ == "__main__":
-    product = Product(agent, reload=reload, session_id=session_id)
+    product = Product(str(agent_id), reload=reload, session_id=session_id)
     print(product.result)
     test = TestProductMultiprocessing(product)
     test.run(xproduct_names=[], not_xproduct_name='', len_name=3, xreview_title=[], xreview_conclusion=[], xreview_excerpt=[])
 
-    log = LogProduct(agent, reload=reload, session_id=session_id)
+    log = LogProduct(str(agent_id), reload=reload, session_id=session_id)
     test_log = TestLogProduct(log)
     test_log.test_log()
 

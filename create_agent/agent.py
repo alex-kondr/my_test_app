@@ -1,10 +1,9 @@
 from pathlib import Path
 from enum import Enum, auto
 from typing import Union
-import asyncio
 
-from product_test.functions import get_old_agent, get_agent_code, get_agent_name, get_source_name
-from models import AgentModel, async_session
+from product_test import functions
+from models import AgentModel, DBSession
 
 
 class ProcessRun(Enum):
@@ -22,7 +21,9 @@ class TypeAgent(Enum):
 class AgentForm:
     def __init__(self, agent_id: str, new_agent: bool = True):
         self.agent_id = agent_id
-        self.name = get_source_name(agent_id)
+        self.agent_info_html = functions.get_edit_page_agent(agent_id)
+        self.name = functions.get_source_name(self.agent_info_html)
+        self.name_agent_for_test = functions.get_agent_name(self.agent_info_html)
         self.agent_dir = Path(self.name)
         self.agent_dir.mkdir(exist_ok=True)
         self.file_path = self.agent_dir / Path("new_" + self.name + ".py")
@@ -49,8 +50,6 @@ class AgentForm:
         ):
 
         self.new_parser = new_parser
-        html = get_old_agent(self.agent_id)
-        self.name_agent_for_test = get_agent_name(html)
         self.create_test_file()
 
         text = "from agent import *\nfrom models.products import *\n\n\n"
@@ -70,8 +69,8 @@ class AgentForm:
         text += f"    session.sessionbreakers = [SessionBreak(max_requests={breakers})]\n" if breakers else ""
         text += """    session.queue(Request('{url}', use='curl', force_charset='utf-8'), process_{next_func}, dict())\n""".format(url=url, next_func=next_func)
 
-        self.old_code = get_agent_code(html)
-        asyncio.run(self.create_agent_for_db())
+        self.old_code = functions.get_agent_code(self.agent_id)
+        self.create_agent_for_db()
 
         with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8") as file:
             file.writelines(self.old_code)
@@ -384,13 +383,17 @@ class AgentForm:
         with open("product_test/list_of_agents.py", "a", encoding="utf-8") as file:
             file.write(f"{name_agent_for_test} = {self.agent_id}\n")
 
-    async def create_agent_for_db(self):
-        async with async_session() as session:
+    def create_agent_for_db(self):
+        with DBSession() as session:
             agent = AgentModel(
                 agent_id=self.agent_id,
                 name=self.name_agent_for_test,
                 source_name=self.name,
+                description=functions.get_description(self.agent_info_html),
+                priority=functions.get_priority(self.agent_info_html),
+                group=functions.get_group(self.agent_info_html),
                 code="".join(self.old_code),
             )
+            functions.post_edit_page_agent(agent)
             session.add(agent)
-            await session.commit()
+            session.commit()

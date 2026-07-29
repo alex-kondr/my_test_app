@@ -77,7 +77,7 @@ def process_log_chunk(chunk: list[str]) -> list[list[str]]:
 class LogProduct:
 
     def __init__(
-        self, agent_id: int, reload: Literal[0, 1, True, False]=False, session_id=0
+        self, agent_id: str, reload: Literal[0, 1, True, False]=False, session_id=0
     ):
         self.agent_id = agent_id
         self.emits_dir = Path("product_test/logs")
