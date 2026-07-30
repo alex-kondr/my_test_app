@@ -59,4 +59,5 @@ def get_db() -> Generator[Session, Any, None]:
 
 
 # if __name__ == "__main__":
-#     asyncio.run(create_db())
+#     Base.metadata.drop_all(bind=engine)
+#     Base.metadata.create_all(bind=engine)

@@ -17,6 +17,11 @@ agent = agents.NINTENDO_TOWN_FR
 reload = 1
 session_id = 0
 
+# name: 5+
+# title: 3+
+# pros_cons: 84+
+# conclusion: 40+
+# excerpt: 255+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

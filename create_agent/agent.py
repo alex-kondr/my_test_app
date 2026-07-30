@@ -381,7 +381,7 @@ class AgentForm:
             file.write(upload_code.format(agent_name="new_" + self.name + ".py", agent_path=self.agent_dir, name_agent_for_test=name_agent_for_test))
 
         with open("product_test/list_of_agents.py", "a", encoding="utf-8") as file:
-            file.write(f"{name_agent_for_test} = {self.agent_id}\n")
+            file.write(f'{name_agent_for_test} = "{self.agent_id}"\n')
 
     def create_agent_for_db(self):
         with DBSession() as session:

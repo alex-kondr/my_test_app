@@ -1,8 +1,6 @@
 from agent import *
 from models.products import *
 import re
-import time
-import random
 
 
 def strip_namespace(data):
@@ -50,8 +48,6 @@ def run(context: dict[str, str], session: Session):
 def process_revlist(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    time.sleep(random.uniform(1, 3))
-
     revs = data.xpath('//a[contains(@class, "link link--expand")]')
     for rev in revs:
         title = rev.xpath('text()').string()
@@ -66,8 +62,6 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    time.sleep(random.uniform(1, 3))
-
     product = Product()
     product.name = context['title'].split(' review: ')[0].replace(' review', '').replace(' Review', '').split(' - ')[0].split(' Preview: ')[0].replace('Review: ', '').replace(' re-review', '').replace('Hardware Test:', '').strip()
     product.url = context['url']
@@ -76,7 +70,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     cats = data.xpath('//li[strong[contains(., "Availability:")]]/a/text()').strings()
     if cats:
-        product.category = 'Games|' + '/'.join([cat.replace('/', '\\') for cat in cats if cat]).replace('|Official Launcher', '').replace(' (and PSVR2)', '').replace('Xbox), ', '').replace(' (and it’s on Game Pass)', '').replace('|(Steam)', '').replace('|Steam)', '').replace('Released 31st August on Steam for £9.29 (currently £7.89)', '').strip()
+        product.category = 'Games|' + '/'.join([cat.replace('/', '\\') for cat in cats if cat]).replace('|Official Launcher', '').replace(' (and PSVR2)', '').replace('Xbox), ', '').replace(' (and it’s on Game Pass)', '').replace('|(Steam)', '').replace('|Steam)', '').replace('/(Steam)', '').replace('/Steam)', '').replace('Released 31st August on Steam for £9.29 (currently £7.89)', '').strip()
     if not product.category or len(product.category) < 8 or '...' in product.category:
         product.category = 'Games'
 
@@ -138,13 +132,11 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         context['review'] = review
         context['product'] = product
 
-        process_review_next(data: Response, context: dict[str, str], session: Session)
+        process_review_next(data, context, session)
 
 
 def process_review_next(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
-
-    time.sleep(random.uniform(1, 3))
 
     review = context['review']
 

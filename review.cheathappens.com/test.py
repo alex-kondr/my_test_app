@@ -17,6 +17,11 @@ agent = agents.CHEAT_HAPPENS
 reload = 1
 session_id = 0
 
+# name: 4+
+# grades: 0+
+# author: 284+
+# excerpt: 231
+# MAKING: 1+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

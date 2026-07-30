@@ -17,6 +17,11 @@ agent = agents.WWW_THE_GADGETEER_COM
 reload = 1
 session_id = 0
 
+# name: 20+
+# title: 1+
+# pros_cons: 129
+# conclusion: 7
+# excerpt: 113
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

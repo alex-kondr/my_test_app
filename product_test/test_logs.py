@@ -5,6 +5,9 @@ import sys
 import re
 from multiprocessing import Pool, cpu_count
 from typing import Literal
+from zoneinfo import ZoneInfo
+from datetime import datetime
+
 from tqdm import tqdm
 
 from product_test.functions import load_file
@@ -36,9 +39,17 @@ logger = logging.getLogger("LogTest")
 logger.setLevel(logging.DEBUG)
 if not logger.handlers:
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(ColoredFormatter("%(asctime)s - %(levelname)s - %(message)s", datefmt="%H:%M:%S"))
+    formatter = ColoredFormatter(
+        "%(asctime)s - %(levelname)s - %(message)s",
+        datefmt="%H:%M:%S"
+    )
+    # Перевизначаємо конвертер часу для цього форматера на Київський часовий пояс
+    formatter.converter = lambda timestamp: datetime.fromtimestamp(
+        timestamp,
+        tz=ZoneInfo("Europe/Kyiv")
+    ).timetuple()
+    handler.setFormatter(formatter)
     logger.addHandler(handler)
-
 
 def process_log_chunk(chunk: list[str]) -> list[list[str]]:
     """

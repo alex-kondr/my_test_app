@@ -17,6 +17,9 @@ agent = agents.COMPUTABLE_NL
 reload = 1
 session_id = 0
 
+# name: 12+
+# author: 299
+# excerpt: 53
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
