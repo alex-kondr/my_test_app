@@ -74,7 +74,7 @@ def move_agent_folder(agent: AgentModel):
 
 def get_done_agents():
     with DBSession() as db:
-        agents = db.query(AgentModel).filter_by(done=True, status=Status.qc).all()
+        agents = db.query(AgentModel).filter_by(done=True, status=Status.qc, bb=False).all()
 
         logger.info(f"Found {len(agents)} agents done")
 
