@@ -2,12 +2,12 @@ from agent import *
 from models.products import *
 
 
-def run(context: dict[str, str], session: Session):
+def run(context, session):
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.pcworld.com/reviews', use='curl', force_charset='utf-8'), process_catlist, dict())
 
 
-def process_catlist(data: Response, context: dict[str, str], session: Session):
+def process_catlist(data, context, session):
     cats = data.xpath('//li[contains(@class, "tab-item")]/a[contains(., " Reviews")]')
     for cat in cats:
         name = cat.xpath('text()').string()
@@ -15,7 +15,7 @@ def process_catlist(data: Response, context: dict[str, str], session: Session):
         session.queue(Request(url, use='curl', force_charset='utf-8'), process_revlist, dict(cat=name))
 
 
-def process_revlist(data: Response, context: dict[str, str], session: Session):
+def process_revlist(data, context, session):
     revs = data.xpath('//h3/a')
     for rev in revs:
         title = rev.xpath('text()').string().replace('&amp', '&')
@@ -29,7 +29,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
         session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict(context))
 
 
-def process_review(data: Response, context: dict[str, str], session: Session):
+def process_review(data, context, session):
     product = Product()
     product.name = context['title'].split(' preview: ')[0].split(' Preview: ')[0].split(' review: ')[0].split(' Review: ')[0].split(' tested: ')[0].split(' Tested: ')[0].split(' in test: ')[0].split(' In test: ')[0].split(' speed test: ')[0].split(' Speed test: ')[0].split(' re-review: ')[0].split(' Re-review: ')[0].split(' review: ')[0].split(': Testing ')[0].split(': We test ')[0].replace('Tested: ', '').replace('Test: ', '').replace('Reviewed: ', '').replace(': How We Test', '').replace('Review: ', '').replace(' Tests', '').replace('Book Review – ', '').replace(' review: ', '').replace(' review', '').replace(' Review', '').replace('Review impressions: ', '').replace('Tested! ', '').replace('Tests ', '').strip()
     product.ssid = context['url'].split('/')[-1]
@@ -38,7 +38,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     product.url = data.xpath('//a[contains(., "View Deal")]/@href').string()
     if not product.url:
         product.url = data.xpath('//a[contains(@class, "price")]/@href').string()
-    if not product.url:
+    if not product.url or 'skimresources' in product.url:
         product.url = context['url']
 
     review = Review()
@@ -84,6 +84,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
                 review.add_property(type='cons', value=con)
 
     summary = data.xpath('//div[@class="subheadline"]//text()').string(multiple=True)
+    if not summary:
+        summary = data.xpath('//h2[@class="content-subheadline"]//text()').string(multiple=True)
     if summary:
         summary = summary.replace(u'\x7F', '').strip()
         review.add_property(type='summary', value=summary)
@@ -97,10 +99,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         conclusion = conclusion[0].title() + conclusion[1:]
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(@id, "should-.+-buy") or regexp:test(text(), "Should .+ buy|It has a fan|conclusion|Final thoughts", "i")]/preceding-sibling::p[string-length(.)>10]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('(//body/p[string-length(.)>10]|//div[contains(@class, "content")])[not(preceding-sibling::h3[1][@class="review-price"])]//text()[not(parent::span[contains(@class, "price")] or regexp:test(., "Rating:|Price:"))][string-length(normalize-space(.))>10]').string(multiple=True)
-
+    excerpt = data.xpath('(//body/p[string-length(.)>10]|//div[contains(@class, "entry-content")])[not(preceding-sibling::h3[1][@class="review-price"])]//text()[not(ancestor::div[@class="review-column" or @id="review-body" or contains(@class, "block-coreImage") or @class="media-with-label"] or ancestor::h2[@class="content-subheadline"] or ancestor::h3[@class="review-best-price"] or parent::span[contains(@class, "price")] or regexp:test(., "Rating:|Price:") or preceding::h2[regexp:test(@id, "should-.+-buy") or regexp:test(text(), "Should .+ buy|It has a fan|conclusion|Final thoughts", "i")] or ancestor::h2[regexp:test(@id, "should-.+-buy") or regexp:test(text(), "Should .+ buy|It has a fan|conclusion|Final thoughts", "i")] or ancestor::h3[@id="our-verdict"])][string-length(normalize-space(.))>10]').string(multiple=True)
     if excerpt:
         excerpt = excerpt.replace(u'\x7F', '').strip()
 
