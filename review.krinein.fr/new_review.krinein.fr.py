@@ -72,6 +72,14 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if grade_overall:
                 review.grades.append(Grade(type='overall', value=grade_overall, best=5.0))
 
+    if not grade_overall:
+        grade_overall = data.xpath('//p[regexp:test(., ": \d(,\d)?/\d")]//text()[regexp:test(., ": \d(,\d)?/\d") and contains(., "Note")][normalize-space(.)]').string()
+        if grade_overall:
+            grade_overall = grade_overall.split(':')[-1].split('/')[0].strip().split()[0]
+            if grade_overall and grade_overall.isdigit():
+                if float(grade_overall) > 0:
+                    review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
     grades = data.xpath('//p[regexp:test(., ": \d(,\d)?/\d")]//text()[regexp:test(., ": \d(,\d)?/\d") and not(contains(., "Note"))][normalize-space(.)]').strings()
     for grade in grades:
         grade_name = grade.split(':')[0].strip(' .-')
@@ -95,11 +103,11 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         conclusion = h.unescape(conclusion).replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(contains(., "Tags") or @class or .//img)]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[contains(., "Conclusion")]/preceding-sibling::p[not(contains(., "Tags") or @class)]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//p[normalize-space(.//text())="Conclusion"]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div/p[not(@class or contains(., "Tags") or .//img or regexp:test(., ": \d\,?\d?/\d") or contains(., "Résumé"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div/p[not(@class or contains(., "Tags") or regexp:test(., ": \d\,?\d?/\d") or contains(., "Résumé"))]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = h.unescape(excerpt).replace(u'\uFEFF', '').strip()
