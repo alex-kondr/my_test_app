@@ -203,7 +203,7 @@ def get_end_date_agent(agent_id) -> Optional[str]:
     return datetime.fromisoformat(date).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Europe/Kyiv")).strftime("%d.%m.%Y %H:%M")
 
 
-def post_edit_page_agent(agent: AgentModel, done: bool = False):
+def post_edit_page_agent(agent: AgentModel):
     url = f"https://prunesearch.com/manage?action=editagent&agent_id={agent.agent_id}"
     data = {
         "action": "editagent",
@@ -211,13 +211,17 @@ def post_edit_page_agent(agent: AgentModel, done: bool = False):
         "name": agent.name,
         "source_name": agent.source_name,
         "description": agent.description,
-        "state_id": "3" if done else "2",
+        "state_id": "2",
         "priority": agent.priority,
         "group": agent.group
     }
 
-    if done:
+    if agent.done and agent.bb:
+        data["description"] += "\n<br><b>Moved to Git/BB</b>"
+        data["state_id"] = "10"
+    elif agent.done:
         data["active"] = "1"
+        data["state_id"] = "3"
 
     session = HTMLSession()
     response = session.post(

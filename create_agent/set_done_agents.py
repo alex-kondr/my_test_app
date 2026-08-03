@@ -61,9 +61,10 @@ def move_agent_folder(agent: AgentModel):
     agent_done_path = Path(f"{date_now.year}/{date_now.strftime("%Y-%m")}")
     agent_done_path.mkdir(parents=True, exist_ok=True)
 
-    agent_path = Path(agent.source_name)
-    if not agent_path.exists():
+    if agent.bb:
         agent_path = Path(f"{agent.source_name} (BB)")
+    else:
+        agent_path = Path(agent.source_name)
 
     if agent_path.exists():
         shutil.move(agent_path, agent_done_path / agent_path.name)
@@ -74,12 +75,12 @@ def move_agent_folder(agent: AgentModel):
 
 def get_done_agents():
     with DBSession() as db:
-        agents = db.query(AgentModel).filter_by(done=True, status=Status.qc, bb=False).all()
+        agents = db.query(AgentModel).filter_by(done=True, status=Status.qc).all()
 
         logger.info(f"Found {len(agents)} agents done")
 
         for agent in agents:
-            functions.post_edit_page_agent(agent, done=True)
+            functions.post_edit_page_agent(agent)
             agent.status = Status.done
             agent.end_date = date.today()
             move_agent_folder(agent)
