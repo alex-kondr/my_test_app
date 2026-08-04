@@ -392,7 +392,7 @@ class AgentForm:
                 description=functions.get_description(self.agent_info_html),
                 priority=functions.get_priority(self.agent_info_html),
                 group=functions.get_group(self.agent_info_html),
-                code="".join(self.old_code),
+                max_emit=functions.get_max_emit_agent(self.agent_id)
             )
             functions.post_edit_page_agent(agent)
             session.add(agent)

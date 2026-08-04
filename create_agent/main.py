@@ -12,7 +12,7 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="20152",
+    agent_id="17671",
     new_agent=False
     )
 agent.create_run(
@@ -20,7 +20,7 @@ agent.create_run(
     # agent_id="20182",
     url='https://www.cheathappens.com/reviews_index.asp?letter=ALL&pl=0',
     next_func=ProcessRun.revlist.name,
-    new_parser=True,
+    new_parser=False,
     breakers=10000,
     # curl=False
 )

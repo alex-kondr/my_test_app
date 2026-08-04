@@ -1,8 +1,11 @@
 import HTMLParser
+# .\koyeb.exe service logs vocational-ruth/vpn-service --tail -t runtime
 
 
 h = HTMLParser.HTMLParser()
 h.unescape()
+session.browser.use_new_parser = True
+session.sessionbreakers = [SessionBreak(max_requests=10000)]
 
 def remove_emoji(string):
     emoji_pattern = re.compile("["

@@ -203,7 +203,25 @@ def get_end_date_agent(agent_id) -> Optional[str]:
     return datetime.fromisoformat(date).replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo("Europe/Kyiv")).strftime("%d.%m.%Y %H:%M")
 
 
+def get_max_emit_agent(agent_id) -> Optional[str]:
+    url = f"https://prunesearch.com/manage?action=sessions&agent_id={agent_id}"
+
+    session = HTMLSession()
+    response = session.get(
+        url,
+        verify=False,
+        auth=HTTPBasicAuth(
+            username=os.getenv("USER-NAME"),
+            password=os.getenv("PASS")
+        )
+    )
+    return int(response.html.xpath('//td/parent::tr[not(td[contains(., "autorun")])]/td[8]/text()')[0])
+
+
 def post_edit_page_agent(agent: AgentModel):
+    if agent.bb:
+        return
+
     url = f"https://prunesearch.com/manage?action=editagent&agent_id={agent.agent_id}"
     data = {
         "action": "editagent",
@@ -211,20 +229,16 @@ def post_edit_page_agent(agent: AgentModel):
         "name": agent.name,
         "source_name": agent.source_name,
         "description": agent.description,
-        "state_id": "2",
+        "state_id": "3" if agent.done else "2",
         "priority": agent.priority,
         "group": agent.group
     }
 
-    if agent.done and agent.bb:
-        data["description"] += "\n<br><b>Moved to Git/BB</b>"
-        data["state_id"] = "10"
-    elif agent.done:
+    if agent.done:
         data["active"] = "1"
-        data["state_id"] = "3"
 
     session = HTMLSession()
-    response = session.post(
+    session.post(
         url,
         data=data,
         verify=False,
