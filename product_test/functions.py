@@ -215,7 +215,11 @@ def get_max_emit_agent(agent_id) -> Optional[str]:
             password=os.getenv("PASS")
         )
     )
-    return int(response.html.xpath('//td/parent::tr[not(td[contains(., "autorun")])]/td[8]/text()')[0])
+    max_emit = response.html.xpath('//td/parent::tr[not(td[contains(., "autorun")])]/td[8]/text()')
+    if max_emit:
+        return int(max_emit[0])
+    else:
+        return 0
 
 
 def post_edit_page_agent(agent: AgentModel):

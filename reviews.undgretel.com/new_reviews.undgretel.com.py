@@ -1,0 +1,179 @@
+from agent import *
+from models.products import *
+import simplejson
+import re
+
+
+XCAT = ['Bestseller', 'Neuheiten', 'Gutscheine', 'Tester', 'Show all', 'Shop all', 'Get inspired ✨']
+
+
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
+
+def run(context: dict[str, str], session: Session):
+    session.browser.use_new_parser = True
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.queue(Request('https://undgretel.com/', force_charset='utf-8'), process_frontpage, dict())
+
+
+def process_frontpage(data: Response, context: dict[str, str], session: Session):
+    strip_namespace(data)
+
+    cats = data.xpath('//div[contains(@class, "top-level")]/ul[contains(., "Shop all")]/li/a')
+    for cat in cats:
+        name = cat.xpath('text()').string()
+        url = cat.xpath('@href').string()
+
+        if url and name not in XCAT:
+            session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=name))
+
+
+def process_prodlist(data: Response, context: dict[str, str], session: Session):
+    strip_namespace(data)
+
+    prods = data.xpath('//cart-quick-add/@data-href')
+    for prod in prods:
+        url = prod.string()
+
+        if url:
+            url = 'https://undgretel.com' + url.split('?')[0]
+            session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, url=url))
+
+    # Loaded all products
+
+
+def process_product(data: Response, context: dict[str, str], session: Session):
+    strip_namespace(data)
+
+    product = Product()
+    product.name = data.xpath('//form[@method="post"]/div/div/div[contains(@class, "text-black")]/text()').string()
+    product.url = context['url']
+    product.ssid = data.xpath('//div/@data-oke-reviews-product-id | //form[contains(@id, "product_form")]/@id | //script[contains(@id, "render-subify-widget")]/@id').string().split('shopify-')[-1].split('form_')[-1].split('widget-')[-1]
+    product.category = 'Beauty|' + context['cat']
+    product.manufacturer = 'UND GRETEL'
+
+    prod_data = data.xpath('''//script[@type="application/json"][contains(., '"product":')]/text()''').string()
+    if prod_data:
+        prod_data = simplejson.loads(prod_data)
+
+        product.sku = prod_data['product'].get('variants', [{}])[0].get('sku')
+
+        ean = prod_data['product'].get('variants', [{}])[0].get('barcode')
+        if ean and str(ean).isdigit() and len(str(ean)) > 10:
+            product.add_property(type='id.ean', value=ean)
+
+    revs_cnt = data.xpath('//div[@class="oke-sr-count"]/span[contains(@class, "number")]/text()').string()
+    if revs_cnt:
+        revs_cnt = int(revs_cnt.replace(',', '')) > 0
+        if revs_cnt > 0:
+            context['revs_cnt'] = revs_cnt
+            context['product'] = product
+            process_reviews(data: Response, context: dict[str, str], session: Session)
+
+
+def process_reviews(data: Response, context: dict[str, str], session: Session):
+    product = context['product']
+
+    revs_json = data.xpath('//script[contains(., "reviewsNextUrl")]/text()').string()
+
+    if revs_json:
+        revs_json = simplejson.loads(revs_json)
+    else:
+        try:
+            revs_json = simplejson.loads(data.content)
+        except:
+            return # No actually reviews
+
+    revs = revs_json.get('reviews', [])
+    for rev in revs:
+        review = Review()
+        review.title = remove_emoji(rev.get('title', '')).strip('*+=-_\n ')
+        review.type = 'user'
+        review.url = product.url
+        review.ssid = rev['reviewId']
+
+        date = rev.get('dateCreated')
+        if date:
+            review.date = date.split('T')[0]
+
+        author = rev.get('reviewer', {}).get('displayName')
+        if author:
+            author = remove_emoji(author).strip('*+=-_\n ')
+            if len(author) > 1:
+                review.authors.append(Person(name=author, ssid=author))
+
+        grade_overall = rev.get('rating')
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
+        grades = rev.get('attributesWithRating', [])
+        for grade in grades:
+            grade_name = grade.get('title')
+            grade_value = grade.get('value')
+            if grade_name and grade_value and grade_value > 0:
+                review.grades.append(Grade(name=grade_name, value=float(grade_value), best=5.0))
+
+        is_verified = rev.get('isIncentivized')
+        if is_verified:
+            review.add_property(type='is_verified_buyer', value=True)
+
+        hlp_yes = rev.get('helpfulCount')
+        if hlp_yes:
+            review.add_property(type='helpful_votes', value=int(hlp_yes))
+
+        hlp_no = rev.get('unhelpfulCount')
+        if hlp_no:
+            review.add_property(type='not_helpful_votes', value=int(hlp_no))
+
+        is_recommended = rev.get('isRecommended')
+        if is_recommended:
+            review.add_property(type='is_recommended', value=True)
+
+        excerpt = rev.get('body')
+        if excerpt:
+            excerpt = remove_emoji(excerpt).replace('\r', '').replace('\n', ' ').strip('*+=-_\n ')
+            if excerpt:
+                review.add_property(type='excerpt', value=excerpt)
+
+                product.reviews.append(review)
+
+    next_url = revs_json.get('reviewsNextUrl') or revs_json.get('nextUrl')
+    if next_url:
+        next_url = 'https://api.okendo.io/v1/' + next_url.split('/v1/')[-1].replace('//', '')
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context))
+
+    elif product.reviews:
+        session.emit(product)
