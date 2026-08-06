@@ -1,5 +1,7 @@
 from agent import *
 from models.products import *
+import time
+import random
 
 
 def run(context: dict[str, str], session: Session):
@@ -8,6 +10,8 @@ def run(context: dict[str, str], session: Session):
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
+    time.sleep(random.uniform(1, 3))
+
     revs = data.xpath('//table/tbody/tr/td/a')
     for rev in revs:
         name = rev.xpath("text()").string()
@@ -18,6 +22,8 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 
 
 def process_product(data: Response, context: dict[str, str], session: Session):
+    time.sleep(random.uniform(1, 3))
+
     product = Product()
     product.name = context["name"]
     product.url = context["url"]
@@ -47,6 +53,8 @@ def process_product(data: Response, context: dict[str, str], session: Session):
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):
+    time.sleep(random.uniform(1, 3))
+
     review = context['review']
 
     review.title = data.xpath('//h1[contains(@class, "title")]/text()').string()
@@ -63,16 +71,29 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     author = data.xpath("//p[regexp:test(text(), '^rezensiert von ', 'i')]/text()").string()
     if not author:
         author = data.xpath('//span[contains(@class, "author")]/a[not(contains(., "Webmaster"))]/text()').string()
+    if not author:
+        author =data.xpath("//h4[regexp:test(text(), '^reviewed by ', 'i')]/text()").string()
+    if not author:
+        author = data.xpath("//p[regexp:test(., '^reviewed by ', 'i')]//text()").string()
+    if not author:
+        author = data.xpath('//p[contains(b, "Author")]/text()').string()
+    if not author:
+        author = data.xpath('//p[contains(b, "Autor")]/text()').string()
 
-    if author and author_url:
-        author_ssid = author_url.split('/')[-2]
-        author = author.split("rezensiert von ")[-1]
-        review.authors.append(Person(name=author, ssid=author_ssid))
-    elif author:
-        author = author.split("rezensiert von ")[-1]
-        review.authors.append(Person(name=author, ssid=author))
+    if author:
+        author = author.split("rezensiert von ")[-1].split('reviewed by ')[-1].strip(' :')
 
-    excerpt = data.xpath('//div[@class="entry-content"]/p//text()[not(regexp:test(., "WPG-Wertung:|schreibt eine Rezension|rezensiert von "))]').string(multiple=True)
+        if ', ' in author:
+            authors = author.split(', ')
+            for author in authors:
+                review.authors.append(Person(name=author, ssid=author))
+        elif author and author_url:
+            author_ssid = author_url.split('/')[-2]
+            review.authors.append(Person(name=author, ssid=author_ssid))
+        elif author:
+            review.authors.append(Person(name=author, ssid=author))
+
+    excerpt = data.xpath('//div[@class="entry-content"]/p[not(contains(a, "Print this review") or regexp:test(., "^Publisher:|^Author:|^Tester:|^Game Tested:|Rating|Hersteller:|Autor:|Getestet:|Tester:"))]//text()[not(regexp:test(., "WPG-Wertung:|schreibt eine Rezension|rezensiert von |reviewed by "))]').string(multiple=True)
     if excerpt:
         review.add_property(type="excerpt", value=excerpt)
 

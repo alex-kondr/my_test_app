@@ -45,7 +45,7 @@ def remove_emoji(string):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=7000)]
     session.queue(Request('https://undgretel.com/', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -79,7 +79,7 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
     product = Product()
-    product.name = data.xpath('//form[@method="post"]/div/div/div[contains(@class, "text-black")]/text()').string()
+    product.name = data.xpath('//form[@method="post"]/div/div/div[contains(@class, "text-black")]/text() | //form[@method="post"]/div/div/h1[contains(@class, "text-black")]/text()').string()
     product.url = context['url']
     product.ssid = data.xpath('//div/@data-oke-reviews-product-id | //form[contains(@id, "product_form")]/@id | //script[contains(@id, "render-subify-widget")]/@id').string().split('shopify-')[-1].split('form_')[-1].split('widget-')[-1]
     product.category = 'Beauty|' + context['cat']
@@ -119,6 +119,12 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
 
     revs = revs_json.get('reviews', [])
     for rev in revs:
+        if product.ssid not in rev.get('productId'):
+            continue
+
+        if not product.name:
+            product.name = rev.get('productName')
+
         review = Review()
         review.title = remove_emoji(rev.get('title', '')).strip('*+=-_\n ')
         review.type = 'user'
@@ -173,7 +179,7 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
     next_url = revs_json.get('reviewsNextUrl') or revs_json.get('nextUrl')
     if next_url:
         next_url = 'https://api.okendo.io/v1/' + next_url.split('/v1/')[-1].replace('//', '')
-        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context))
+        session.do(Request(next_url.replace('v1//stores', 'v1/stores'), use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(context))
 
     elif product.reviews:
         session.emit(product)
