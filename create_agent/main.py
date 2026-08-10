@@ -12,8 +12,8 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="11089",
-    new_agent=True
+    agent_id="13128",
+    new_agent=False
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",

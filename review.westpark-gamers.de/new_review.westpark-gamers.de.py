@@ -83,9 +83,17 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         author = data.xpath("//p[regexp:test(., '^Quick look by ', 'i')]//text()").string()
     if not author:
         author = data.xpath('//tr[contains(td/text(), "Autor")]/td[not(contains(., "Autor"))]/text()').string()
+    if not author:
+        author = data.xpath('//p[contains(., "rezensiert von ")]//text()').string()
+    if not author:
+        author = data.xpath('//p[contains(., "previewed by ")]//text()').string()
+    if not author:
+        author = data.xpath('//p[regexp:test(text(), "^von ")]//text()').string()
 
     if author:
-        author = author.split("rezensiert von ")[-1].split('reviewed by ')[-1].split('Quick look by ')[-1].strip(' :')
+        author = author.split("rezensiert von ")[-1].split('reviewed by ')[-1].split('Quick look by ')[-1].split('rezensiert von ')[-1].split('previewed by ')[-1].strip(' :')
+        if author.startswith('von '):
+            author.split('von ', 1)[-1].strip()
 
         if ', ' in author:
             authors = author.split(', ')
@@ -97,7 +105,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         elif author:
             review.authors.append(Person(name=author, ssid=author))
 
-    excerpt = data.xpath('//div[@class="entry-content"]/p[not(contains(a, "Print this review") or regexp:test(., "^Publisher:|^Author:|^Tester:|^Game Tested:|Rating|Hersteller:|Autor:|Getestet:|Tester:"))]//text()[not(regexp:test(., "WPG-Wertung:|schreibt eine Rezension|rezensiert von |reviewed by |Quick look by |Wertung:|Gesamtnote"))]').string(multiple=True)
+    excerpt = data.xpath('//div[@class="entry-content"]/p[not(contains(a, "Print this review") or regexp:test(., "^Publisher:|^Author:|^Tester:|^Game Tested:|Rating|Hersteller:|Autor:|Getestet:|Tester:") or regexp:test(text()[1], "^von "))]//text()[not(regexp:test(., "WPG-Wertung:|schreibt eine Rezension|rezensiert von |reviewed by |Quick look by |Wertung:|Gesamtnote|Westpark-score:"))]').string(multiple=True)
     if excerpt:
         if 'Fazit: ' in excerpt:
             excerpt, conclusion = excerpt.split('Fazit: ')

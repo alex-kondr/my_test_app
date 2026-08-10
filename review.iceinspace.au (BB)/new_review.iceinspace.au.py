@@ -35,50 +35,27 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.url = product.url
     review.ssid = product.ssid
 
-    date = data.xpath('//meta[@property="article:published_time"]/@content|//time/@datetime').string()
+    date = data.xpath('//div[@class="newsArticleSub"]/text()[contains(., "Submitted:")]').string()
     if date:
-        review.date = date.split('T')[0]
+        review.date = date.replace('Submitted:', '').split(' by ')[0].split(', ')[-1].strip()
 
-    author = data.xpath('/text()').string()
-    author_url = data.xpath('/@href').string()
+    author = data.xpath('(//p[contains(., "Review by")]/a)[1]/text()').string()
+    author_url = data.xpath('(//p[contains(., "Review by")]/a)[1]/@href').string()
     if author and author_url:
-        author_ssid = author_url.split('/')[-1]
-        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+        author_ssid = author_url.split('=')[-1]
+        review.authors.append(Person(name=author, ssid=author_ssid))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//text()').string()
-    if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
+    conclusion = data.xpath('(//h3[contains(., "Conclusion")]|//h4[contains(., "Summary.  Good and")])/following-sibling::p[not(contains(., "Review by"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[contains(., "Bottom line –")]//text()').string(multiple=True)
 
-    pros = data.xpath('(//h3[contains(., "Pros")]/following-sibling::*)[1]/li')
-    for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
-        if pro:
-            pro = pro.strip(' +-*.:;•,–')
-            if len(pro) > 1:
-                review.add_property(type='pros', value=pro)
-
-    cons = data.xpath('(//h3[contains(., "Cons")]/following-sibling::*)[1]/li')
-    for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
-        if con:
-            con = con.strip(' +-*.:;•,–')
-            if len(con) > 1:
-                review.add_property(type='cons', value=con)
-
-    summary = data.xpath('//div[h3[contains(text(), "Summary")]]/div//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
-    conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace('Bottom line –', '').strip().capitalize()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
-
+    excerpt = data.xpath('//td/p[not(contains(., "Bottom line –") or contains(., "Review by") or preceding::p[contains(., "Bottom line –")] or preceding::h3[contains(., "Conclusion")] or preceding::h4[contains(., "Summary.  Good and")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
