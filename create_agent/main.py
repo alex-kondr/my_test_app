@@ -12,16 +12,16 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="19688",
-    new_agent=False
+    agent_id="11089",
+    new_agent=True
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.cheathappens.com/reviews_index.asp?letter=ALL&pl=0',
+    url='https://www.iceinspace.com.au/reviews.html',
     next_func=ProcessRun.revlist.name,
     new_parser=False,
-    breakers=10000,
+    breakers=7000,
     # curl=False
 )
 # agent.create_frontpage(
@@ -30,7 +30,7 @@ agent.create_run(
 #     url_xpath='@href'
 # )
 agent.create_revlist(
-    revs_xpath='//li[contains(@class, "list-group-item")]//a',
+    revs_xpath='//h3',
     name_title=TypeAgent.review.value,
     name_title_xpath='text()',
     url_xpath='@href',

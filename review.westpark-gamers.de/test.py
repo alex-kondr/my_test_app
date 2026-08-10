@@ -18,9 +18,9 @@ reload = 1
 session_id = 0
 
 # name: 3+
-# author: 207
-# excerpt: 9
-# MAKING: 21
+# author: 103
+# excerpt: 8
+# MAKING: 297
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
