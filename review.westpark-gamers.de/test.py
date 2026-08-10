@@ -18,7 +18,7 @@ reload = 1
 session_id = 0
 
 # name: 3+
-# author: 66
+# author: 30
 # excerpt: 0+
 # MAKING: 0+
 
