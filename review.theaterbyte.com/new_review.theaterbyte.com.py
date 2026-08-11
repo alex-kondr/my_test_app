@@ -1,6 +1,8 @@
 from agent import *
 from models.products import *
 import re
+import time
+import random
 
 
 XCAT = ['News & Announcements', 'News']
@@ -12,6 +14,8 @@ def run(context: dict[str, str], session: Session):
 
 
 def process_frontpage(data: Response, context: dict[str, str], session: Session):
+    time.sleep(random.uniform( 1, 3))
+
     cats = data.xpath('//ul[contains(@class, "menu-items")]/li')
     for cat in cats:
         name = cat.xpath('div/text()').string()
@@ -26,6 +30,8 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
+    time.sleep(random.uniform( 1, 3))
+
     revs = data.xpath('//h3[contains(@class, "title")]/a')
     for rev in revs:
         title = rev.xpath('text()').string()
@@ -38,9 +44,11 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):
+    time.sleep(random.uniform( 1, 3))
+
     product = Product()
     product.name = re.compile(r'Preview.?:|Review.?:|\[.+\]|Preview |Review |Blind Test.?:| Review|\(.+\)|Baka & Test:', flags=re.I).sub('', context['title'].split('Review –')[0].split(' – ')[0]).strip()
-    product.ssid = context['url'].split('/')[-2]
+    product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = context['cat']
 
     product.url = data.xpath('//a[regexp:test(@href, "https://www.hulu.com/movie|https://amzn.to/")]/@href').string()
@@ -61,8 +69,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//a[contains(@class, "author-name")]//text()').string()
-    author_url = data.xpath('//a[contains(@class, "author-name")]/@href').string()
+    author = data.xpath('(//a[contains(@class, "author-name")]|//div[contains(@class, "author-name")]/a)//text()').string()
+    author_url = data.xpath('(//a[contains(@class, "author-name")]|//div[contains(@class, "author-name")]/a)/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-2]
         review.authors.append(Person(name=author, ssid=author_ssid))
@@ -90,10 +98,17 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     if not grades:
         grades = data.xpath('//p[.//strong[contains(text(), "[Rating:")]]')
+        if not grades:
+            grades = data.xpath('//p[.//strong[contains(., "[Rating:")]]')
+
         for grade in grades:
             grade_name = grade.xpath('preceding-sibling::p[1]//text()').string().strip(' :')
-            grade_val = grade.xpath('.//text()').string().split(':')[-1].split('/')[0]
-            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
+            grade_val = grade.xpath('.//text()').string().split(':')[-1].split('/')[0].strip()
+            try:
+                if grade_name and grade_val and grade_val[0].isdigit() and float(grade_val) > 0:
+                    review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
+            except:
+                pass
 
     pros = data.xpath('(//h2[contains(., "Pros:")]/following-sibling::*)[1]/li')
     if not pros:

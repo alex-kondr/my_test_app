@@ -17,6 +17,10 @@ agent = agents.GAMEREACTOR_DE
 reload = 1
 session_id = 0
 
+# name: 11+
+# grades: 1+
+# pros_cons: 14+
+# excerpt: 50
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

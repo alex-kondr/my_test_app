@@ -17,6 +17,10 @@ agent = agents.THEATERBYTE_US
 reload = 1
 session_id = 0
 
+# name: 7+
+# category: 31+
+# author: 2
+# excerpt: 211
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
