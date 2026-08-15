@@ -1,6 +1,6 @@
 import sys
 import os
-
+import asyncio
 
 from sqlalchemy import select
 
@@ -15,10 +15,10 @@ import product_test.list_of_agents as agents
 from models import AgentModel, DBSession, Status
 
 
-agent_id = agents.{name_agent_for_test}
+agent_id = agents.WWW_MACWORLD_COM
 
 
-with open("{agent_path}/{agent_name}", "r", encoding="utf-8") as file:
+with open("macworld.com/new_macworld.com.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(

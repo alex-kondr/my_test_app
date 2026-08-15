@@ -1,6 +1,6 @@
 import sys
 import os
-
+import asyncio
 
 from sqlalchemy import select
 
@@ -15,10 +15,10 @@ import product_test.list_of_agents as agents
 from models import AgentModel, DBSession, Status
 
 
-agent_id = agents.{name_agent_for_test}
+agent_id = agents.LEAK_PT
 
 
-with open("{agent_path}/{agent_name}", "r", encoding="utf-8") as file:
+with open("review.leak.pt/new_review.leak.pt.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(

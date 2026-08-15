@@ -77,6 +77,12 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
+    grade_overall = data.xpath('//text()[contains(., "[Rating:") and preceding-sibling::text()[1][contains(., "Overall")]]').string()
+    if grade_overall:
+        grade_overall = grade_overall.split(':')[-1].split('/')[0].strip()
+        if grade_overall and grade_overall[0].isdigit() and float(grade_overall) > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
     grades = data.xpath('//tr[@class="td-review-row-stars"]')
     for grade in grades:
         grade_name = grade.xpath('td[@class="td-review-desc"]/text()').string()
@@ -97,15 +103,14 @@ def process_review(data: Response, context: dict[str, str], session: Session):
                     grade_name = grade.strip()
 
     if not grades:
-        grades = data.xpath('//p[.//strong[contains(text(), "[Rating:")]]')
-        if not grades:
-            grades = data.xpath('//p[.//strong[contains(., "[Rating:")]]')
+        grades = data.xpath('(//strong[contains(., "[Rating:")])[1]//text()[contains(., "[Rating:") and not(preceding-sibling::text()[1][contains(., "Overall")])]')
 
         for grade in grades:
-            grade_name = grade.xpath('preceding-sibling::p[1]//text()').string().strip(' :')
-            grade_val = grade.xpath('.//text()').string().split(':')[-1].split('/')[0].strip()
+            grade_name = grade.xpath('preceding-sibling::text()').string()
+            grade_val = grade.string().split(':')[-1].split('/')[0].strip()
             try:
                 if grade_name and grade_val and grade_val[0].isdigit() and float(grade_val) > 0:
+                    grade_name = grade_name.strip(' :')
                     review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
             except:
                 pass
