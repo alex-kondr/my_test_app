@@ -31,13 +31,13 @@ def strip_namespace(data):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.queue(Request('https://search.rakuten.co.jp/search/mall/meta+quest/', force_charset='utf-8', max_age=0, use='curl'), process_prodlist, dict())
+    session.queue(Request('https://search.rakuten.co.jp/search/mall/meta+quest/', force_charset='utf-8', use='curl'), process_prodlist, dict())
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    time.sleep(random.uniform(1, 3))
+    time.sleep(random.uniform(4, 6))
 
     prods = data.xpath('//div[@data-id]')
     for prod in prods:
@@ -57,7 +57,8 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
 
     next_url = data.xpath('//a[contains(@class, "nextPage")]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(context))
+        options = """"--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' -H 'TE: trailers'"""
+        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0, options=options), process_prodlist, dict(context))
 
 
 def process_reviews(data: Response, context: dict[str, str], session: Session):

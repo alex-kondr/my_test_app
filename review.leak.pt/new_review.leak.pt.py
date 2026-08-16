@@ -8,7 +8,7 @@ def run(context: dict[str, str], session: Session):
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
-    revs = data.xpath('//h3[contains(@class, "title")]/a')
+    revs = data.xpath('//div[article]/div/h2[contains(@class, "title")]/a')
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()

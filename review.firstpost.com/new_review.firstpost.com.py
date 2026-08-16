@@ -2,47 +2,56 @@ from agent import *
 from models.products import *
 import simplejson
 import re
+import time
+import random
+
+
+OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: same-origin' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"""
 
 
 def run(context: dict[str, str], session: Session):
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
-    session.queue(Request('https://api-mt.firstpost.com/nodeapi/v1/mfp/get-article-list?count=50&fields=images%2Cdisplay_headline%2Cweburl_r%2Cpost_type%2Cgallery%2Cstory_id%2Cvideo_type%2Ccreated_at%2Cupdated_at&filter=%7B%22categories.slug%22%3A%22reviews%22%7D&offset=0&section=category&sectionCount=7&sectionFilter=%7B%22categories.slug%22%3A%22reviews%22%7D&sortBy=updated_at&subSection=reviews', max_age=0), process_revlist, dict())
+    session.queue(Request('https://www.firstpost.com/tech/reviews/', use='curl', options=OPTIONS), process_revlist, dict())
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
-    data_json = simplejson.loads(data.content)
-
-    revs = data_json.get('data', [])
+    revs = data.xpath('//div[contains(@class, "cat-list")]/a')
     for rev in revs:
-        title = rev.get('display_headline')
-        url = 'https://www.firstpost.com' + rev.get('weburl_r', '')
+        url = rev.xpath('@href').string()
+        session.queue(Request(url, use='curl', options=OPTIONS), process_review, dict(url=url))
 
-        options = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Alt-Used: www.firstpost.com' -H 'Connection: keep-alive' -H 'Cookie: g_state={"i_l":3,"i_ll":1774302154544,"i_b":"1BLanYFPkW1BVmfJlEpVqSftsjnqtPhVP0JgLASRZIU","i_p":1774906957686,"i_e":{"enable_itp_optimization":0}}; cdp_vid=ed1a28e4-ddef-4592-88f5-abd1232bf2d9-1774302152031; ppid=ed1a28e4-ddef-4592-88f5-abd1232bf2d9-1774302152031; ppid_temp=ed1a28e4-ddef-4592-88f5-abd1232bf2d9-1774302152031; cdp_tags={"devicetype":"https://staticcdp.nw18.com/scripts/e14cc3c0-f5ed-4b5c-8d40-940472638814/1733824739181-userDeviceType.js","cookies":"https://staticcdp.nw18.com/scripts/e14cc3c0-f5ed-4b5c-8d40-940472638814/1733824772474-userCookies.js","os":"https://staticcdp.nw18.com/scripts/e14cc3c0-f5ed-4b5c-8d40-940472638814/1733824808026-userOS.js","browser":"https://staticcdp.nw18.com/scripts/e14cc3c0-f5ed-4b5c-8d40-940472638814/1733827666916-userBrowser.js","pageview":"https://staticcdp.nw18.com/scripts/e14cc3c0-f5ed-4b5c-8d40-940472638814/1733827677768-userPageView.js"}' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: none' -H 'Sec-Fetch-User: ?1' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"""
-        session.queue(Request(url, use='curl', options=options, max_age=0), process_review, dict(title=title, url=url))
-
-    revs_cnt = data_json.get('total', 0)
-    offset = context.get('offset', 0) + 50
-    if offset < revs_cnt:
-        next_url = 'https://api-mt.firstpost.com/nodeapi/v1/mfp/get-article-list?count=50&fields=images%2Cdisplay_headline%2Cweburl_r%2Cpost_type%2Cgallery%2Cstory_id%2Cvideo_type%2Ccreated_at%2Cupdated_at&filter=%7B%22categories.slug%22%3A%22reviews%22%7D&offset={offset}&section=category&sectionCount=7&sectionFilter=%7B%22categories.slug%22%3A%22reviews%22%7D&sortBy=updated_at&subSection=reviews'.format(offset=offset)
-        session.queue(Request(next_url, max_age=0), process_revlist, dict(offset=offset))
+    next_url = data.xpath('//div[contains(@class, "pagination")]/a[contains(., ">")]/@href').string()
+    if next_url:
+        session.queue(Request(next_url, use='curl', options=OPTIONS), process_revlist, dict())
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):
+    title = data.xpath('//h1[contains(@class, "atttl")]/text()').string()
+
     product = Product()
-    product.name = context['title'].split(' Preview ')[0].split(' Review')[0].split(' review:')[0].split(' Preview: ')[0].replace('Review: ', '').replace('Review ', '').replace(' reviewed', '').replace(' review', '').replace('&', ' - ').replace('&#039;', "’").strip()
+    product.name = title.split(' Preview ')[0].split(' Review')[0].split(' review:')[0].split(' Preview: ')[0].replace('Review: ', '').replace('Review ', '').replace(' reviewed', '').replace(' review', '').replace('&', ' - ').replace('&#039;', "’").strip()
     product.url = context['url']
     product.ssid = product.url.split('-')[-1].replace('.html', '')
     product.category = 'Tech'
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title'].replace('&', ' - ').replace('&#039;', "'")
+    review.title = title.replace('&', ' - ').replace('&#039;', "'")
     review.url = product.url
     review.ssid = product.ssid
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
     if date:
         review.date = date.split('T')[0]
+
+    rev_json = data.xpath('//script[@id="__NEXT_DATA__"]/text()').string()
+    if rev_json:
+        rev_json = simplejson.loads(rev_json)
+
+        if not date:
+            date = rev_json.get('props', {}).get('pageProps', {}).get('pageData', {}).get('pageConfig', {}).get('wdata', {}).get('articleData', {}).get('data', {}).get('created_at')
+            if date:
+                review.date = date.split()[0]
 
     author = data.xpath('//div[@class="art-dtls-info"]/a/text()').string(multiple=True)
     author_url = data.xpath('//div[@class="art-dtls-info"]/a/@href').string()
@@ -107,6 +116,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
                 review.add_property(type='cons', value=con)
 
     summary = data.xpath('(//h2|//span)[@class="less-cont"]//text()').string(multiple=True)
+    if not summary:
+        summary = data.xpath('//p[contains(@class, "atsbttl")]//text()').string(multiple=True)
+
     if summary:
         summary = summary.replace('&mldr;', '...')
         review.add_property(type='summary', value=summary)
@@ -123,11 +135,13 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         conclusion = conclusion.replace('[/caption]', '').replace('&#039;', "'").strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('(//p[strong[regexp:test(., "verdict", "i")]]/preceding-sibling::p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d") or contains(., "Price:"))]|//p[strong[regexp:test(., "verdict", "i")]]//text())[not(starts-with(normalize-space(.), "-"))]').string(multiple=True)
+    excerpt = data.xpath('(//p[strong[regexp:test(., "verdict", "i")]]/preceding-sibling::p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d") or contains(., "Price:"))]|//p[strong[regexp:test(., "verdict", "i")]]//text())[not(starts-with(normalize-space(.), "-") or regexp:test(., "verdict", "i"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//p[strong[regexp:test(., "conclusion", "i")]]/preceding-sibling::p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d") or contains(., "Price:"))]|//p[strong[regexp:test(., "conclusion", "i")]]//text())[not(starts-with(normalize-space(.), "-"))]').string(multiple=True)
+        excerpt = data.xpath('(//p[strong[regexp:test(., "conclusion", "i")]]/preceding-sibling::p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d") or contains(., "Price:"))]|//p[strong[regexp:test(., "conclusion", "i")]]//text())[not(starts-with(normalize-space(.), "-") or regexp:test(., "conclusion", "i"))]').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('(//div[contains(@class, "content")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d") or contains(., "Price:") or regexp:test(., "conclusion|verdict", "i"))])[not(starts-with(normalize-space(.), "-"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('(//div[contains(@class, "artical-main")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d") or contains(., "Price:") or regexp:test(., "conclusion|verdict", "i"))])[not(starts-with(normalize-space(.), "-"))]').string(multiple=True)
 
     if excerpt:
         excerpt = re.split(r'\.[\w\s\d,:()]+[vV]erdict|\.[\w\s\d,:()]+[cC]onclusion', excerpt)[0]

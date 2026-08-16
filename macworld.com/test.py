@@ -17,6 +17,11 @@ agent = agents.WWW_MACWORLD_COM
 reload = 1
 session_id = 0
 
+# name: 3+
+# author: 1482
+# pros_cons: 2+
+# excerpt: 175
+# MAKING: 16
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

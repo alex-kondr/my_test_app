@@ -19,7 +19,7 @@ session_id = 0
 
 # name: 7+
 # category: 31+
-# author: 2
+# author: 1
 # excerpt: 211
 # https://www.theaterbyte.com/recoil-a-strange-hour-in-budapest-blu-ray-review/
 # https://www.theaterbyte.com/rotel-rsx-1562-7-1-channel-surround-sound-receiver-review/

@@ -106,7 +106,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         grades = data.xpath('(//strong[contains(., "[Rating:")])[1]//text()[contains(., "[Rating:") and not(preceding-sibling::text()[1][contains(., "Overall")])]')
 
         for grade in grades:
-            grade_name = grade.xpath('preceding-sibling::text()').string()
+            grade_name = grade.xpath('preceding-sibling::text()[1]').string()
             grade_val = grade.string().split(':')[-1].split('/')[0].strip()
             try:
                 if grade_name and grade_val and grade_val[0].isdigit() and float(grade_val) > 0:
@@ -115,9 +115,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             except:
                 pass
 
-    pros = data.xpath('(//h2[contains(., "Pros:")]/following-sibling::*)[1]/li')
+    pros = data.xpath('(//h2[contains(., "Pros")]/following-sibling::*)[1]/li')
     if not pros:
-        pros = data.xpath('(//p[.//strong[contains(text(), "The Good:")]]/following-sibling::*)[1]/li')
+        pros = data.xpath('(//p[.//strong[contains(text(), "The Good")]]/following-sibling::*)[1]/li')
 
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
@@ -126,9 +126,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('(//h2[contains(., "Cons:")]/following-sibling::*)[1]/li')
+    cons = data.xpath('(//h2[contains(., "Cons")]/following-sibling::*)[1]/li')
     if not cons:
-        cons = data.xpath('(//p[.//strong[contains(text(), "The Bad:")]]/following-sibling::*)[1]/li')
+        cons = data.xpath('(//p[.//strong[contains(text(), "The Bad")]]/following-sibling::*)[1]/li')
 
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
@@ -149,7 +149,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     excerpt = data.xpath('//h2[regexp:test(@class, "final|verdict") or regexp:test(., "Final|Verdict")][1]/preceding-sibling::p[not(contains(@class, "block") or (.//a[contains(@href, "amzn.to")] and contains(., "Purchase")))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "block-inner")]/p[not(contains(@class, "block") or @style or regexp:test(., "\[amazon|BestBuy.com:|Shop for more|Amazon.com|Rating:", "i") or (regexp:test(., "\w:") and string-length(.)<20) or (.//a[contains(@href, "amzn.to")] and contains(., "Purchase")))]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "block-inner")]/p[not(contains(@class, "block") or @style or regexp:test(., "\[amazon|BestBuy.com:|Shop for more|Amazon.com|Rating:", "i") or (regexp:test(., "\w:") and string-length(.)<20) or (.//a[contains(@href, "amzn.to")] and contains(., "Purchase")) or regexp:test(strong/text(), "The Good|The Bad|Specifications") or preceding-sibling::p[contains(strong/text(), "Specifications")])]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').strip()
