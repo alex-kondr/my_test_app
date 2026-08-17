@@ -28,7 +28,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if not product.url:
         product.url = context['url']
 
-    category = data.xpath('//div[@class="single-breadcrumb"]//a[not(regexp:test(., "Home|Review"))]/text()').string()
+    category = data.xpath('(//ol[@itemprop="breadcrumb"]//a)[last()][not(regexp:test(., "Home|Review"))]/text()').string()
     if category:
         product.category = category.strip(' /')
     else:
@@ -44,8 +44,11 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if date:
         review.date = date.split(' am ')[0].split(' pm ')[0].strip().rsplit(' ', 1)[0].strip()
 
-    author = data.xpath('(//span[@class="author vcard"]|//div[@class="author__name"]/a)//text()').string()
     author_url = data.xpath('(//span[@class="author vcard"]|//div[@class="author__name"])/a/@href').string()
+    author = data.xpath('(//span[@class="author vcard"]|//div[@class="author__name"]/a)//text()').string()
+    if not author:
+        author = data.xpath('//div[@class="author__name"]/text()').string()
+
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
@@ -77,7 +80,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(., "Should You Buy|Conclusion|Verdict", "i")]/following-sibling::p[not(regexp:test(., "^\$\d+|Check out the"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//div[contains(@class, "content")]/p[preceding::h2[regexp:test(., "Should You Buy|Conclusion|Verdict|Should you use", "i")] and not(regexp:test(., "^\$\d+|Check out the"))]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//h3[contains(., "Our Verdict")]/following-sibling::p[not(regexp:test(., "Price When Reviewed|This value will show the geolocated|Best Pricing Today"))]//text()').string(multiple=True)
 
@@ -88,7 +91,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if not excerpt:
         excerpt = data.xpath('//body/p[not(regexp:test(., "^\$\d+|Check out the") or preceding::h2[regexp:test(., "Should You Buy|Conclusion|Verdict", "i")])]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(regexp:test(., "^\$\d+|Check out the") or preceding::h2[regexp:test(., "Should You Buy|Conclusion|Verdict", "i")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "content")]/p[not(regexp:test(., "^\$\d+|Check out the") or preceding::h2[regexp:test(., "Should You Buy|Conclusion|Verdict|Should you use", "i")])]//text()').string(multiple=True)
 
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)

@@ -2,30 +2,45 @@ from agent import *
 from models.products import *
 import simplejson
 import re
-import time
-import random
 
 
 OPTIONS = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' -H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' -H 'Accept-Encoding: deflate' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-Fetch-Dest: document' -H 'Sec-Fetch-Mode: navigate' -H 'Sec-Fetch-Site: same-origin' -H 'Priority: u=0, i' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache'"""
 
 
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
 def run(context: dict[str, str], session: Session):
+    session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.firstpost.com/tech/reviews/', use='curl', options=OPTIONS), process_revlist, dict())
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
+    strip_namespace(data)
+
     revs = data.xpath('//div[contains(@class, "cat-list")]/a')
     for rev in revs:
         url = rev.xpath('@href').string()
         session.queue(Request(url, use='curl', options=OPTIONS), process_review, dict(url=url))
 
-    next_url = data.xpath('//div[contains(@class, "pagination")]/a[contains(., ">")]/@href').string()
+    next_url = data.xpath('//div[contains(@class, "pagination")]/a[contains(., ">") and not(contains(@class, "disabled"))]/@href').string()
     if next_url:
         session.queue(Request(next_url, use='curl', options=OPTIONS), process_revlist, dict())
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):
+    strip_namespace(data)
+
     title = data.xpath('//h1[contains(@class, "atttl")]/text()').string()
 
     product = Product()
@@ -142,6 +157,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         excerpt = data.xpath('(//div[contains(@class, "content")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d") or contains(., "Price:") or regexp:test(., "conclusion|verdict", "i"))])[not(starts-with(normalize-space(.), "-"))]').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('(//div[contains(@class, "artical-main")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d") or contains(., "Price:") or regexp:test(., "conclusion|verdict", "i"))])[not(starts-with(normalize-space(.), "-"))]').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[contains(@class, "artical-main")]//text()[not(starts-with(normalize-space(.), "-") or parent::strong[regexp:test(., "Pros|Cons|Price:|Rating:")] or parent::figcaption)]').string(multiple=True)
 
     if excerpt:
         excerpt = re.split(r'\.[\w\s\d,:()]+[vV]erdict|\.[\w\s\d,:()]+[cC]onclusion', excerpt)[0]
