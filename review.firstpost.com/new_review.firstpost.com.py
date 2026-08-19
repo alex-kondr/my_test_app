@@ -68,8 +68,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if date:
                 review.date = date.split()[0]
 
-    author = data.xpath('//div[@class="art-dtls-info"]/a/text()').string(multiple=True)
-    author_url = data.xpath('//div[@class="art-dtls-info"]/a/@href').string()
+    author = data.xpath('//a[contains(@href, "/author/")]/text()').string(multiple=True)
+    author_url = data.xpath('//a[contains(@href, "/author/")]/@href').string()
     if author and author_url:
         author_ssid = author_url.split('/')[-2]
         review.authors.append(Person(name=author, ssid=author_ssid))
@@ -141,6 +141,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     conclusion = data.xpath('//p[strong[regexp:test(., "verdict", "i")]]//text()|//p[strong[regexp:test(., "verdict", "i")]]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//p[strong[regexp:test(., "conclusion", "i")]]//text()|//p[strong[regexp:test(., "conclusion", "i")]]/following-sibling::p//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//strong[regexp:test(., "verdict", "i")]/following-sibling::text()').string(multiple=True)
 
     if conclusion:
         conclusion = re.split(r'[vV]erdict|[cC]onclusion', conclusion)[-1]

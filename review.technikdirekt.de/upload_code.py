@@ -2,6 +2,9 @@ import sys
 import os
 
 
+from sqlalchemy import select
+
+
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
@@ -12,10 +15,10 @@ import product_test.list_of_agents as agents
 from models import AgentModel, DBSession, Status
 
 
-agent_id = agents.{name_agent_for_test}
+agent_id = agents.TECHNIKDIREKT_DE
 
 
-with open("{agent_path}/{agent_name}", "r", encoding="utf-8") as file:
+with open("review.technikdirekt.de/new_review.technikdirekt.de.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(

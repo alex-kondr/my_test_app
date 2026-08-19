@@ -12,7 +12,7 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="11384",
+    agent_id="18592",
     new_agent=False
     )
 agent.create_run(
