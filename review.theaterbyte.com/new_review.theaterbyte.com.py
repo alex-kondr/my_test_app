@@ -142,14 +142,14 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(@class, "final|verdict") or regexp:test(., "Final|Verdict")]/following-sibling::p[not(.//a[contains(@href, "amzn.to")] and contains(., "Purchase"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//h2[regexp:test(., "final|verdict|conclusion", "i")]/following-sibling::p[not(.//a[contains(@href, "amzn.to")] and contains(., "Purchase"))]//text()').string(multiple=True)
     if conclusion:
         conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(@class, "final|verdict") or regexp:test(., "Final|Verdict")][1]/preceding-sibling::p[not((.//a[contains(@href, "amzn.to")] and contains(., "Purchase")) or contains(., "Estimated reading time:") or contains(strong, "Bonus Features:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(., "final|verdict|conclusion", "i")][1]/preceding-sibling::p[not((.//a[contains(@href, "amzn.to")] and contains(., "Purchase")) or contains(., "Estimated reading time:") or contains(strong, "Bonus Features:"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//div[contains(@class, "block-inner")]/p[not(@style or regexp:test(., "\[amazon|BestBuy.com:|Shop for more|Amazon.com|Rating:", "i") or (regexp:test(., "\w:") and string-length(.)<20) or (.//a[contains(@href, "amzn.to")] and contains(., "Purchase")) or regexp:test(strong/text(), "The Good|The Bad|Specifications") or preceding-sibling::p[contains(strong/text(), "Specifications")])]//text()').string(multiple=True)
+        excerpt = data.xpath('//div[contains(@class, "block-inner")]/p[not(@style or contains(., "Estimated reading time:") or regexp:test(., "\[amazon|BestBuy.com:|Shop for more|Amazon.com|Rating:", "i") or (regexp:test(., "\w:") and string-length(.)<20) or (.//a[contains(@href, "amzn.to")] and contains(., "Purchase")) or regexp:test(strong/text(), "The Good|The Bad|Specifications") or preceding-sibling::p[contains(strong/text(), "Specifications")])]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = excerpt.replace(u'\uFEFF', '').strip()

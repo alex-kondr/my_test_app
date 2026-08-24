@@ -30,7 +30,10 @@ upload_code(agent_id, agent_code, run=True)
 
 
 with DBSession() as db:
-    agent = db.query(AgentModel).filter_by(agent_id=str(agent_id)).one_or_none()
+    agent = db.query(AgentModel).filter(
+        AgentModel.agent_id == str(agent_id),
+        AgentModel.status.in_([Status.in_progress, Status.qc]),
+    ).one_or_none()
     if agent:
         agent.status = Status.running
         db.commit()

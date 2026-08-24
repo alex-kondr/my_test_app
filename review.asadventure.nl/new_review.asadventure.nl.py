@@ -101,7 +101,7 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
     try:
         revs_json = simplejson.loads(data.content)
     except:
-        return
+        revs_json = {}
 
     revs = revs_json.get('reviews', [])
     for rev in revs:

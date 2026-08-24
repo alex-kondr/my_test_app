@@ -124,8 +124,8 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
 
         excerpt = rev.get('text')
         if excerpt:
-            excerpt = h.unescape(remove_emoji(excerpt)).replace('\n', '').replace('\r', '').strip(' .+')
-            if excerpt:
+            excerpt = h.unescape(remove_emoji(excerpt)).replace('\n', '').replace('\r', '').strip(' .+…')
+            if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
                 product.reviews.append(review)

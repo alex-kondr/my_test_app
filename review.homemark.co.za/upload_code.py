@@ -1,8 +1,6 @@
 import sys
 import os
 
-from sqlalchemy import or_
-
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
@@ -32,7 +30,10 @@ upload_code(agent_id, agent_code, run=True)
 
 
 with DBSession() as db:
-    agent = db.query(AgentModel).filter(AgentModel.agent_id==str(agent_id)).filter(or_(AgentModel.status==Status.in_progress, AgentModel.status==Status.qc)).one_or_none()
+    agent = db.query(AgentModel).filter(
+        AgentModel.agent_id == str(agent_id),
+        AgentModel.status.in_([Status.in_progress, Status.qc]),
+    ).one_or_none()
     if agent:
         agent.status = Status.running
         db.commit()

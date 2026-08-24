@@ -69,8 +69,11 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
 
     product = context['product']
 
-    resp = simplejson.loads(data.content)
-    new_data = data.parse_fragment(resp['html'])
+    try:
+        resp = simplejson.loads(data.content)
+        new_data = data.parse_fragment(resp['html'])
+    except:
+        return
 
     revs = new_data.xpath("//div[@class='jdgm-rev jdgm-divider-top']")
     for rev in revs:

@@ -3,8 +3,12 @@ from models.products import *
 import re
 
 
+def cleaned_text(text):
+    return text.replace(u'Ã§', u'ç').replace(u'Ã«', u'ë').replace(u'Ã©Ã©n', u'éé').replace(u'Ã¯', u'ï').replace(u'Ã¼', u'ü').replace(u'Ã¤', u'ä').replace(u'Ã¨', u'è').replace(u'Ã©', u'é').strip()
+
+
 def run(context: dict[str, str], session: Session):
-    session.queue(Request('https://www.filmrecensiepagina.nl/films-filmoverzicht.htm', use='curl', force_charset='cp1252'), process_revlist, dict())
+    session.queue(Request('https://www.filmrecensiepagina.nl/films-filmoverzicht.htm', use='curl'), process_revlist, dict())
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
@@ -14,7 +18,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
         url = rev.xpath('@href').string()
 
         if name and url:
-            session.queue(Request(url, use='curl', force_charset='cp1252'), process_review, dict(name=name, url=url))
+            session.queue(Request(url, use='curl'), process_review, dict(name=name, url=url))
 
     # no next page
 
@@ -37,11 +41,11 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         date_author = data.xpath('//p[.//img[contains(@src, "pinkpan.gif")]]/following-sibling::p//text()[normalize-space(.)]').string(multiple=True)
 
     if date_author:
-        date_author = re.search(r'(van.*?)\((\d{4})\)', date_author, re.DOTALL)
+        date_author = re.search(r'(van.*?)\(( ?\d{4}) ?\)', date_author, re.DOTALL)
         if date_author:
             review.date = date_author.group(2).strip()
 
-            author = date_author.group(1).split(' van')[-1].split('(')[0].split('regisseurs')[-1].split('regisseur')[-1].split(' Zomer')[0].strip()
+            author = cleaned_text(date_author.group(1).split('van ')[-1].split('(')[0].split('regisseurs')[-1].split('regisseur')[-1].split(' Zomer')[0])
             if author:
                 review.authors.append(Person(name=author, ssid=author))
 
@@ -50,7 +54,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         excerpt = data.xpath('//p[.//img[contains(@src, "pinkpan.gif")]]/following-sibling::p[following-sibling::h3[.//img[contains(@src, "pinkpan.gif")]]]//text()[normalize-space()]').string(multiple=True)
 
     if excerpt:
-        excerpt = re.split(r'\(\s*\d+\)', excerpt)[-1].strip(' \n.')
+        excerpt = cleaned_text(re.split(r'\(\s*\d+\)', excerpt)[-1]).strip(' \n.')
         if excerpt:
             review.add_property(type='excerpt', value=excerpt)
 
