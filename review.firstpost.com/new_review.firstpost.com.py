@@ -143,6 +143,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         conclusion = data.xpath('//p[strong[regexp:test(., "conclusion", "i")]]//text()|//p[strong[regexp:test(., "conclusion", "i")]]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//strong[regexp:test(., "verdict", "i")]/following-sibling::text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[regexp:test(., "verdict", "i")]/following-sibling::p//text()').string(multiple=True)
 
     if conclusion:
         conclusion = re.split(r'[vV]erdict|[cC]onclusion', conclusion)[-1]
@@ -158,7 +160,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if not excerpt:
         excerpt = data.xpath('(//div[contains(@class, "content")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d") or contains(., "Price:") or regexp:test(., "conclusion|verdict", "i"))])[not(starts-with(normalize-space(.), "-"))]').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('(//div[contains(@class, "artical-main")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for"))]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d") or contains(., "Price:") or regexp:test(., "conclusion|verdict", "i"))])[not(starts-with(normalize-space(.), "-"))]').string(multiple=True)
+        excerpt = data.xpath('(//div[contains(@class, "artical-main")]/p[not(strong[regexp:test(., "Pros|Cons")] or regexp:test(., "Rating:|Click here for") or preceding::h2[regexp:test(., "verdict", "i")])]//text()[not(contains(., "Review:") or regexp:test(., "\d.?\d?/\d") or contains(., "Price:") or regexp:test(., "conclusion|verdict", "i"))])[not(starts-with(normalize-space(.), "-"))]').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "artical-main")]//text()[not(starts-with(normalize-space(.), "-") or parent::strong[regexp:test(., "Pros|Cons|Price:|Rating:")] or parent::figcaption)]').string(multiple=True)
 

@@ -1,0 +1,111 @@
+from agent import *
+from models.products import *
+import simplejson
+import time
+import random
+
+
+def run(context: dict[str, str], session: Session):
+    session.queue(Request("https://homemark.co.za/", force_charset='utf-8'), process_frontpage, dict())
+
+
+def process_frontpage(data: Response, context: dict[str, str], session: Session):
+    time.sleep(random.uniform(1, 3))
+
+    cats = data.xpath('//li[@class="lvl-1"]')
+    for cat in cats:
+        name = cat.xpath("a//text()").string()
+
+        subcats = cat.xpath('ul/li/a')
+        for subcat in subcats:
+            url = subcat.xpath('@href').string()
+            subcat_name = subcat.xpath('.//text()').string()
+            session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=name + '|' + subcat_name))
+
+
+def process_prodlist(data: Response, context: dict[str, str], session: Session):
+    time.sleep(random.uniform(1, 3))
+
+    prods = data.xpath('//div[contains(@class, "grid-products grid--view-items")]/div')
+    for prod in prods:
+        url = prod.xpath('.//a[contains(@class, "item__title")]/@href').string()
+        name = prod.xpath('.//a[contains(@class, "item__title")]//text()').string()
+        revs_cnt = prod.xpath('.//span[@class="jdgm-prev-badge__text"]//text()').string()
+
+        if revs_cnt  and 'no' not in revs_cnt.lower() and int(revs_cnt.split()[0]) > 0:
+            session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, url=url, name=name))
+
+    next_url = data.xpath('//a[@class="infinite"]/@href').string()
+    if next_url:
+        session.queue(Request(next_url, force_charset='utf-8'), process_prodlist, dict(context))
+
+
+def process_product(data: Response, context: dict[str, str], session: Session):
+    time.sleep(random.uniform(1, 3))
+
+    product = Product()
+    product.name = context['name']
+    product.category = context['cat']
+    product.url = context['url']
+    product.ssid = data.xpath('//input[@name="product-id"]/@value').string()
+
+    try:
+        prod_json = simplejson.loads(data.xpath('''//script[contains(text(), '"@type": "Product"')]//text()''').string())
+        product.sku = prod_json.get('sku')
+        product.manufacturer = prod_json.get('brand', {}).get('name')
+
+        ean = prod_json.get('offers', [{}])[0].get('mpn')
+        if ean and ean.isdigit() and len(ean) > 10:
+            product.add_property(type='id.ean', value=ean)
+    except:
+        pass
+
+    revs_url = "https://api.judge.me/reviews/reviews_for_widget?url=homemark-south-africa.myshopify.com&shop_domain=homemark-south-africa.myshopify.com&platform=shopify&page=1&per_page=5&product_id=" + product.ssid
+    session.do(Request(revs_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+
+
+def process_reviews(data: Response, context: dict[str, str], session: Session):
+    time.sleep(random.uniform(1, 3))
+
+    product = context['product']
+
+    resp = simplejson.loads(data.content)
+    new_data = data.parse_fragment(resp['html'])
+
+    revs = new_data.xpath("//div[@class='jdgm-rev jdgm-divider-top']")
+    for rev in revs:
+        review = Review()
+        review.type = 'user'
+        review.url = product.url
+        review.title = rev.xpath(".//b[@class='jdgm-rev__title']/text()").string()
+        review.ssid = rev.xpath("@data-review-id").string()
+
+        date = rev.xpath(".//span[@class='jdgm-rev__timestamp jdgm-spinner']/@data-content").string()
+        if date:
+            review.date = date.split()[0]
+
+        author = rev.xpath(".//span[@class='jdgm-rev__author']/text()").string()
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
+
+        is_verified = rev.xpath('@data-verified-buyer').string()
+        if is_verified and is_verified == 'true':
+            review.add_property(type='is_verified_buyer', value=True)
+
+        grade_overall = rev.xpath(".//span[@class='jdgm-rev__rating']/@data-score").string()
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
+        excerpt = rev.xpath(".//div[@class='jdgm-rev__body']//text()").string(multiple=True)
+        if excerpt:
+            review.add_property(type='excerpt', value=excerpt)
+
+            product.reviews.append(review)
+
+    next_page = new_data.xpath('//a[@rel="next"]/@data-page').string()
+    if next_page:
+        next_url = "https://api.judge.me/reviews/reviews_for_widget?url=homemark-south-africa.myshopify.com&shop_domain=homemark-south-africa.myshopify.com&platform=shopify&page=" + next_page + "&per_page=5&product_id=" + product.ssid
+        session.do(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+
+    elif product.reviews:
+        session.emit(product)

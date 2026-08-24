@@ -1,6 +1,8 @@
 import sys
 import os
 
+from sqlalchemy import or_
+
 
 current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
@@ -12,10 +14,10 @@ import product_test.list_of_agents as agents
 from models import AgentModel, DBSession, Status
 
 
-agent_id = agents.{name_agent_for_test}
+agent_id = agents.HOMEMARK_ZA
 
 
-with open("{agent_path}/{agent_name}", "r", encoding="utf-8") as file:
+with open("review.homemark.co.za/new_review.homemark.co.za.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(
@@ -30,7 +32,7 @@ upload_code(agent_id, agent_code, run=True)
 
 
 with DBSession() as db:
-    agent = db.query(AgentModel).filter_by(agent_id=str(agent_id)).one_or_none()
+    agent = db.query(AgentModel).filter(AgentModel.agent_id==str(agent_id)).filter(or_(AgentModel.status==Status.in_progress, AgentModel.status==Status.qc)).one_or_none()
     if agent:
         agent.status = Status.running
         db.commit()

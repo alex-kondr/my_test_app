@@ -3,7 +3,7 @@ from models.products import *
 
 
 def run(context: dict[str, str], session: Session):
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.macworld.com/reviews', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -87,9 +87,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "Should You Buy|Conclusion|Verdict", "i")]/preceding-sibling::p[not(regexp:test(., "^\$\d+"))]//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//body/p[not(regexp:test(., "^\$\d+|Check out the") or preceding::h2[regexp:test(., "Should You Buy|Conclusion|Verdict", "i")])]//text()').string(multiple=True)
+    excerpt = data.xpath('//body/p[not(regexp:test(., "^\$\d+|Check out the") or preceding::h2[regexp:test(., "Should You Buy|Conclusion|Verdict", "i")])]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "content")]/p[not(regexp:test(., "^\$\d+|Check out the") or preceding::h2[regexp:test(., "Should You Buy|Conclusion|Verdict|Should you use", "i")])]//text()').string(multiple=True)
 
