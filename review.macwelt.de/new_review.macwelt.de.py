@@ -2,11 +2,11 @@ from agent import *
 from models.products import *
 
 
-XCAT = ['Home', 'Reviews']
+XTITLE = ['Die besten ', ' vs. ']
 
 
 def run(context: dict[str, str], session: Session):
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://www.macwelt.de/tests', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -23,9 +23,11 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 
 def process_review(data: Response, context: dict[str, str], session: Session):
     title = data.xpath('//h1[contains(@class, "title")]/text()').string()
+    if any([xtitle in title for xtitle in XTITLE]):
+        return
 
     product = Product()
-    product.name = title.split(' im Test')[0].split('Kurztest: ')[-1].split('Test: ')[-1].split(' Produkteinschätzung')[0].replace('-Test', '').strip()
+    product.name = title.split(' im Test')[0].split('Kurztest: ')[-1].split('Test: ')[-1].split(' Produkteinschätzung')[0].replace('-Test', '').replace(' im Praxistest', '').split(' im Doppeltest:')[0].split(' im Vorabtest:')[0].replace('Praxistest: ', '').replace(' im Kurztest', '').split(' im Langzeittest')[0].replace(' (Praxistest)', '').replace('Nachgetestet:', '').replace(' im Vergleichstest', '').replace('Vergleichstest: ', '').replace('Spieletest: ', '').replace('Angetestet: ', '').replace('Test-Update: ', '').replace(' im Akkutest', '').replace('Test ', '').replace(' Test', '').strip()
     product.ssid = context['url'].split('article/')[-1].split('/')[0]
 
     url = data.xpath('//a/@data-adblocker-link[contains(., "amazon.de/dp/")]').string()
@@ -45,12 +47,16 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.ssid = product.ssid
     review.date = data.xpath('//div[h1]//div[contains(@class, "card__info--light")]//text()[normalize-space()]').string()
 
-    author = data.xpath('//div[@class="author__name"]/a/text()').string()
     author_url = data.xpath('//div[@class="author__name"]/a/@href').string()
+    author = data.xpath('//div[@class="author__name"]/a/text()').string()
+    if not author:
+        author = data.xpath('//div[@class="author__name"]/text()').string()
+
     if author and author_url:
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
     elif author:
+        author = author.replace('von ', '').strip()
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//div[@class="starRating"]/@style').string()
@@ -101,6 +107,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         review.add_property(type="conclusion", value=conclusion)
 
     excerpt = data.xpath('//div[@class="article__main"]//div[@class="article-column__content"]/p[not(preceding-sibling::*[1][@class="review-price"] or preceding-sibling::h2[regexp:test(., "Sollten Sie das|Fazit")])]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//body//div[@class="article-column__content"]/p[not(preceding-sibling::*[1][@class="review-price"] or preceding-sibling::h2[regexp:test(., "Sollten Sie das|Fazit")])]//text()').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

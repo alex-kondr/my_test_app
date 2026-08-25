@@ -17,6 +17,12 @@ agent = agents.MACWELT_DE
 reload = 1
 session_id = 0
 
+# name: 46
+# author: 0+
+# grades: 2370+
+# pros_cons: 0
+# conclusion: 16
+# excerpt: 173
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
