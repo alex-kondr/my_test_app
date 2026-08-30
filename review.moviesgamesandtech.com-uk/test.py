@@ -17,6 +17,10 @@ agent = agents.MOVIES_GAMES_AND_TECH_UK
 reload = 1
 session_id = 0
 
+# name: 22+
+# title: 1+
+# conclusion: 4+
+# excerpt: 49
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

@@ -136,6 +136,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if not conclusion:
         conclusion = data.xpath('//p[(.//strong|.//b)[regexp:test(., "Conclusion|Verdict|Final Thoughts")]]/following-sibling::p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
     if not conclusion:
+        conclusion = data.xpath('//p[contains(text(), "Final Verdict")]/following-sibling::p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:|Rating:|Reviewed on the ", "i") or strong[regexp:test(., "Pro|Con")] or starts-with(normalize-space(.), "-") or starts-with(normalize-space(.), "+") or contains(., "(Reviewed on "))]//text()').string(multiple=True)
+    if not conclusion:
         conclusion = data.xpath('//div[contains(@class, "review-summary-content")]//text()[not(starts-with(normalize-space(.), "-") or starts-with(normalize-space(.), "+") or contains(., "Price -") or contains(., "(A code was provided"))]').string(multiple=True)
 
     if conclusion:
@@ -150,6 +152,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         excerpt = data.xpath('//p[contains(., "Conclusion:")]/preceding-sibling::p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//p[(.//strong|.//b)[regexp:test(., "Conclusion|Verdict|Final Thoughts")]]/preceding-sibling::p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[contains(text(), "Final Verdict")]/preceding-sibling::p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:|Rating:|Reviewed on the ", "i") or strong[regexp:test(., "Pro|Con")] or starts-with(normalize-space(.), "-") or starts-with(normalize-space(.), "+") or contains(., "(Reviewed on "))]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@class, "block-inner") and not(parent::div[contains(@class, "single_subtitle")])]/p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
 

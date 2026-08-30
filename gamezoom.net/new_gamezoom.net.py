@@ -1,6 +1,7 @@
 from agent import *
 from models.products import *
 import simplejson
+import re
 
 
 def strip_namespace(data):
@@ -17,7 +18,7 @@ def strip_namespace(data):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
+    session.sessionbreakers = [SessionBreak(max_requests=9000)]
     options = """--globoff --compressed -H 'Authorization: Bearer 7f0khGnFfomuYqcF2cO-in5uz1CXgDhq'"""
     url = 'https://admin.gamezoom.net/items/article?sort[]=-date_activation&meta=filter_count&limit=21&offset=0&filter[_and][1][status][_eq]=published&filter[_and][2][isArticle][_eq]=true&filter[_and][3][_or][0][featured][_null]=true&filter[_and][3][_or][1][featured][_nin]=both,gamezoom&filter[_and][4][_or][0][type][_eq]=1&filter[_and][4][_or][1][type][_null]=true&fields=title,id'
     session.queue(Request(url, use='curl', force_charset='utf-8', options=options, max_age=0), process_revlist, dict(cat_url=url))
@@ -51,8 +52,11 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
+    if 'Vorschau/Preview' in context['title']:
+        return
+
     product = Product()
-    product.name = context['title'].replace(' - Test/Review', '').strip()
+    product.name = context['title'].replace(' - Test/Review', '').replace(' im Test', '').replace(' - Test', '').replace(' - Review', '').strip()
     product.ssid = context['ssid']
     product.manufacturer = data.xpath('//div[contains(div/p, "Entwickler")]/div[contains(@class, "right")]/p/text()').string()
 
@@ -61,9 +65,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         product.url = context['url']
 
     category = data.xpath('//a[contains(@class, "category")]/span/text()').string()
-    platforms = data.xpath('//div[contains(div/p, "Plattform")]/div[contains(@class, "right")]/p/text()').join('/')
+    platforms = data.xpath('//div[contains(div/p, "Plattform")]/div[contains(@class, "right")]/p/text()').strings()
     if category and platforms:
-        product.category = 'Spiele' + '|' + category + '|' + platforms
+        product.category = 'Spiele' + '|' + category + '|' + '/'.join(set(platforms))
     elif category:
         product.category = category
     else:
@@ -72,7 +76,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review = Review()
     review.type = 'pro'
     review.title = context['title']
-    review.url = product.url
+    review.url = context['url']
     review.ssid = product.ssid
 
     date = data.xpath('//div[contains(@class, "article_author_date")]/time/@datetime').string()
@@ -85,7 +89,10 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     grade_overall = data.xpath('//div[contains(@class, "evaluation__chart-center")]/span/text()').string()
     if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
+        grade_overall = float(grade_overall)
+        if grade_overall > 100:
+            grade_overall = grade_overall / 10
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
     grades = data.xpath('//div[contains(@class, "bar badge")]')
     for grade in grades:
@@ -113,14 +120,20 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     summary = data.xpath('//div[contains(@class, "conclusion_short")]/p//text()').string(multiple=True)
     if summary:
         summary = summary.split(' meint: ')[-1]
+        summary = re.sub(r'<[^>]+>', '', summary)
+        summary = re.sub(r'&#\d+;', '', summary).strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//p[contains(@class, "evaluation__text")]//text()').string(multiple=True)
     if conclusion:
+        conclusion = re.sub(r'<[^>]+>', '', conclusion)
+        conclusion = re.sub(r'&#\d+;', '', conclusion).strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//section[contains(@class, "content")]/p//text()').string(multiple=True)
     if excerpt:
+        excerpt = re.sub(r'<[^>]+>', '', excerpt)
+        excerpt = re.sub(r'&#\d+;', '', excerpt).strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

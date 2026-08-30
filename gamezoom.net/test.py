@@ -17,6 +17,13 @@ agent = agents.GAMEZOOM
 reload = 1
 session_id = 0
 
+# name: 732
+# category: 324
+# pros_cons: 54+
+# conclusion: 111
+# excerpt: 83
+# 1269 logs: 2
+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)
