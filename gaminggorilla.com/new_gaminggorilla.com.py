@@ -1,5 +1,6 @@
 from agent import *
 from models.products import *
+import re
 
 
 def strip_namespace(data):
@@ -12,6 +13,30 @@ def strip_namespace(data):
         out.write(line + "\n")
     out.close()
     os.rename(tmp, data.content_file)
+
+
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
 
 
 def run(context: dict[str, str], session: Session):
@@ -37,9 +62,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace(' Review', '').strip()
+    product.name = context['title'].replace(' Review', '').replace(' review', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
+    product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = 'Hardware'
 
     review = Review()
@@ -62,22 +87,25 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     summary = data.xpath('//span[contains(@class, "post-excerpt")]/p//text()').string(multiple=True)
     if summary:
+        summary = remove_emoji(summary).strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//h2[regexp:test(., "Conclusion|Final Thoughts")]/following-sibling::p[not(@align="center" or @style="text-align: center;")]//text()').string()
+    conclusion = data.xpath('(//h2|//h3)[regexp:test(., "Conclusion|Final Thoughts")]/following-sibling::p[not(@align="center" or @style="text-align: center;")]//text()').string()
     if not conclusion:
         conclusion = data.xpath('//p[contains(strong, "Conclusion")]/following-sibling::p[not(@align="center" or @style="text-align: center;")]//text()').string(multiple=True)
 
     if conclusion:
+        conclusion = remove_emoji(conclusion).strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "Conclusion|Final Thoughts")]/preceding-sibling::p[not(@align="center" or @style="text-align: center;")]//text()').string(multiple=True)
+    excerpt = data.xpath('(//h2|//h3)[regexp:test(., "Conclusion|Final Thoughts")]/preceding-sibling::p[not(@align="center" or @style="text-align: center;")]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//p[contains(strong, "Conclusion")]/preceding-sibling::p[not(@align="center" or @style="text-align: center;")]//text()').string(multiple=True)
     if not excerpt:
         excerpt = data.xpath('//div[contains(@id, "content-main")]/p[not(@align="center" or @style="text-align: center;")]//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = remove_emoji(excerpt).strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

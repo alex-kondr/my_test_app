@@ -17,6 +17,11 @@ agent = agents.FAMILY_FRIENDLY_GAMING_US
 reload = 1
 session_id = 0
 
+# name: 6+
+# category: 9
+# title: 0+
+# author: 10+
+# excerpt: 2+
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

@@ -5,7 +5,7 @@ import re
 
 def run(context: dict[str, str], session: Session):
     session.sessionbreakers = [SessionBreak(max_requests=7000)]
-    session.queue(Request('https://www.familyfriendlygaming.com/Reviews%20listing.html', force_charset='utf-8', use='curl'), process_catlist, dict())
+    session.queue(Request('https://www.familyfriendlygaming.com/Reviews%20listing.html', force_charset='cp1252', use='curl'), process_catlist, dict())
 
 
 def process_catlist(data: Response, context: dict[str, str], session: Session):
@@ -13,7 +13,7 @@ def process_catlist(data: Response, context: dict[str, str], session: Session):
     for cat in cats:
         name = cat.xpath('text()').string()
         url = cat.xpath('@href').string()
-        session.queue(Request(url, force_charset='utf-8', use='curl'), process_revlist, dict(cat=name))
+        session.queue(Request(url, force_charset='cp1252', use='curl'), process_revlist, dict(cat=name))
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
@@ -21,7 +21,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
     for rev in revs:
         name = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, force_charset='utf-8', use='curl'), process_review, dict(context, name=name, url=url))
+        session.queue(Request(url, force_charset='cp1252', use='curl'), process_review, dict(context, name=name, url=url))
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):
@@ -36,7 +36,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     platforms = data.xpath('//p//text()[contains(., "System:")]').string()
     if platforms:
-        product.category = 'Games' + '|' + platforms.replace('System:', '').split('(')[0].strip()
+        product.category = 'Games' + '|' + platforms.replace('System:', '').split('(')[0].replace('/tested)', '').replace(' tested)', '').replace('{tested}', '').strip()
 
     manufacturer = data.xpath('//p//text()[contains(., "Developer:")]').string()
     if manufacturer:
@@ -81,7 +81,10 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if grade_name and grade_val and float(grade_val) > 0:
                 review.grades.append(Grade(name=grade_name, value=float(grade_val), best=100.0))
 
-    excerpt = data.xpath('//div[@id="content"]/p[not(@class or @style or regexp:test(., "\:.+\d+.%|@familyfriendlygaming.com|Want more"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@id="content"]/p[not(@class or regexp:test(., "\:.+\d+.%|@familyfriendlygaming.com|Want more"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[@id="content"]/text()[not(regexp:test(., "\:.+\d+.%|@familyfriendlygaming.com|Want more"))]').string(multiple=True)
+
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
