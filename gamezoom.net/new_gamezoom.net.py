@@ -4,7 +4,7 @@ import simplejson
 import re
 
 
-XTITLE = ['Preview-Video', 'Vorschau/Preview', 'Preview-Event', 'Preview Event', 'im Videotest', 'Preview Video', 'Preview/Vorschau', ' - Preview']
+XTITLE = ['Preview-Video', 'Vorschau/Preview', 'Preview-Event', 'Preview Event', 'im Videotest', 'Preview Video', 'Preview/Vorschau', ' - Preview', 'Testvideo']
 
 
 def strip_namespace(data):
@@ -58,7 +58,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace(' - Test/Review', '').replace(' - Review/Test', '').replace(' - Test /Review', '').replace(' - (Kurz)Review', '').replace(' - Video-Review', '').replace(' Preview-Video', '').replace(' im Test', '').replace(' - Test', '').replace(' - Review', '').replace(' – Review', '').replace(' (Video)', '').replace(' (+Xbox One Review)', '').replace(' (+Testvideo)', '').replace(' (inkl. Testvideo)', '').replace(' inkl. Testvideo', '').strip()
+    product.name = context['title'].replace(' - Test/Review', '').replace(' - Review/Test', '').replace(' – Mousepad-Review', '').replace(' - Test /Review', '').replace(' - (Kurz)Review', '').replace(' - Video-Review', '').replace(' Preview-Video', '').replace(' - Im Video-Test', '').replace(' im Test', '').replace(' - Test', '').replace(' - Review', '').replace(' – Review', '').replace(' (Video)', '').replace(' (+Xbox One Review)', '').replace(' (+Testvideo)', '').replace(' (+Testvideos)', '').replace(' (+Test-Video)', '').replace(' (inkl. Testvideo)', '').replace(' inkl. Testvideo', '').strip()
     product.ssid = context['ssid']
     product.manufacturer = data.xpath('//div[contains(div/p, "Entwickler")]/div[contains(@class, "right")]/p/text()').string()
 

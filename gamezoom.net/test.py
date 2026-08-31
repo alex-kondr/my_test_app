@@ -17,11 +17,11 @@ agent = agents.GAMEZOOM
 reload = 1
 session_id = 0
 
-# name: 162
-# category: 153+
+# name: 26
+# category: 276+
 # pros_cons: 54+
-# conclusion: 53
-# excerpt: 69
+# conclusion: 47
+# excerpt: 59
 # 1269 logs: 0+
 
 
