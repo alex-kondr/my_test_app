@@ -17,6 +17,12 @@ agent = agents.GEARBURN_US
 reload = 1
 session_id = 0
 
+# name: 66
+# category: 4
+# date: 0+
+# grades: 1416
+# conclusion: 1
+# excerpt: 74
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

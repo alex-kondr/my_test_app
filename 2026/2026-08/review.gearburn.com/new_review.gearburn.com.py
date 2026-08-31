@@ -38,7 +38,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('We review: ', '').split(' review: ')[0].split(' review, ')[0].split(' review |')[0].split(' Review: ')[0].split(' review — ')[0].replace(' [Review]', '').replace(' reviews:', '').replace(': we review', '').replace(' reviewed', '').replace(' review', '').replace('Reviewed: ', '').replace('Reviewed — ', '').replace('Review: ', '').replace('Reviewing ', '').strip()
+    product.name = context['title'].replace('We review: ', '').split(' Review 2026: ')[-1].split(' review: ')[0].split(' review, ')[0].split(' review |')[0].split(' Review: ')[0].split(' Review, ')[0].split(' review — ')[0].split(' preview: ')[0].split(' preview - ')[0].replace('Review round-up: ', '').replace(' [Review]', '').replace(' [review]', '').replace(' reviews:', '').replace(': we review', '').replace(' reviewed', '').replace(' review', '').replace('Reviewed: ', '').replace('Reviewed — ', '').replace('Review: ', '').replace('Reviewing ', '').replace("Reviewers' ", '').replace("Reviewer's ", '').replace(' Review', '').replace('Review ', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
 
@@ -48,7 +48,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     platform = data.xpath('//strong[contains(., "Platform")]/following-sibling::text()').string()
     if platform:
-        product.category = 'Games|' + platform.strip(' :')
+        product.category = 'Games|' + platform.replace(' (review platform)', '').replace(' (review)', '').split(' 2.3 or higher')[0].split(' 4.1 or higher')[0].split(' 4.2 or higher')[0].replace(', ', '/').strip(' :')
 
     manufacturer = data.xpath('//strong[contains(., "Developer")]/following-sibling::text()').string()
     if manufacturer:
@@ -60,7 +60,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.url = product.url
     review.ssid = product.ssid
 
-    date = data.xpath('//meta[@property="article:published_time"]/@content').string()
+    date = data.xpath('//meta[@property="article:published_time"]/@content|//time/@datetime').string()
     if date:
         review.date = date.split('T')[0]
 
@@ -116,7 +116,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion.strip(' :'))
 
-    excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(regexp:test(., "Read more:|Image credits:|Feature image|Verdict:|Score:") or preceding::strong[regexp:test(., "Who it’s for|What we like|What we don’t like|Verdict", "i")] or strong[regexp:test(., "Who it’s for|What we like|What we don’t like|Verdict", "i")] or preceding::h3[regexp:test(., "verdict", "i")] or @style)]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[contains(@class, "entry-content")]/p[not(regexp:test(., "Read more:|Image credits:|Feature image|Verdict:|Score:") or preceding::strong[regexp:test(., "Who it’s for|What we like|What we don’t like|Verdict", "i")] or strong[regexp:test(., "Who it’s for|What we like|What we don’t like|Verdict", "i")] or preceding::h3[regexp:test(., "verdict", "i")] or @style or preceding::h2[contains(., "FAQ") or contains(., "Final Verdict:")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
