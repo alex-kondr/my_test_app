@@ -4,6 +4,9 @@ import simplejson
 import re
 
 
+XTITLE = ['Preview-Video', 'Vorschau/Preview', 'Preview-Event', 'Preview Event', 'im Videotest', 'Preview Video', 'Preview/Vorschau', ' - Preview']
+
+
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"
     out = file(tmp, "w")
@@ -39,7 +42,9 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
         title = rev.get('title')
         ssid = str(rev.get('id'))
         url = 'https://www.gamezoom.net/artikel/' + ssid
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(context, title=title, ssid=ssid, url=url))
+
+        if not any(xtitle in title for xtitle in XTITLE):
+            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, ssid=ssid, url=url))
 
     revs_cnt = context.get('revs_cnt', revs_json.get('meta', {}).get('filter_count', 0))
     offset = context.get('offset', 0) + 21
@@ -52,11 +57,8 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    if 'Vorschau/Preview' in context['title']:
-        return
-
     product = Product()
-    product.name = context['title'].replace(' - Test/Review', '').replace(' im Test', '').replace(' - Test', '').replace(' - Review', '').strip()
+    product.name = context['title'].replace(' - Test/Review', '').replace(' - Review/Test', '').replace(' - Test /Review', '').replace(' - (Kurz)Review', '').replace(' - Video-Review', '').replace(' Preview-Video', '').replace(' im Test', '').replace(' - Test', '').replace(' - Review', '').replace(' – Review', '').replace(' (Video)', '').replace(' (+Xbox One Review)', '').replace(' (+Testvideo)', '').replace(' (inkl. Testvideo)', '').replace(' inkl. Testvideo', '').strip()
     product.ssid = context['ssid']
     product.manufacturer = data.xpath('//div[contains(div/p, "Entwickler")]/div[contains(@class, "right")]/p/text()').string()
 
@@ -92,7 +94,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         grade_overall = float(grade_overall)
         if grade_overall > 100:
             grade_overall = grade_overall / 10
-            review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
+
+        review.grades.append(Grade(type='overall', value=float(grade_overall), best=100.0))
 
     grades = data.xpath('//div[contains(@class, "bar badge")]')
     for grade in grades:

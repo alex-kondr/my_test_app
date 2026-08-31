@@ -17,12 +17,12 @@ agent = agents.GAMEZOOM
 reload = 1
 session_id = 0
 
-# name: 732
-# category: 324
+# name: 162
+# category: 153+
 # pros_cons: 54+
-# conclusion: 111
-# excerpt: 83
-# 1269 logs: 2
+# conclusion: 53
+# excerpt: 69
+# 1269 logs: 0+
 
 
 if __name__ == "__main__":

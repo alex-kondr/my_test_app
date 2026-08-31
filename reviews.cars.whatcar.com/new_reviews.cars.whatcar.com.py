@@ -52,9 +52,12 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     product = Product()
     product.name = context['name']
-    product.ssid = context['url'].split('/')[-1]
     product.category = context['cat']
     product.manufacturer = data.xpath('//nav[@role="navigation"]//a[contains(@href, "/make/")]/text()').string()
+
+    product.ssid = context['url'].split('/')[-1]
+    if 'review' in product.ssid:
+        product.ssid = product.name.lower().replace(' ', '_').replace(':', '_')
 
     product.url = data.xpath('//a[contains(., "New car deals") and @data-bi="cta-click"]/@href').string()
     if not product.url:
@@ -110,7 +113,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         summary = h.unescape(summary).strip()
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//div[contains(@class, "verdict-body")]/p//text()').string(multiple=True)
+    conclusion = data.xpath('//div[contains(@class, "verdict-body")]//text()').string(multiple=True)
     if conclusion:
         conclusion = h.unescape(conclusion).strip()
         review.add_property(type='conclusion', value=conclusion)
