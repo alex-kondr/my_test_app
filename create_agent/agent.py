@@ -389,6 +389,7 @@ class AgentForm:
                 agent_id=self.agent_id,
                 name=self.name_agent_for_test,
                 source_name=self.name,
+                old_code=self.old_code,
                 description=functions.get_description(self.agent_info_html),
                 priority=functions.get_priority(self.agent_info_html),
                 group=functions.get_group(self.agent_info_html),
