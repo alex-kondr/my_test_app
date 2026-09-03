@@ -75,11 +75,10 @@ class AgentForm:
         with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8") as file:
             file.writelines(self.old_code)
 
-        if self.new_agent:
-            with open(self.file_path, "w", encoding="utf-8") as file:
+        with open(self.file_path, "w", encoding="utf-8") as file:
+            if self.new_agent:
                 file.write(text)
-        else:
-            with open(self.file_path, "w", encoding="utf-8") as file:
+            else:
                 file.writelines(self.old_code)
 
         # self.funcs.get(next_func)()
@@ -389,7 +388,7 @@ class AgentForm:
                 agent_id=self.agent_id,
                 name=self.name_agent_for_test,
                 source_name=self.name,
-                old_code=self.old_code,
+                old_code='\n'.join(self.old_code),
                 description=functions.get_description(self.agent_info_html),
                 priority=functions.get_priority(self.agent_info_html),
                 group=functions.get_group(self.agent_info_html),
