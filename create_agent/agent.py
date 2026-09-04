@@ -73,13 +73,14 @@ class AgentForm:
         self.create_agent_for_db()
 
         with open(str(self.file_path).replace("new_", "old_"), "w", encoding="utf-8") as file:
-            file.writelines(self.old_code)
+            file.write('\n'.join(self.old_code))
 
         with open(self.file_path, "w", encoding="utf-8") as file:
             if self.new_agent:
                 file.write(text)
             else:
-                file.writelines(self.old_code)
+                file.write('\n'.join(self.old_code))
+                # file.writelines(self.old_code)
 
         # self.funcs.get(next_func)()
 

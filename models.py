@@ -1,12 +1,11 @@
-from typing import Any, Generator, List, Optional
 import os
+from typing import Any, Generator, Optional
 from datetime import datetime, date
-import asyncio
+from decimal import Decimal
 import enum
 
-from sqlalchemy import String, Text, Boolean, DateTime, func, ForeignKey, create_engine, Enum, Date
-from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase, sessionmaker, Session
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from sqlalchemy import String, Text, Boolean, DateTime, func, create_engine, Enum, Date, Numeric
+from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase, sessionmaker, Session
 from dotenv import load_dotenv
 from sqlalchemy.orm.session import Session
 
@@ -31,6 +30,21 @@ class Status(enum.Enum):
     running = "Running"
 
 
+class AgentType(str, enum.Enum):
+    BIG = "Big"
+    MEDIUM = "Medium"
+    SMALL = "Small"
+
+    @property
+    def price(self) -> Decimal:
+        prices = {
+            AgentType.BIG: Decimal("7.00"),
+            AgentType.MEDIUM: Decimal("5.00"),
+            AgentType.SMALL: Decimal("3.00"),
+        }
+        return prices[self]
+
+
 class Base(DeclarativeBase):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
 
@@ -52,8 +66,18 @@ class AgentModel(Base):
     max_emit: Mapped[Optional[int]] = mapped_column(default=0)
     old_code: Mapped[str] = mapped_column(Text, default=None, nullable=True)
     new_code: Mapped[str] = mapped_column(Text, default=None, nullable=True)
+    agent_type: Mapped[str] = mapped_column(String(50), default=AgentType.MEDIUM.value)
+    agent_price: Mapped[Decimal] = mapped_column(Numeric(precision=10, scale=2))
+    extra_time: Mapped[bool] = mapped_column(Boolean(), default=False)
     create_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     update_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    def __init__(self, agent_type: AgentType = AgentType.MEDIUM, **kwargs):
+        super().__init__(
+            agent_type=agent_type.value,
+            agent_price=agent_type.price,
+            **kwargs
+        )
 
 
 def get_db() -> Generator[Session, Any, None]:

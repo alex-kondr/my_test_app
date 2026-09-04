@@ -137,7 +137,7 @@ def get_agent_code(agent_id):
         ).replace(
             "(context, session)",
             "(context: dict[str, str], session: Session)"
-        ).split('\n')
+        ).replace('\xa0', ' ').splitlines()
 
 
 def get_edit_page_agent(agent_id):

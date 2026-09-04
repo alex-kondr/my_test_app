@@ -9,7 +9,7 @@ sys.path.append(parent)
 
 from product_test.functions import upload_code
 import product_test.list_of_agents as agents
-from models import AgentModel, DBSession, Status
+from models import AgentModel, DBSession, Status, AgentType
 
 
 agent_id = agents.{name_agent_for_test}
@@ -37,4 +37,6 @@ with DBSession() as db:
     if agent:
         agent.status = Status.running
         agent.new_code = agent_code
+        agent.agent_type = AgentType.MEDIUM
+        agent.extra_time = False
         db.commit()

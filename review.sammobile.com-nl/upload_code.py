@@ -12,10 +12,10 @@ import product_test.list_of_agents as agents
 from models import AgentModel, DBSession, Status, AgentType
 
 
-agent_id = agents.BJORN3D
+agent_id = agents.SAMMOBILE_NL
 
 
-with open("bjorn3d.com/new_bjorn3d.com.py", "r", encoding="utf-8") as file:
+with open("review.sammobile.com-nl/new_review.sammobile.com-nl.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(
