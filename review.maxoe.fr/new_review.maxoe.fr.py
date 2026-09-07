@@ -1,0 +1,105 @@
+from agent import *
+from models.products import *
+
+
+def run(context: dict[str, str], session: Session):
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.queue(Request('https://www.maxoe.com/games/jeux-articles/', force_charset='utf-8'), process_revlist, dict())
+
+
+def process_revlist(data: Response, context: dict[str, str], session: Session):
+    revs = data.xpath('//a[contains(@class, "card-article")]/@href')
+    for rev in revs:
+        url = rev.string()
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(url=url))
+
+    next_url = data.xpath('//link[@rel="next"]/@href').string()
+    if not next_url:
+        next_url = data.xpath('//a[contains(., "Suivante")]/@href').string()
+
+    if next_url:
+        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict())
+
+
+def process_review(data: Response, context: dict[str, str], session: Session):
+    title = data.xpath('//h1[contains(@class, "title")]/text()').string()
+
+    product = Product()
+    product.name = title.split(':')[0].strip()
+    product.url = context['url']
+    product.category = 'Jeux'
+
+    product.ssid = data.xpath('//span/@data-post-id').string()
+    if not product.ssid:
+        product.ssid = product.url.split('/')[-2]
+
+    platforms = data.xpath('//div[contains(span, "Support")]/span[contains(@class, "value")]/text()').string()
+    if platforms:
+        product.category += '|' + platforms.strip(' .:').replace(', ', '/').replace(',...', '').replace(' / ', '/')
+
+    genres = data.xpath('//div[contains(span, "Genre")]/span[contains(@class, "value")]/text()').string()
+    if genres:
+        product.category += '|' + genres.strip(' .:').title().replace(', ', '/').replace(' - ', '/')
+
+    manufacturer = data.xpath('//div[contains(span, "Développeur")]/span[contains(@class, "value")]/text()').string()
+    if manufacturer:
+        product.manufacturer = manufacturer.strip(' :')
+
+    review = Review()
+    review.type = 'pro'
+    review.title = title
+    review.url = product.url
+    review.ssid = product.ssid
+
+    date = data.xpath('//meta[@property="article:published_time"]/@content').string()
+    if not date:
+        date = data.xpath('//time/@datetime').string()
+
+    if date:
+        review.date = date.split('T')[0]
+
+    author = data.xpath('//span[contains(@class, "author-name")]/text()').string()
+    if author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    grade_overall = data.xpath('//span[contains(@class, "rating-value")]/text()').string()
+    if grade_overall:
+        grade_overall = grade_overall.split('/')[0].strip()
+        if grade_overall and grade_overall[0].isdigit() and float(grade_overall) > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+
+    grade_user = data.xpath('count((//span[contains(@class, "postratings-vote")])[1]/label[contains(@style, "fill:100%")])')
+    if grade_user:
+        review.grades.append(Grade(name='Vote des lecteurs', value=float(grade_user), best=5.0))
+
+    pros = data.xpath('//div[contains(@class, "pros")]/ul/li')
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.;•–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//div[contains(@class, "cons")]/ul/li')
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.;•–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
+    summary = data.xpath('//p[@class="article__subtitle"]//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    conclusion = data.xpath('(//p[@class="article__intro"])[1]//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//div[@class="article__content"]/p[not(em[contains(., "Testé sur PS5")])]//text()').string(multiple=True)
+    if excerpt:
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)

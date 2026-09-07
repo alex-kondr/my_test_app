@@ -63,7 +63,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    excerpt = data.xpath('//div[@class="entry-content"]/p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="entry-content"]/p//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 
