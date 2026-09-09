@@ -17,6 +17,12 @@ agent = agents.MAXOE_FR
 reload = 1
 session_id = 0
 
+# name: 5+
+# category: 66+
+# grades: 9+
+# pros_cons: 7+
+# conclusion: 12+
+# excerpt: 55
 
 if __name__ == "__main__":
     product = Product(agent, reload=reload, session_id=session_id)

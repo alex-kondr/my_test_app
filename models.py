@@ -69,6 +69,8 @@ class AgentModel(Base):
     agent_type: Mapped[str] = mapped_column(String(50), default=AgentType.MEDIUM.value)
     agent_price: Mapped[Decimal] = mapped_column(Numeric(precision=10, scale=2))
     extra_time: Mapped[bool] = mapped_column(Boolean(), default=False)
+    session_end_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True, default=None)
+    last_error: Mapped[Optional[str]] = mapped_column(Text(), nullable=True, default=None)
     create_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     update_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

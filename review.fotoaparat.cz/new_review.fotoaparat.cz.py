@@ -1,0 +1,187 @@
+from agent import *
+from models.products import *
+
+
+def run(context: dict[str, str], session: Session):
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.queue(Request('http://www.fotoaparat.cz/article/subcat/303/1', force_charset='utf-8'), process_revlist, dict())
+
+
+def process_revlist(data: Response, context: dict[str, str], session: Session):
+    revs = data.xpath('//a[contains(@class, "title")]')
+    for rev in revs:
+        url = rev.xpath('@href').string()
+        session.queue(Request(url, force_charset='utf-8'), process_review, dict(url=url))
+
+    next_url = data.xpath('//li[contains(@class, "next")]/a/@href').string()
+    if next_url:
+        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict())
+
+
+def process_review(data: Response, context: dict[str, str], session: Session):
+    title = data.xpath('//h1//text()').string()
+    if not title:
+        return
+
+    product = Product()
+    # product.name = title.split(' test objektivu ')[-1].split(' - test ')[0].replace('Uživatelský test ', '').replace('Srovnávací test ', '').replace('Test Full frame kompaktu ', '').replace('Full frame kompakt ', '').replace('Test objektivu ', '').replace('Podrobný test bezzrcadlovky ', '').replace('Test zrcadlovky ', '').replace('Praktický test digitální zrcadlovky ', '').replace('FotoTest: ', '').replace('Minitest: ', '').replace('První test ', '').replace('TEST: ', '').replace('Test: ', '').replace('Test ', '').replace(' - preview', '').replace('Otestovali jsme objektivy ', '').strip()
+    product.name = title.split(' - ')[0].replace('Recenze: ', '').replace('Uživatelský test ', '').replace('Srovnávací test ', '').replace('Test Full frame kompaktu ', '').replace('Test objektivu ', '').replace('Test zrcadlovky ', '').replace('FotoTest: ', '').replace('Minitest: ', '').replace('TEST: ', '').replace('Test ', '').replace('fotoaparátu ', '').replace(': test v praxi', '').strip()
+    product.url = context['url']
+    product.ssid = product.url.strip('/').split('/')[-2]
+    product.category = data.xpath('//div[@class="breadcrumbs"]/ul/li[not(regexp:test(., "test", "i"))][last()]/a//text()').string(multiple=True) or 'Technologie'
+
+    review = Review()
+    review.type = 'pro'
+    review.title = title
+    review.url = product.url
+    review.ssid = product.ssid
+    review.date = data.xpath('//li[i[contains(@class, "calendar")]]/text()').string(multiple=True)
+
+    author = data.xpath('//li[i[contains(@class, "person")] and a[contains(@href, "https://www.fotoaparat.cz/clanky/autor/")]]/a/text()').string()
+    author_url = data.xpath('//li[i[contains(@class, "person")] and a[contains(@href, "https://www.fotoaparat.cz/clanky/autor/")]]/a/@href').string()
+    if author and author_url:
+        author_ssid = author_url.split('/')[-2]
+        review.authors.append(Person(name=author, ssid=author_ssid))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    pros = data.xpath('(//p[normalize-space(text())="Plusy"]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('(//p[strong[regexp:test(., "Klady|Výhody")]]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('//p[strong[regexp:test(., "Klady|Výhody")]]/following-sibling::p[not(preceding-sibling::p[regexp:test(., "Zápory|Nevýhody")] or regexp:test(., "Zápory|Nevýhody"))]')
+    if not pros:
+        pros = data.xpath('//table[thead/tr/td[regexp:test(., "Dobrý|Klady")]]/tbody/tr/td[1]')
+
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('(//p[regexp:test(., "Zápory|Nevýhody")]/following-sibling::*)[1]/li')
+    if not cons:
+        cons = data.xpath('//p[strong[normalize-space(text())="Zápory" or normalize-space(text())="Nevýhody"]]/following-sibling::p[not(contains(., "Děkuji společnosti"))]')
+    if not cons:
+        cons = data.xpath('//table[thead/tr/td[regexp:test(., "Špatný|Zápory")]]/tbody/tr/td[2]')
+
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
+    summary = data.xpath('//div[contains(@class, "article-perex")]/p//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    conclusion = data.xpath('//p[strong[contains(., "Závěr")]]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody") or contains(@class, "heureka") or text()="Heureka")]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[contains(., "Závěr")]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[normalize-space(text())="závěr"]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody"))]//text()').string(multiple=True)
+
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//p[strong[contains(., "Závěr")]]/preceding-sibling::p[not(@align="center" or @style="text-align: center;")]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h2[contains(., "Závěr")]/preceding-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody") or @align="center" or @style="text-align: center;")]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[normalize-space(text())="závěr"]/preceding-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody") or @align="center" or @style="text-align: center;")]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[not(@class)]/p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody"))]//text()').string(multiple=True)
+
+    next_page = data.xpath('//li[@class="pagination-next"]/a/@href').string()
+    if next_page:
+        title = review.title + ' - Pagina 1'
+        review.add_property(type='pages', value=dict(title=title, url=data.response_url))
+        session.do(Request(next_page, use='curl', force_charset='utf-8'), process_review_next, dict(excerpt=excerpt, review=review, product=product))
+
+    elif excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
+        excerpt = excerpt.replace('<a href="">', '').strip()
+        review.add_property(type='excerpt', value=excerpt)
+
+        product.reviews.append(review)
+
+        session.emit(product)
+
+
+def process_review_next(data: Response, context: dict[str, str], session: Session):
+    review = context['review']
+
+    page = context.get('page', 1) + 1
+    title = review.title + ' - Pagina ' + str(page)
+    review.add_property(type='pages', value=dict(title=title, url=data.response_url))
+
+    pros = data.xpath('(//p[normalize-space(text())="Plusy"]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('(//p[strong[regexp:test(., "Klady|Výhody")]]/following-sibling::*)[1]/li')
+    if not pros:
+        pros = data.xpath('//p[strong[regexp:test(., "Klady|Výhody")]]/following-sibling::p[not(preceding-sibling::p[regexp:test(., "Zápory|Nevýhody")] or regexp:test(., "Zápory|Nevýhody"))]')
+    if not pros:
+        pros = data.xpath('//table[thead/tr/td[regexp:test(., "Dobrý|Klady")]]/tbody/tr/td[1]')
+
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('(//p[regexp:test(., "Zápory|Nevýhody")]/following-sibling::*)[1]/li')
+    if not cons:
+        cons = data.xpath('//p[strong[normalize-space(text())="Zápory" or normalize-space(text())="Nevýhody"]]/following-sibling::p[not(contains(., "Děkuji společnosti"))]')
+    if not cons:
+        cons = data.xpath('//table[thead/tr/td[regexp:test(., "Špatný|Zápory")]]/tbody/tr/td[2]')
+
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
+    conclusion = data.xpath('//p[strong[contains(., "Závěr")]]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[contains(., "Závěr")]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[normalize-space(text())="závěr"]/following-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody"))]//text()').string(multiple=True)
+
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//p[strong[contains(., "Závěr")]]/preceding-sibling::p[not(@align="center" or @style="text-align: center;")]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h2[contains(., "Závěr")]/preceding-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody") or @align="center" or @style="text-align: center;")]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[normalize-space(text())="závěr"]/preceding-sibling::p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody") or @align="center" or @style="text-align: center;")]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//div[not(@class)]/p[not(preceding-sibling::p[strong[regexp:test(., "Klady|Zápory|Výhody|Nevýhody")]] or regexp:test(., "Klady|Zápory|Děkujeme společnosti|Výhody|Nevýhody"))]//text()').string(multiple=True)
+
+    if excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
+        context['excerpt'] += ' ' + excerpt
+
+    next_page = data.xpath('//li[@class="pagination-next"]/a/@href').string()
+    if next_page:
+        session.do(Request(next_page, use='curl', force_charset='utf-8'), process_review_next, dict(context, review=review, page=page))
+
+    elif context['excerpt']:
+        if conclusion:
+            context['excerpt'] = context['excerpt'].replace(conclusion, '').strip()
+
+        excerpt = context['excerpt'].replace('<a href="">', '').strip()
+        review.add_property(type='excerpt', value=context['excerpt'])
+
+        product = context['product']
+        product.reviews.append(review)
+
+        session.emit(product)

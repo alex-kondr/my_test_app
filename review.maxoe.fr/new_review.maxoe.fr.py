@@ -76,7 +76,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.strip(' +-*.;•–')
+            pro = pro.strip(' +-*.;•–:')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -84,7 +84,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.strip(' +-*.;•–')
+            con = con.strip(' +-*.;•–:')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
