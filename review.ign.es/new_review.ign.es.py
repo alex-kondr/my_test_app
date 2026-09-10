@@ -17,7 +17,7 @@ def strip_namespace(data):
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=7000)]
-    session.queue(Request('https://it.ign.com/article/review'), process_category, {})
+    session.queue(Request('https://es.ign.com/article/review'), process_category, {})
 
 
 def process_category(data: Response, context: dict[str, str], session: Session):
@@ -26,7 +26,7 @@ def process_category(data: Response, context: dict[str, str], session: Session):
     cats = data.xpath('//ul[@class="filterlist"]/li[not(contains(@class, "all"))]')
     for cat in cats:
         name = cat.xpath('.//span/text()').string(multiple=True)
-        url = 'https://it.ign.com/article/review?keyword__type=' + cat.xpath('@class').string()
+        url = 'https://es.ign.com/article/review?keyword__type=' + cat.xpath('@class').string()
 
         if name and url:
             session.queue(Request(url), process_revlist, dict(cat=name))
@@ -57,11 +57,11 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     product.name = data.xpath('//div[@class="object-breadcrumbs"]/a/text()').string()
     if not product.name:
-        product.name = context['title'].replace(' - La recensione', '').strip()
+        product.name = context['title'].replace(' - Análisis', '').strip()
 
     platforms = data.xpath('//li[@class="platform"]/@data-platform').join('/')
     if platforms:
-        product.category = 'Giochi|' + platforms.replace('-', ' ').upper().strip()
+        product.category = 'Juegos|' + platforms.replace('-', ' ').upper().strip()
 
     review = Review()
     review.type = 'pro'
@@ -84,18 +84,18 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//p[preceding-sibling::h3[regexp:test(., "verdetto", "i")]]/text()').string(multiple=True)
+    conclusion = data.xpath('//p[preceding-sibling::h3[regexp:test(., "veredicto", "i")]]/text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//div[@id="id_text"]//text()[not(contains(., "Commento"))][not(ancestor::div[@id="ratingsBox"] or preceding::div[@id="ratingsBox"])][preceding::div[contains(text(), "Commento")]]').string(multiple=True)
+        conclusion = data.xpath('//div[@id="id_text"]//text()[not(contains(., "El veredicto"))][not(ancestor::div[@id="ratingsBox"] or preceding::div[@id="ratingsBox"])][preceding::div[contains(text(), "Commento")]]').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@class="details"]/div[contains(@id, "bottomline")]/text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    context['excerpt'] = data.xpath('//div[@id="id_text"]/p[not(preceding::div[contains(text(), "Verdetto") or contains(text(), "Commento")])]//text()[not(contains(., "Commento"))]').string(multiple=True)
+    context['excerpt'] = data.xpath('//div[@id="id_text"]/p[not(preceding::div[contains(text(), "veredicto") or contains(text(), "Commento")])]//text()[not(contains(., "Commento"))]').string(multiple=True)
     if not context['excerpt']:
-        context['excerpt'] = data.xpath('//div[@id="id_text"]//text()[not(ancestor::div[contains(text(), "Verdetto") or contains(text(), "Commento")] or preceding::div[contains(text(), "Verdetto") or contains(text(), "Commento")])][not(contains(., "Commento"))]').string(multiple=True)
+        context['excerpt'] = data.xpath('//div[@id="id_text"]//text()[not(ancestor::div[contains(text(), "El veredicto")] or preceding::div[contains(text(), "El veredicto")])][not(contains(., "El veredicto"))]').string(multiple=True)
 
     pages = data.xpath('//div[@class="paginator"]/a[contains(@class, "page")]')
     if pages:
@@ -150,18 +150,18 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
                 review.add_property(type='cons', value=con)
 
     if context.get('page'):
-        conclusion = data.xpath('//p[preceding-sibling::h3[regexp:test(., "verdetto", "i")]]/text()').string(multiple=True)
+        conclusion = data.xpath('//p[preceding-sibling::h3[regexp:test(., "veredicto", "i")]]/text()').string(multiple=True)
         if not conclusion:
-            conclusion = data.xpath('//div[@id="id_text"]//text()[not(contains(., "Commento"))][not(ancestor::div[@id="ratingsBox"] or preceding::div[@id="ratingsBox"])][preceding::div[contains(text(), "Commento")]]').string(multiple=True)
+            conclusion = data.xpath('//div[@id="id_text"]//text()[not(contains(., "El veredicto"))][not(ancestor::div[@id="ratingsBox"] or preceding::div[@id="ratingsBox"])][preceding::div[contains(text(), "Commento")]]').string(multiple=True)
         if not conclusion:
             conclusion = data.xpath('//div[@class="details"]/div[contains(@id, "bottomline")]/text()').string(multiple=True)
 
         if conclusion:
             review.add_property(type='conclusion', value=conclusion)
 
-        excerpt = data.xpath('//div[@id="id_text"]/p[not(preceding::div[contains(text(), "Verdetto") or contains(text(), "Commento")])]//text()[not(contains(., "Commento"))]').string(multiple=True)
+        excerpt = data.xpath('//div[@id="id_text"]/p[not(preceding::div[contains(text(), "El veredicto")])]//text()[not(contains(., "El veredicto"))]').string(multiple=True)
         if not excerpt:
-            excerpt = data.xpath('//div[@id="id_text"]//text()[not(ancestor::div[contains(text(), "Verdetto") or contains(text(), "Commento")] or preceding::div[contains(text(), "Verdetto") or contains(text(), "Commento")])][not(contains(., "Commento"))]').string(multiple=True)
+            excerpt = data.xpath('//div[@id="id_text"]//text()[not(ancestor::div[contains(text(), "El veredicto")] or preceding::div[contains(text(), "El veredicto")])][not(contains(., "El veredicto"))]').string(multiple=True)
 
         if excerpt:
             if conclusion:

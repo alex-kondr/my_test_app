@@ -102,6 +102,8 @@ def process_product(data: Response, context: dict[str, str], session: Session):
 
     product.ssid = data.xpath('//input[@id="product_id"]/@value').string()
     if not product.ssid:
+        product.ssid = data.xpath('//span/@data-productid').string()
+    if not product.ssid:
         product.ssid = product.url.split('/')[-1]
 
     product.manufacturer = data.xpath('//li//span[contains(., "Fabricant :")]/following-sibling::span/text()').string()
@@ -110,17 +112,20 @@ def process_product(data: Response, context: dict[str, str], session: Session):
 
     user_revs = data.xpath('//a[contains(text(), "Avis")]/@href').string()
     if user_revs:
-        session.do(Request(user_revs, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
+        session.queue(Request(user_revs, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
 
     pro_revs = data.xpath('//div[contains(@class, "product-review")]/a/@href').string()
     if pro_revs:
-        session.do(Request(pro_revs, use='curl', force_charset='utf-8'), process_review, dict(product=product))
+        session.queue(Request(pro_revs, use='curl', force_charset='utf-8'), process_review, dict(product=product))
 
 
 def process_reviews(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
     product = context['product']
+
+    if not product.ssid:
+        product.ssid = product.url.split('/')[-1]
 
     revs = data.xpath('//ul[@class="reviews"]/li')
     for rev in revs:
@@ -186,6 +191,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     product = context['product']
 
+    if not product.ssid:
+        product.ssid = data.response_url.split('/')[-1]
+
     review = Review()
     review.type = 'pro'
     review.url = data.response_url
@@ -199,33 +207,44 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//span[@class="article-author"]/span/text()').string()
+    author_url = data.xpath('//span[@class="article-author"]/a/@href').string()
+    author = data.xpath('//span[@class="article-author"]/a/text()').string()
+    if not author:
+        author = data.xpath('//span[@class="article-author"]/span/text()').string()
+
     if author:
         author = remove_emoji(serialize_text(author)).strip()
-        if author:
+        if author and author_url:
+            author_ssid = author_url.split('/')[-2]
+            review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+        elif author:
             review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//span[@class="mark"]/text()').string()
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    pros = data.xpath('//ul[@class="plus"]/li/text()').strings()
+    pros = data.xpath('//ul[@class="plus" and not(contains(., "Gagnante :") or contains(., "Gagnantes Ex-aequo :") or contains(., "place :"))]/li')
     if not pros:
-        pros = data.xpath('//p[contains(text(), "Les Plus")]/following-sibling::p[1][starts-with(normalize-space(.), "+")]//text()').strings()
+        pros = data.xpath('//p[contains(text(), "Les Plus")]/following-sibling::p[1][starts-with(normalize-space(.), "+")]')
 
     for pro in pros:
-        pro = remove_emoji(serialize_text(pro)).strip(' ….+-–')
+        pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            review.add_property(type='pros', value=pro)
+            pro = remove_emoji(serialize_text(pro)).strip(' ….+-–:')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//ul[@class="minus"]/li/text()').strings()
+    cons = data.xpath('//ul[@class="minus"]/li')
     if not cons:
-        cons = data.xpath('//p[contains(text(), "Les moins")]/following-sibling::p[1][starts-with(normalize-space(.), "-") or starts-with(normalize-space(.), "–")]//text()').strings()
+        cons = data.xpath('//p[contains(text(), "Les moins")]/following-sibling::p[1][starts-with(normalize-space(.), "-") or starts-with(normalize-space(.), "–")]')
 
     for con in cons:
-        con = remove_emoji(serialize_text(con)).strip(' ….+-–')
+        con = con.xpath('.//text()').string(multiple=True)
         if con:
-            review.add_property(type='cons', value=con)
+            con = remove_emoji(serialize_text(con)).strip(' ….+-–:')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
 
     summary = data.xpath('//p[@class="content-header"]//text()').string(multiple=True)
     if summary:
