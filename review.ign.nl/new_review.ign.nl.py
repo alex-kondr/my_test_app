@@ -16,7 +16,7 @@ def strip_namespace(data):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
+    session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://nl.ign.com/article/review'), process_category, {})
 
 
@@ -123,7 +123,10 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
 
     if grade_overall:
         grade_overall = float(grade_overall.replace(',', '.'))
-        review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
+        if grade_overall > 10:
+            review.grades.append(Grade(type='overall', value=grade_overall, best=100.0))
+        else:
+            review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
 
     grades = data.xpath('//table[@id="ratingsBoxTable"]/tbody/tr[not(@class)]')
     for grade in grades:
@@ -131,7 +134,10 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
         grade_val = grade.xpath('td[@class="ratingsBoxScore"]/text()').string()
         if grade_name and grade_val:
             grade_val = float(grade_val.replace(',', '.'))
-            review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
+            if grade_val > 10:
+                review.grades.append(Grade(name=grade_name, value=grade_val, best=100.0))
+            else:
+                review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
 
     pros = data.xpath('//ul[@class="pros-cons-list"][contains(@id, "pros")]/li')
     for pro in pros:

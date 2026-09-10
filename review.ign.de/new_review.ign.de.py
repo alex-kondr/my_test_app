@@ -124,8 +124,12 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
         grade_overall = data.xpath('//tr[@class="ratingsBoxECRow"]/td//div[@class="ratingsBoxScoreOvText"]/text()').string()
 
     if grade_overall:
-        grade_overall = float(grade_overall.replace(',', '.'))
-        review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
+        grade_overall = grade_overall.replace(',', '.').strip(' -')
+        if grade_overall and grade_overall[0].isdigit() and float(grade_overall) > 0:
+            if grade_overall > 10:
+                review.grades.append(Grade(type='overall', value=grade_overall, best=100.0))
+            else:
+                review.grades.append(Grade(type='overall', value=grade_overall, best=10.0))
 
     grades = data.xpath('//table[@id="ratingsBoxTable"]/tbody/tr[not(@class)]')
     for grade in grades:
@@ -133,7 +137,10 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
         grade_val = grade.xpath('td[@class="ratingsBoxScore"]/text()').string()
         if grade_name and grade_val:
             grade_val = float(grade_val.replace(',', '.'))
-            review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
+            if grade_val > 10:
+                review.grades.append(Grade(name=grade_name, value=grade_val, best=100.0))
+            else:
+                review.grades.append(Grade(name=grade_name, value=grade_val, best=10.0))
 
     pros = data.xpath('//ul[@class="pros-cons-list"][contains(@id, "pros")]/li')
     for pro in pros:

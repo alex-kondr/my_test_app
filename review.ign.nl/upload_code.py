@@ -39,4 +39,6 @@ with DBSession() as db:
         agent.new_code = agent_code
         agent.agent_type = AgentType.BIG
         agent.extra_time = False
+        agent.session_end_date = None
+        agent.last_error = None
         db.commit()
