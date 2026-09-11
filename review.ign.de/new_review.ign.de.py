@@ -146,7 +146,7 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = pro.strip(' +-*.:;•,–')
+            pro = pro.replace('&amp;', '&').strip(' +-*.:;•,–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -154,7 +154,7 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = con.strip(' +-*.:;•,–')
+            con = con.replace('&amp;', '&').strip(' +-*.:;•,–')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
@@ -181,7 +181,8 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
             context['excerpt'] += " " + excerpt
 
     if context['excerpt']:
-        review.add_property(type='excerpt', value=context['excerpt'])
+        excerpt = context['excerpt'].replace('&amp;lt;br', '').replace('amp;lt;/ifr', '').replace('/&amp;gt;', '').replace('&amp;', '').replace('amp;', '').strip()
+        review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
         product.reviews.append(review)
