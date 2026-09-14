@@ -31,7 +31,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
         if ' Awards – ' not in title:
             session.queue(Request(url, force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
-    next_url = data.xpath('//link[@rel="next"]/@href').string()
+    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
         session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict(context))
 
@@ -70,10 +70,10 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if author:
         author_name = author.xpath('text()').string()
         author_url = author.xpath('@href[contains(., "/author/")]').string()
-        if author_url:
+        if author_name and author_url:
             author_ssid = author_url.strip('/').split('/')[-1]
             review.authors.append(Person(name=author_name, profile_url=author_url, ssid=author_ssid))
-        else:
+        elif author_name:
             review.authors.append(Person(name=author_name, ssid=author_name))
 
     grades = data.xpath('//div[@class="rating-group"]/ul')
@@ -84,12 +84,14 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         if grade_name and grade_val and float(grade_val) > 0:
             review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
 
-    conclusion = data.xpath('//div[@class="content-box"]//p[preceding::*[self::h3 or self::h4 or self::b][regexp:test(., "Final Thought|Conclusion", "i")]][normalize-space()][not(preceding::*[regexp:test(., "^\s*Technical specification|Learn more about|\s*Price and Contact Details|Final Thought", "i")])][not(regexp:test(., "^\s*Price and Contact Details|Learn more about", "i"))]//text()').string(multiple=True)
+    conclusion = data.xpath('//div[@class="content-box"]//p[preceding::*[self::h3 or self::h4 or self::b][regexp:test(., "Final Thought|Conclusion", "i")]][normalize-space()][not(preceding::*[regexp:test(., "^\s*Technical specification|Learn more about|\s*Price and Contact Details|Final Thought", "i")])][not(regexp:test(., "^\s*Price and Contact Details|Learn more about|<h1", "i"))]//text()').string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace('&rsquo;', "'").replace('&lsquo;', "'").replace('&amp;', '&').replace('<font size=”1″></font>', ' ').strip()
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="content-box"]//p[not(preceding::*[regexp:test(., "^\s*Technical specification|Learn more about|\s*Price and Contact Details|Final Thought|Conclusion", "i")])][not(regexp:test(., "^\s*Price and Contact Details|Learn more about|Conclusion|Learn more at|More information", "i"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="content-box"]//p[not(preceding::*[regexp:test(., "^\s*Technical specification|Learn more about|\s*Price and Contact Details|Final Thought|Conclusion", "i")])][not(regexp:test(., "^\s*Price and Contact Details|Learn more about|Conclusion|Learn more at|More information|<h1", "i"))]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace('&rsquo;', "'").replace('&lsquo;', "'").replace('&amp;', '&').replace('<font size=”1″></font>', ' ').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

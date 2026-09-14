@@ -47,7 +47,7 @@ def remove_emoji(string):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=7000)]
+    session.sessionbreakers = [SessionBreak(max_requests=8000)]
     session.queue(Request('https://undgretel.com/', force_charset='utf-8', use='curl'), process_frontpage, dict())
 
 

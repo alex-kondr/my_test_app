@@ -16,7 +16,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 
     next_url = data.xpath('//a[img[@alt="eine Seite vor"]]/@href').string()
     if next_url:
-        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict())
+        session.queue(Request(next_url, force_charset='utf-8', use='curl'), process_revlist, dict())
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):
@@ -41,14 +41,14 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.url = product.url
     review.ssid = product.ssid
 
-    date = data.xpath('//tr[contains(., "Datum")]/td[not(contains(., "Datum"))]/text()').string()
+    date = data.xpath('//tr[normalize-space(td/text())="Datum"]/td[not(contains(., "Datum"))]/text()').string()
     if date:
         review.date = date.split(',')[0]
 
     author = data.xpath('//tr[contains(., "Autor")]//a/text()').string()
     author_url = data.xpath('//a[contains(text(), "E-Mail")]/@href').string()
-    if author_url and author_url:
-        author_ssid = author_url.split('/')[-1]
+    if author and author_url:
+        author_ssid = author_url.split('/')[-2]
         review.authors.append(Person(name=author, ssid=author_ssid))
     elif author:
         review.authors.append(Person(name=author, ssid=author))
@@ -75,7 +75,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     conclusion = data.xpath('//h3[contains(., "Fazit")]/following-sibling::text()').string(multiple=True)
     if conclusion:
-        conclusion = conclusion.replace('Fazit:', '').replace('Fazit ', '')
+        conclusion = conclusion.replace('Fazit:', '').replace('Fazit ', '').replace(u'�', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//h3[contains(., "Fazit")]/preceding-sibling::p[not(@class)]//text()|//h3[contains(., "Fazit")]/preceding-sibling::text()').string(multiple=True)
@@ -83,6 +83,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         excerpt = data.xpath('//div[@id="block-testbericht"]/p[not(@class)]//text()|//div[@id="block-testbericht"]/text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(u'�', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

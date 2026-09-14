@@ -225,7 +225,7 @@ Wasted time: {self.time}
             self.time = f"Hours: {hours}, minutes: {minutes}, seconds: {seconds}"
 
             with DBSession() as db:
-                agent = db.query(AgentModel).filter_by(agent_id=self.agent_id).one()
+                agent = db.query(AgentModel).filter_by(agent_id=self.agent_id, accepted=False).one()
                 agent.count_emit = self.emitted
                 db.commit()
 

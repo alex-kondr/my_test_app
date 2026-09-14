@@ -77,7 +77,7 @@ def move_agent_folder(agent: AgentModel):
 
 def get_done_agents():
     with DBSession() as db:
-        stmt = select(AgentModel).where(AgentModel.done.is_(True), AgentModel.status == Status.qc)
+        stmt = select(AgentModel).where(AgentModel.accepted.is_(True), AgentModel.status == Status.qc)
         agents = db.scalars(stmt).all()
         logger.info(f"Found {len(agents)} agents done")
         today = date.today()

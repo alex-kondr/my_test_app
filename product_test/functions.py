@@ -233,12 +233,12 @@ def post_edit_page_agent(agent: AgentModel):
         "name": agent.name,
         "source_name": agent.source_name,
         "description": agent.description,
-        "state_id": "3" if agent.done else "2",
+        "state_id": "3" if agent.accepted else "2",
         "priority": agent.priority,
         "group": agent.group
     }
 
-    if agent.done:
+    if agent.accepted:
         data["active"] = "1"
 
     session = HTMLSession()
