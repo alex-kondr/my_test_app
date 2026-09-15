@@ -5,7 +5,7 @@ import random
 
 
 def run(context: dict[str, str], session: Session):
-    session.sessionbreakers = [SessionBreak(max_requests=8000)]
+    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request("http://multiplayer.it/articoli/recensioni/", use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
@@ -46,11 +46,13 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.url = context['url']
     review.date = data.xpath("//*[@id='_article_pub_date']//text()").string()
 
-    author = data.xpath("//span[@class='article__header__type-author']/a[2]").first()
-    if author:
-        author_name = author.xpath(".//text()").string()
-        author_url = author.xpath("@href").string()
-        review.authors.append(Person(name=author_name, profile_url=author_url, ssid=author_name))
+    author = data.xpath('//span[@class="article__header__type-author"]/*[not(contains(., "RECENSIONE"))]/text()').string()
+    author_url = data.xpath('//span[@class="article__header__type-author"]/*[not(contains(., "RECENSIONE"))]/@href').string()
+    if author and author_url:
+        author_ssid = author_url.split('/')[-4]
+        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath("(//p[contains(@class,'article__verdict__boxes__vote')])[1]//text()").string(multiple=True)
     if not grade_overall:
@@ -76,7 +78,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         con = con.xpath(".//text()").string()
         if con:
             con = con.strip(' +-*.:;•,–')
-            if len(con) > 1:
+            if len(con) > 1 and pro != 'No':
                 review.add_property(type='cons', value=con)
 
     summary = data.xpath("//p[contains(@class, 'subtitle')]//text()").string(multiple=True)

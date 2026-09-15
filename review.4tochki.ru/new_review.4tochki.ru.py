@@ -1,5 +1,7 @@
 from agent import *
 from models.products import *
+import simplejson
+import re
 
 
 def run(context: dict[str, str], session: Session):
@@ -13,84 +15,87 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
         name = cat.xpath('div/a//text()').string(multiple=True)
 
         subcats = cat.xpath('ul/li/a')
-        # url = cat.xpath('a/@href').string()
-        # session.queue(Request(url), process_revlist, dict(cat=name))
+        if subcats:
+            for subcat in subcats:
+                subcat_name = subcat.xpath('.//text()').string(multiple=True)
+                url = subcat.xpath('@href').string()
+                session.queue(Request(url), process_prodlist, dict(cat=name+'|'+subcat_name))
+        else:
+            url = cat.xpath('div/a/@href').string()
+            session.queue(Request(url), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
-    revs = data.xpath('//div[contains(@class, "item__middle") and div[contains(@class, "item__name")]]')
-    for rev in revs:
-        title = rev.xpath('div[contains(@class, "item__name")]/a/text()').string()
-        url = rev.xpath('div[contains(@class, "item__name")]/a/@href').string()
+    prods = data.xpath('//div[contains(@class, "item__middle") and div[contains(@class, "item__name")]]')
+    for prod in prods:
+        name = prod.xpath('div[contains(@class, "item__name")]/a/text()').string()
+        url = prod.xpath('div[contains(@class, "item__name")]/a/@href').string()
 
-        revs_cnt = prod.xpath('.//span[contains(@class, "item__opinion-text")]/text()')
-        # session.queue(Request(url), process_review, dict(title=title, url=url))
+        revs_cnt = prod.xpath('.//span[contains(@class, "item__opinion-text")]/text()').string(multiple=True)
+        if revs_cnt and int(revs_cnt) > 0:
+            session.queue(Request(url), process_product, dict(context, name=name, url=url, revs_cnt=int(revs_cnt)))
 
-    next_url = data.xpath('//link[@rel="next"]/@href|//a[contains(@class, "next")]/@href').string()
+    next_url = data.xpath('//a[@aria-label="Next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_revlist, dict())
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
-def process_review(data: Response, context: dict[str, str], session: Session):
+def process_product(data: Response, context: dict[str, str], session: Session):
     product = Product()
-    product.name = context['title'].replace('', '').strip()
+    product.name = context['name'].replace('', '').strip()
     product.url = context['url']
-    product.ssid = product.url.split('/')[-2]
-    product.category = 'Tech'
+    product.ssid = data.xpath('//li[contains(span, "Артикул")]/b/text()').string()
+    product.sku = data.xpath('//input[@name="modelId"]/@value').string()
+    product.category = context['cat']
+    product.manufacturer = data.xpath('//li[contains(span, "Производитель")]/a/text()').string()
 
-    review = Review()
-    review.type = 'pro'
-    review.title = context['title']
-    review.url = product.url
-    review.ssid = product.ssid
+    prod_json = data.xpath('//script[contains(., "window.controllerConfigHead =")]/text()').string()
+    match = re.search(r'window\.controllerConfigHead\s*=\s*(\{.*?\});', prod_json)
+    if match:
+        prod_json = match.group(1)
+        prod_json = simplejson.loads(prod_json)
+        context['revs_url'] = 'https://www.4tochki.ru' + prod_json.get('allOpinionsLink')
 
-    date = data.xpath('//meta[@property="article:published_time"]/@content|//time/@datetime').string()
-    if date:
-        review.date = date.split('T')[0]
+    context['product'] = product
+    process_reviews(data, context, session)
 
-    author = data.xpath('/text()').string()
-    author_url = data.xpath('/@href').string()
-    if author and author_url:
-        author_ssid = author_url.split('/')[-1]
-        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
-    elif author:
-        review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('//text()').string()
-    if grade_overall:
-        review.grades.append(Grade(type='overall', value=float(grade_overall), best=))
+def process_reviews(data: Response, context: dict[str, str], session: Session):
+    product = context['product']
 
-    pros = data.xpath('(//h3[contains(., "Pros")]/following-sibling::*)[1]/li')
-    for pro in pros:
-        pro = pro.xpath('.//text()').string(multiple=True)
-        if pro:
-            pro = pro.strip(' +-*.:;•,–')
-            if len(pro) > 1:
-                review.add_property(type='pros', value=pro)
+    revs = data.xpath('//div[@data-opinionid]')
+    for rev in revs:
+        review = Review()
+        review.type = 'user'
+        review.url = product.url
+        review.ssid = rev.xpath('@data-opinionid').string()
+        review.date = rev.xpath('.//span[@class="date"]/text()').string()
 
-    cons = data.xpath('(//h3[contains(., "Cons")]/following-sibling::*)[1]/li')
-    for con in cons:
-        con = con.xpath('.//text()').string(multiple=True)
-        if con:
-            con = con.strip(' +-*.:;•,–')
-            if len(con) > 1:
-                review.add_property(type='cons', value=con)
+        author = rev.xpath('span[@class="name"]/span/text()').string()
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
 
-    summary = data.xpath('//div[h3[contains(text(), "Summary")]]/div//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
+        grade_overall = rev.xpath('div[contains(@class, "star__rating")]/@class').string()
+        if grade_overall:
+            grade_overall = grade_overall.split('rating--')[-1].split()[0]
+            if grade_overall and grade_overall[0].isdigit() and float(grade_overall) > 0:
+                review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-    conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
-    if conclusion:
-        review.add_property(type='conclusion', value=conclusion)
+        is_verified_buyer = rev.xpath('.//span[contains(text(), "Товар куплен на 4TOCHKI✅")]')
+        if is_verified_buyer:
+            review.add_property(type='is_verified_buyer', value=True)
 
-    excerpt = data.xpath('//h3[contains(., "Conclusion")]/preceding-sibling::p//text()').string(multiple=True)
-    if not excerpt:
-        excerpt = data.xpath('//text()').string(multiple=True)
+        excerpt = rev.xpath('div[not(@class or span)]//text()').string(multiple=True)
+        if excerpt:
+            review.add_property(type='excerpt', value=excerpt)
 
-    if excerpt:
-        review.add_property(type='excerpt', value=excerpt)
+            product.reviews.append(review)
 
-        product.reviews.append(review)
+    offset = context['offset'] + 20 if context.get('offset') else 3
+    if offset < context['revs_cnt'] and context.get('revs_url'):
+        next_page = context.get('page', 0) + 1
+        next_url = context['revs_url'] + '&page=' + str(next_page)
+        session.do(Request(next_url), process_reviews, dict(context, product=product, offset=offset, page=next_page))
 
+    elif product.reviews:
         session.emit(product)

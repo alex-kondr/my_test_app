@@ -88,7 +88,7 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_prodlist, dict(context))
+        session.queue(Request(next_url, max_age=0), process_prodlist, dict(context))
 
 
 def process_product(data: Response, context: dict[str, str], session: Session):
@@ -140,30 +140,30 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
             if author:
                 review.authors.append(Person(name=author, ssid=author))
 
+        grade_overall = rev.xpath('.//ul[@class="js_review-rating"]/@data-score').string()
+        if grade_overall:
+            review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
+
         pros = rev.xpath('.//ul[@class="pros"]/li/div[@class="text"]/text()').strings()
         for pro in pros:
-            pro = h.unescape(remove_emoji(pro)).strip(' ,.+-')
+            pro = h.unescape(remove_emoji(pro)).replace('&apos;', "'").strip(' ,.+-')
             review.add_property(type='pros', value=pro)
 
         cons = rev.xpath('.//ul[@class="cons"]/li/div[@class="text"]/text()').strings()
         for con in cons:
-            con = h.unescape(remove_emoji(con)).strip(' ,.+-')
+            con = h.unescape(remove_emoji(con)).replace('&apos;', "'").strip(' ,.+-')
             review.add_property(type='cons', value=con)
-
-        grade_overall = rev.xpath('.//ul[@class="js_review-rating"]/@data-score').string()
-        if grade_overall:
-            review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
 
         title = rev.xpath('.//strong[@class="title"]/text()').string()
         excerpt = rev.xpath('.//div[contains(@class, "description")]//text()').string(multiple=True)
         if excerpt and len(h.unescape(remove_emoji(excerpt)).strip(' ,').lstrip('.')) > 2:
             if title:
-                review.title = h.unescape(remove_emoji(title)).strip(' .,')
+                review.title = h.unescape(remove_emoji(title)).replace('&apos;', "'").strip(' .,')
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = h.unescape(remove_emoji(excerpt)).strip(' ,').lstrip('.')
+            excerpt = h.unescape(remove_emoji(excerpt)).replace('&apos;', "'").strip(' ,').lstrip('.')
             if len(excerpt) > 2:
                 review.add_property(type="excerpt", value=excerpt)
 
