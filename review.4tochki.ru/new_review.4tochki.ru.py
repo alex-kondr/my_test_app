@@ -87,6 +87,7 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
 
         excerpt = rev.xpath('div[not(@class or span)]//text()').string(multiple=True)
         if excerpt:
+            excerpt = excerpt.replace(u'�', '').strip()
             review.add_property(type='excerpt', value=excerpt)
 
             product.reviews.append(review)
