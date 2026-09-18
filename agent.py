@@ -60,7 +60,7 @@ class Person:
 
 
 class Grade:
-    def __init__(self, value: float, best: float, name: Optional[str] = None, type: Optional[Literal["overall"]] = None, description: Optional[str] = None): ...
+    def __init__(self, value: float, best: float, name: Optional[str] = None, type: Optional[Literal["overall"]] = None, description: Optional[str] = None, worst: float=0.0): ...
 
 
 class Review:
