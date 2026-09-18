@@ -1,4 +1,7 @@
 import HTMLParser
+import httplib
+httplib._MAXHEADERS = 200
+
 # .\koyeb.exe service logs vocational-ruth/vpn-service --tail -t runtime
 
 
