@@ -47,17 +47,21 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if grade_overall:
         review.grades.append(Grade(value=float(grade_overall), best=5.0, worst=0, type='overall'))
 
-    # pros = data.xpath('//div[@class="Body"]//p//text()[regexp:test(normalize-space(.),"^\+ ")]').strings()
-    # for pro in pros:
-    #     pro = pro.replace('+', '').strip()
-    #     if len(pro) > 1:
-    #         review.add_property(type="pros", value=pro)
+    pros = data.xpath('//p[contains(strong, "Digiscopingens")]/text()[starts-with(normalize-space(.), "+")]')
+    for pro in pros:
+        pro = pro.string()
+        if pro:
+            pro = pro.strip(' +-*.:;•,–')
+            if len(pro) > 1:
+                review.add_property(type="pros", value=pro)
 
-    # cons = data.xpath('//div[@class="Body"]//p//text()[regexp:test(normalize-space(.),"^– ")]').strings()
-    # for con in cons:
-    #     con = con.replace('–', '').strip()
-    #     if len(con) > 1:
-    #         review.add_property(type="cons", value=con)
+    cons = data.xpath('//p[contains(strong, "Digiscopingens")]/text()[starts-with(normalize-space(.), "–")]')
+    for con in cons:
+        con = con.string()
+        if con:
+            con = con.strip(' +-*.:;•,–')
+            if len(con) > 1:
+                review.add_property(type="cons", value=con)
 
     conclusion = data.xpath('//div[@class="Body"]//p[regexp:test(strong/text(),"SAMMANFATTNING:")]//text()[not(ancestor::strong[regexp:test(text(),"SAMMANFATTNING:")])]').string(multiple=True)
     if not conclusion:

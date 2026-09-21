@@ -44,10 +44,10 @@ def process_revlist_next(data: Response, context: dict[str, str], session: Sessi
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):
-    if data.xpath('//img[contains(@alt, "1 tall")]|//h2[@class="numbered-heading"]'):
+    if data.xpath('//img[contains(@alt, "1 tall")]|//h2[@class="numbered-heading"]') or len(data.xpath('//h2[contains(@class, "leading-subtitle")]')) > 1:
         return  # Multi-revs. There full reviews for any product on site
 
-    title = data.xpath('//h1[contains(@class, "title")]/text()').string()
+    title = data.xpath('(//h1[contains(@class, "title")]|//h1)/text()').string().replace('<br>', '').strip()
 
     product = Product()
     product.url = context['url']
@@ -82,6 +82,15 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
+    if not review.authors:
+        authors = data.xpath('//a[@class="author__name"]')
+        for author in authors:
+            author_name = author.xpath('text()').string(multiple=True)
+            author_url = author.xpath('@href').string()
+            if author and author_url:
+                author_ssid = author_url.split('-')[-1]
+                review.authors.append(Person(name=author_name, ssid=author_ssid, profile_url=author_url))
+
     rev_json = data.xpath('//script[@type="application/ld+json"]/text()').string()
     try:
         grade_overall = simplejson.loads(rev_json).get('reviewRating', {}).get('ratingValue')
@@ -92,17 +101,17 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     summary = data.xpath('//p[contains(@class, "article__lead")]//text()').string(multiple=True)
     if summary:
-        summary = summary.replace(u'\uFEFF', '').strip()
+        summary = summary.replace(u'\uFEFF', '').replace('�', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//h2|//h3|//h5)[contains(., "Konklusjon")]/following-sibling::p//text()').string(multiple=True)
     if conclusion:
-        conclusion = conclusion.replace(u'\uFEFF', '').strip()
+        conclusion = conclusion.replace(u'\uFEFF', '').replace('�', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[contains(@class,"article-body")]/p[not(preceding-sibling::h2[regexp:test(.,"Konklusjon")])][not(contains(., "(Anmeldelsen fortsetter under bildet)") or regexp:test(., "anmeldelse:", "i"))]//text()[not(contains(., "[youtube"))][not(parent::strong) and not(contains(text(), "Spoileradvarsel!") or contains(., "href="))]').string(multiple=True)
     if excerpt:
-        excerpt = excerpt.replace(u'\uFEFF', '').strip()
+        excerpt = excerpt.replace(u'\uFEFF', '').replace('�', '').strip()
 
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
