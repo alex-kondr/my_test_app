@@ -6,7 +6,7 @@ import random
 
 def run(context: dict[str, str], session: Session):
     session.sessionbreakers = [SessionBreak(max_requests=7000)]
-    session.queue(Request('https://www.nintendo-town.fr/category/test/', force_charset='utf-8', use='curl', max_age=0), process_revlist, dict())
+    session.queue(Request('https://www.nintendo-town.fr/category/test/'), process_revlist, dict())
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
@@ -15,20 +15,20 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
     revs = data.xpath('//h3[contains(@class, "title")]/a')
     if not revs and not context.get('repeated'):
         time.sleep(10)
-        session.do(Request(data.response_url, force_charset='utf-8', use='curl', max_age=0), process_revlist, dict(repeated=True))
+        session.do(Request(data.response_url), process_revlist, dict(repeated=True))
         return
 
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, force_charset='utf-8', use='curl', max_age=0), process_review, dict(title=title, url=url))
+        session.queue(Request(url), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if not next_url:
         next_url = data.xpath('//a[@class="page_nav next"]/@href').string()
 
     if next_url:
-        session.queue(Request(next_url, force_charset='utf-8', use='curl', max_age=0), process_revlist, dict())
+        session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):

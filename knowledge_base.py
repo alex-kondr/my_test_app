@@ -35,6 +35,7 @@ def remove_emoji(string):
 
 '//h2[contains(., "Fazit")]/preceding-sibling::*'
 '//h2[contains(., "Fazit")]/following-sibling::*'
+'//div/ancestor::div'
 
 def strip_namespace(data):
     tmp = data.content_file + ".tmp"

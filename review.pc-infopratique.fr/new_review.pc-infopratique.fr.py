@@ -45,7 +45,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     time.sleep(random.uniform(1, 3))
 
     product = Product()
-    product.name = context['title'].replace('Test du ', '').replace('Test de la ', '').strip()
+    product.name = context['title'].replace('Test du ', '').replace('Test de la ', '').replace(' en test', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('article-')[-1].split('-')[0]
     product.category = 'Ordinateurs'
