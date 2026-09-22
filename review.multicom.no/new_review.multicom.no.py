@@ -5,6 +5,7 @@ import re
 
 
 XCAT = ['Kampanjer', 'Gavekort', 'Gjenbruksbutikken', 'Outlet', 'Vis alle']
+DUPE_PRODS = []
 
 # Prune gets stuck on these pages and doesn't continue parsing
 XPROD = [
@@ -83,7 +84,11 @@ def process_category(data: Response, context: dict[str, str], session: Session):
         name = prod.xpath('text()').string(multiple=True)
         manufacturer = prod.xpath('span/text()').string()
         url = prod.xpath('@href').string()
-        session.queue(Request(url, force_charset='utf-8', use='curl'), process_product, dict(context, name=name, manufacturer=manufacturer, url=url))
+
+        ssid = url.split('/')[-1]
+        if ssid not in DUPE_PRODS:
+            DUPE_PRODS.append(ssid)
+            session.queue(Request(url, force_charset='utf-8', use='curl'), process_product, dict(context, name=name, manufacturer=manufacturer, url=url))
 
     next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
@@ -100,11 +105,11 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     product.manufacturer = context['manufacturer']
 
     mpn = data.xpath('//div/@data-sku').string()
-    if mpn:
+    if mpn and ',' not in mpn:
         product.add_property(type='id.manufacturer', value=mpn)
 
     ean = data.xpath('//div[@class="b-product-sku" and contains(., "EAN")]/div/text()').string()
-    if ean:
+    if ean and ean.isdigit() and len(ean) > 10:
         product.add_property(type='id.ean', value=ean)
 
     revs_cnt = data.xpath('//div[contains(@class, "rating")]/span/span/text()').string()
@@ -135,6 +140,7 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
 
         author = rev.get('consumer', {}).get('displayName')
         if author:
+            author = author.replace(u'Alta videreg�ende skole', u'Alta videregående skole').replace(u'Aage Lillest�l', u'Aage Lillestøl').replace(u'P�l', u'Pål').replace(u'H�vard', u'Håvard').replace(u'Bj�rn', u'Bjørn').replace(u'Anders R�ste', u'Anders Røste').replace(u'K�re', u'Kåre').replace(u'Andr�', u'André').replace(u'Hans J�rgen', u'Hans Jørgen')
             review.authors.append(Person(name=author, ssid=author))
 
         grade_overall = rev.get('stars')
