@@ -19,7 +19,6 @@ def strip_namespace(data):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.areadvd.de/tests/'), process_catlist, dict())
 
 
@@ -44,7 +43,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
         if not any(title.startswith(xtitle) for xtitle in XTITLE) and 'TEST:' in title or 'review' in title.lower():
             session.queue(Request(url), process_review, dict(context, title=title, url=url))
 
-    next_url = data.xpath('//div[@class="navigation"]/div[@class="alignleft"]//a').string()
+    next_url = data.xpath('//div[@class="navigation"]/div[@class="alignleft"]//a/@href').string()
     if next_url:
         session.queue(Request(next_url), process_revlist, dict(context))
 
@@ -53,7 +52,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].replace('TEST: ', '').replace('VIDEO-REVIEW: ', '').replace('REVIEW: ', '').strip()
+    product.name = context['title'].replace('TEST: ', '').replace('VIDEO-REVIEW: ', '').replace('REVIEW: ', '').split(' im Test ')[0].strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('test-', '')
     product.category = context['cat']

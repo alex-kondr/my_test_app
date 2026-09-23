@@ -12,14 +12,14 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 
 agent = AgentForm(
     # name="reviews.fotokoch.de",
-    agent_id="20079",
-    new_agent=True
+    agent_id="20033",
+    new_agent=False
     )
 agent.create_run(
     # name_agent_for_test="Fotokoch [DE]",
     # agent_id="20182",
-    url='https://www.jekyllandhide.co.za/',
-    next_func=ProcessRun.frontpage.name,
+    url='https://www.singletracks.com/gear/',
+    next_func=ProcessRun.revlist.name,
     new_parser=True,
     breakers=10000,
     # curl=False

@@ -2,6 +2,8 @@ from agent import *
 from models.products import *
 import simplejson
 import re
+import time
+import random
 
 
 XCAT = ['View All', 'SHOP LUGGAGE', 'ALL FOOTWEAR', 'ALL LEATHER JACKETS']
@@ -45,12 +47,13 @@ def strip_namespace(data):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.jekyllandhide.co.za/'), process_frontpage, dict())
 
 
 def process_frontpage(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
+
+    time.sleep(random.uniform(1, 3))
 
     cats = data.xpath('//nav[@role="navigation"]/ul/li/details')
     for cat in cats:
@@ -74,19 +77,23 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
+    time.sleep(random.uniform(1, 3))
+
     prods = data.xpath('//a[contains(@class, "product-card__title")]')
     for prod in prods:
-        name = prod.xpath('text()').string()
+        name = prod.xpath('.//text()').string(multiple=True)
         url = prod.xpath('@href').string().split('?')[0]
-        session.queue(Request(url), process_product, dict(name=name, url=url))
+        session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//button[@type="load-more"]/@action').string()
     if next_url:
-        session.queue(Request(next_url), process_prodlist, dict())
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
+
+    time.sleep(random.uniform(1, 3))
 
     product = Product()
     product.name = context['name']
@@ -115,11 +122,13 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     revs_cnt = data.xpath('//div/@data-number-of-reviews').string()
     if revs_cnt and int(revs_cnt) > 0:
         revs_url = 'https://cdn.judge.me/reviews/reviews_for_widget?product_id={}&page=1&per_page=16&translation_locale=en&skip_other_languages=true&widget_theme=carousel&ts=2026-09-04T10%3A39%3A09Z&shop_domain=jekyll-and-hide-sa.myshopify.com&platform=shopify'.format(product.ssid)
-        session.do(Request(revs_url), process_reviews, dict(product=product, revs_cnt=revs_cnt))
+        session.do(Request(revs_url), process_reviews, dict(product=product, revs_cnt=int(revs_cnt)))
 
 
 def process_reviews(data: Response, context: dict[str, str], session: Session):
     product = context['product']
+
+    time.sleep(random.uniform(1, 3))
 
     try:
         revs_json = simplejson.loads(data.content)
@@ -170,7 +179,7 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
     if offset < revs_cnt:
         next_page = context.get('page', 1) + 1
         next_url = 'https://cdn.judge.me/reviews/reviews_for_widget?product_id={ssid}&page={page}&per_page=16&translation_locale=en&skip_other_languages=true&widget_theme=carousel&ts=2026-09-04T10%3A39%3A09Z&shop_domain=jekyll-and-hide-sa.myshopify.com&platform=shopify'.format(ssid=product.ssid, page=next_page)
-        session.do(Request(next_url), process_reviews, dict(product=product, revs_cnt=revs_cnt, offset=offset, page=next_page))
+        session.do(Request(next_url), process_reviews, dict(context, product=product, offset=offset, page=next_page))
 
     elif product.reviews:
             session.emit(product)

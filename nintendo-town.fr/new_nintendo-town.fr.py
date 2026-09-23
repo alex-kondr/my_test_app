@@ -100,7 +100,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     summary = data.xpath('//h2[contains(@class, "post_subtitle")]//text()').string(multiple=True)
     if summary:
-        summary = summary.replace(u'\uFEFF', '').strip()
+        summary = summary.replace(u'\uFEFF', '').replace('<br />', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//div[@class="desc"]/p//text()').string(multiple=True)
@@ -108,7 +108,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         conclusion = data.xpath('//h3[contains(., "Conclusion")]/following::p[not(@class or contains(., "©"))]//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = conclusion.replace(u'\uFEFF', '').strip()
+        conclusion = conclusion.replace(u'\uFEFF', '').replace('<br />', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[@class="content-inner"]/p[not(@class or contains(., "©"))]//text()').string(multiple=True)
@@ -116,7 +116,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         excerpt = data.xpath('//div[@class="content-inner"]/div/p[not(@class or contains(., "©"))]//text()').string(multiple=True)
 
     if excerpt:
-        excerpt = excerpt.replace(u'\uFEFF', '').strip()
+        excerpt = excerpt.replace(u'\uFEFF', '').replace('<br />', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
