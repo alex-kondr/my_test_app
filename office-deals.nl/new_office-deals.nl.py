@@ -63,7 +63,7 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
 
         if name and url:
             url = url.split('?')[0]
-            session.queue(Request(url, use="curl"), process_product, dict(context, name=name, url=url))
+            session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//a[contains(@title, "Volgende pagina")]/@href').string()
     if next_url:
