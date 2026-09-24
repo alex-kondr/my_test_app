@@ -73,6 +73,7 @@ class AgentModel(Base):
     last_error: Mapped[Optional[str]] = mapped_column(Text(), nullable=True, default=None)
     create_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     update_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    paused: Mapped[bool] = mapped_column(Boolean(), default=False)
 
     def __init__(self, agent_type: AgentType = AgentType.MEDIUM, **kwargs):
         super().__init__(

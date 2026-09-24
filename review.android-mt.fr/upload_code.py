@@ -12,10 +12,10 @@ import product_test.list_of_agents as agents
 from models import AgentModel, DBSession, Status, AgentType
 
 
-agent_id = agents.OFFICE_DEALS_NL
+agent_id = agents.ANDROID_MT_FR
 
 
-with open("office-deals.nl/new_office-deals.nl.py", "r", encoding="utf-8") as file:
+with open("review.android-mt.fr/new_review.android-mt.fr.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(
@@ -41,4 +41,5 @@ with DBSession() as db:
         agent.extra_time = False
         agent.session_end_date = None
         agent.last_error = None
+        agent.paused = False
         db.commit()
