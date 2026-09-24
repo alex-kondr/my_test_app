@@ -23,7 +23,7 @@ def strip_namespace(data):
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request("https://www.office-deals.nl/"), process_frontpage, dict())
+    session.queue(Request("https://www.office-deals.nl/", force_charset='utf-8'), process_frontpage, dict())
 
 
 def process_frontpage(data: Response, context: dict[str, str], session: Session):
@@ -35,7 +35,7 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
         url = cat.xpath('@href').string()
 
         if name not in XCAT:
-            session.queue(Request(url), process_catlist, dict(cat=name))
+            session.queue(Request(url, force_charset='utf-8'), process_catlist, dict(cat=name))
 
 
 def process_catlist(data: Response, context: dict[str, str], session: Session):
@@ -47,7 +47,7 @@ def process_catlist(data: Response, context: dict[str, str], session: Session):
         url = subcat.xpath('@href').string()
 
         if name not in XCAT:
-            session.queue(Request(url), process_catlist, dict(cat=context['cat']+'|'+name))
+            session.queue(Request(url, force_charset='utf-8'), process_catlist, dict(cat=context['cat']+'|'+name))
 
     if not subcats:
         process_prodlist(data: Response, context: dict[str, str], session: Session)
@@ -63,11 +63,11 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
 
         if name and url:
             url = url.split('?')[0]
-            session.queue(Request(url), process_product, dict(context, name=name, url=url))
+            session.queue(Request(url, force_charset='utf-8'), process_product, dict(context, name=name, url=url))
 
     next_url = data.xpath('//a[contains(@title, "Volgende pagina")]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_prodlist, dict(context))
+        session.queue(Request(next_url, force_charset='utf-8'), process_prodlist, dict(context))
 
 
 def process_product(data: Response, context: dict[str, str], session: Session):
@@ -110,7 +110,7 @@ def process_product(data: Response, context: dict[str, str], session: Session):
         grade_overall = rev.xpath(".//div[@class='rating']/@style").string()
         if grade_overall:
             grade_overall = float(grade_overall.split(':')[-1].split('%')[0]) / 20
-            review.grades.append(Grade(type="overall", value=float(grade_overall), best=5.0))
+            review.grades.append(Grade(type="overall", value=round(grade_overall, 2), best=5.0))
 
         grades = rev.xpath(".//div[@class='row review-row'][.//div[@class='rating_bar']]/div")
         for grade in grades:
@@ -118,7 +118,7 @@ def process_product(data: Response, context: dict[str, str], session: Session):
             grade_val = grade.xpath(".//div[@class='rating']/@style").string()
             if name and grade_val:
                 grade_val = float(grade_val.split(':')[-1].split('%')[0]) / 20
-            review.grades.append(Grade(name=name, value=float(grade_val), best=5.0))
+                review.grades.append(Grade(name=name, value=round(grade_val, 2), best=5.0))
 
         is_recommended = rev.xpath(".//p[@class='recommend']//span[@class='thumbup']")
         if is_recommended:
