@@ -24,7 +24,6 @@ def RequestRevs(mpn, offset):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.epson.com.au/shoponline/'), process_catlist, dict())
 
 
@@ -65,7 +64,7 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
 
         revs_cnt = prod.get('TotalReviews')
         if revs_cnt and int(revs_cnt) > 0:
-            session.do(RequestRevs(mpn, 0), process_reviews, dict(product=product, mpn=mpn))
+            session.queue(RequestRevs(mpn, 0), process_reviews, dict(product=product, mpn=mpn))
 
 
 def process_reviews(data: Response, context: dict[str, str], session: Session):
