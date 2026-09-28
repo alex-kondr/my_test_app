@@ -12,10 +12,10 @@ import product_test.list_of_agents as agents
 from models import AgentModel, DBSession, Status, AgentType
 
 
-agent_id = agents.BOUYGUES_TELECOM_FR
+agent_id = agents.A_S_ADVENTURE_NL
 
 
-with open("review.bouyguestelecom.fr/new_review.bouyguestelecom.fr.py", "r", encoding="utf-8") as file:
+with open("review.asadventure.nl/new_review.asadventure.nl.py", "r", encoding="utf-8") as file:
     agent_code = file.read()
 
 agent_code = agent_code.replace(
@@ -37,7 +37,7 @@ with DBSession() as db:
     if agent:
         agent.status = Status.running
         agent.new_code = agent_code
-        agent.agent_type = AgentType.SMALL
+        agent.agent_type = AgentType.MEDIUM
         agent.extra_time = False
         agent.session_end_date = None
         agent.last_error = None

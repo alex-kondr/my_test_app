@@ -37,12 +37,12 @@ def remove_emoji(string):
 def RequestProds(page):
     options = """--compressed -X POST -H 'referer: https://nettbutikk.ice.no/' --data-raw '{"searches":[{"group_by":"productSlug","group_limit":1,"query_by":"name,manufacturer","sort_by":"isPromotedVariant:desc,defaultSortPriority:asc","highlight_full_fields":"name,manufacturer","collection":"prod_hardware_offering_variants","q":"*","facet_by":"categorySlug,isAvailableWithEquipmentUpgrade,isPentBrukt,manufacturer,regularPrice","filter_by":"isAvailable:true && isPentBrukt:=[false]","max_facet_values":20,"page":""" + str(page)+ ""","per_page":21}]}'"""
     url = 'https://y0ru34sdmgptzij9p.a2.typesense.net/multi_search?x-typesense-api-key=bS83VJco2Ufb2NShS4lrQLL5yNCCf7uz'
-    r = Request(url, use='curl', force_charset='utf-8', options=options)
+    r = Request(url, use='curl', force_charset='utf-8', options=options, max_age=0)
     return r
 
 
 def run(context: dict[str, str], session: Session):
-    session.queue(Request('https://nettbutikk.ice.no/', force_charset='utf-8'), process_prodlist, dict())
+    session.do(RequestProds(1), process_prodlist, dict())
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
@@ -56,28 +56,26 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
         prod = prod.get('hits', [{}])[0].get('document', {})
 
         product = Product()
+        product.name = prod.get('name')
+        product.ssid = prod.get('lipscoreId')
+        product.sku = prod.get('id')
+        product.category = prod.get('categoryName')
+        product.manufacturer = prod.get('manufacturer')
+        product.url = 'https://nettbutikk.ice.no/' + prod.get('categorySlug') + '/' + product.manufacturer.lower() + '/' + prod.get('productSlug') + '/' + prod.get('slug')
 
-
-
-
-def process_product(data: Response, context: dict[str, str], session: Session):
-    product = Product()
-    product.name = context['name']
-    product.url = context['url']
-    product.category = data.xpath('//div[nav[@aria-label="Breadcrumb"]]/ul/li/a/text()').string()
-    product.manufacturer = context['brand']
-
-    ean = data.xpath('//div/@data-ls-gtin').string()
-    if ean and len(ean) > 10 and ean.isdigit():
-        product.add_property(type='id.ean', value=ean)
-
-    prod_json = data.xpath(r'''//script[contains(., '\":false,\"')]/text()''').string()
-    if prod_json:
-        product.ssid = prod_json.split(r'\":false,\"', 1)[-1].split(r'\",\"', 1)[0]
+        ean = prod.get('gtin')
+        if ean and ean.isdigit() and len(ean) > 10:
+            product.add_property(type='id.ean', value=ean)
 
         if product.ssid:
             revs_url = 'https://wapi.lipscore.com/initial_data/products/show?api_key={api_key}&internal_id={ssid}&widgets=rw_l%2Crw_smr'.format(api_key=API_KEY, ssid=product.ssid)
-            session.do(Request(revs_url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+            session.queue(Request(revs_url, use='curl', options=OPTIONS, force_charset='utf-8', max_age=0), process_reviews, dict(product=product))
+
+    prods_cnt = context.get('prods_cnt', prods_json.get('found', 0))
+    offset = context.get('offset', 0) + 21
+    if offset < prods_cnt:
+        next_page = context.get('page', 1) + 1
+        session.do(RequestProds(next_page), process_prodlist, dict(prods_cnt=prods_cnt, offset=offset, page=next_page))
 
 
 def process_reviews(data: Response, context: dict[str, str], session: Session):

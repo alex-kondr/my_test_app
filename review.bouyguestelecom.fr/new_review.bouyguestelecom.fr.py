@@ -34,7 +34,7 @@ def remove_emoji(string):
 
 def run(context: dict[str, str], session: Session):
     session.sessionbreakers = [SessionBreak(max_requests=8000)]
-    session.queue(Request('https://www.bouyguestelecom.fr/webapi/wall?type=phone&options={"sort":"meilleures-ventes","page":1,"limit":28,"filters":{},"plan":"7017","stickers":["0","1","6","7","8","9","14","15"]}&shouldBeProspect=false', force_charset='utf-8', max_age=0), process_prodlist, dict())
+    session.queue(Request('https://www.bouyguestelecom.fr/webapi/wall?type=phone&options={"sort":"meilleures-ventes","page":1,"limit":28,"filters":{},"plan":"7017","stickers":["0","1","6","7","8","9","14","15"]}&shouldBeProspect=false', force_charset='utf-8'), process_prodlist, dict())
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
@@ -53,14 +53,14 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
 
         revs_cnt = prod.get('rating', {}).get('count')
         if revs_cnt and int(revs_cnt) > 0:
-            session.queue(Request(product.url, force_charset='utf-8', max_age=0), process_product, dict(product=product, revs_cnt=int(revs_cnt)))
+            session.queue(Request(product.url, force_charset='utf-8'), process_product, dict(product=product, revs_cnt=int(revs_cnt)))
 
     prods_cnt = context.get('prods_cnt', prods_json.get('count'))
     offset = context.get('offset', 0) + len(prods)
     if offset < prods_cnt:
         next_page = context.get('page', 1) + 1
         next_url = 'https://www.bouyguestelecom.fr/webapi/wall?type=phone&options={"sort":"meilleures-ventes","page":' + str(next_page) + ',"limit":28,"filters":{},"plan":"7017","stickers":["0","1","6","7","8","9","14","15"]}&shouldBeProspect=false'
-        session.queue(Request(next_url, force_charset='utf-8', max_age=0), process_prodlist, dict(prods_cnt=prods_cnt, offset=offset, page=next_page))
+        session.queue(Request(next_url, force_charset='utf-8'), process_prodlist, dict(prods_cnt=prods_cnt, offset=offset, page=next_page))
 
 
 def process_product(data: Response, context: dict[str, str], session: Session):
