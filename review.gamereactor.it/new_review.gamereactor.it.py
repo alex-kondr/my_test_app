@@ -26,7 +26,7 @@ def run(context: dict[str, str], session: Session):
 def process_revlist(data, context, session):
     strip_namespace(data)
 
-    revs = data.xpath('(//main[@id="main-content"]/div/a|//a[@class="gn-story" or @class="gn-dayrow"])/@href')
+    revs = data.xpath('(//main[@id="main-content"]/div/a|//a[contains(@class, "gn-story") or contains(@class, "gn-dayrow")])/@href')
     for rev in revs:
         url = rev.string()
 
@@ -81,12 +81,12 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     grade_overall = data.xpath('//div[contains(@class, "side-sticky")]/div/div/span/text()[regexp:test(., "^\d{1,2}$")]').string()
     if not grade_overall:
-        grade_overall = data.xpath('//div[@class="gr-verdict"]/div/div/span/text()[regexp:test(., "^\d{1,2}$")]').string()
+        grade_overall = data.xpath('//div[contains(@class, "gr-verdict")]/div/div/span/text()[regexp:test(., "^\d{1,2}$")]').string()
 
     if grade_overall and grade_overall.isdigit() and float(grade_overall) > 0:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
 
-    pros = data.xpath('//div[@class="gr-verdict"]//div[normalize-space(span/text())="Pro"]/span[not(normalize-space(text())="Pro")]/text()')
+    pros = data.xpath('//div[contains(@class, "gr-verdict")]//div[normalize-space(span/text())="Pro"]/span[not(normalize-space(text())="Pro")]/text()')
     for pro in pros:
         pro = pro.string()
         if pro:
@@ -94,7 +94,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//div[@class="gr-verdict"]//div[normalize-space(span/text())="Contro"]/span[not(normalize-space(text())="Contro")]/text()')
+    cons = data.xpath('//div[contains(@class, "gr-verdict")]//div[normalize-space(span/text())="Contro"]/span[not(normalize-space(text())="Contro")]/text()')
     for con in cons:
         con = con.string()
         if con:
@@ -102,7 +102,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath('//div[@class="gr-verdict"]/div/p//text()').string(multiple=True)
+    conclusion = data.xpath('//div[contains(@class, "gr-verdict")]/div/p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 

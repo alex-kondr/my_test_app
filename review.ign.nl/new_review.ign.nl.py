@@ -85,14 +85,14 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         summary = summary.replace(u'\x92', "'")
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('//p[preceding-sibling::h3[regexp:test(., "het oordeel", "i")]]/text()').string(multiple=True)
+    conclusion = data.xpath('//p[preceding-sibling::h3[regexp:test(., "het oordeel", "i")]]//text()').string(multiple=True)
     if not conclusion:
         conclusion = data.xpath('//div[@id="id_text"]//text()[not(contains(., "Het oordeel") or contains(., "beoordeling voor"))][not(ancestor::div[@id="ratingsBox"] or preceding::div[@id="ratingsBox"])][preceding::div[contains(text(), "Conclusie")]]').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//div[@class="details"]/div[contains(@id, "bottomline")]/text()').string(multiple=True)
+        conclusion = data.xpath('//div[@class="details"]/div[contains(@id, "bottomline")]//text()').string(multiple=True)
 
     if conclusion:
-        conclusion = conclusion.replace(u'\x92', "'")
+        conclusion = conclusion.replace(u'\x92', "'").replace('<em>', '').replace('</em>', '').replace('<p>', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     context['excerpt'] = data.xpath('(//div[@id="id_text"]/p|//div[@id="id_text"]/div)[not(preceding::div[contains(text(), "Het oordeel")] or .//table)]//text()[not(contains(., "Conclusie") or contains(., "beoordeling voor"))]').string(multiple=True)
@@ -158,13 +158,14 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
                 review.add_property(type='cons', value=con)
 
     if context.get('page'):
-        conclusion = data.xpath('//p[preceding-sibling::h3[regexp:test(., "het oordeel", "i")]]/text()').string(multiple=True)
+        conclusion = data.xpath('//p[preceding-sibling::h3[regexp:test(., "het oordeel", "i")]]//text()').string(multiple=True)
         if not conclusion:
             conclusion = data.xpath('//div[@id="id_text"]//text()[not(contains(., "Het oordeel") or contains(., "beoordeling voor"))][not(ancestor::div[@id="ratingsBox"] or preceding::div[@id="ratingsBox"])][preceding::div[contains(text(), "Conclusie")]]').string(multiple=True)
         if not conclusion:
-            conclusion = data.xpath('//div[@class="details"]/div[contains(@id, "bottomline")]/text()').string(multiple=True)
+            conclusion = data.xpath('//div[@class="details"]/div[contains(@id, "bottomline")]//text()').string(multiple=True)
 
         if conclusion:
+            conclusion = conclusion.replace(u'\x92', "'").replace('<em>', '').replace('</em>', '').replace('<p>', '').strip()
             review.add_property(type='conclusion', value=conclusion)
 
         excerpt = data.xpath('(//div[@id="id_text"]/p|//div[@id="id_text"]/div)[not(preceding::div[contains(text(), "Het oordeel")] or .//table)]//text()[not(contains(., "Conclusie") or contains(., "beoordeling voor"))]').string(multiple=True)
@@ -178,7 +179,7 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
             context['excerpt'] += " " + excerpt
 
     if context['excerpt']:
-        excerpt = context['excerpt'].replace(u'\x92', "'")
+        excerpt = context['excerpt'].replace(u'\x92', "'").replace('<em>', '').replace('</em>', '').replace('<p>', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
