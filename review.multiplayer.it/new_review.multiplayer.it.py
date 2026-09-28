@@ -40,18 +40,20 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         product.category += "|" + platforme
 
     review = Review()
+    review.type = 'pro'
     review.title = title
     review.ssid = product.ssid
-    review.type = 'pro'
     review.url = context['url']
     review.date = data.xpath("//*[@id='_article_pub_date']//text()").string()
 
     author = data.xpath('//span[@class="article__header__type-author"]/*[not(contains(., "RECENSIONE"))]/text()').string()
     author_url = data.xpath('//span[@class="article__header__type-author"]/*[not(contains(., "RECENSIONE"))]/@href').string()
     if author and author_url:
+        author = author.replace(u'\uFEFF', '').strip()
         author_ssid = author_url.split('/')[-4]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
     elif author:
+        author = author.replace(u'\uFEFF', '').strip()
         review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath("(//p[contains(@class,'article__verdict__boxes__vote')])[1]//text()").string(multiple=True)
@@ -69,7 +71,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     for pro in pros:
         pro = pro.xpath(".//text()").string()
         if pro:
-            pro = pro.strip(' +-*.:;•,–')
+            pro = pro.replace(u'\uFEFF', '').strip(' +-*.:;•,–')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -77,20 +79,23 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     for con in cons:
         con = con.xpath(".//text()").string()
         if con:
-            con = con.strip(' +-*.:;•,–')
+            con = con.replace(u'\uFEFF', '').strip(' +-*.:;•,–')
             if len(con) > 1 and pro != 'No':
                 review.add_property(type='cons', value=con)
 
     summary = data.xpath("//p[contains(@class, 'subtitle')]//text()").string(multiple=True)
     if summary:
+        summary = summary.replace(u'\uFEFF', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath("//p[contains(@class, 'article__verdict__description')]//text()").string(multiple=True)
     if conclusion:
+        conclusion = conclusion.replace(u'\uFEFF', '').strip()
         review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath("//div[@class='article__content']//p[not(@class)]//text()").string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)

@@ -101,13 +101,13 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//div[div/h1]/div[not(a)]/span//text()').string(multiple=True)
-    if summary:
-        review.add_property(type='summary', value=summary)
-
     conclusion = data.xpath('//div[@class="gr-verdict"]/div/p//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
+
+    summary = data.xpath('//div[div/h1]/div[not(a)]/span//text()').string(multiple=True)
+    if summary and summary != conclusion:
+        review.add_property(type='summary', value=summary)
 
     excerpt = data.xpath('//div[@id="page0"]/p//text()').string(multiple=True)
     if excerpt:

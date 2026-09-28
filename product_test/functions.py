@@ -12,7 +12,7 @@ from requests.auth import HTTPBasicAuth
 import urllib3
 from requests_html import HTMLSession
 
-from models import AgentModel
+from models import AgentModel, Status
 
 
 current = os.path.dirname(os.path.realpath(__file__))
@@ -233,12 +233,12 @@ def post_edit_page_agent(agent: AgentModel):
         "name": agent.name,
         "source_name": agent.source_name,
         "description": agent.description,
-        "state_id": "3" if agent.accepted else "2",
+        "state_id": "3" if agent.status==Status.accepted else "2",
         "priority": agent.priority,
         "group": agent.group
     }
 
-    if agent.accepted:
+    if agent.status==Status.accepted:
         data["active"] = "1"
 
     session = HTMLSession()

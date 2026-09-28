@@ -95,37 +95,34 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
 def process_product(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    product = Product()
-    product.name = context['name']
-    product.url = context['url'].strip('/')
-    product.category = context['cat'].replace('…', '').replace('...', '')
+    ssid = data.xpath('//input[@id="product_id"]/@value').string()
+    if not ssid:
+        ssid = data.xpath('//span/@data-productid').string()
+    if not ssid:
+        ssid = context['url'].split('/')[-1]
 
-    product.ssid = data.xpath('//input[@id="product_id"]/@value').string()
-    if not product.ssid:
-        product.ssid = data.xpath('//span/@data-productid').string()
-    if not product.ssid:
-        product.ssid = product.url.split('/')[-1]
-
-    product.manufacturer = data.xpath('//li//span[contains(., "Fabricant :")]/following-sibling::span/text()').string()
-    if not product.manufacturer:
-        product.manufacturer = data.xpath('//li//span[contains(., "Fabricant :")]/following-sibling::a/text()').string()
+    manufacturer = data.xpath('//li//span[contains(., "Fabricant :")]/following-sibling::span/text()').string()
+    if not manufacturer:
+        manufacturer = data.xpath('//li//span[contains(., "Fabricant :")]/following-sibling::a/text()').string()
 
     user_revs = data.xpath('//a[contains(text(), "Avis")]/@href').string()
     if user_revs:
-        session.queue(Request(user_revs, use='curl', force_charset='utf-8'), process_reviews, dict(product=product))
+        session.queue(Request(user_revs, use='curl', force_charset='utf-8'), process_reviews, dict(context, ssid=ssid, manufacturer=manufacturer))
 
     pro_revs = data.xpath('//div[contains(@class, "product-review")]/a/@href').string()
     if pro_revs:
-        session.queue(Request(pro_revs, use='curl', force_charset='utf-8'), process_review, dict(product=product))
+        session.queue(Request(pro_revs, use='curl', force_charset='utf-8'), process_review, dict(context, ssid=ssid, manufacturer=manufacturer))
 
 
 def process_reviews(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    product = context['product']
-
-    if not product.ssid:
-        product.ssid = product.url.split('/')[-1]
+    product = Product()
+    product.name = context['name']
+    product.url = context['url'].strip('/')
+    product.ssid = context['ssid']
+    product.category = context['cat'].replace('…', '').replace('...', '')
+    product.manufacturer = context['manufacturer']
 
     revs = data.xpath('//ul[@class="reviews"]/li')
     for rev in revs:
@@ -189,10 +186,12 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
 def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    product = context['product']
-
-    if not product.ssid:
-        product.ssid = data.response_url.split('/')[-1]
+    product = Product()
+    product.name = context['name']
+    product.url = context['url'].strip('/')
+    product.ssid = context['ssid']
+    product.category = context['cat'].replace('…', '').replace('...', '')
+    product.manufacturer = context['manufacturer']
 
     review = Review()
     review.type = 'pro'

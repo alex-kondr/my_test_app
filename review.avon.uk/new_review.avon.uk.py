@@ -86,13 +86,12 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     product.url = context['url']
     product.ssid = data.xpath('//input[@name="product-id"]/@value').string()
     product.category = context['cat'].strip(' |')
+    product.manufacturer = 'Avon'
 
     try:
         prod_json = data.xpath('''//script[contains(., '"@type": "Product"')]/text()''').string()
-        prod_json = simplejson.loads(prod_json)
 
-        product.sku = prod_json.get('offers', {}).get('sku')
-        product.manufacturer = prod_json.get('brand', {}).get('name')
+        product.sku = simplejson.loads(prod_json).get('offers', {}).get('sku')
     except:
         pass
 
