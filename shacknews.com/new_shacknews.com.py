@@ -22,13 +22,10 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     title = data.xpath('//h1[@class="article-title"]/text()').string()
 
     product = Product()
+    product.name = title.replace(' Review', '').replace('Mini-Review', '').replace(' Reviews', '').split('review: ')[0].split('review -')[0].split(' Review: ')[0].split('Review-in-Progress: ')[-1].replace(' unboxing & review', '').replace('Review: ', '').replace(' review follow-up', '').replace(' review', '').strip()
     product.url = context['url']
     product.ssid = context['url'].split('/')[-1].replace('-review-score', '').replace('-review', '')
     product.category = 'Games'
-
-    product.name = data.xpath('//div[@class="review-header"]/div/a/text()').string()
-    if not product.name:
-        product.name = title.replace(' Review', '').replace('Mini-Review', '').replace(' Reviews', '').split('review: ')[0].split('review -')[0].split(' Review: ')[0].split('Review-in-Progress: ')[-1].strip()
 
     review = Review()
     review.type = 'pro'
@@ -74,6 +71,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     excerpt = data.xpath('//div[contains(@class, "article-content")]/p[not(preceding-sibling::hr)]//text()').string(multiple=True)
     if excerpt:
+        excerpt = excerpt.replace(u"ÃƒÂ¯", u"ï").replace(u"Ã©", u"é")
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
