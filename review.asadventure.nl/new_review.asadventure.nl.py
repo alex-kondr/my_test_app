@@ -88,13 +88,19 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     if not product.name:
         product.name = data.xpath('//div[h1[@data-testid="product_name"]]/text()').string()
 
-    prod_info = data.xpath("//script[contains(., 'var productInfo = ')]/text()").string()
-    if prod_info:
-        prod_info = simplejson.loads(prod_info.split(' = ')[-1])
-        product.ssid = prod_info.get("productId")
-        product.sku = product.ssid
+    prod_info = data.xpath('''//script[contains(., '"@type":"http://schema.org/Product"') and @type="application/json"]/text()''').string()
+    if not prod_info:
+        return
 
-    mpn = data.xpath('//div/@data-parent-product-sku').string()
+    prod_info = simplejson.loads(prod_info.strip('<! ->'))
+    product.ssid = prod_info.get('store', {}).get('product').get("productId")
+    product.sku = product.ssid
+
+    ean = prod_info.get('props', {}).get('productLD', {}).get('gtin')
+    if ean and str(ean).isdigit() and len(str(ean)) > 10:
+        product.add_property(type='id.ean', value=str(ean))
+
+    mpn = prod_info.get('props', {}).get('productCode')
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
 
