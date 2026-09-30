@@ -75,10 +75,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     product.name = context['title'].split(' review: ')[0].replace('[Review]', '').replace(' review', '').replace('[review]', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
-
-    product.category = data.xpath('(//div[contains(@class, "breadcrumbs")]/span//a[not(contains(., "Home") or contains(., "Review") or contains(., "News"))])[last()]/text()').string()
-    if not product.category:
-        product.category = 'Tech'
+    product.category = 'Mountain Bikes and Gear'
 
     review = Review()
     review.type = 'pro'
