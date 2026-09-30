@@ -19,7 +19,6 @@ def strip_namespace(data):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=10000)]
     session.queue(Request('https://www.telegraph.co.uk/recommended/tech/', use='curl', force_charset='utf-8'), process_catlist, dict())
 
 
@@ -38,10 +37,10 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 
     revs = data.xpath('//h2[contains(@data-track-wrapper, "article-list")]/a')
     for rev in revs:
-        title = rev.xpath('.//text()').string()
+        title = rev.xpath('.//text()').string(multiple=True)
         url = rev.xpath('@href').string()
 
-        if url and title and not any(xtitle in title.lower() for xtitle in XTITLE) and 'review' in url:
+        if url and title and not any(xtitle in title.lower() for xtitle in XTITLE) and '-review' in url and 'fake-review' not in url:
             session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(context, title=title, url=url))
 
     next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
@@ -52,13 +51,16 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
+    if data.xpath('//h1[regexp:test(text(), "the best", "i")]'):
+        return
+
     product = Product()
     product.ssid = context['url'].split('/')[-2].replace('-review', '')
     product.category = context['cat']
 
     product.name = data.xpath('//h2[@class="product-review__name"]/text()').string()
     if not product.name:
-        product.name = context['title']
+        product.name = context['title'].split(' review: ')[0]
 
     product.url = data.xpath('//a[@name="buy"]/@href').string()
     if not product.url:
@@ -82,7 +84,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     elif author:
         review.authors.append(Person(name=author, ssid=author))
 
-    grade_overall = data.xpath('count(//svg[@title="filled star"]) + count(//svg[@title="half star"]) div 2')
+    grade_overall = data.xpath('count(//*[contains(name(), "svg") and @title="filled star"]) + count(//*[contains(name(), "svg") and @title="half star"]) div 2')
     if grade_overall:
         review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
