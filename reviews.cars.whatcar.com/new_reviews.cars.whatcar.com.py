@@ -77,7 +77,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.title = data.xpath('//h1//text()').string(multiple=True)
     review.url = context['url']
     review.ssid = product.ssid
-    review.date = data.xpath('//div[contains(@class, "author-date")]/span[not(contains(., "Updated"))]/text()').string()
+    review.date = data.xpath('//div[contains(@class, "author-date")]/span[not(contains(., "Updated") or contains(., "Published"))]/text()').string()
 
     author = data.xpath('//div[contains(@class, "author-name")]/a[contains(@class, "author-link")]/text()').string()
     author_url = data.xpath('//div[contains(@class, "author-name")]/a[contains(@class, "author-link")]/@href').string()
