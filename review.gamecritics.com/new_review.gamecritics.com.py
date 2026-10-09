@@ -4,7 +4,7 @@ import re
 
 
 def clean_text(text):
-    return text.replace('UAB Å IAULIÅ²', u'UAB ŠIAULIŲ').replace('escrutÃ­nio', u'escrutínio').replace(u'Ã¼', u'ü').replace(u'Ã©', u'é').replace('Ã§', u'ç').replace('bÅ', u'bō').replace('dÃ©jÃ', u'déjà').replace('Ã¨', u'è').replace('Ã¶', u'ö').replace('Ã¡', u'á').replace('Ã±', u'ñ').replace('Ã¯', u'ï').replace('Ãº', u'ú').replace('Ã³', u'ó').replace('Ã¢', u'â').replace('Ãª', u'ê').replace('Ã«', u'ë').replace('Ã£', u'ã').replace('Å²', u'Ų').replace('Ã¤', u'ä').replace('Ã¥', u'å').replace('ï¿½', "'").replace('Ãµ', u'õ').strip()
+    return text.replace('UAB Å IAULI', u'UAB ŠIAULI').replace('escrutÃ­nio', u'escrutínio').replace('dÃ©jÃ', u'déjà').replace(u'Ã¼', u'ü').replace(u'Ã©', u'é').replace('Ã§', u'ç').replace(u'bÅ�', u'bō').replace('Ã¨', u'è').replace('Ã¶', u'ö').replace('Ã¡', u'á').replace('Ã±', u'ñ').replace('Ã¯', u'ï').replace('Ãº', u'ú').replace('Ã³', u'ó').replace('Ã¢', u'â').replace('Ãª', u'ê').replace('Ã«', u'ë').replace('Ã£', u'ã').replace('Å²', u'Ų').replace('Ã¤', u'ä').replace('Ã¥', u'å').replace('ï¿½', "'").replace('Ãµ', u'õ').strip()
 
 
 def run(context: dict[str, str], session: Session):
@@ -33,7 +33,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = clean_text(context['title'])
     review.url = product.url
     review.ssid = product.ssid
 

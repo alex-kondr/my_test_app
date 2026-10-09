@@ -16,6 +16,7 @@ def strip_namespace(data):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('http://gamechronicles.com/category/game-reviews/'), process_revlist, dict())
 
 
@@ -37,7 +38,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' Review – ')[0].strip()
+    product.name = context['title'].split('Review –')[0].split('Review -')[0].split(' Tech Review')[0].strip('  ')
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = 'Games'
