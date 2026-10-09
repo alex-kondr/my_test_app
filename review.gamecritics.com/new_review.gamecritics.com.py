@@ -3,6 +3,10 @@ from models.products import *
 import re
 
 
+def clean_text(text):
+    return text.replace('UAB Å IAULIÅ²', u'UAB ŠIAULIŲ').replace('escrutÃ­nio', u'escrutínio').replace(u'Ã¼', u'ü').replace(u'Ã©', u'é').replace('Ã§', u'ç').replace('bÅ', u'bō').replace('dÃ©jÃ', u'déjà').replace('Ã¨', u'è').replace('Ã¶', u'ö').replace('Ã¡', u'á').replace('Ã±', u'ñ').replace('Ã¯', u'ï').replace('Ãº', u'ú').replace('Ã³', u'ó').replace('Ã¢', u'â').replace('Ãª', u'ê').replace('Ã«', u'ë').replace('Ã£', u'ã').replace('Å²', u'Ų').replace('Ã¤', u'ä').replace('Ã¥', u'å').replace('ï¿½', "'").replace('Ãµ', u'õ').strip()
+
+
 def run(context: dict[str, str], session: Session):
     session.sessionbreakers = [SessionBreak(max_requests=5000)]
     session.queue(Request('https://gamecritics.com/tag/game-reviews/'), process_revlist, dict())
@@ -11,7 +15,7 @@ def run(context: dict[str, str], session: Session):
 def process_revlist(data: Response, context: dict[str, str], session: Session):
     revs = data.xpath('//h3[contains(@class, "entry-title")]//a')
     for rev in revs:
-        title = rev.xpath('text()').string().replace(u'Ã¼', u'ü').replace(u'Ã©', u'é')
+        title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
         session.queue(Request(url), process_review, dict(title=title, url=url))
 
@@ -22,7 +26,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 
 def process_review(data: Response, context: dict[str, str], session: Session):
     product = Product()
-    product.name = context['title'].replace('SVG REVIEW:', '').replace('PREVIEW ', '').replace(' — Review', '').replace(' Review', '').replace(' review', '').strip(' –.')
+    product.name = clean_text(context['title']).replace('SVG REVIEW:', '').replace('PREVIEW ', '').replace(' — Review', '').replace(' Review', '').replace(' review', '').strip(' –.')
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = 'Games'
@@ -58,7 +62,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         pros = data.xpath('//p[strong[contains(., "HIGH")]]//text()[not(contains(., "HIGH"))]').string(multiple=True)
 
     if pros:
-        pros = pros.replace(u'Ã¼', u'ü').replace(u'Ã©', u'é').strip(' +-*.:;•,–')
+        pros = clean_text(pros).strip(' +-*.:;•,–')
         if len(pros) > 1:
             review.add_property(type='pros', value=pros)
 
@@ -67,28 +71,29 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         cons = data.xpath('//p[strong[contains(., "LOW")]]//text()[not(contains(., "LOW"))]').string(multiple=True)
 
     if cons:
-        cons = cons.replace(u'Ã¼', u'ü').replace(u'Ã©', u'é').strip(' +-*.:;•,–')
+        cons = clean_text(cons).strip(' +-*.:;•,–')
         if len(cons) > 1:
             review.add_property(type='cons', value=cons)
 
     summary = data.xpath('//h2[@class]//text()').string(multiple=True)
     if summary:
-        summary = summary.replace(u'Ã¼', u'ü').replace(u'Ã©', u'é')
+        summary = clean_text(summary)
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('(//p[contains(., "Disclosures")]|//p[contains(., "Disclosures")]/following-sibling::p)//text()[not(contains(., ":"))]').string(multiple=True)
     if conclusion:
-        conclusion = conclusion.replace(u'Ã¼', u'ü').replace(u'Ã©', u'é')
+        conclusion = clean_text(conclusion)
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//div[@class="entry-content"]//p[not(strong/text()="HIGH" or strong/text()="LOW" or strong/text()="WTF" or b[regexp:test(., "HIGH|LOW|WTF|:")] or preceding-sibling::p[contains(., "Disclosures")] or contains(., "Disclosures") or contains(strong, "Rating:"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="entry-content"]//p[not(strong/text()="HIGH" or strong/text()="LOW" or strong/text()="WTF" or b[regexp:test(., "HIGH|LOW|WTF|:")] or preceding-sibling::p[contains(., "Disclosures")] or contains(., "Disclosures") or contains(strong, "Rating:"))]//text()[not(contains(., "Rating:"))]').string(multiple=True)
     if excerpt:
-        excerpt = excerpt.replace(u'Ã¼', u'ü').replace(u'Ã©', u'é')
-        if conclusion:
-            excerpt = excerpt.replace(conclusion, '').strip()
+        excerpt = clean_text(excerpt)
+        if len(excerpt) > 2:
+            if conclusion:
+                excerpt = excerpt.replace(conclusion, '').strip()
 
-        review.add_property(type='excerpt', value=excerpt)
+            review.add_property(type='excerpt', value=excerpt)
 
-        product.reviews.append(review)
+            product.reviews.append(review)
 
-        session.emit(product)
+            session.emit(product)
