@@ -3,7 +3,7 @@ from enum import Enum, auto
 from typing import Union
 
 from product_test import functions
-from models import AgentModel, DBSession
+from models import AgentModel, DBSession, AgentType
 
 
 class ProcessRun(Enum):
@@ -393,7 +393,8 @@ class AgentForm:
                 description=functions.get_description(self.agent_info_html),
                 priority=functions.get_priority(self.agent_info_html),
                 group=functions.get_group(self.agent_info_html),
-                max_emit=functions.get_max_emit_agent(self.agent_id)
+                max_emit=functions.get_max_emit_agent(self.agent_id),
+                agent_type=AgentType.BIG
             )
             functions.post_edit_page_agent(agent)
             session.add(agent)
