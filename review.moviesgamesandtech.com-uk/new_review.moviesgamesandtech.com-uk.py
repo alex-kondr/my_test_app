@@ -6,25 +6,25 @@ import random
 
 def run(context: dict[str, str], session: Session):
     session.sessionbreakers = [SessionBreak(max_requests=8000)]
-    session.queue(Request('https://moviesgamesandtech.com/category/reviews/', use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+    session.queue(Request('https://moviesgamesandtech.com/category/reviews/'), process_revlist, dict())
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
-    time.sleep(random.uniform(1, 3))
+    time.sleep(random.uniform(2, 5))
 
     revs = data.xpath('//div[contains(@class, "block_inner")]//h3[contains(@class, "title")]/a')
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_review, dict(title=title, url=url))
+        session.queue(Request(url), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//a[@aria-label="next-page"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
+        session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):
-    time.sleep(random.uniform(1, 3))
+    time.sleep(random.uniform(2, 5))
 
     product = Product()
     product.url = context['url']
