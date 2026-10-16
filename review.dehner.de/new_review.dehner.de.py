@@ -20,41 +20,41 @@ def strip_namespace(data):
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    session.queue(Request('https://www.dehner.de/', use='curl', force_charset='utf-8'), process_frontpage, dict())
+    session.queue(Request('https://www.dehner.de/', force_charset='utf-8'), process_frontpage, dict())
 
 
 def process_frontpage(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    cats = data.xpath('(//ul[@class="splide__list" and li/a])[1]/li/a')
+    cats = data.xpath('(//ul[@class="splide__list" and li[a/p]])[1]/li/a')
     for cat in cats:
-        name = cat.xpath('.//p/text()').string()
+        name = cat.xpath('p/text()').string()
         url = cat.xpath('@href').string()
 
         if name not in XCAT:
-            session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_catlist, dict(cat=name))
+            session.queue(Request(url, force_charset='utf-8'), process_catlist, dict(cat=name))
 
 
 def process_catlist(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    subcats = data.xpath('//div[contains(div/text(), "Alle Kategorien")]/div/a')
+    subcats = data.xpath('//div[contains(div/p/text(), "Alle Kategorien")]/div[@class]//a')
     for subcat in subcats:
-        subcat_name = subcat.xpath('text()').string()
+        subcat_name = subcat.xpath('.//text()').string(multiple=True)
         url = subcat.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(cat=context['cat']+'|'+subcat_name))
+        session.queue(Request(url, force_charset='utf-8'), process_prodlist, dict(cat=context['cat']+'|'+subcat_name))
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    prods = data.xpath('//h5/a[contains(@class, "product-card__link")]')
+    prods = data.xpath('//h5[contains(@class, "title")]/a[contains(@class, "product-card__link")]')
     for prod in prods:
         name = prod.xpath('text()').string()
-        url = prod.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', max_age=0), process_product, dict(context, name=name, url=url))
+        url = prod.xpath('@href').string().split('?')[0]
+        session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
-    next_url = data.xpath('//a[@aria-label="Go to next page"]/@href').string()
+    next_url = data.xpath('//a[contains(@aria-label, "next page")]/@href').string()
     if next_url:
         session.queue(Request(next_url, use='curl', force_charset='utf-8', max_age=0), process_prodlist, dict(context))
 
@@ -64,8 +64,8 @@ def process_product(data: Response, context: dict[str, str], session: Session):
 
     product = Product()
     product.name = context['name']
-    product.url = context['url'].split('?')[0]
-    product.ssid = context['url'].split('=')[-1]
+    product.url = context['url']
+    product.ssid = data.xpath('//div[contains(div/p, "Art. Nr.")]/div/p[not(contains(., "Art. Nr."))]/text()').string()
     product.sku = product.ssid
     product.category = context['cat']
 
@@ -73,13 +73,13 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     if manufacturer:
         product.manufacturer = manufacturer.split('/')[-1].split('?')[0].title()
 
-    revs = data.xpath('//div[contains(div/h4, "Produktbewertungen")]/div[p]')
+    revs = data.xpath('//div[div/h4[contains(., "Produktbewertungen")]]/div[p]')
     for rev in revs:
         review = Review()
         review.type = 'user'
         review.url = product.url
 
-        date = rev.xpath('.//p[contains(@class, "MuiTypography-copyRegular") and contains(text(), "T")]/text()').string()
+        date = rev.xpath('.//p[contains(@class, "MuiTypography-root") and contains(text(), "T")]/text()').string()
         if date:
             review.date = date.split('T')[0]
 
@@ -93,8 +93,8 @@ def process_product(data: Response, context: dict[str, str], session: Session):
             if grade_overall and float(grade_overall) > 0:
                 review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        title = rev.xpath('.//p[contains(@class, "MuiTypography-copyRegular")]/span/text()').string()
-        excerpt = rev.xpath('.//p[contains(@class, "MuiTypography-copyRegular") and span]/text()').string(multiple=True)
+        title = rev.xpath('.//p[contains(@class, "MuiTypography-root")]/span/text()').string()
+        excerpt = rev.xpath('.//p[contains(@class, "MuiTypography-root") and span]/text()').string(multiple=True)
         if excerpt:
             review.title = title
         else:
