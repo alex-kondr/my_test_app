@@ -79,7 +79,7 @@ def process_product(data: Response, context: dict[str, str], session: Session):
         review.type = 'user'
         review.url = product.url
 
-        date = rev.xpath('.//p[contains(@class, "MuiTypography-root") and contains(text(), "T")]/text()').string()
+        date = rev.xpath('.//p[contains(@class, "MuiTypography-root MuiTypography-copyRegular") and contains(text(), "T")]/text()').string()
         if date:
             review.date = date.split('T')[0]
 
