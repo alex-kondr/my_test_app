@@ -12,11 +12,13 @@ def process_catlist(data: Response, context: dict[str, str], session: Session):
     for cat in cats:
         name = cat.xpath('div[contains(@class, "60z25j")]/text()').string()
 
-        sub_cats = cat.xpath('div/a[@data-sentry-component="Link"]')
-        for sub_cat in sub_cats:
-            sub_name = sub_cat.xpath('text()').string()
-            url = sub_cat.xpath('@href').string()
-            session.queue(Request(url, force_charset='utf-8', use='curl'), process_revlist, dict(cat=name + '|' + sub_name))
+        subcats = cat.xpath('div/a[@data-sentry-component="Link"]')
+        for subcat in subcats:
+            subcat_name = subcat.xpath('text()').string()
+            url = subcat.xpath('@href').string()
+
+            if subcat_name and url:
+                session.queue(Request(url, force_charset='utf-8', use='curl'), process_revlist, dict(cat=name + '|' + subcat_name))
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
