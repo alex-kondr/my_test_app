@@ -1,5 +1,7 @@
 import subprocess
 
+from models import AgentModel, Status, AgentType, DBSession
+
 
 REMOTE_HOST = "trknvsky@agentdev1.eu.testfreaks.com"
 LOCAL_FILE = "reviews.angeln-shop.de (BB)/reviews.angeln-shop.de.py"
@@ -25,7 +27,20 @@ def main():
         "(context, session)"
     )
 
-    # Формуємо команду: записуємо файл, запускаємо mockrun у фоновому режимі через &, 
+    with DBSession() as session:
+        agent = session.query(AgentModel).filter(
+            AgentModel.name == LOCAL_OUTPUT_PATH,
+            AgentModel.status.in_([Status.in_progress, Status.qc, Status.running]),
+        ).one_or_none()
+        if agent:
+            agent.status = Status.running
+            agent.new_code = content
+            agent.agent_type = AgentType.BIG
+            agent.extra_time = False
+            agent.paused = False
+            session.commit()
+
+    # Формуємо команду: записуємо файл, запускаємо mockrun у фоновому режимі через &,
     # щоб можна було перехопити його PID і коректно зупинити при обриві зв'язку (Ctrl+C)
     remote_command = (
         f"cat > {REMOTE_FILE_PATH} && "

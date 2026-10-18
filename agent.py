@@ -19,6 +19,8 @@ class Session:
         pass
     def emit(self, product: "Product") -> None:
         pass
+    def seen(self, value: str) -> bool:
+        pass
 
 
 class NodeSet:
