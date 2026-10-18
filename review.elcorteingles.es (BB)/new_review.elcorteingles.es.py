@@ -56,7 +56,7 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     product['url'] = context['url']
     product['ssid'] = context['ssid']
     product['category'] = data.xpath('//li[contains(@class, "breadcrumb__item")]//text()').join('|')
-    product['manufacturer'] = data.xpath('//a[@itemprop="brand"]/text()').string()
+    product['manufacturer'] = 'HP'
 
     sku = data.xpath('//div[contains(text(), "Referencia:")]/text()').string()
     if sku:

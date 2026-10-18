@@ -5,6 +5,7 @@ import logging
 from zoneinfo import ZoneInfo
 import sys
 import os
+import subprocess
 
 from sqlalchemy import select
 
@@ -58,6 +59,66 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
+def move_remote_file_to_done(file_name_input: str):
+    REMOTE_HOST = "trknvsky@agentdev1.eu.testfreaks.com"
+    REMOTE_DIR = "test"
+
+    """
+    Підключається по SSH, створює папку test/done (якщо її немає)
+    та переміщує туди вказаний файл із папки test.
+    """
+    # Дописуємо .py до назви (або можете передавати вже повну назву з розширенням)
+    remote_file_name = f"{file_name_input}.py" if not file_name_input.endswith(".py") else file_name_input
+
+    source_path = f"{REMOTE_DIR}/{remote_file_name}"
+    done_dir = f"{REMOTE_DIR}/done"
+    destination_path = f"{done_dir}/{remote_file_name}"
+
+    # Формуємо bash-команду для виконання на сервері:
+    # 1. mkdir -p створює папку test/done (і батьківську test, якщо треба), не видаляючи помилку, якщо вона вже є
+    # 2. mv переміщує файл у папку done
+    remote_command = (
+        f"mkdir -p {done_dir} && "
+        f"if [ -f {source_path} ]; then "
+        f"  mv {source_path} {destination_path} && "
+        f"  echo 'Успішно переміщено: {source_path} -> {destination_path}'; "
+        f"else "
+        f"  echo 'Помилка: файл {source_path} не знайдено у папці {REMOTE_DIR}!'; "
+        f"  exit 1; "
+        f"fi"
+    )
+
+    print(f"Підключення до {REMOTE_HOST} для переміщення файлу '{remote_file_name}' у паку done...")
+
+    try:
+        process = subprocess.run(
+            ["ssh", REMOTE_HOST, remote_command],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            timeout=10
+        )
+
+        # Виводимо лог з сервера
+        if process.stdout:
+            print(process.stdout.strip())
+
+        if process.returncode != 0:
+            if process.stderr:
+                print(f"Помилка SSH/сервера:\n{process.stderr.strip()}")
+            return False
+
+        return True
+
+    except subprocess.TimeoutExpired:
+        print("Помилка: Перевищено час очікування підключення по SSH.")
+        return False
+    except Exception as e:
+        print(f"Виникла непередбачувана помилка: {e}")
+        return False
+
+
 def move_agent_folder(agent: AgentModel):
     date_now = datetime.now(tz=ZoneInfo("Europe/Kyiv"))
     agent_done_path = Path(f"{date_now.year}/{date_now.strftime("%Y-%m")}")
@@ -65,6 +126,7 @@ def move_agent_folder(agent: AgentModel):
 
     if agent.bb:
         agent_path = Path(f"{agent.source_name} (BB)")
+        move_remote_file_to_done(agent.source_name)
     else:
         agent_path = Path(agent.source_name)
 

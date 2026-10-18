@@ -137,8 +137,10 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
         title = rev.get('title')
         excerpt = rev.get('feedbackComment', {}).get('comment', {}).get('message')
         if excerpt and len(remove_emoji(excerpt).replace('\r', '').replace('\n', ' ').strip('*+=-_\n ')) > 2:
-            if title:
+            if title and not excerpt.startswith(title.strip(' .')):
                 review.title = remove_emoji(title).replace('\r', '').replace('\n', ' ').strip('*+=-_\n ')
+        else:
+            excerpt = title
 
         if excerpt:
             excerpt = remove_emoji(excerpt).replace('\r', '').replace('\n', ' ').strip('*+=-_\n ')

@@ -53,7 +53,7 @@ def main():
     # щоб можна було перехопити його PID і коректно зупинити при обриві зв'язку (Ctrl+C)
     remote_command = (
         f"cat > {REMOTE_FILE_PATH} && "
-        f"mockrun.py {REMOTE_FILE_PATH} | tee {REMOTE_OUTPUT_PATH} | awk '{{print \"\\n\" NR \": \" \$0 \"\\n\"}}'"
+        f"mockrun.py {REMOTE_FILE_PATH} | tee {REMOTE_OUTPUT_PATH} | awk '{{print \"\"; print NR \": \" $0; print \"\"; fflush()}}'"
     )
 
     print(f"2. Передача файлу на {REMOTE_HOST} та запуск (для зупинки натисніть Ctrl+C)...")

@@ -39,11 +39,10 @@ def run(context: dict[str, str], session: Session):
 def process_revlist(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    revs = data.xpath('//a[contains(@class, "card-link")]')
+    revs = data.xpath('//a[contains(@class, "card-link")]/@href')
     for rev in revs:
-        title = rev.xpath('.//p[contains(@class, "excerpt")]/text()').string()
-        url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS), process_review, dict(title=title, url=url))
+        url = rev.string()
+        session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS), process_review, dict(url=url))
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
@@ -53,6 +52,8 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
 def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
+    title = data.xpath('//h1[contains(@class, "title")]/text()').string()
+
     product = Product()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('movie-review', '').strip(' -')
@@ -60,7 +61,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     product.name = data.xpath('//a[contains(@class, "card-title")]/text()').string()
     if not product.name:
-        product.name = context['title']
+        product.name = title
 
     genres = data.xpath('//a[contains(@class, "card-genre")]/text()').join('/')
     if genres:
@@ -68,7 +69,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = title
     review.url = context['url']
     review.ssid = product.ssid
 

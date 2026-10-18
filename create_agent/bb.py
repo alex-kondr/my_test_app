@@ -12,7 +12,7 @@ sys.path.append(parent)
 from models import AgentModel, AgentType, DBSession
 
 
-FILE_NAME_INPUT = "review.elcorteingles.es"
+FILE_NAME_INPUT = "review.thule.com"
 
 
 REMOTE_HOST = "trknvsky@agentdev1.eu.testfreaks.com"
