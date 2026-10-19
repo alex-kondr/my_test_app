@@ -1,0 +1,3722 @@
+<!DOCTYPE html>
+
+<html lang="hu">
+
+<head>
+
+	<meta charset="UTF-8" />
+
+	<meta name="robots" content="index follow" />
+
+	<meta name="description" content="Mobilarena - Telekommunikáció Online - mobilok, tesztek, közösség" />
+
+	<meta name="keywords" content="" />
+
+	<title>Tesztek - Mobilarena</title>
+
+	<link href="//cdn.rios.hu/css/bootstrap.jzej.css" rel="stylesheet"/>
+
+	<link href="//cdn.rios.hu/css/fa-all.ibmb.css" rel="stylesheet"/>
+
+	<link href="//cdn.rios.hu/css/jstree.otla.css" rel="stylesheet"/>
+
+	<link href="//cdn.rios.hu/css/dropzone.uxid.css" rel="stylesheet"/>
+
+	<link href="//cdn.rios.hu/css/libraries.rfwa.css" rel="stylesheet"/>
+
+	<link href="//cdn.rios.hu/css/ma/base.adau.css" rel="stylesheet" media="(prefers-color-scheme: light)"/>
+
+	<link href="//cdn.rios.hu/css/ma/components.jq7f.css" rel="stylesheet" media="(prefers-color-scheme: light)"/>
+
+	<link href="//cdn.rios.hu/css/ma/style.hqqx.css" rel="stylesheet" media="(prefers-color-scheme: light)"/>
+
+	<link href="//cdn.rios.hu/css/ma/dark_base.lwbw.css" rel="stylesheet" media="(prefers-color-scheme: dark)"/>
+
+	<link href="//cdn.rios.hu/css/ma/dark_components.nx4x.css" rel="stylesheet" media="(prefers-color-scheme: dark)"/>
+
+	<link href="//cdn.rios.hu/css/ma/dark_style.hquc.css" rel="stylesheet" media="(prefers-color-scheme: dark)"/>
+
+	<script src="//cdn.rios.hu/tinymce6.8.6/tinymce.min.js" defer></script>
+
+	<script src="//cdn.rios.hu/js/jquery.yyvc.js" defer></script>
+
+	<script src="//cdn.rios.hu/js/jquery-ui.ootu.js" defer></script>
+
+	<script src="//cdn.rios.hu/js/bootstrap.ggrj.js" defer></script>
+
+	<script src="//cdn.rios.hu/js/dropzone.tlwy.js" defer></script>
+
+	<script src="//cdn.rios.hu/js/jstree.bld6.js" defer></script>
+
+	<script src="//cdn.rios.hu/js/chart.jfxc.js" defer></script>
+
+	<script src="//cdn.rios.hu/js/libraries.zswd.js" defer></script>
+
+	<script src="//cdn.rios.hu/js/script.d5gp.js" defer></script>
+
+	<script src="//cdn.rios.hu/tinymce6.8.6/jquery.tinymce.min.js" defer></script><link href="//cdn.rios.hu/design/ma/logo-favicon.png" type="image/png" rel="shortcut icon" /><link rel="apple-touch-icon" sizes="200x200" href="//cdn.rios.hu/design/ma/logo-favicon.png"><meta name="viewport" content="width=device-width"><meta name="theme-color" content="#333333"><script type="text/javascript" async src="//cdn.rios.hu/consent.js?"></script><link rel="alternate" type="application/rss+xml" title="Mobilarena - Legfrissebb anyagaink" href="/hirfolyam/anyagok/rss.xml" />
+
+</head>
+
+<body class="gigabox-container ma">
+
+<style> .background_banner .xabrebigtop {display:none}.background_banner main>a {display:block;position:absolute;left:0;top:0;width:100%;height:1080px}.background_banner #top,.background_banner #middle {background:none!important}.bgb-970-250 {display:block}.bgb-1170-250 {display:block}.bgb-1170-250 main {background-size:525.1282051282px}@media only screen and (min-width:360px){.bgb-1170-250 main {background-size:590.7692307692px}}@media only screen and (min-width:576px){.bgb-1170-250 main {background-size:945.2307692308px}}@media only screen and (min-width:768px){.bgb-1170-250 main {background-size:1230.7692307692px}}@media only screen and (min-width:992px){.bgb-1170-250 main {background-size:1591.7948717949px}}@media only screen and (min-width:1200px){.bgb-1170-250 main {background-size:1920px}}.xabrelayer {width:100%;height:100%;position:absolute;top:0;left:0}.xabre {margin-bottom:15px}.xabre>h4 {text-align:center;color:#999;font-size:.625rem;font-weight:400;line-height:15px;margin:0}#page-forum #top .xabre,#page-forum>div>.xabre,#page-index #top .xabre,#page-index>div>.xabre,#page-content #top .xabre,#page-content>div>.xabre,#page-split #top .xabre,#page-split>div>.xabre {margin:15px 0}.background_banner #page-forum #top .xabre,.background_banner #page-forum>div>.xabre,.background_banner #page-index #top .xabre,.background_banner #page-index>div>.xabre,.background_banner #page-content #top .xabre,.background_banner #page-content>div>.xabre,.background_banner #page-split #top .xabre,.background_banner #page-split>div>.xabre {margin:0}.xabre-nohead>h4 {display:none!important}.xabre-uad-details {margin:0 -2rem .5rem}.xabrebox {margin:0 auto;overflow:hidden}.defcnt .xabrebox {margin:0 auto}.xabreifr {width:100%!important;height:100%!important;margin:0;border:0;padding:0;overflow:hidden}.xabrepr-uad>a {display:block!important;width:auto!important;margin:0 0 0 1rem!important}.xabrepr-uad>a>img {width:auto!important;height:auto!important;background:light-dark(#fff,#000)}.xabrepr-uad>div {display:block!important;padding:0 1rem}.xabrepr-uad>div h1 {text-align:left;margin:0}.xabrepr-uad .xabrepr-uad-ribbon {background-color:#568db5}.border {border:0}.boxxabre {clear:both;border-color:light-dark(#f5f5f5,#222);background-color:light-dark(#f5f5f5,#222)}.boxxabre h4 {height:12px;font:normal 10px/15px Tahoma,Arial,sans-serif;color:light-dark(#c7c7c7,#666)}.boxxabre .xabrebox {margin-bottom:15px;border:1px solid light-dark(#000,#fff);background-color:light-dark(#fff,#000)}.boxxabren,.boxxabren h4,.boxxabren:after {background-image:url(//cdn.rios.hu/legacy/lo/design/boxxabren-box.gif)}.boxxabrew,.boxxabrew h4,.boxxabrew:after {background-image:url(//cdn.rios.hu/legacy/lo/design/boxxabrew-box.gif)}.xabrebigbtm {clear:both}.xabre640 {margin-left:-5px}.xabre640 h4,.xabrew300 h4 {text-align:center;background:0;padding:0;font:normal 10px/15px Tahoma,Arial,sans-serif;color:light-dark(#c7c7c7,#666)}.xabre468 h4,.xabre400 h4,.xabre330 h4,.xabre300 h4,.xabremid h4 {margin-left:auto;margin-right:auto}.xabre468 h4 {width:468px}.xabre300 h4 {width:300px}.xabre400 h4 {width:400px}.xabremid h4 {text-align:center}.xabrenobord .xabrebox {border:0}.xabreoffer {border-color:#dfdfdf}.xabreoffer h4 {height:14px;line-height:14px;background-color:light-dark(#dfdfdf,#222);color:light-dark(#aaa,#444)}.xabreoffer,.xabreoffer h4,.xabreoffer:after {background-image:url(//cdn.rios.hu/legacy/lo/design/xabreoffer-box.gif)}.xabreoffer li {background:url(//cdn.rios.hu/legacy/lo/design/common-bulout-blue.gif) no-repeat 0 10px}.xabreoffer p {font:12px Arial,Tahoma,sans-serif}.xabretext {margin:10px 0}.xabretext h4 {display:none}.xabretext .xabrebox {margin:5px 8px;text-align:center}.xabretext a {color:light-dark(#a72022,#f37274);font-weight:bold}.xabretextf {margin-top:0;margin-bottom:8px;border:1px solid light-dark(#a72022,#f37274)}.xabretext-business {border:1px solid #39c;background:#fff}.xabretext-business a {color:#39c}.xabrepr {padding:0;position:relative}.xabrepr:after {display:block;position:absolute;content:"";height:1px;width:100%;bottom:0;background-position-y:bottom;background-position-x:0;background-repeat:repeat-x;background-image:url(//cdn.rios.hu/legacy/lo/design/separator-pattern-2.png);opacity:.5}.xabrepr .xabrebox {padding:.5rem;margin:0;border:0;background-color:light-dark(#f5f5f5,#222)}.xabrepr>div img {border:0;padding:0;margin:0}.xabrepr>div>img {float:left;max-width:120px;display:block;margin:0 10px 0 0}.xabrepr>div>div {overflow:hidden}.xabrepr h1 {font-family:"Inter",sans-serif;font-size:1.1875rem;line-height:1.2;font-weight:600;margin:0 0 .625rem 0}.xabrepr p {font-size:.9375rem;font-weight:400;margin:0 0 .5rem 0}.xabrepr span {float:left;display:block;line-height:1;margin-right:.5rem;background-color:#236085;color:#fff;font-size:.875rem;font-weight:400;border-radius:0;text-transform:uppercase;padding:.25rem .5rem}.content-list-detailed .xabrepr .xabrebox {padding:1rem .5rem;margin:0}.content-list-detailed .xabrepr img {max-width:150px}.content-list-compact .xabrepr img {max-width:120px}#right .xabrepr h4 {display:none}#right .xabrepr img {max-width:80px;float:left;margin:0 .5rem 0 0}#center .xabrepr h4 {display:none!important}.defcnt .xabrebox img {vertical-align:0;margin:0;border:0}.xabrebox>img {margin:0}.boxxabres,.boxxabres h4,.boxxabres:after {background-image:url(//cdn.rios.hu/legacy/lo/design/boxxabres-box.gif)}.box {margin-bottom:15px}.box h4 {height:15px;overflow:hidden;margin:0 auto}.xabre-container {position:relative}.nohead>h4,.nofejlec>h4 {display:none}.spcontainer {margin:0}.spcontainer p {margin:0}.spcontainer .spleft {float:left}.spcontainer .spright {float:right}@media only screen and (max-width:575.98px),only screen and (max-width:767.98px),only screen and (min-width:768px) and (max-width:991.98px){.spcontainer .spleft,.spcontainer .spright {width:100%;margin-bottom:15px}.spcontainer .spright {margin:0;display:none}.spcontainer+main {clear:both}}@media only screen and (min-width:992px) and (max-width:1199.98px){.spcontainer+#center {position:relative;top:-181px;margin-bottom:-181px}.spcontainer .spleft {width:645px;height:65.6px;margin:0 0 15px 0}.spcontainer .spright {width:325px;height:250px;margin:0 0 15px 0}}@media only screen and (min-width:1200px){.spcontainer+#center {position:relative;top:-220px;margin-bottom:-220px}.spcontainer .spleft {width:800px;margin:0 0 15px 0}.spcontainer .spright {width:370px;margin:0 0 15px 0}}@media only screen and (min-width:992px) and (max-width:1199.98px),only screen and (min-width:1200px){body.page .spleft {margin:0 0 15px -15px}}.xabre-atm-mid_1 {min-height:360px}@media only screen and (max-width:575.98px),only screen and (max-width:767.98px),only screen and (min-width:768px) and (max-width:991.98px){.xabre-atm-mid_1 {min-height:280px}}.xabre-atm-right_1 {min-height:600px}@media only screen and (max-width:575.98px),only screen and (max-width:767.98px),only screen and (min-width:768px) and (max-width:991.98px){.xabre-atm-right_1 {min-height:250px}}.xabrecommend-300-600 {height:615px;position:relative}.xabrecommend-300-600>div {position:absolute;width:100%}.xabrecommend-300-600>div:last-child {background:light-dark(#d9d9d9,#181818)}.xabrecommend-640-360 {height:375px;position:relative}.xabrecommend-640-360>div {position:absolute;width:100%}.xabrecommend-640-360>div:last-child {background:light-dark(#fff,#181818)}.xabre-responsive-982px-90px {position:relative;overflow:hidden;margin:0 0 15px 0}.xabre-responsive-982px-90px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (min-width:320px){.xabre-responsive-982px-90px {height:44.3279022403px}.xabre-responsive-982px-90px>div {transform:scale(0.3258655804)}}@media only screen and (min-width:360px){.xabre-responsive-982px-90px {height:47.9938900204px}.xabre-responsive-982px-90px>div {transform:scale(0.366598778)}}@media only screen and (min-width:375px){.xabre-responsive-982px-90px {height:49.3686354379px}.xabre-responsive-982px-90px>div {transform:scale(0.3818737271)}}@media only screen and (min-width:384px){.xabre-responsive-982px-90px {height:50.1934826884px}.xabre-responsive-982px-90px>div {transform:scale(0.3910386965)}}@media only screen and (min-width:400px){.xabre-responsive-982px-90px {height:51.6598778004px}.xabre-responsive-982px-90px>div {transform:scale(0.4073319756)}}@media only screen and (min-width:414px){.xabre-responsive-982px-90px {height:52.9429735234px}.xabre-responsive-982px-90px>div {transform:scale(0.4215885947)}}@media only screen and (min-width:480px){.xabre-responsive-982px-90px {height:58.9918533605px}.xabre-responsive-982px-90px>div {transform:scale(0.4887983707)}}@media only screen and (min-width:540px){.xabre-responsive-982px-90px {height:64.4908350305px}.xabre-responsive-982px-90px>div {transform:scale(0.549898167)}}@media only screen and (min-width:600px){.xabre-responsive-982px-90px {height:69.9898167006px}.xabre-responsive-982px-90px>div {transform:scale(0.6109979633)}}@media only screen and (min-width:640px){.xabre-responsive-982px-90px {height:73.6558044807px}.xabre-responsive-982px-90px>div {transform:scale(0.6517311609)}}@media only screen and (min-width:667px){.xabre-responsive-982px-90px {height:76.1303462322px}.xabre-responsive-982px-90px>div {transform:scale(0.6792260692)}}@media only screen and (min-width:740px){.xabre-responsive-982px-90px {height:82.8207739308px}.xabre-responsive-982px-90px>div {transform:scale(0.7535641548)}}@media only screen and (min-width:768px){.xabre-responsive-982px-90px {height:83.7372708758px}.xabre-responsive-982px-90px>div {transform:scale(0.7637474542)}}@media only screen and (min-width:992px){.xabre-responsive-982px-90px {height:103.900203666px}.xabre-responsive-982px-90px>div {transform:scale(0.9877800407)}}@media only screen and (min-width:1200px){.xabre-responsive-982px-90px {height:119.900203666px}.xabre-responsive-982px-90px>div {transform:scale(0.9877800407)}}.background_banner .xabre-responsive-982px-90px {position:relative;overflow:hidden;margin:0}.background_banner .xabre-responsive-982px-90px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (min-width:320px){.background_banner .xabre-responsive-982px-90px {height:29.3279022403px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.3258655804)}}@media only screen and (min-width:360px){.background_banner .xabre-responsive-982px-90px {height:32.9938900204px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.366598778)}}@media only screen and (min-width:375px){.background_banner .xabre-responsive-982px-90px {height:34.3686354379px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.3818737271)}}@media only screen and (min-width:384px){.background_banner .xabre-responsive-982px-90px {height:35.1934826884px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.3910386965)}}@media only screen and (min-width:400px){.background_banner .xabre-responsive-982px-90px {height:36.6598778004px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.4073319756)}}@media only screen and (min-width:414px){.background_banner .xabre-responsive-982px-90px {height:37.9429735234px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.4215885947)}}@media only screen and (min-width:480px){.background_banner .xabre-responsive-982px-90px {height:43.9918533605px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.4887983707)}}@media only screen and (min-width:540px){.background_banner .xabre-responsive-982px-90px {height:49.4908350305px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.549898167)}}@media only screen and (min-width:600px){.background_banner .xabre-responsive-982px-90px {height:54.9898167006px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.6109979633)}}@media only screen and (min-width:640px){.background_banner .xabre-responsive-982px-90px {height:58.6558044807px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.6517311609)}}@media only screen and (min-width:667px){.background_banner .xabre-responsive-982px-90px {height:61.1303462322px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.6792260692)}}@media only screen and (min-width:740px){.background_banner .xabre-responsive-982px-90px {height:67.8207739308px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.7535641548)}}@media only screen and (min-width:768px){.background_banner .xabre-responsive-982px-90px {height:68.7372708758px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.7637474542)}}@media only screen and (min-width:992px){.background_banner .xabre-responsive-982px-90px {height:88.900203666px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.9877800407)}}@media only screen and (min-width:1200px){.background_banner .xabre-responsive-982px-90px {height:88.900203666px}.background_banner .xabre-responsive-982px-90px>div {transform:scale(0.9877800407)}}@media only screen and (min-width:1200px){#page-full-login .xabre-responsive-982px-90px {background-color:transparent}}.xabre-responsive-970px-250px {position:relative;overflow:hidden;margin:0 0 15px 0}.xabre-responsive-970px-250px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (min-width:320px){.xabre-responsive-970px-250px {height:97.4742268041px}.xabre-responsive-970px-250px>div {transform:scale(0.3298969072)}}@media only screen and (min-width:360px){.xabre-responsive-970px-250px {height:107.7835051546px}.xabre-responsive-970px-250px>div {transform:scale(0.3711340206)}}@media only screen and (min-width:375px){.xabre-responsive-970px-250px {height:111.6494845361px}.xabre-responsive-970px-250px>div {transform:scale(0.3865979381)}}@media only screen and (min-width:384px){.xabre-responsive-970px-250px {height:113.9690721649px}.xabre-responsive-970px-250px>div {transform:scale(0.3958762887)}}@media only screen and (min-width:400px){.xabre-responsive-970px-250px {height:118.0927835052px}.xabre-responsive-970px-250px>div {transform:scale(0.412371134)}}@media only screen and (min-width:414px){.xabre-responsive-970px-250px {height:121.7010309278px}.xabre-responsive-970px-250px>div {transform:scale(0.4268041237)}}@media only screen and (min-width:480px){.xabre-responsive-970px-250px {height:138.7113402062px}.xabre-responsive-970px-250px>div {transform:scale(0.4948453608)}}@media only screen and (min-width:540px){.xabre-responsive-970px-250px {height:154.175257732px}.xabre-responsive-970px-250px>div {transform:scale(0.5567010309)}}@media only screen and (min-width:600px){.xabre-responsive-970px-250px {height:169.6391752577px}.xabre-responsive-970px-250px>div {transform:scale(0.618556701)}}@media only screen and (min-width:640px){.xabre-responsive-970px-250px {height:179.9484536082px}.xabre-responsive-970px-250px>div {transform:scale(0.6597938144)}}@media only screen and (min-width:667px){.xabre-responsive-970px-250px {height:186.9072164948px}.xabre-responsive-970px-250px>div {transform:scale(0.687628866)}}@media only screen and (min-width:740px){.xabre-responsive-970px-250px {height:205.7216494845px}.xabre-responsive-970px-250px>div {transform:scale(0.7628865979)}}@media only screen and (min-width:768px){.xabre-responsive-970px-250px {height:208.2989690722px}.xabre-responsive-970px-250px>div {transform:scale(0.7731958763)}}@media only screen and (min-width:992px){.xabre-responsive-970px-250px {height:265px}.xabre-responsive-970px-250px>div {transform:scale(1)}}@media only screen and (min-width:1200px){.xabre-responsive-970px-250px {height:281px}.xabre-responsive-970px-250px>div {transform:scale(1)}}.background_banner .xabre-responsive-970px-250px {position:relative;overflow:hidden;margin:0}.background_banner .xabre-responsive-970px-250px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (min-width:320px){.background_banner .xabre-responsive-970px-250px {height:82.4742268041px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.3298969072)}}@media only screen and (min-width:360px){.background_banner .xabre-responsive-970px-250px {height:92.7835051546px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.3711340206)}}@media only screen and (min-width:375px){.background_banner .xabre-responsive-970px-250px {height:96.6494845361px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.3865979381)}}@media only screen and (min-width:384px){.background_banner .xabre-responsive-970px-250px {height:98.9690721649px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.3958762887)}}@media only screen and (min-width:400px){.background_banner .xabre-responsive-970px-250px {height:103.0927835052px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.412371134)}}@media only screen and (min-width:414px){.background_banner .xabre-responsive-970px-250px {height:106.7010309278px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.4268041237)}}@media only screen and (min-width:480px){.background_banner .xabre-responsive-970px-250px {height:123.7113402062px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.4948453608)}}@media only screen and (min-width:540px){.background_banner .xabre-responsive-970px-250px {height:139.175257732px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.5567010309)}}@media only screen and (min-width:600px){.background_banner .xabre-responsive-970px-250px {height:154.6391752577px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.618556701)}}@media only screen and (min-width:640px){.background_banner .xabre-responsive-970px-250px {height:164.9484536082px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.6597938144)}}@media only screen and (min-width:667px){.background_banner .xabre-responsive-970px-250px {height:171.9072164948px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.687628866)}}@media only screen and (min-width:740px){.background_banner .xabre-responsive-970px-250px {height:190.7216494845px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.7628865979)}}@media only screen and (min-width:768px){.background_banner .xabre-responsive-970px-250px {height:193.2989690722px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(0.7731958763)}}@media only screen and (min-width:992px){.background_banner .xabre-responsive-970px-250px {height:250px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(1)}}@media only screen and (min-width:1200px){.background_banner .xabre-responsive-970px-250px {height:250px}.background_banner .xabre-responsive-970px-250px>div {transform:scale(1)}}@media only screen and (min-width:1200px){#page-full-login .xabre-responsive-970px-250px {background-color:transparent}}.xabre-responsive-980px-139px {position:relative;overflow:hidden;margin:0 0 15px 0}.xabre-responsive-980px-139px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (min-width:320px){.xabre-responsive-980px-139px {height:60.387755102px}.xabre-responsive-980px-139px>div {transform:scale(0.3265306122)}}@media only screen and (min-width:360px){.xabre-responsive-980px-139px {height:66.0612244898px}.xabre-responsive-980px-139px>div {transform:scale(0.3673469388)}}@media only screen and (min-width:375px){.xabre-responsive-980px-139px {height:68.1887755102px}.xabre-responsive-980px-139px>div {transform:scale(0.3826530612)}}@media only screen and (min-width:384px){.xabre-responsive-980px-139px {height:69.4653061224px}.xabre-responsive-980px-139px>div {transform:scale(0.3918367347)}}@media only screen and (min-width:400px){.xabre-responsive-980px-139px {height:71.7346938776px}.xabre-responsive-980px-139px>div {transform:scale(0.4081632653)}}@media only screen and (min-width:414px){.xabre-responsive-980px-139px {height:73.7204081633px}.xabre-responsive-980px-139px>div {transform:scale(0.4224489796)}}@media only screen and (min-width:480px){.xabre-responsive-980px-139px {height:83.0816326531px}.xabre-responsive-980px-139px>div {transform:scale(0.4897959184)}}@media only screen and (min-width:540px){.xabre-responsive-980px-139px {height:91.5918367347px}.xabre-responsive-980px-139px>div {transform:scale(0.5510204082)}}@media only screen and (min-width:600px){.xabre-responsive-980px-139px {height:100.1020408163px}.xabre-responsive-980px-139px>div {transform:scale(0.612244898)}}@media only screen and (min-width:640px){.xabre-responsive-980px-139px {height:105.7755102041px}.xabre-responsive-980px-139px>div {transform:scale(0.6530612245)}}@media only screen and (min-width:667px){.xabre-responsive-980px-139px {height:109.6051020408px}.xabre-responsive-980px-139px>div {transform:scale(0.6806122449)}}@media only screen and (min-width:740px){.xabre-responsive-980px-139px {height:119.9591836735px}.xabre-responsive-980px-139px>div {transform:scale(0.7551020408)}}@media only screen and (min-width:768px){.xabre-responsive-980px-139px {height:121.3775510204px}.xabre-responsive-980px-139px>div {transform:scale(0.7653061224)}}@media only screen and (min-width:992px){.xabre-responsive-980px-139px {height:152.5816326531px}.xabre-responsive-980px-139px>div {transform:scale(0.9897959184)}}@media only screen and (min-width:1200px){.xabre-responsive-980px-139px {height:168.5816326531px}.xabre-responsive-980px-139px>div {transform:scale(0.9897959184)}}.background_banner .xabre-responsive-980px-139px {position:relative;overflow:hidden;margin:0}.background_banner .xabre-responsive-980px-139px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (min-width:320px){.background_banner .xabre-responsive-980px-139px {height:45.387755102px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.3265306122)}}@media only screen and (min-width:360px){.background_banner .xabre-responsive-980px-139px {height:51.0612244898px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.3673469388)}}@media only screen and (min-width:375px){.background_banner .xabre-responsive-980px-139px {height:53.1887755102px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.3826530612)}}@media only screen and (min-width:384px){.background_banner .xabre-responsive-980px-139px {height:54.4653061224px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.3918367347)}}@media only screen and (min-width:400px){.background_banner .xabre-responsive-980px-139px {height:56.7346938776px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.4081632653)}}@media only screen and (min-width:414px){.background_banner .xabre-responsive-980px-139px {height:58.7204081633px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.4224489796)}}@media only screen and (min-width:480px){.background_banner .xabre-responsive-980px-139px {height:68.0816326531px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.4897959184)}}@media only screen and (min-width:540px){.background_banner .xabre-responsive-980px-139px {height:76.5918367347px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.5510204082)}}@media only screen and (min-width:600px){.background_banner .xabre-responsive-980px-139px {height:85.1020408163px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.612244898)}}@media only screen and (min-width:640px){.background_banner .xabre-responsive-980px-139px {height:90.7755102041px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.6530612245)}}@media only screen and (min-width:667px){.background_banner .xabre-responsive-980px-139px {height:94.6051020408px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.6806122449)}}@media only screen and (min-width:740px){.background_banner .xabre-responsive-980px-139px {height:104.9591836735px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.7551020408)}}@media only screen and (min-width:768px){.background_banner .xabre-responsive-980px-139px {height:106.3775510204px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.7653061224)}}@media only screen and (min-width:992px){.background_banner .xabre-responsive-980px-139px {height:137.5816326531px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.9897959184)}}@media only screen and (min-width:1200px){.background_banner .xabre-responsive-980px-139px {height:137.5816326531px}.background_banner .xabre-responsive-980px-139px>div {transform:scale(0.9897959184)}}@media only screen and (min-width:1200px){#page-full-login .xabre-responsive-980px-139px {background-color:transparent}}.xabre-responsive-640px-360px {position:relative;overflow:hidden;margin:0 .5rem 1rem;height:375px}.xabre-responsive-640px-360px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (max-width:767.98px){.xabre-responsive-640px-360px {height:268.125px}.xabre-responsive-640px-360px>div {transform:scale(0.703125)}}@media only screen and (max-width:575.98px){.xabre-responsive-640px-360px {height:178.125px}.xabre-responsive-640px-360px>div {transform:scale(0.453125)}}@media only screen and (min-width:992px) and (max-width:1199.98px){.xabre-responsive-640px-360px {height:355.3125px}.xabre-responsive-640px-360px>div {transform:scale(0.9453125)}}.xabre-responsive-576px-324px {position:relative;overflow:hidden;margin:0 .5rem 1rem;height:339px}.xabre-responsive-576px-324px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (max-width:767.98px){.xabre-responsive-576px-324px {height:268.125px}.xabre-responsive-576px-324px>div {transform:scale(0.78125)}}@media only screen and (max-width:575.98px){.xabre-responsive-576px-324px {height:178.125px}.xabre-responsive-576px-324px>div {transform:scale(0.5034722222)}}.xabre-responsive-740px-280px {position:relative;overflow:hidden;margin:0 .5rem 1rem;height:295px}.xabre-responsive-740px-280px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (max-width:767.98px){.xabre-responsive-740px-280px {height:185.2702702703px}.xabre-responsive-740px-280px>div {transform:scale(0.6081081081)}}@media only screen and (max-width:575.98px){.xabre-responsive-740px-280px {height:124.7297297297px}.xabre-responsive-740px-280px>div {transform:scale(0.3918918919)}}@media only screen and (min-width:768px) and (max-width:991.98px){.xabre-responsive-740px-280px {height:287.4324324324px}.xabre-responsive-740px-280px>div {transform:scale(0.972972973)}}@media only screen and (min-width:992px) and (max-width:1199.98px){.xabre-responsive-740px-280px {height:243.9189189189px}.xabre-responsive-740px-280px>div {transform:scale(0.8175675676)}}@media only screen and (min-width:1200px){.xabre-responsive-740px-280px {height:295px}.xabre-responsive-740px-280px>div {transform:scale(1)}}.xabre-responsive-600px-314px {position:relative;overflow:hidden;margin:0 .5rem 1rem;height:329px}.xabre-responsive-600px-314px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (max-width:767.98px){.xabre-responsive-600px-314px {height:250.5px}.xabre-responsive-600px-314px>div {transform:scale(0.75)}}@media only screen and (max-width:575.98px){.xabre-responsive-600px-314px {height:166.7666666667px}.xabre-responsive-600px-314px>div {transform:scale(0.4833333333)}}.xabre-responsive-1170px-90px {position:relative;overflow:hidden;margin:0!important;height:105px}.xabre-responsive-1170px-90px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (max-width:767.98px){.xabre-responsive-1170px-90px {height:44.6153846154px}.xabre-responsive-1170px-90px>div {transform:scale(0.4957264957)}}@media only screen and (max-width:575.98px){.xabre-responsive-1170px-90px {height:27.6923076923px}.xabre-responsive-1170px-90px>div {transform:scale(0.3076923077)}}@media only screen and (min-width:768px) and (max-width:991.98px){.xabre-responsive-1170px-90px {height:57.6923076923px}.xabre-responsive-1170px-90px>div {transform:scale(0.641025641)}}@media only screen and (min-width:992px) and (max-width:1199.98px){.xabre-responsive-1170px-90px {height:74.6153846154px}.xabre-responsive-1170px-90px>div {transform:scale(0.8290598291)}}@media only screen and (min-width:1200px){.xabre-responsive-1170px-90px {height:90px}.xabre-responsive-1170px-90px>div {transform:scale(1)}}.xabre-responsive-1170px-120px {position:relative;overflow:hidden;margin:0!important;height:135px}.xabre-responsive-1170px-120px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (max-width:767.98px){.xabre-responsive-1170px-120px {height:59.4871794872px}.xabre-responsive-1170px-120px>div {transform:scale(0.4957264957)}}@media only screen and (max-width:575.98px){.xabre-responsive-1170px-120px {height:36.9230769231px}.xabre-responsive-1170px-120px>div {transform:scale(0.3076923077)}}@media only screen and (min-width:768px) and (max-width:991.98px){.xabre-responsive-1170px-120px {height:76.9230769231px}.xabre-responsive-1170px-120px>div {transform:scale(0.641025641)}}@media only screen and (min-width:992px) and (max-width:1199.98px){.xabre-responsive-1170px-120px {height:99.4871794872px}.xabre-responsive-1170px-120px>div {transform:scale(0.8290598291)}}@media only screen and (min-width:1200px){.xabre-responsive-1170px-120px {height:120px}.xabre-responsive-1170px-120px>div {transform:scale(1)}}.xabre-responsive-1170px-135px {position:relative;overflow:hidden;margin:0!important;height:150px}.xabre-responsive-1170px-135px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (max-width:767.98px){.xabre-responsive-1170px-135px {height:66.9230769231px}.xabre-responsive-1170px-135px>div {transform:scale(0.4957264957)}}@media only screen and (max-width:575.98px){.xabre-responsive-1170px-135px {height:41.5384615385px}.xabre-responsive-1170px-135px>div {transform:scale(0.3076923077)}}@media only screen and (min-width:768px) and (max-width:991.98px){.xabre-responsive-1170px-135px {height:86.5384615385px}.xabre-responsive-1170px-135px>div {transform:scale(0.641025641)}}@media only screen and (min-width:992px) and (max-width:1199.98px){.xabre-responsive-1170px-135px {height:111.9230769231px}.xabre-responsive-1170px-135px>div {transform:scale(0.8290598291)}}@media only screen and (min-width:1200px){.xabre-responsive-1170px-135px {height:135px}.xabre-responsive-1170px-135px>div {transform:scale(1)}}.xabre-responsive-1170px-300px {position:relative;overflow:hidden;margin:0!important;height:315px}.xabre-responsive-1170px-300px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (max-width:767.98px){.xabre-responsive-1170px-300px {height:148.7179487179px}.xabre-responsive-1170px-300px>div {transform:scale(0.4957264957)}}@media only screen and (max-width:575.98px){.xabre-responsive-1170px-300px {height:92.3076923077px}.xabre-responsive-1170px-300px>div {transform:scale(0.3076923077)}}@media only screen and (min-width:768px) and (max-width:991.98px){.xabre-responsive-1170px-300px {height:192.3076923077px}.xabre-responsive-1170px-300px>div {transform:scale(0.641025641)}}@media only screen and (min-width:992px) and (max-width:1199.98px){.xabre-responsive-1170px-300px {height:248.7179487179px}.xabre-responsive-1170px-300px>div {transform:scale(0.8290598291)}}@media only screen and (min-width:1200px){.xabre-responsive-1170px-300px {height:300px}.xabre-responsive-1170px-300px>div {transform:scale(1)}}.xabre-responsive-1170px-250px {position:relative;overflow:hidden;margin:0!important;height:265px}.xabre-responsive-1170px-250px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (max-width:767.98px){.xabre-responsive-1170px-250px {height:123.9316239316px}.xabre-responsive-1170px-250px>div {transform:scale(0.4957264957)}}@media only screen and (max-width:575.98px){.xabre-responsive-1170px-250px {height:76.9230769231px}.xabre-responsive-1170px-250px>div {transform:scale(0.3076923077)}}@media only screen and (min-width:768px) and (max-width:991.98px){.xabre-responsive-1170px-250px {height:160.2564102564px}.xabre-responsive-1170px-250px>div {transform:scale(0.641025641)}}@media only screen and (min-width:992px) and (max-width:1199.98px){.xabre-responsive-1170px-250px {height:207.264957265px}.xabre-responsive-1170px-250px>div {transform:scale(0.8290598291)}}@media only screen and (min-width:1200px){.xabre-responsive-1170px-250px {height:250px}.xabre-responsive-1170px-250px>div {transform:scale(1)}}.xabre-responsive-1170px-330px {position:relative;overflow:hidden;margin:0!important;height:345px}.xabre-responsive-1170px-330px>div {transform-origin:top center;position:absolute;left:-10000px;right:-10000px;margin:0 auto}@media only screen and (max-width:767.98px){.xabre-responsive-1170px-330px {height:163.5897435897px}.xabre-responsive-1170px-330px>div {transform:scale(0.4957264957)}}@media only screen and (max-width:575.98px){.xabre-responsive-1170px-330px {height:101.5384615385px}.xabre-responsive-1170px-330px>div {transform:scale(0.3076923077)}}@media only screen and (min-width:768px) and (max-width:991.98px){.xabre-responsive-1170px-330px {height:211.5384615385px}.xabre-responsive-1170px-330px>div {transform:scale(0.641025641)}}@media only screen and (min-width:992px) and (max-width:1199.98px){.xabre-responsive-1170px-330px {height:273.5897435897px}.xabre-responsive-1170px-330px>div {transform:scale(0.8290598291)}}@media only screen and (min-width:1200px){.xabre-responsive-1170px-330px {height:330px}.xabre-responsive-1170px-330px>div {transform:scale(1)}}@media only screen and (max-width:575.98px),only screen and (max-width:767.98px){.xabre-responsive-250px-50px {margin:.5rem 0}} </style><img style="display: none;" src="https://mobilarena.hu/muvelet/hozzaferes/kapcsolodas.php?ids%5B0%5D=3kFV7JjskeBE9nC97QCV3rzrHJS1XO7dwXSqYB9iyEPfM31j0%2BdJaS7Qf1WrBagNYFXIln8DQY9nfUEhyMN2um6vZpFBTzmiOHkFgXcWuPk%3D&ids%5B1%5D=WlsIgBr5ePLSSAinR%2BBipt4ElzIx9ljaERybO901i2Z3QwqF2Q9U8bR9s9GRLu5fIAwfGx8o2eifZ%2BV%2FenlXDV1WWBWz0mcz226z12jV29M%3D" alt=""/>
+
+<header id="header">
+
+<nav id="header-sticky" class="navbar navbar-expand-lg">
+
+	
+
+	<div class="container">
+
+		<a class="navbar-brand mr-0 mr-sm-3" href="/" title="Mobilarena">
+
+			<img class="d-none d-sm-block brand-normal" style="height: 1.25rem;" alt="Mobilarena" src="//cdn.rios.hu/design/ma/logo.png">
+
+			<img class="d-block d-sm-none brand-compact" style="height: 1.25rem;" alt="ma" src="//cdn.rios.hu/design/ma/logo-compact.png">
+
+		</a>
+
+		<div class="ml-auto"></div>
+
+		<div class="collapse collapse-no-anim navbar-collapse header-collapse" data-parent="#header">
+
+			<ul class="navbar-nav network" id="header-network">
+
+					<li class="nav-item ph">
+
+						<a class="nav-link" href="https://prohardver.hu">PROHARDVER!</a>
+
+					</li>
+
+					<li class="nav-item lo">
+
+						<a class="nav-link" href="https://logout.hu">LOGOUT</a>
+
+					</li>
+
+					<li class="nav-item ha">
+
+						<a class="nav-link" href="https://hardverapro.hu">HardverApró</a>
+
+					</li>
+
+				<li class="nav-item d-none d-xl-flex">
+
+					<a class="nav-btn btn-primary btn-xs" href="/fiok/premium.php">
+
+							<span class="fas fa-star user-premium-icon"></span>
+
+							Prémium előfizetés
+
+						</a>
+
+				</li>
+
+			</ul>
+
+		</div>
+
+			<ul class="navbar-nav navbar-buttons ml-auto d-flex">
+
+				<li>
+
+					<a href="javascript:;"  title="Keresés" class="nav-btn" id="search-jump">
+
+						<span class="fas fa-search fa-fw"></span>
+
+					</a>
+
+				</li>
+
+				<li>
+
+					<a class="nav-btn theme-button" href="javascript:;" data-text-light="&lt;span class=&quot;fas fa-sun-bright fa-fw&quot;&gt;&lt;/span&gt;" data-tooltip-light="Váltás világos témára" data-text-dark="&lt;span class=&quot;fas fa-moon fa-fw&quot;&gt;&lt;/span&gt;" data-tooltip-dark="Váltás sötét témára"><span class="fas fa-moon fa-fw"></span></a>
+
+				</li>
+
+				<li class="navbar-buttons-divider"></li>
+
+			    <li class="d-none d-sm-block">
+
+                    <a href="javascript:;" title="Belépés" class="nav-btn" data-modal-open="/muvelet/hozzaferes/belepes.php?url=%2Ftesztek%2Findex.html">
+
+                        <span class="fas fa-user fa-fw"></span>
+
+                    </a>
+
+	            </li>
+
+				<li class="d-lg-none">
+
+					<a href="javascript:;" class="nav-btn mr-1" data-toggle="collapse" data-target=".header-collapse" aria-expanded="false">
+
+						<span class="fas fa-bars fa-fw"></span>
+
+					</a>
+
+				</li>
+
+			</ul>
+
+	</div>
+
+</nav>
+
+<nav id="header-menu" class="navbar navbar-expand-lg">
+
+	<div class="container">
+
+		<div class="collapse collapse-no-anim navbar-collapse header-collapse" data-parent="#header">
+
+		<div class="nav-top-collapse-padding"></div>
+
+		<ul class="navbar-nav mr-auto">
+
+			<li class="dropdown dropdown-lg-hover">
+
+				<a href="javascript:;" class="nav-link dropdown-toggle">Rovatok</a>
+
+				<div class="dropdown-menu">
+
+					<a class="dropdown-item" href="https://mobilarena.hu/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+					<a class="dropdown-item" href="https://mobilarena.hu/fooldal/rovat/tablet_mobil/index.html">Tablet</a>
+
+					<a class="dropdown-item" href="https://mobilarena.hu/fooldal/rovat/okosora/index.html">Okosóra</a>
+
+					<a class="dropdown-item" href="https://mobilarena.hu/fooldal/rovat/mobil/index.html">Mobiltelefon</a>
+
+					<a class="dropdown-item" href="https://mobilarena.hu/fooldal/rovat/tartozekok/index.html">Tartozékok</a>
+
+					<a class="dropdown-item" href="https://mobilarena.hu/fooldal/rovat/auto-mobil/index.html">Autó+mobil</a>
+
+					<a class="dropdown-item" href="https://mobilarena.hu/fooldal/rovat/uzlet/index.html">Üzleti negyed</a>
+
+					<a class="dropdown-item" href="https://mobilarena.hu/fooldal/rovat/alkalmazasok/index.html">Alkalmazások</a>
+
+					<a class="dropdown-item" href="https://mobilarena.hu/fooldal/rovat/szolgaltatasok/index.html">Szolgáltatások</a>
+
+					<a class="dropdown-item" href="https://mobilarena.hu/fooldal/rovat/tudastar/index.html">Tudástár</a>
+
+					<a class="dropdown-item" href="https://mobilarena.hu/fooldal/rovat/egyeb/index.html">Egyéb</a>
+
+				</div>
+
+			</li>
+
+			<li class="dropdown-special">
+
+				<ul class="list-unstyled">
+
+					<li class="te active">
+
+						<a class="nav-link" href="/tesztek/index.html"><b>Tesztek</b></a>
+
+					</li>
+
+					<li class="te">
+
+						<a class="nav-link" href="/hirek/index.html"><b>Hírek</b></a>
+
+					</li>
+
+				</ul>
+
+			</li>
+
+			<li class="tu">
+
+				<a class="nav-link" href="/videok/index.html">Videók</a>
+
+			</li>
+
+			<li>
+
+				<a class="nav-link" href="https://fototrend.hu">Fotók</a>
+
+			</li>
+
+			<li class="fo">
+
+				<a class="nav-link" href="/forum/index.html"><span class="fas fa-comments"></span> Fórum</a>
+
+			</li>
+
+		</ul>
+
+				<ul class="navbar-nav navbar-buttons d-none d-lg-flex" id="header-social">
+
+					<li>
+
+						<a class="nav-btn" href="https://instagram.com/mobilarenahu/" target="_blank">
+
+							<span class="fab fa-instagram fa-fw"></span>
+
+						</a>
+
+					</li>
+
+					<li>
+
+						<a class="nav-btn" href="https://www.facebook.com/MOBILARENA" target="_blank">
+
+							<span class="fab fa-facebook-f fa-fw"></span>
+
+						</a>
+
+					</li>
+
+					<li>
+
+						<a class="nav-btn" href="/allando/rss.html">
+
+							<span class="fas fa-rss fa-fw"></span>
+
+						</a>
+
+					</li>
+
+			</ul>
+
+	</div>
+
+</div>
+
+</nav>
+
+
+
+</header>
+
+<div id="header-padding"></div>
+
+<main id="page-index">
+
+	<div id="top" class="slotHeader"><div class="container bg-transparent p-0">
+
+			<div class="xabre box xabre970 xabre-responsive-970px-250px">
+
+    			<h4>Hird﻿e﻿t﻿és﻿</h4>
+
+    			<div class="xabrebox" style="width: calc(11640px / 12); height: calc(3000px / 12);" onclick="$.ajax('https://mobilarena.hu/muvelet/hozzaferes/kapcsolodas.php?id=EHi9K3W4rqII4wJhbzVMMHJ02RYlwM1XcvzwpvffHRhvPUQ3PVyrxebaLZrLqVkVXJXpJY6%2FPuDulaSzI5grh30vmE4JpW%2B5GRrlPHn%2BfpI%3D', { method: 'POST', xhrFields: { withCredentials: true } });">
+
+				 <iframe class="xabreifr" src="//cdn.rios.hu/dl/cnt/2026-10/7772/index.html" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
+
+				</div>
+
+			</div>
+
+</div>
+
+	 	<div class="container">
+
+<div class="gigabox gigabox-full overflow-hidden pt-3">
+
+	<h1>Minden teszt</h1>
+
+</div>
+
+		<div class="gigabox gigabox-full gigabox-gray py-3">
+
+				<form action="/tesztek/keres.php">
+
+					<div class="form-group mb-0">
+
+						<div class="input-group">
+
+							<span class="target-anchor" id="search"></span>
+
+							<input class="form-control" type="text" name="stext" placeholder="Gyorskeresés" value="">
+
+							<div class="input-group-append">
+
+				                <button type="button" class="btn btn-search-dropdown px-2" data-toggle="collapse" data-target="#content-filter-advanced">
+
+			                        <span data-toggle="tooltip" title="Részletes keresés...">
+
+						                <span class="fas fa-chevron-down"></span>
+
+									</span>
+
+								</button>
+
+								<button class="btn btn-primary" type="submit"><span class="fas fa-search"></span> <span class="d-none d-md-inline">Keresés</span></button>
+
+							</div>
+
+						</div>
+
+					</div>
+
+					<div class="collapse" id="content-filter-advanced">
+
+						<div class="row mt-3">
+
+			                <div class="col-md-4">
+
+								<div class="form-group">
+
+									<input placeholder="Szűrés rovatra"  class="form-control" type="text" name="section" value="" data-role="typeahead" data-ta-target-id="secid" data-ta-query="/muvelet/rovat/listaz.php?stext=%QUERY" data-ta-prefetch="/muvelet/rovat/listaz.php?type=important">
+
+									<input type="hidden" name="secid" value="">
+
+								</div>
+
+							</div>
+
+			                <div class="col-md-4">
+
+								<div class="form-group">
+
+									<input placeholder="Szűrés márkára"  class="form-control" type="text" name="company" value="" data-role="typeahead" data-ta-target-id="cmpid" data-ta-query="/muvelet/rovat/listaz.php?type=cmp&stext=%QUERY" data-ta-prefetch="/muvelet/rovat/listaz.php?type=cmp">
+
+									<input type="hidden" name="cmpid" value="">
+
+								</div>
+
+							</div>
+
+			                <div class="col-md-4">
+
+								<div class="form-group">
+
+									<input placeholder="Szűrés szerzőre" class="form-control" type="text" name="user" value="" data-role="typeahead" data-ta-target-id="usrid" data-ta-query="/muvelet/tag/listaz.php?type=content&stext=%QUERY">
+
+									<input type="hidden" name="usrid" value="">
+
+								</div>
+
+							</div>
+
+			                <div class="col-md-4">
+
+								<div class="form-group mb-md-0">
+
+									<input class="form-control" type="text" name="stext_none" value="" placeholder="Kerülendő szavak">
+
+								</div>
+
+							</div>
+
+			                <div class="col-md-4">
+
+								<div class="text-left">
+
+									<div class="form-check form-check-inline py-0">
+
+										<label><input type="checkbox" name="search_exac" value="1"><span class="check-indicator"></span> Pontosan keressen</label>
+
+									</div>
+
+								</div>
+
+							</div>
+
+						</div>
+
+					</div>
+
+				</form>
+
+		</div>
+
+		</div><div class="container p-0"></div>
+
+	</div>
+
+	<div id="middle">
+
+		<div class="container">
+
+			<div class="row">
+
+				<div id="center" class="slotDoubleColumn">
+
+	<div class="content-filter-options">
+
+		<div class="content-filter-option">
+
+		<a class="btn btn-outline-light btn-sm mb-2" href="/tesztek/rovat/okostelefon/index.html">Okostelefon</a>
+
+		<a class="btn btn-outline-light btn-sm mb-2" href="/tesztek/rovat/tablet_mobil/index.html">Tablet</a>
+
+		<a class="btn btn-outline-light btn-sm mb-2" href="/tesztek/rovat/okosora/index.html">Okosóra</a>
+
+		<a class="btn btn-outline-light btn-sm mb-2" href="/tesztek/rovat/mobil/index.html">Mobiltelefon</a>
+
+		<a class="btn btn-outline-light btn-sm mb-2" href="/tesztek/rovat/tartozekok/index.html">Tartozékok</a>
+
+		<a class="btn btn-outline-light btn-sm mb-2" href="/tesztek/rovat/auto-mobil/index.html">Autó+mobil</a>
+
+		<a class="btn btn-outline-light btn-sm mb-2" href="/tesztek/rovat/uzlet/index.html">Üzleti negyed</a>
+
+		<a class="btn btn-outline-light btn-sm mb-2" href="/tesztek/rovat/alkalmazasok/index.html">Alkalmazások</a>
+
+		<a class="btn btn-outline-light btn-sm mb-2" href="/tesztek/rovat/szolgaltatasok/index.html">Szolgáltatások</a>
+
+		<a class="btn btn-outline-light btn-sm mb-2" href="/tesztek/rovat/tudastar/index.html">Tudástár</a>
+
+		<a class="btn btn-outline-light btn-sm mb-2" href="/tesztek/rovat/egyeb/index.html">Egyéb</a>
+
+		</div>
+
+		<hr class="dotted mt-2">
+
+	</div>
+
+<div class="navbar navbar-default pager-navbar">
+
+<span class="target-anchor" id="forum-nav-top"></span>
+
+        <ul class="nav navbar-nav mr-md-auto">
+
+			<li class="nav-arrow">
+
+				<a href="/tesztek/index.html">
+
+					<span class="fas fa-pipe"></span><span class="fas fa-play fa-flip-horizontal"></span>
+
+				</a>
+
+			</li>
+
+			<li class="nav-arrow">
+
+				<a class="disabled" href="#">
+
+					<span class="fas fa-play fa-flip-horizontal fa-fw"></span>
+
+				</a>
+
+			</li>
+
+			<li class="dropdown nav-pager">
+
+				<a class="btn dropdown-toggle" data-toggle="dropdown" role="button" href="#">
+
+					2026-10-16 - 2026-08-05 <span class="fas fa-chevron-down"></span>
+
+				</a>
+
+				<div class="dropdown-menu">
+
+					<a class="dropdown-item active" href="/tesztek/2026-08.html">2026-10-16 - 2026-08-05</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-08.html">2026-08-31 - 2026-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-07.html">2026-07-31 - 2026-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-06.html">2026-06-30 - 2026-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-05.html">2026-05-31 - 2026-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-04.html">2026-04-30 - 2026-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-03.html">2026-03-31 - 2026-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-02.html">2026-02-28 - 2026-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-01.html">2026-01-31 - 2026-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-12.html">2025-12-31 - 2025-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-11.html">2025-11-30 - 2025-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-10.html">2025-10-31 - 2025-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-09.html">2025-09-30 - 2025-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-08.html">2025-08-31 - 2025-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-07.html">2025-07-31 - 2025-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-06.html">2025-06-30 - 2025-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-05.html">2025-05-31 - 2025-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-04.html">2025-04-30 - 2025-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-03.html">2025-03-31 - 2025-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-02.html">2025-02-28 - 2025-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-01.html">2025-01-31 - 2025-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-12.html">2024-12-31 - 2024-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-11.html">2024-11-30 - 2024-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-10.html">2024-10-31 - 2024-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-09.html">2024-09-30 - 2024-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-08.html">2024-08-31 - 2024-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-07.html">2024-07-31 - 2024-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-06.html">2024-06-30 - 2024-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-05.html">2024-05-31 - 2024-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-04.html">2024-04-30 - 2024-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-03.html">2024-03-31 - 2024-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-02.html">2024-02-29 - 2024-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-01.html">2024-01-31 - 2024-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-12.html">2023-12-31 - 2023-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-11.html">2023-11-30 - 2023-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-10.html">2023-10-31 - 2023-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-09.html">2023-09-30 - 2023-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-08.html">2023-08-31 - 2023-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-07.html">2023-07-31 - 2023-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-06.html">2023-06-30 - 2023-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-05.html">2023-05-31 - 2023-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-04.html">2023-04-30 - 2023-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-03.html">2023-03-31 - 2023-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-02.html">2023-02-28 - 2023-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-01.html">2023-01-31 - 2023-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-12.html">2022-12-31 - 2022-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-11.html">2022-11-30 - 2022-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-10.html">2022-10-31 - 2022-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-09.html">2022-09-30 - 2022-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-08.html">2022-08-31 - 2022-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-07.html">2022-07-31 - 2022-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-06.html">2022-06-30 - 2022-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-05.html">2022-05-31 - 2022-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-04.html">2022-04-30 - 2022-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-03.html">2022-03-31 - 2022-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-02.html">2022-02-28 - 2022-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-01.html">2022-01-31 - 2022-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-12.html">2021-12-31 - 2021-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-11.html">2021-11-30 - 2021-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-10.html">2021-10-31 - 2021-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-09.html">2021-09-30 - 2021-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-08.html">2021-08-31 - 2021-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-07.html">2021-07-31 - 2021-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-06.html">2021-06-30 - 2021-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-05.html">2021-05-31 - 2021-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-04.html">2021-04-30 - 2021-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-03.html">2021-03-31 - 2021-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-02.html">2021-02-28 - 2021-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-01.html">2021-01-31 - 2021-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-12.html">2020-12-31 - 2020-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-11.html">2020-11-30 - 2020-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-10.html">2020-10-31 - 2020-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-09.html">2020-09-30 - 2020-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-08.html">2020-08-31 - 2020-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-07.html">2020-07-31 - 2020-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-06.html">2020-06-30 - 2020-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-05.html">2020-05-31 - 2020-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-04.html">2020-04-30 - 2020-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-03.html">2020-03-31 - 2020-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-02.html">2020-02-29 - 2020-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-01.html">2020-01-31 - 2020-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-12.html">2019-12-31 - 2019-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-11.html">2019-11-30 - 2019-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-10.html">2019-10-31 - 2019-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-09.html">2019-09-30 - 2019-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-08.html">2019-08-31 - 2019-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-07.html">2019-07-31 - 2019-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-06.html">2019-06-30 - 2019-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-05.html">2019-05-31 - 2019-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-04.html">2019-04-30 - 2019-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-03.html">2019-03-31 - 2019-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-02.html">2019-02-28 - 2019-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-01.html">2019-01-31 - 2019-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-12.html">2018-12-31 - 2018-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-11.html">2018-11-30 - 2018-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-10.html">2018-10-31 - 2018-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-09.html">2018-09-30 - 2018-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-08.html">2018-08-31 - 2018-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-07.html">2018-07-31 - 2018-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-06.html">2018-06-30 - 2018-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-05.html">2018-05-31 - 2018-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-04.html">2018-04-30 - 2018-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-03.html">2018-03-31 - 2018-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-02.html">2018-02-28 - 2018-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-01.html">2018-01-31 - 2018-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-12.html">2017-12-31 - 2017-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-11.html">2017-11-30 - 2017-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-10.html">2017-10-31 - 2017-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-09.html">2017-09-30 - 2017-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-08.html">2017-08-31 - 2017-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-07.html">2017-07-31 - 2017-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-06.html">2017-06-30 - 2017-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-05.html">2017-05-31 - 2017-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-04.html">2017-04-30 - 2017-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-03.html">2017-03-31 - 2017-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-02.html">2017-02-28 - 2017-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-01.html">2017-01-31 - 2017-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-12.html">2016-12-31 - 2016-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-11.html">2016-11-30 - 2016-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-10.html">2016-10-31 - 2016-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-09.html">2016-09-30 - 2016-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-08.html">2016-08-31 - 2016-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-07.html">2016-07-31 - 2016-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-06.html">2016-06-30 - 2016-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-05.html">2016-05-31 - 2016-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-04.html">2016-04-30 - 2016-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-03.html">2016-03-31 - 2016-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-02.html">2016-02-29 - 2016-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-01.html">2016-01-31 - 2016-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-12.html">2015-12-31 - 2015-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-11.html">2015-11-30 - 2015-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-10.html">2015-10-31 - 2015-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-09.html">2015-09-30 - 2015-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-08.html">2015-08-31 - 2015-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-07.html">2015-07-31 - 2015-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-06.html">2015-06-30 - 2015-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-05.html">2015-05-31 - 2015-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-04.html">2015-04-30 - 2015-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-03.html">2015-03-31 - 2015-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-02.html">2015-02-28 - 2015-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-01.html">2015-01-31 - 2015-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-12.html">2014-12-31 - 2014-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-11.html">2014-11-30 - 2014-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-10.html">2014-10-31 - 2014-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-09.html">2014-09-30 - 2014-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-08.html">2014-08-31 - 2014-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-07.html">2014-07-31 - 2014-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-06.html">2014-06-30 - 2014-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-05.html">2014-05-31 - 2014-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-04.html">2014-04-30 - 2014-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-03.html">2014-03-31 - 2014-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-02.html">2014-02-28 - 2014-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-01.html">2014-01-31 - 2014-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-12.html">2013-12-31 - 2013-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-11.html">2013-11-30 - 2013-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-10.html">2013-10-31 - 2013-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-09.html">2013-09-30 - 2013-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-08.html">2013-08-31 - 2013-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-07.html">2013-07-31 - 2013-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-06.html">2013-06-30 - 2013-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-05.html">2013-05-31 - 2013-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-04.html">2013-04-30 - 2013-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-03.html">2013-03-31 - 2013-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-02.html">2013-02-28 - 2013-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-01.html">2013-01-31 - 2013-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-12.html">2012-12-31 - 2012-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-11.html">2012-11-30 - 2012-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-10.html">2012-10-31 - 2012-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-09.html">2012-09-30 - 2012-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-08.html">2012-08-31 - 2012-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-07.html">2012-07-31 - 2012-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-06.html">2012-06-30 - 2012-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-05.html">2012-05-31 - 2012-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-04.html">2012-04-30 - 2012-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-03.html">2012-03-31 - 2012-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-02.html">2012-02-29 - 2012-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-01.html">2012-01-31 - 2012-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-12.html">2011-12-31 - 2011-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-11.html">2011-11-30 - 2011-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-10.html">2011-10-31 - 2011-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-09.html">2011-09-30 - 2011-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-08.html">2011-08-31 - 2011-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-07.html">2011-07-31 - 2011-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-06.html">2011-06-30 - 2011-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-05.html">2011-05-31 - 2011-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-04.html">2011-04-30 - 2011-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-03.html">2011-03-31 - 2011-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-02.html">2011-02-28 - 2011-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-01.html">2011-01-31 - 2011-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-12.html">2010-12-31 - 2010-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-11.html">2010-11-30 - 2010-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-10.html">2010-10-31 - 2010-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-09.html">2010-09-30 - 2010-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-08.html">2010-08-31 - 2010-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-07.html">2010-07-31 - 2010-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-06.html">2010-06-30 - 2010-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-05.html">2010-05-31 - 2010-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-04.html">2010-04-30 - 2010-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-03.html">2010-03-31 - 2010-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-02.html">2010-02-28 - 2010-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-01.html">2010-01-31 - 2010-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-12.html">2009-12-31 - 2009-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-11.html">2009-11-30 - 2009-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-10.html">2009-10-31 - 2009-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-09.html">2009-09-30 - 2009-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-08.html">2009-08-31 - 2009-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-07.html">2009-07-31 - 2009-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-06.html">2009-06-30 - 2009-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-05.html">2009-05-31 - 2009-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-04.html">2009-04-30 - 2009-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-03.html">2009-03-31 - 2009-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-02.html">2009-02-28 - 2009-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-01.html">2009-01-31 - 2009-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-12.html">2008-12-31 - 2008-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-11.html">2008-11-30 - 2008-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-10.html">2008-10-31 - 2008-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-09.html">2008-09-30 - 2008-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-08.html">2008-08-31 - 2008-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-07.html">2008-07-31 - 2008-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-06.html">2008-06-30 - 2008-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-05.html">2008-05-31 - 2008-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-04.html">2008-04-30 - 2008-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-03.html">2008-03-31 - 2008-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-02.html">2008-02-29 - 2008-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-01.html">2008-01-31 - 2008-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-12.html">2007-12-31 - 2007-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-11.html">2007-11-30 - 2007-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-10.html">2007-10-31 - 2007-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-09.html">2007-09-30 - 2007-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-08.html">2007-08-31 - 2007-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-07.html">2007-07-31 - 2007-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-06.html">2007-06-30 - 2007-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-05.html">2007-05-31 - 2007-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-04.html">2007-04-30 - 2007-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-03.html">2007-03-31 - 2007-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-02.html">2007-02-28 - 2007-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-01.html">2007-01-31 - 2007-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-12.html">2006-12-31 - 2006-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-11.html">2006-11-30 - 2006-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-10.html">2006-10-31 - 2006-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-09.html">2006-09-30 - 2006-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-08.html">2006-08-31 - 2006-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-07.html">2006-07-31 - 2006-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-06.html">2006-06-30 - 2006-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-05.html">2006-05-31 - 2006-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-04.html">2006-04-30 - 2006-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-03.html">2006-03-31 - 2006-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-02.html">2006-02-28 - 2006-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-01.html">2006-01-31 - 2006-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-12.html">2005-12-31 - 2005-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-11.html">2005-11-30 - 2005-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-10.html">2005-10-31 - 2005-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-09.html">2005-09-30 - 2005-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-08.html">2005-08-31 - 2005-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-07.html">2005-07-31 - 2005-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-06.html">2005-06-30 - 2005-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-05.html">2005-05-31 - 2005-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-04.html">2005-04-30 - 2005-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-03.html">2005-03-31 - 2005-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-02.html">2005-02-28 - 2005-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-01.html">2005-01-31 - 2005-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-12.html">2004-12-31 - 2004-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-11.html">2004-11-30 - 2004-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-10.html">2004-10-31 - 2004-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-09.html">2004-09-30 - 2004-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-08.html">2004-08-31 - 2004-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-07.html">2004-07-31 - 2004-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-06.html">2004-06-30 - 2004-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-05.html">2004-05-31 - 2004-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-04.html">2004-04-30 - 2004-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-03.html">2004-03-31 - 2004-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-02.html">2004-02-29 - 2004-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-01.html">2004-01-31 - 2004-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2003-12.html">2003-12-31 - 2003-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2003-11.html">2003-11-30 - 2003-11-01</a>
+
+				</div>
+
+			</li>
+
+			<li class="nav-arrow">
+
+				<a rel="next" href="/tesztek/2026-08.html">
+
+					<span class="fas fa-play fa-fw"></span>
+
+				</a>
+
+			</li>
+
+			<li class="nav-arrow">
+
+				<a href="/tesztek/2003-11.html">
+
+					<span class="fas fa-play"></span><span class="fas fa-pipe"></span>
+
+				</a>
+
+			</li>
+
+		</ul>
+
+		<ul class="nav navbar-nav">
+
+			<li>
+
+				<a class="btn" href="#forum-nav-btm">
+
+					<span class="fas fa-chevron-down"></span>
+
+				</a>
+
+			</li>
+
+		</ul>   
+
+</div>
+
+<div class="content-list">
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/anker_soundcore_space_2_fejhallgato_teszt_velemeny/bevezeto_doboz_tartalma_kulso.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/363998i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/363998i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/anker_soundcore_space_2_fejhallgato_teszt_velemeny/bevezeto_doboz_tartalma_kulso.html">Anker Soundcore Space 2 – csak csend legyen és kényelem</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			42 ezer forintos áron jó csomagot ígér a Space 2, de a hangja csak akkor lesz élvezhető, ha hajlandók vagyunk az EQ-val is játszani.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/tartozekok/index.html">Tartozékok</a>
+
+			<time class="2026. október 16., péntek 16:30">2026-10-16</time>
+
+			<a href="/tema/anker_soundcore_space_2_csak_csend_legyen_es_kenye/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				8
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/samsung_galaxy_tab_s12_es_ultra_duplateszt/kulso_kijelzo_tartozekok.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/363939i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/363939i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/samsung_galaxy_tab_s12_es_ultra_duplateszt/kulso_kijelzo_tartozekok.html">Samsung Galaxy Tab S12+ és Ultra duplateszt</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Megnéztem, mit nyújtanak a Samsung fél- és egymillió forintos ultraprémium táblái.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/tablet_mobil/index.html">Tablet</a>
+
+			<time class="2026. október 15., csütörtök 16:16">2026-10-15</time>
+
+			<a href="/tema/samsung_galaxy_tab_s12_es_ultra_duplateszt/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				56
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/google_pixel_11_hosszu_tavra_mint_tavaly/bevezeto.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/363941s.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/363941s.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/google_pixel_11_hosszu_tavra_mint_tavaly/bevezeto.html">Google Pixel 11 - hosszú távra, mint tavaly</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Új év, új Pixel, de ugyanaz a verdikt: ha erre vágysz, akkor sokat spórolhatsz a tavalyi modellel, mert olyan sokat azért nem változott a mostani.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. október 14., szerda 15:35">2026-10-14</time>
+
+			<a href="/tema/google_pixel_11_hosszu_tavra_mint_tavaly/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				73
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/google_pixel_watch_5_teszt_velemeny/bevezeto_doboz_kulso.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/363901i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/363901i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/google_pixel_watch_5_teszt_velemeny/bevezeto_doboz_kulso.html">Google Pixel Watch 5 – a személyi edző vajon MI?</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Tökéletes telefonos összhanggal és végre magyarra fordított, Gemini MI-vel felturbózott fitnesszel dolgozik a Google 2026-os órája.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okosora/index.html">Okosóra</a>
+
+			<time class="2026. október 13., kedd 16:25">2026-10-13</time>
+
+			<a href="/tema/google_pixel_watch_5_a_szemelyi_edzo_vajon_mi/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				35
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/72_kep_kinabol_a_vivo_x300_ultraval/bekoltozes_indulas.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/363889s.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/363889s.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/72_kep_kinabol_a_vivo_x300_ultraval/bekoltozes_indulas.html">72 kép Kínából a Vivo X300 Ultrával</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Ha már ezt használtam végig, akkor itt egy csokor fotó, no meg videók is készültek.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Egy vagy több termék rövid körbejárása, főbb tulajdonságainak bemutatása">Bemutató</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. október 12., hétfő 14:05">2026-10-12</time>
+
+			<a href="/tema/72_kep_kinabol_a_vivo_x300_ultraval/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				48
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/agm_pad_p3_compact_tablet_teszt_velemeny/bevezeto_doboz_tartalma.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/363858i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/363858i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/agm_pad_p3_compact_tablet_teszt_velemeny/bevezeto_doboz_tartalma.html">AGM P3 Compact – volna még vele munka</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			9 hüvelyk alatti kijelzővel szerelt 4G-s táblagép strapabíró köntösben.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/tablet_mobil/index.html">Tablet</a>
+
+			<time class="2026. október 9., péntek 15:45">2026-10-09</time>
+
+			<a href="/tema/agm_p3_compact_volna_meg_vele_munka/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				5
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/apple_iphone_18_pro_max_teszt_velemeny/bevezeto_doboz_ujdonsagok.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/363792i1280x720.gif/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/363792i1280x720.gif" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/apple_iphone_18_pro_max_teszt_velemeny/bevezeto_doboz_ujdonsagok.html">Apple iPhone 18 Pro Max – érik a gyümölcs</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Új chip, nagyobb akkumulátor, nagyobb hűtés, kisebb Dynamic Island, mozgó rekesz a főkamerában, új szín az összecsukható iPhone árnyékában.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. október 6., kedd 18:58">2026-10-06</time>
+
+			<a href="/tema/apple_iphone_18_pro_max_erik_a_gyumolcs/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				184
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/tcl_p80_ultra_teszt_velemeny_nxtpaper_amoled/bevezeto_doboz_tartalma.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/363735i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/363735i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/tcl_p80_ultra_teszt_velemeny_nxtpaper_amoled/bevezeto_doboz_tartalma.html">TCL P80 Ultra – könyvmolyképző</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Szemkímélő, olvasáshoz és képregényekhez remek kijelzővel tér vissza a TCL, immár AMOLED alapokon.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. október 2., péntek 15:50">2026-10-02</time>
+
+			<a href="/tema/tcl_p80_ultra_konyvmolykepzo/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				59
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/vivo_x_fold6_teszt/kulso_kijelzo_telekonverter.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363606i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363606i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/vivo_x_fold6_teszt/kulso_kijelzo_telekonverter.html">Vivo X Fold6 - foldenergia</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Az útlevéltelefonok árnyában hozta el a Vivo az akkumulátoros Kánaánt.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. október 1., csütörtök 16:00">2026-10-01</time>
+
+			<a href="/tema/vivo_x_fold6_foldenergia/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				22
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/sony_wh-ch530_wh-ch730n_teszt_velemeny/bevezeto_doboz_tartalma_kulso.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363664i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363664i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/sony_wh-ch530_wh-ch730n_teszt_velemeny/bevezeto_doboz_tartalma_kulso.html">Sony WH-CH530 és WH-CH730N – népszerű, megfizethető, megújult</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Frissítette a Sony legolcsóbb Bluetooth-os fejhallgatóit, az 530-as keveset, a 730N többet változott.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/tartozekok/index.html">Tartozékok</a>
+
+			<time class="2026. szeptember 30., szerda 12:10">2026-09-30</time>
+
+			<a href="/tema/sony_wh-ch530_es_wh-ch730n_nepszeru_megfizetheto_m/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				5
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/redmi-note-17-5g-teszt/bevezeto.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363579s.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363579s.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/redmi-note-17-5g-teszt/bevezeto.html">Redmi Note 17 5G - Szia uram, olcsó RAM érdekel?</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Nahát, olcsóbban nyit a Redmi Note 17, mint amennyibe az elődje került, pedig még egy év sem telt el. Viszont ez nem véletlen, mert adódnak olyan kompromisszumok, amelyek jól mutatják, hogy minek ment fel igazán az ára az elmúlt időszakban.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. szeptember 28., hétfő 12:40">2026-09-28</time>
+
+			<a href="/tema/redmi_note_17_5g_szia_uram_olcso_ram_erdekel/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				42
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/poco_f9_pro_tobbet_esszel_mint_erovel/kulso_kijelzo_doboz.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363560i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363560i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/poco_f9_pro_tobbet_esszel_mint_erovel/kulso_kijelzo_doboz.html">Poco F9 Pro - többet ésszel, mint erővel</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Csúcshardverrel megy neki a Poco az áremelésnek, majdnem megégeti magát.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. szeptember 25., péntek 14:30">2026-09-25</time>
+
+			<a href="/tema/poco_f9_pro_tobbet_esszel_mint_erovel/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				85
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/earfun_wave_pro_x_teszt_zajszuros_fejhallgato_olcs/bevezeto_doboz_kulso.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363558i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363558i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/earfun_wave_pro_x_teszt_zajszuros_fejhallgato_olcs/bevezeto_doboz_kulso.html">EarFun Wave Pro X – szintlépés</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Az eddigi legmagasabbra céloz az EarFun zajszűréssel, hangzással, viszont ez némi áremelkedéssel is jár.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/tartozekok/index.html">Tartozékok</a>
+
+			<time class="2026. szeptember 24., csütörtök 16:40">2026-09-24</time>
+
+			<a href="/tema/earfun_wave_pro_x_szintlepes/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				10
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/redmi_note_17_pro_teszt/kulso_kijelzo_multimedia.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363512i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363512i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/redmi_note_17_pro_teszt/kulso_kijelzo_multimedia.html">Redmi Note 17 Pro 5G - Not Note</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Egy lépés előre, kettő vissza: a Redminek is betett a memóriaválság.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. szeptember 23., szerda 15:55">2026-09-23</time>
+
+			<a href="/tema/redmi_note_17_pro_5g_not_note/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				22
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/sony_wh-1000xm4c_teszt_akkumulator-csere/bevezeto_doboz_kulso.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363498i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363498i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/sony_wh-1000xm4c_teszt_akkumulator-csere/bevezeto_doboz_kulso.html">Sony WH-1000XM4C – a király visszatért?</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Azt mondta a Sony, hogy csak kicserélték az aksit egy kisebbre az EU miatt, de ez ugyanaz a fejhallgató, mint a 2020-as. Ez nem egészen igaz.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/tartozekok/index.html">Tartozékok</a>
+
+			<time class="2026. szeptember 22., kedd 14:00">2026-09-22</time>
+
+			<a href="/tema/sony_wh-1000xm4c_a_kiraly_visszatert/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				23
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/huawei_watch_gt_7_pro_teszt/kulso_kezeles_uzemido.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363474i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363474i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/huawei_watch_gt_7_pro_teszt/kulso_kezeles_uzemido.html">Huawei Watch GT 7 Pro - még egy kört mindenkinek</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Szögletes márkatársa árnyékában teszteltem a Huawei kitartó, kerek sportóráját.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okosora/index.html">Okosóra</a>
+
+			<time class="2026. szeptember 21., hétfő 14:32">2026-09-21</time>
+
+			<a href="/tema/huawei_watch_gt_7_pro_meg_egy_kort_mindenkinek/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				17
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/redmi_note_17_pro_max_5g_teszt_velemeny/bevezeto_doboz_tartalma.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363429i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363429i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/redmi_note_17_pro_max_5g_teszt_velemeny/bevezeto_doboz_tartalma.html">Redmi Note 17 Pro Max 5G – üzemidő: kimaxolva</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Hatalmas, 9210 mAh-s akkumulátort kapott a 17-es sorozat csúcsmodellje. Kérdés, hogy ez kompenzálja-e a visszafogottabb habzású hardvert és az egyszerűbb kamerát?
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. szeptember 18., péntek 11:40">2026-09-18</time>
+
+			<a href="/tema/redmi_note_17_pro_max_5g_uzemido_kimaxolva/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				62
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/poco_f9_ultra_teszt_bemutato_velemeny/bevezeto_doboz_tartalma.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363354i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363354i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/poco_f9_ultra_teszt_bemutato_velemeny/bevezeto_doboz_tartalma.html">Poco F9 Ultra – diszkófény</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Őrült ütemben ontja a telefonokat a Xiaomi és márkái, a Poco F9 Ultra elődjénél csiszoltabb, így karácsonyi ajánlónkban valószínűleg előkelő helyen végez majd.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. szeptember 15., kedd 15:39">2026-09-15</time>
+
+			<a href="/tema/poco_f9_ultra_diszkofeny/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				212
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/samsung_galaxy_s26_fe_teszt/kulso_kijelzo_csomagolas.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363346i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363346i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/samsung_galaxy_s26_fe_teszt/kulso_kijelzo_csomagolas.html">Samsung Galaxy S26 FE - csak jó feltételekkel</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Kevesebbet többért: a rajongói kiadás még mindig jó alapokra épül, ám fogynak az érvek mellette.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. szeptember 14., hétfő 21:53">2026-09-14</time>
+
+			<a href="/tema/samsung_galaxy_s26_fe_csak_jo_feltetelekkel/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				78
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/samsung_galaxy_a27_teszt/kulso_kijelzo_csomagolas.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363184i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363184i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/samsung_galaxy_a27_teszt/kulso_kijelzo_csomagolas.html">Samsung Galaxy A27 - az esélytelenek nyugalma</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Egy lépés előre, kettő vissza: nehéz lett az alsó polc dolga.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. szeptember 7., hétfő 17:30">2026-09-07</time>
+
+			<a href="/tema/samsung_galaxy_a27_az_eselytelenek_nyugalma/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				63
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/dreame_aero_straight_pro_cel-egyenes/hajformazas_egyenesites.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-09/363108i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-09/363108i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/dreame_aero_straight_pro_cel-egyenes/hajformazas_egyenesites.html">Dreame Aero Straight Pro - cél-egyenes</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Ismét egy prémium kategóriás okosság a Dreametől, ami megkönnyíti az életet. A hajformázás részét legalábbis.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/tartozekok/index.html">Tartozékok</a>
+
+			<time class="2026. szeptember 3., csütörtök 12:13">2026-09-03</time>
+
+			<a href="/tema/dreame_aero_straight_pro_cel-egyenes/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				13
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/hammer-ventus-5g-teszt-velemeny/bevezeto.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-08/363007i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-08/363007i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/hammer-ventus-5g-teszt-velemeny/bevezeto.html">Hammer Ventus 5G - nem is néznéd ki belőle</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			A strapatelefonoknak sem kell okvetlenül bufláknak és nehéznek lenniük, a Hammer újdonsága rácáfol az előítéletekre, egész jó szolgáltatáskínálattal rendelkezik, de olcsónak azért nem mondanám.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. szeptember 1., kedd 12:35">2026-09-01</time>
+
+			<a href="/tema/hammer_ventus_5g_nem_is_nezned_ki_belole/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				8
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/google_pixel_11_pro_xl_teszt_velemeny/bevezeto_doboz_tartalma.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-08/363012i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-08/363012i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/google_pixel_11_pro_xl_teszt_velemeny/bevezeto_doboz_tartalma.html">Google Pixel 11 Pro XL – új szoftverhez új hardver dukál?</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Egyre inkább úgy tűnik, hogy itt az idő az évenkénti generációfrissítéseket hosszabb ciklusokra átütemezni.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. augusztus 31., hétfő 13:45">2026-08-31</time>
+
+			<a href="/tema/google_pixel_11_pro_xl_uj_szoftverhez_uj_hardver_d/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				188
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/amazfit_bip_max_teszt/kulso_kezeles_uzemido.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-08/363005i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-08/363005i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/amazfit_bip_max_teszt/kulso_kezeles_uzemido.html">Amazfit Bip Max - ha a méret a lényeg</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Az Amazfit megmutatja, hogy hozzunk ki a kevésből a nagyot.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okosora/index.html">Okosóra</a>
+
+			<time class="2026. augusztus 28., péntek 14:50">2026-08-28</time>
+
+			<a href="/tema/amazfit_bip_max_ha_a_meret_a_lenyeg/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				34
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/xiaomi_watch_s5_ora_teszt_velemeny/bevezeto_doboz_kialakitas.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-08/362931i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-08/362931i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/xiaomi_watch_s5_ora_teszt_velemeny/bevezeto_doboz_kialakitas.html">Xiaomi Watch S5 – lehetnének jobbak a mutatói</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			A Xiaomi Watch S5 félúton van a Smart Bandek és Redmi Watchok, valamint a Wear OS-t futtató Xiaomi Watchok között.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okosora/index.html">Okosóra</a>
+
+			<time class="2026. augusztus 26., szerda 12:10">2026-08-26</time>
+
+			<a href="/tema/xiaomi_watch_s5_lehetnenek_jobbak_a_mutatoi/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				19
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/amazfit_balance_3_ora_teszt_velemeny/kulso_kezeles_uzemido.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-08/362910i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-08/362910i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/amazfit_balance_3_ora_teszt_velemeny/kulso_kezeles_uzemido.html">Amazfit Balance 3 - lyukasóra</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Patakokban folyt rólam a víz a Zepp 140 ezres, acélrácsos sportóráját tesztelve.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okosora/index.html">Okosóra</a>
+
+			<time class="2026. augusztus 25., kedd 09:05">2026-08-25</time>
+
+			<a href="/tema/amazfit_balance_3_lyukasora/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				45
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/earfun_clip_2_teszt_velemeny/bevezeto_doboz_tartalma_kulso.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-08/362865i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-08/362865i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/earfun_clip_2_teszt_velemeny/bevezeto_doboz_tartalma_kulso.html">EarFun Clip 2 – a halk tolmács</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Rengeteg funkciót pakolt az EarFun a Clip második generációjába, jobb is az elsőnél, de városi használatra nem ez a legideálisabb füles.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/tartozekok/index.html">Tartozékok</a>
+
+			<time class="2026. augusztus 19., szerda 17:35">2026-08-19</time>
+
+			<a href="/tema/earfun_clip_2_a_halk_tolmacs/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				28
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/milyen_egy_negyeves_samsung_galaxy_s22_2026-ban_ha/bevezeto_a_keszulekrol.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-08/362838i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-08/362838i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/milyen_egy_negyeves_samsung_galaxy_s22_2026-ban_ha/bevezeto_a_keszulekrol.html">Milyen egy négyéves Samsung Galaxy S22+ 2026-ban?</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Szoftveres támogatásának végéhez közeledve térünk vissza 2022-be, hogy megnézzük, mennyire állta ki az idők próbáját a Samsung telefonja.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Szerkesztőnk személyes véleményét tükröző, szubjektív írás trendekről, technológiákról, termékekről vagy hardveripari jelenségekről">Vélemény</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. augusztus 18., kedd 18:00">2026-08-18</time>
+
+			<a href="/tema/milyen_egy_negyeves_samsung_galaxy_s22_2026-ban/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				117
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/samsung_galaxy_z_flip8_teszt_velemeny/kulso_kijelzo_csomagolas.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-08/362692i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-08/362692i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/samsung_galaxy_z_flip8_teszt_velemeny/kulso_kijelzo_csomagolas.html">Samsung Galaxy Z Flip8 - a mellékszerep is lehet hálás</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Nem változott a kagylórecept a Samsungnál, de érdemes lehet belekóstolni.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. augusztus 11., kedd 14:30">2026-08-11</time>
+
+			<a href="/tema/samsung_galaxy_z_flip8_a_mellekszerep_is_lehet_hal/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				36
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="/teszt/samsung_galaxy_z_fold8_ultra_teszt_velemeny/bevezeto_doboz_es_tartalma.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-08/362584i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-08/362584i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading">
+
+			<a href="/teszt/samsung_galaxy_z_fold8_ultra_teszt_velemeny/bevezeto_doboz_es_tartalma.html">Samsung Galaxy Z Fold8 Ultra – névváltoztatás utáni teendők</a> 
+
+		</h4>
+
+		<p class="content-lead">
+
+			Az alacsonyabb és szélesebb Z Fold8 mellett a Z Fold7 közvetlen utódja Ultra szerepbe lép.
+
+		</p>
+
+		<p class="content-info">
+
+			<span class="badge" title="Tesztjeinkben alapos vizsgálatnak vetünk alá egy vagy több terméket, mérésekkel, diagramokkal, összehasonlítással és értékeléssel">Teszt</span>
+
+			<a class="badge" href="/fooldal/rovat/okostelefon/index.html">Okostelefon</a>
+
+			<time class="2026. augusztus 5., szerda 17:30">2026-08-05</time>
+
+			<a href="/tema/samsung_galaxy_z_fold8_ultra_nevvaltoztatas_utani/friss.html" class="content-comments">
+
+				<span class="fas fa-comments"></span>
+
+				256
+
+			</a>
+
+		</p>
+
+	</div>
+
+</div>
+
+</div>
+
+<div class="navbar navbar-default pager-navbar mb-0">
+
+<span class="target-anchor" id="forum-nav-btm"></span>
+
+        <ul class="nav navbar-nav mr-md-auto">
+
+			<li class="nav-arrow">
+
+				<a href="/tesztek/index.html">
+
+					<span class="fas fa-pipe"></span><span class="fas fa-play fa-flip-horizontal"></span>
+
+				</a>
+
+			</li>
+
+			<li class="nav-arrow">
+
+				<a class="disabled" href="#">
+
+					<span class="fas fa-play fa-flip-horizontal fa-fw"></span>
+
+				</a>
+
+			</li>
+
+			<li class="dropdown nav-pager">
+
+				<a class="btn dropdown-toggle" data-toggle="dropdown" role="button" href="#">
+
+					2026-10-16 - 2026-08-05 <span class="fas fa-chevron-down"></span>
+
+				</a>
+
+				<div class="dropdown-menu">
+
+					<a class="dropdown-item active" href="/tesztek/2026-08.html">2026-10-16 - 2026-08-05</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-08.html">2026-08-31 - 2026-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-07.html">2026-07-31 - 2026-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-06.html">2026-06-30 - 2026-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-05.html">2026-05-31 - 2026-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-04.html">2026-04-30 - 2026-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-03.html">2026-03-31 - 2026-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-02.html">2026-02-28 - 2026-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2026-01.html">2026-01-31 - 2026-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-12.html">2025-12-31 - 2025-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-11.html">2025-11-30 - 2025-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-10.html">2025-10-31 - 2025-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-09.html">2025-09-30 - 2025-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-08.html">2025-08-31 - 2025-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-07.html">2025-07-31 - 2025-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-06.html">2025-06-30 - 2025-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-05.html">2025-05-31 - 2025-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-04.html">2025-04-30 - 2025-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-03.html">2025-03-31 - 2025-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-02.html">2025-02-28 - 2025-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2025-01.html">2025-01-31 - 2025-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-12.html">2024-12-31 - 2024-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-11.html">2024-11-30 - 2024-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-10.html">2024-10-31 - 2024-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-09.html">2024-09-30 - 2024-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-08.html">2024-08-31 - 2024-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-07.html">2024-07-31 - 2024-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-06.html">2024-06-30 - 2024-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-05.html">2024-05-31 - 2024-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-04.html">2024-04-30 - 2024-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-03.html">2024-03-31 - 2024-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-02.html">2024-02-29 - 2024-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2024-01.html">2024-01-31 - 2024-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-12.html">2023-12-31 - 2023-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-11.html">2023-11-30 - 2023-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-10.html">2023-10-31 - 2023-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-09.html">2023-09-30 - 2023-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-08.html">2023-08-31 - 2023-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-07.html">2023-07-31 - 2023-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-06.html">2023-06-30 - 2023-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-05.html">2023-05-31 - 2023-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-04.html">2023-04-30 - 2023-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-03.html">2023-03-31 - 2023-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-02.html">2023-02-28 - 2023-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2023-01.html">2023-01-31 - 2023-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-12.html">2022-12-31 - 2022-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-11.html">2022-11-30 - 2022-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-10.html">2022-10-31 - 2022-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-09.html">2022-09-30 - 2022-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-08.html">2022-08-31 - 2022-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-07.html">2022-07-31 - 2022-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-06.html">2022-06-30 - 2022-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-05.html">2022-05-31 - 2022-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-04.html">2022-04-30 - 2022-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-03.html">2022-03-31 - 2022-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-02.html">2022-02-28 - 2022-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2022-01.html">2022-01-31 - 2022-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-12.html">2021-12-31 - 2021-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-11.html">2021-11-30 - 2021-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-10.html">2021-10-31 - 2021-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-09.html">2021-09-30 - 2021-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-08.html">2021-08-31 - 2021-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-07.html">2021-07-31 - 2021-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-06.html">2021-06-30 - 2021-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-05.html">2021-05-31 - 2021-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-04.html">2021-04-30 - 2021-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-03.html">2021-03-31 - 2021-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-02.html">2021-02-28 - 2021-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2021-01.html">2021-01-31 - 2021-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-12.html">2020-12-31 - 2020-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-11.html">2020-11-30 - 2020-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-10.html">2020-10-31 - 2020-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-09.html">2020-09-30 - 2020-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-08.html">2020-08-31 - 2020-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-07.html">2020-07-31 - 2020-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-06.html">2020-06-30 - 2020-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-05.html">2020-05-31 - 2020-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-04.html">2020-04-30 - 2020-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-03.html">2020-03-31 - 2020-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-02.html">2020-02-29 - 2020-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2020-01.html">2020-01-31 - 2020-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-12.html">2019-12-31 - 2019-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-11.html">2019-11-30 - 2019-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-10.html">2019-10-31 - 2019-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-09.html">2019-09-30 - 2019-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-08.html">2019-08-31 - 2019-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-07.html">2019-07-31 - 2019-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-06.html">2019-06-30 - 2019-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-05.html">2019-05-31 - 2019-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-04.html">2019-04-30 - 2019-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-03.html">2019-03-31 - 2019-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-02.html">2019-02-28 - 2019-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2019-01.html">2019-01-31 - 2019-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-12.html">2018-12-31 - 2018-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-11.html">2018-11-30 - 2018-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-10.html">2018-10-31 - 2018-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-09.html">2018-09-30 - 2018-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-08.html">2018-08-31 - 2018-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-07.html">2018-07-31 - 2018-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-06.html">2018-06-30 - 2018-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-05.html">2018-05-31 - 2018-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-04.html">2018-04-30 - 2018-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-03.html">2018-03-31 - 2018-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-02.html">2018-02-28 - 2018-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2018-01.html">2018-01-31 - 2018-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-12.html">2017-12-31 - 2017-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-11.html">2017-11-30 - 2017-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-10.html">2017-10-31 - 2017-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-09.html">2017-09-30 - 2017-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-08.html">2017-08-31 - 2017-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-07.html">2017-07-31 - 2017-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-06.html">2017-06-30 - 2017-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-05.html">2017-05-31 - 2017-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-04.html">2017-04-30 - 2017-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-03.html">2017-03-31 - 2017-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-02.html">2017-02-28 - 2017-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2017-01.html">2017-01-31 - 2017-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-12.html">2016-12-31 - 2016-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-11.html">2016-11-30 - 2016-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-10.html">2016-10-31 - 2016-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-09.html">2016-09-30 - 2016-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-08.html">2016-08-31 - 2016-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-07.html">2016-07-31 - 2016-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-06.html">2016-06-30 - 2016-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-05.html">2016-05-31 - 2016-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-04.html">2016-04-30 - 2016-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-03.html">2016-03-31 - 2016-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-02.html">2016-02-29 - 2016-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2016-01.html">2016-01-31 - 2016-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-12.html">2015-12-31 - 2015-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-11.html">2015-11-30 - 2015-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-10.html">2015-10-31 - 2015-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-09.html">2015-09-30 - 2015-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-08.html">2015-08-31 - 2015-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-07.html">2015-07-31 - 2015-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-06.html">2015-06-30 - 2015-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-05.html">2015-05-31 - 2015-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-04.html">2015-04-30 - 2015-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-03.html">2015-03-31 - 2015-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-02.html">2015-02-28 - 2015-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2015-01.html">2015-01-31 - 2015-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-12.html">2014-12-31 - 2014-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-11.html">2014-11-30 - 2014-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-10.html">2014-10-31 - 2014-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-09.html">2014-09-30 - 2014-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-08.html">2014-08-31 - 2014-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-07.html">2014-07-31 - 2014-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-06.html">2014-06-30 - 2014-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-05.html">2014-05-31 - 2014-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-04.html">2014-04-30 - 2014-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-03.html">2014-03-31 - 2014-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-02.html">2014-02-28 - 2014-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2014-01.html">2014-01-31 - 2014-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-12.html">2013-12-31 - 2013-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-11.html">2013-11-30 - 2013-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-10.html">2013-10-31 - 2013-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-09.html">2013-09-30 - 2013-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-08.html">2013-08-31 - 2013-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-07.html">2013-07-31 - 2013-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-06.html">2013-06-30 - 2013-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-05.html">2013-05-31 - 2013-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-04.html">2013-04-30 - 2013-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-03.html">2013-03-31 - 2013-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-02.html">2013-02-28 - 2013-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2013-01.html">2013-01-31 - 2013-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-12.html">2012-12-31 - 2012-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-11.html">2012-11-30 - 2012-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-10.html">2012-10-31 - 2012-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-09.html">2012-09-30 - 2012-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-08.html">2012-08-31 - 2012-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-07.html">2012-07-31 - 2012-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-06.html">2012-06-30 - 2012-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-05.html">2012-05-31 - 2012-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-04.html">2012-04-30 - 2012-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-03.html">2012-03-31 - 2012-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-02.html">2012-02-29 - 2012-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2012-01.html">2012-01-31 - 2012-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-12.html">2011-12-31 - 2011-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-11.html">2011-11-30 - 2011-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-10.html">2011-10-31 - 2011-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-09.html">2011-09-30 - 2011-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-08.html">2011-08-31 - 2011-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-07.html">2011-07-31 - 2011-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-06.html">2011-06-30 - 2011-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-05.html">2011-05-31 - 2011-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-04.html">2011-04-30 - 2011-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-03.html">2011-03-31 - 2011-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-02.html">2011-02-28 - 2011-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2011-01.html">2011-01-31 - 2011-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-12.html">2010-12-31 - 2010-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-11.html">2010-11-30 - 2010-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-10.html">2010-10-31 - 2010-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-09.html">2010-09-30 - 2010-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-08.html">2010-08-31 - 2010-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-07.html">2010-07-31 - 2010-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-06.html">2010-06-30 - 2010-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-05.html">2010-05-31 - 2010-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-04.html">2010-04-30 - 2010-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-03.html">2010-03-31 - 2010-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-02.html">2010-02-28 - 2010-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2010-01.html">2010-01-31 - 2010-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-12.html">2009-12-31 - 2009-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-11.html">2009-11-30 - 2009-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-10.html">2009-10-31 - 2009-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-09.html">2009-09-30 - 2009-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-08.html">2009-08-31 - 2009-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-07.html">2009-07-31 - 2009-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-06.html">2009-06-30 - 2009-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-05.html">2009-05-31 - 2009-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-04.html">2009-04-30 - 2009-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-03.html">2009-03-31 - 2009-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-02.html">2009-02-28 - 2009-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2009-01.html">2009-01-31 - 2009-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-12.html">2008-12-31 - 2008-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-11.html">2008-11-30 - 2008-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-10.html">2008-10-31 - 2008-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-09.html">2008-09-30 - 2008-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-08.html">2008-08-31 - 2008-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-07.html">2008-07-31 - 2008-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-06.html">2008-06-30 - 2008-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-05.html">2008-05-31 - 2008-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-04.html">2008-04-30 - 2008-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-03.html">2008-03-31 - 2008-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-02.html">2008-02-29 - 2008-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2008-01.html">2008-01-31 - 2008-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-12.html">2007-12-31 - 2007-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-11.html">2007-11-30 - 2007-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-10.html">2007-10-31 - 2007-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-09.html">2007-09-30 - 2007-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-08.html">2007-08-31 - 2007-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-07.html">2007-07-31 - 2007-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-06.html">2007-06-30 - 2007-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-05.html">2007-05-31 - 2007-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-04.html">2007-04-30 - 2007-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-03.html">2007-03-31 - 2007-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-02.html">2007-02-28 - 2007-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2007-01.html">2007-01-31 - 2007-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-12.html">2006-12-31 - 2006-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-11.html">2006-11-30 - 2006-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-10.html">2006-10-31 - 2006-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-09.html">2006-09-30 - 2006-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-08.html">2006-08-31 - 2006-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-07.html">2006-07-31 - 2006-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-06.html">2006-06-30 - 2006-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-05.html">2006-05-31 - 2006-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-04.html">2006-04-30 - 2006-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-03.html">2006-03-31 - 2006-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-02.html">2006-02-28 - 2006-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2006-01.html">2006-01-31 - 2006-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-12.html">2005-12-31 - 2005-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-11.html">2005-11-30 - 2005-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-10.html">2005-10-31 - 2005-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-09.html">2005-09-30 - 2005-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-08.html">2005-08-31 - 2005-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-07.html">2005-07-31 - 2005-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-06.html">2005-06-30 - 2005-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-05.html">2005-05-31 - 2005-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-04.html">2005-04-30 - 2005-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-03.html">2005-03-31 - 2005-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-02.html">2005-02-28 - 2005-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2005-01.html">2005-01-31 - 2005-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-12.html">2004-12-31 - 2004-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-11.html">2004-11-30 - 2004-11-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-10.html">2004-10-31 - 2004-10-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-09.html">2004-09-30 - 2004-09-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-08.html">2004-08-31 - 2004-08-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-07.html">2004-07-31 - 2004-07-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-06.html">2004-06-30 - 2004-06-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-05.html">2004-05-31 - 2004-05-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-04.html">2004-04-30 - 2004-04-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-03.html">2004-03-31 - 2004-03-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-02.html">2004-02-29 - 2004-02-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2004-01.html">2004-01-31 - 2004-01-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2003-12.html">2003-12-31 - 2003-12-01</a>
+
+					<a class="dropdown-item" href="/tesztek/2003-11.html">2003-11-30 - 2003-11-01</a>
+
+				</div>
+
+			</li>
+
+			<li class="nav-arrow">
+
+				<a rel="next" href="/tesztek/2026-08.html">
+
+					<span class="fas fa-play fa-fw"></span>
+
+				</a>
+
+			</li>
+
+			<li class="nav-arrow">
+
+				<a href="/tesztek/2003-11.html">
+
+					<span class="fas fa-play"></span><span class="fas fa-pipe"></span>
+
+				</a>
+
+			</li>
+
+		</ul>
+
+		<ul class="nav navbar-nav">
+
+			<li>
+
+				<a class="btn" href="#forum-nav-top">
+
+					<span class="fas fa-chevron-up"></span>
+
+				</a>
+
+			</li>
+
+		</ul>   
+
+</div>
+
+				</div>
+
+				<div id="right" class="slotSingleColumn">
+
+			<div class="xabre box xabre300 xabre-responsive-300px-600px">
+
+    			<h4>Hird﻿e﻿t﻿és﻿</h4>
+
+    			<div class="xabrebox" style="width: calc(20400px / 68); height: calc(40800px / 68);" onclick="$.ajax('https://mobilarena.hu/muvelet/hozzaferes/kapcsolodas.php?id=RcnFaBFOw58sHlIP8UoCDbgKmNF4%2FzE4AE1XvouXyZh5LKp2GhL%2BNWPFou%2FL26IYMA6QTE8FibzBHlnd3VDoKmZPehL3Zs1aP%2B5aziDYYkM%3D', { method: 'POST', xhrFields: { withCredentials: true } });">
+
+				 <script language="javascript" src="https://track.adform.net/adfscript/?bn=90755027;gdpr=${GDPR};gdpr_consent=${GDPR_CONSENT_50}"></script>
+
+<noscript>
+
+<a href="https://track.adform.net/C/?bn=90755027;C=0;gdpr=${GDPR};gdpr_consent=${GDPR_CONSENT_50}" target="_blank" rel="nofollow">
+
+<img src="https://track.adform.net/adfserve/?bn=90755027;srctype=4;gdpr=${GDPR};gdpr_consent=${GDPR_CONSENT_50};ord=[timestamp]" border="0" width="300" height="600" alt=""/>
+
+</a>
+
+</noscript>
+
+				</div>
+
+			</div>
+
+
+
+<a href="https://prohardver.hu/fooldal/index.html" class="gigabox gigabox-prohardver mb-2 px-3" style="color: #fff;
+
+	font-size: 1.25rem;
+
+    font-weight: 800;
+
+    line-height: 48px;
+
+    "><img alt="PROHARDVER!" src="//cdn.rios.hu/design/ph/logo.png" style="filter: invert(0%); height: 17px; padding-bottom: 4px;"></a>
+
+<div class="gigabox gigabox-prohardver pt-3 px-3 pb-1 mb-3">
+
+	<div class="mb-3">
+
+<div class="content-list content-list-xl content-list-image-top content-list-continued">
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="https://prohardver.hu/teszt/hazai_palya-hetvegi_hardverozon/haz_billentyuzetek.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/363992i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/363992i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://prohardver.hu/teszt/hazai_palya-hetvegi_hardverozon/haz_billentyuzetek.html">Hétvégi hardverözön</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+</div>
+
+	</div>
+
+	<div>
+
+<div class="content-list content-list-sm">
+
+<div class="media">
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://prohardver.hu/hir/asus_rog_bulwark_dock_dg310_dokkolo.html">6 az 1-ben ASUS dokkoló érkezett a ROG Allyhoz</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://prohardver.hu/hir/fenyesebb_kijelzovel_jott_meg_az_xreal_1_pro_az_ar.html">Fényesebb kijelzővel jött meg az Xreal 1 Pro+, az ára maradt</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+</div>
+
+	</div>
+
+</div>
+
+<a href="https://prohardver.hu/fooldal/kategoria/total_ai/index.html" class="gigabox gigabox-ai mb-2 px-3" style="color: #fff;
+
+	font-size: 1.25rem;
+
+    font-weight: 800;
+
+    line-height: 48px;
+
+    "><span class="fas fa-brain-circuit"></span> Total AI</a>
+
+<div class="gigabox gigabox-ai pt-3 px-3 pb-1 mb-3">
+
+	<div class="mb-3">
+
+<div class="content-list content-list-xl content-list-image-top content-list-continued">
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="https://prohardver.hu/hir/az_ai_buktatta_le_ipari_kemkedes_openai.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/363963i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/363963i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://prohardver.hu/hir/az_ai_buktatta_le_ipari_kemkedes_openai.html">Az AI buktatta le az ipari kémkedést az OpenAI-nál</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+</div>
+
+	</div>
+
+	<div>
+
+<div class="content-list content-list-sm">
+
+<div class="media">
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://prohardver.hu/hir/intel_gpu_d270_ai_gyorsitokartya.html">Elképesztő mennyiségű memória van az Intel AI-ra kihegyezett gyorsítóján</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://prohardver.hu/hir/inno3d_ags-6220v2_6u_rackmount_gpu_szerver.html">Brutális rackmount GPU szervert villantott az Inno3D</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+</div>
+
+	</div>
+
+</div>
+
+<a href="https://prohardver.hu/fooldal/kategoria/gamepod/index.html" class="gigabox gigabox-gamepod mb-2 px-3" style="color: #fff;
+
+	font-size: 1.25rem;
+
+    font-weight: 800;
+
+    line-height: 48px;
+
+    "><img alt="Gamepod" src="//cdn.rios.hu/design/gp/logo.png" style="filter: invert(0%); height: 17px; padding-bottom: 4px;"></a>
+
+<div class="gigabox gigabox-gamepod pt-3 px-3 pb-1 mb-3">
+
+	<div class="mb-3">
+
+<div class="content-list content-list-xl content-list-image-top content-list-continued">
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="https://prohardver.hu/hir/uj_elozetesen_mutatkozik_be_a_stranger_than_heaven.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/364010i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/364010i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://prohardver.hu/hir/uj_elozetesen_mutatkozik_be_a_stranger_than_heaven.html">Új előzetesen mutatkozik be a Stranger Than Heaven történetének kezdete</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+</div>
+
+	</div>
+
+	<div>
+
+<div class="content-list content-list-sm">
+
+<div class="media">
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://prohardver.hu/hir/csuszik_a_the_wolf_among_us_remastered_switch-valt.html">Csúszik a The Wolf Among Us Remastered Switch-változata</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://prohardver.hu/hir/ingyenes_az_epic_store-ban_a_bad_cheese.html">Ingyenes az Epic Store-ban a Bad Cheese</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+</div>
+
+	</div>
+
+</div>
+
+<a href="https://logout.hu/fooldal/index.html" class="gigabox gigabox-logout mb-2 px-3" style="color: #fff;
+
+	font-size: 1.25rem;
+
+    font-weight: 800;
+
+    line-height: 48px;
+
+    "><img alt="LOGOUT.hu" src="//cdn.rios.hu/design/lo/logo.png" style="filter: invert(0%); height: 17px; padding-bottom: 4px;"></a>
+
+<div class="gigabox gigabox-logout pt-3 px-3 pb-1 mb-3">
+
+	<div class="mb-3">
+
+<div class="content-list content-list-xl content-list-image-top content-list-continued">
+
+<div class="media">
+
+	<div class="content-image">
+
+		<a href="https://logout.hu/cikk/easyeffects_alaposan_pipewire_eq-modok_meresek_es_2/bevezetes_es_a_pipewire_hanglanc.html">
+
+			<img alt="" src="//cdn.rios.hu/dl/cnt/2026-10/364014i1280x720.jpg/100" data-retina-url="//cdn.rios.hu/dl/cnt/2026-10/364014i1280x720.jpg" class="image-yt" />
+
+		</a>
+
+	</div>
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://logout.hu/cikk/easyeffects_alaposan_pipewire_eq-modok_meresek_es_2/bevezetes_es_a_pipewire_hanglanc.html">EasyEffects alaposan: PipeWire, EQ-módok, mérések és hifi-tévhitek</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+</div>
+
+	</div>
+
+	<div>
+
+<div class="content-list content-list-sm">
+
+<div class="media">
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://logout.hu/cikk/tajvan_gyongyszemei_taitung_es_lanyu_2/bevezeto.html">Tajvan gyöngyszemei - Taitung és Lanyu</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+<div class="media">
+
+	<div class="media-body">
+
+		<h4 class="media-heading mb-0">
+
+			<a href="https://logout.hu/cikk/3_orszag_1_hetvege/bevezeto.html">3 ország, 1 hétvége</a> 
+
+		</h4>
+
+	</div>
+
+</div>
+
+</div>
+
+	</div>
+
+</div>
+
+	<div class="card card-forum d-none">
+
+		<div class="card-header">Aktív témák</div>
+
+		<ul class="list-group">
+
+			<li class="list-group-item"><a href="/tema/motoros_topic_2/friss.html">Motoros topic</a></li>
+
+			<li class="list-group-item"><a href="/tema/milyen_hazat_2/friss.html">Milyen házat vegyek?</a></li>
+
+			<li class="list-group-item"><a href="/tema/ai_az_olben_teszten_az_rtx_spark_es_az_uj_asus_pro/friss.html"><span class="far fa-memo fa-fw"></span> AI az ölben: teszten az RTX Spark és az új ASUS ProArt P16</a></li>
+
+			<li class="list-group-item"><a href="/tema/fortnite_forum_tps_craft_build_tower_defense_llama/friss.html">Fortnite - Battle Royale &amp; Save the World (PC, XO, PS4, Switch, Mobil)</a></li>
+
+			<li class="list-group-item"><a href="/tema/playstation_5/friss.html">PlayStation 5</a></li>
+
+			<li class="list-group-item"><a href="/tema/loerok_harca_autos_topik/friss.html">Autós topik</a></li>
+
+			<li class="list-group-item"><a href="/tema/one_otthoni_szolgaltatasok_tv_internet_telefon/friss.html">One otthoni szolgáltatások (TV, internet, telefon)</a></li>
+
+			<li class="list-group-item"><a href="/tema/tavol-keleti_webshopok_off_topikja_jatekok_kuponok/friss.html">Távol-keleti webshopok OFF topikja (játékok, kuponok, stb.)</a></li>
+
+			<li class="list-group-item"><a href="/tema/xbox_series_x/friss.html">Xbox Series X|S</a></li>
+
+			<li class="list-group-item"><a href="/tema/samsung_galaxy_s25_ultra_titan_keret_acelos_teljes/friss.html"><span class="far fa-memo fa-fw"></span> Samsung Galaxy S25 Ultra - titán keret, acélos teljesítmény</a></li>
+
+			<li class="list-group-item"><a href="/temak/friss.html"><b>További aktív témák...</b></a></li>
+
+		</ul>
+
+	</div>
+
+				</div>
+
+			</div>
+
+		</div>
+
+	</div>
+
+	<div id="bottom"><div class="container p-0 overflow-hidden"></div>
+
+	 	<div class="container">
+
+		</div>
+
+	</div>
+
+</main>
+
+<footer id="foot">
+
+<nav id="footer-sticky" class="navbar navbar-expand-lg d-sm-none">
+
+	<ul class="navbar-nav navbar-buttons  navbar-buttons-large w-100 ">
+
+		<li>
+
+			<a href="javascript:;" class="nav-btn justify-content-center" data-modal-open="/muvelet/hozzaferes/belepes.php?url=%2Ftesztek%2Findex.html">
+
+				<span class="fas fa-user fa-fw"></span> 
+
+				Belépés
+
+			</a>
+
+		</li>
+
+	</ul>
+
+</nav>
+
+<div class="container p-md-0">
+
+	<div class="foot-links mb-3">
+
+		<ul class="list-inline mb-3">
+
+			<li class="list-inline-item"><a href="/allando/impresszum.html">Impresszum</a></li>
+
+			<li class="list-inline-item"><a href="/allando/mediaajanlat.html">Médiaajánlat</a></li>
+
+			<li class="list-inline-item"><a href="/allando/aszf.html">ÁSZF (szabályzat)</a></li>
+
+			<li class="list-inline-item"><a href="/allando/adatvedelem.html">Adatvédelem</a></li>
+
+			<li class="list-inline-item"><a href="/allando/copyright.html">Copyright</a></li>
+
+			<li class="list-inline-item"><a href="/allando/advertising.html">Advertising</a></li>
+
+			<li class="list-inline-item"><a href="javascript:window.__tcfapi('displayConsentUi', 2, function() {} );">Sütibeállítások</a></li>
+
+		</ul>
+
+			<div class="btn-group d-lg-none">
+
+				<a class="btn btn-secondary" href="javascript:;" data-desktop-view="1200"><span class="fas fa-desktop"></span> Váltás asztali nézetre</a>
+
+				<a class="btn btn-secondary dropdown-toggle" href="javascript:;" data-toggle="dropdown"><span class="fas fa-ellipsis-h"></span></a>
+
+				<div class="dropdown-menu">
+
+					<a class="dropdown-item" href="javascript:;" data-desktop-view="320"><span class="fas fa-mobile-alt fa-fw"></span> XL Mobil nézet</a>
+
+					<a class="dropdown-item" href="javascript:;" data-desktop-view="360"><span class="fas fa-mobile-alt fa-fw"></span> L Mobil nézet</a>
+
+					<a class="dropdown-item" href="javascript:;" data-desktop-view="420"><span class="fas fa-mobile-alt fa-fw"></span> M Mobil nézet</a>
+
+					<a class="dropdown-item" href="javascript:;" data-desktop-view="500"><span class="fas fa-mobile-alt fa-fw"></span> S Mobil nézet</a>
+
+					<a class="dropdown-item" href="javascript:;" data-desktop-view="576"><span class="fas fa-mobile-alt fa-fw"></span> XS Mobil nézet</a>
+
+					<a class="dropdown-item" href="javascript:;" data-desktop-view="768"><span class="fas fa-tablet-alt fa-fw"></span> Tablet nézet</a>
+
+					<a class="dropdown-item" href="javascript:;" data-desktop-view="992"><span class="fas fa-laptop fa-fw"></span> Keskeny asztali nézet</a>
+
+					<a class="dropdown-item" href="javascript:;" data-desktop-view="1200"><span class="fas fa-desktop fa-fw"></span> Széles asztali nézet</a>
+
+			    </div>
+
+			</div>
+
+	</div>
+
+	<div class="foot-barion mb-3">
+
+		<a href="https://www.barion.com/hu/vasarlok/arak-vasarloknak/" target="_blank"><img src="//cdn.rios.hu/barion/barion-card-strip-intl__medium.png" alt="Barion logók" class="img-fluid"></a>
+
+	</div>
+
+	<div class="foot-copyright mb-3">
+
+		<p>Copyright © 2000-2026 PROHARDVER Informatikai Kft.</p>
+
+	</div>
+
+</div>
+
+<div class="row no-gutters align-items-center">
+
+	
+
+	<div class="col-lg-auto foot-network mb-3">
+
+	</div>
+
+</div>
+
+
+
+<div class="row no-gutters">
+
+	<div class="col-md foot-logos overflow-hidden">
+
+	</div>
+
+</div>
+
+</div>
+
+</footer>
+
+<div id="accept-container">
+
+	<div id="rules-accept" class="alert alert-info alert-dismissible">
+
+		<button type="button" class="close" data-dismiss="alert" title="Bezár"><span class="fas fa-times"></span></button>
+
+		2025.03.15-én frissült az
+
+		<a href="https://prohardver.hu/allando/aszf.html" target="_blank">Általános Szolgáltatási Feltételek (ÁSZF)</a>
+
+		és az 
+
+		<a href="https://prohardver.hu/allando/adatvedelem.html" target="_blank">Adatvédelmi Szabályzat és Tájékoztató</a>.
+
+		Szolgáltatásaink igénybevételével ön elismeri, hogy e dokumentumokat elolvasta és elfogadja.
+
+	</div>
+
+</div>
+
+
+
+</body>
+
+</html>
+
+Okostelefon https://mobilarena.hu/tesztek/rovat/okostelefon/index.html
+Tablet https://mobilarena.hu/tesztek/rovat/tablet_mobil/index.html
+Okosóra https://mobilarena.hu/tesztek/rovat/okosora/index.html
+Mobiltelefon https://mobilarena.hu/tesztek/rovat/mobil/index.html
+Tartozékok https://mobilarena.hu/tesztek/rovat/tartozekok/index.html
+Autó+mobil https://mobilarena.hu/tesztek/rovat/auto-mobil/index.html
+Üzleti negyed https://mobilarena.hu/tesztek/rovat/uzlet/index.html
+Alkalmazások https://mobilarena.hu/tesztek/rovat/alkalmazasok/index.html
+Szolgáltatások https://mobilarena.hu/tesztek/rovat/szolgaltatasok/index.html
+Egyéb https://mobilarena.hu/tesztek/rovat/egyeb/index.html
