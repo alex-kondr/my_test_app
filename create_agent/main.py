@@ -11,7 +11,7 @@ from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 from create_agent.bb import main as start_bb
 
 
-AGENT_ID_NAME = "123"
+AGENT_ID_NAME = "review.apothema.gr"
 
 
 def start_prune(agent_id: str):
