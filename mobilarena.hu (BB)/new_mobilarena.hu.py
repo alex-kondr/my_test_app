@@ -130,8 +130,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
                     except:
                         continue
 
-    pros = data.xpath('//table[@class="tabla trating"]/tbody/tr[(preceding-sibling::tr[@class])[1][contains(@class, "pro")]]')
-    # pros = data.xpath('//tr[contains(@class, "subhead-pro")]/following-sibling::tr[not(@class or preceding-sibling::tr[contains(@class, "subhead-con")])]/th')
+    pros = data.xpath('//table[@class="tabla trating"]/tbody/tr[preceding-sibling::tr[@class][1][contains(@class, "pro")]][not(@class)]')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -139,7 +138,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//tr[contains(@class, "subhead-con")]/following-sibling::tr/th')
+    cons = data.xpath('//table[@class="tabla trating"]/tbody/tr[preceding-sibling::tr[@class][1][contains(@class, "con")]][not(@class)]')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -183,6 +182,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         session.queue(Request(last_url), process_review_last, dict(context, excerpt=excerpt, pages=p))
 
     elif excerpt:
+        if conclusion:
+            excerpt = excerpt.replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=excerpt)
 
         product.reviews.append(review)
@@ -244,7 +246,7 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
                     except:
                         continue
 
-    pros = data.xpath('//tr[contains(@class, "subhead-pro")]/following-sibling::tr[not(@class or preceding-sibling::tr[contains(@class, "subhead-con")])]/th')
+    pros = data.xpath('//table[@class="tabla trating"]/tbody/tr[preceding-sibling::tr[@class][1][contains(@class, "pro")]][not(@class)]')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -252,7 +254,7 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath('//tr[contains(@class, "subhead-con")]/following-sibling::tr/th')
+    cons = data.xpath('//table[@class="tabla trating"]/tbody/tr[preceding-sibling::tr[@class][1][contains(@class, "con")]][not(@class)]')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -288,6 +290,9 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
         context['excerpt'] += ' ' + excerpt
 
     if context['excerpt']:
+        if conclusion:
+            context['excerpt'] = context['excerpt'].replace(conclusion, '').strip()
+
         review.add_property(type='excerpt', value=context['excerpt'])
 
         product.reviews.append(review)

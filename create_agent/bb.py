@@ -18,18 +18,18 @@ FILE_NAME_INPUT = "mobilarena.hu"
 REMOTE_HOST = "trknvsky@agentdev1.eu.testfreaks.com"
 REMOTE_DIR = "test"  # Віддалена папка на сервері
 
-def main():
+def main(file_name_input=FILE_NAME_INPUT):
     # 1. Запитуємо назву файлу у користувача
-    if not FILE_NAME_INPUT:
+    if not file_name_input:
         print("Помилка: Назва файлу не може бути порожньою.")
         return
 
     # Дописуємо .py до назви віддаленого файлу
-    remote_file_name = f"{FILE_NAME_INPUT}.py"
+    remote_file_name = f"{file_name_input}.py"
     remote_full_path = f"{REMOTE_DIR}/{remote_file_name}"
 
     # Формуємо шлях для локальної папки
-    local_dir = f"{FILE_NAME_INPUT} (BB)"
+    local_dir = f"{file_name_input} (BB)"
 
     # 2. Створюємо локальну папку, якщо її ще немає
     os.makedirs(local_dir, exist_ok=True)
@@ -79,7 +79,7 @@ def main():
         print(f"   - old_{remote_file_name}")
 
         with open(f"create_agent/upload_code_bb.txt", "r", encoding="utf-8") as f:
-            content = f.read().replace("{FILE_NAME_INPUT}", FILE_NAME_INPUT)
+            content = f.read().replace("{FILE_NAME_INPUT}", file_name_input)
 
         with open(f"{local_dir}/upload_code_bb.py", "w", encoding="utf-8") as f:
             f.write(content)
@@ -87,8 +87,8 @@ def main():
         with DBSession() as session:
             agent = AgentModel(
                 agent_id=f"bb_{uuid4().hex}",
-                name=FILE_NAME_INPUT,
-                source_name=FILE_NAME_INPUT,
+                name=file_name_input,
+                source_name=file_name_input,
                 old_code=file_content,
                 agent_type=AgentType.BIG,
                 bb=True
