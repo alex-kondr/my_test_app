@@ -62,3 +62,19 @@ def strip_namespace(data):
 # problem with HTML
 # many exceptions in reviews, adjusting of multirevs and multipages functions
 # many exceptions in reviews, problem with api
+
+
+    product = Product()
+    product.name = context['product']['name']
+    product.url = context['product']['url']
+    product.ssid = context['product']['ssid']
+    product.category = context['product']['category']
+    product.manufacturer = context['product'].get('manufacturer')
+
+    mpn = context['product'].get('mpn')
+    if mpn:
+        product.add_property(type='id.manufacturer', value=mpn)
+
+    ean = context['product'].get('ean')
+    if ean and str(ean).isdigit() and len(str(ean)) > 10:
+        product.add_property(type='id.ean', value=str(ean))

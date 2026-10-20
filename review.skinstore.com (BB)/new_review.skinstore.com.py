@@ -50,53 +50,91 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
                         url = subcat.xpath('@href').string()
 
                         if subcat_name not in XCAT:
-                            
-                            print name + '|' + cat1_name + '|' + subcat_name
-                            # session.queue(Request(url), process_prodlist, dict(url=url, cat=name + '|' + cat1_name + '|' + subcat_name))
+                            session.queue(Request(url), process_prodlist, dict(url=url, cat=name + '|' + cat1_name + '|' + subcat_name))
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    prods = data.xpath('//li[@class="productListProducts_product "]')
-    if not prods:
-        return
-
+    prods = data.xpath('//*[contains(name(), "product-card") and contains(@class, "product-card")]')
     for prod in prods:
-        url = prod.xpath('.//a[@class="productBlock_link"]/@href').string()
-        name = prod.xpath('.//h3[@class="productBlock_productName"]//text()').string()
-        ssid = prod.xpath('div/@data-product-id').string()
-        rating = prod.xpath('.//div[@data-component="powerReviewStars"]')
-        if rating:
+        name = prod.xpath('.//a[contains(@class, "item-title")]/text()').string()
+        ssid = prod.xpath('@data-quicklook').string()
+        url = 'https://www.dermstore.com/p/' + ssid
+
+        if not session.seen(url):
             session.queue(Request(url), process_product, dict(context, url=url, name=name, ssid=ssid))
 
-    next_url = data.xpath('//button[@title="Next page"]')
+    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
     if next_url:
-        next_page = context.get('page', 1) + 1
-        next_url = context['url'] + '?pageNumber=' + str(next_page)
-        session.queue(Request(next_url), process_prodlist, dict(context, page=next_page))
+        session.queue(Request(next_url), process_prodlist, dict(context))
 
 
 def process_product(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    product = dict()
-    product['name'] = context['name']
-    product['url'] = context['url']
-    product['category'] = context['cat'].replace('||', '|')
-    product['ssid'] = context['ssid']
-    product['id.ean'] = data.xpath('//div/@ data-option-barcode').string()
+    pr = dict()
+    pr['name'] = context['name']
+    pr['url'] = context['url']
+    pr['ssid'] = context['ssid']
+    pr['id.sku'] = pr['ssid']
+    pr['category'] = context['cat'].replace('Shop ', '').replace('||', '|')
+    pr['manufacturer'] = data.xpath('//a[contains(@class, "brand title")]/text()').string()
+
+    product = Product()
+    product.name = pr['name']
+    product.url = pr['url']
+    product.ssid = pr['ssid']
+    product.sku = product.ssid
+    product.category = pr['category']
+    product.manufacturer = pr['manufacturer']
 
     try:
         prod_json = simplejson.loads(data.xpath('''//script[contains(text(), '"@type":"Product"')]//text()''').string())
-        product['manufacturer'] = prod_json.get('brand', {}).get('name')
-        product['id.manufacturer'] = prod_json.get('mpn')
+
+        pr['id.manufacturer'] = prod_json.get('mpn')
+        if pr['id.manufacturer']:
+            product.add_property(type='id.manufacturer', value=pr['id.manufacturer'])
     except:
-        pass
+        prod_json = {}
+
+    ean = data.xpath('''//script[contains(., '"barcode":"')]/text()''').string()
+    if ean:
+        pr['id.ean'] = ean.split('"barcode":"', 1)[-1].split('","', 1)[0]
+        if pr['id.ean'] and pr['id.ean'].isdigit() and len(pr['id.ean']) > 10:
+            product.add_property(type='id.ean', value=pr['id.ean'])
+
+    revs = prod_json.get('review', [])
+    for rev in revs:
+        review = Review()
+        review.type = 'user'
+        review.url = product.url
+        review.date = rev.get('datePublished')
+
+        author = rev.get('author', {}).get('name')
+        if author and 'anonym' not in author:
+            review.authors.append(Person(name=author, ssid=author))
+        else:
+            author = None
+
+        grade_overall = rev.get('reviewRating', {}).get('ratingValue')
+        if grade_overall and float(grade_overall) > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
+        excerpt = rev.get('reviewBody')
+        if excerpt and len(excerpt) > 2:
+            review.add_property(type='excerpt', value=excerpt)
+
+            review.ssid = review.digest() if author else review.digest(excerpt)
+
+            product.reviews.append(review)
+
+    if product.reviews:
+        session.emit(product)
 
     merchant_id = '678785550'
     locale = 'en_US'
     api_key = 'e8e40c10-869f-458c-981f-34877ef4fecc'
 
-    if product['ssid'] and not session.seen(product['ssid']):
-        process_reviews_request(data, dict(product=product, api_key=api_key, merchant_id=merchant_id, locale=locale), session)
+    if pr['ssid'] and not session.seen(pr['ssid']):
+        process_reviews_request(data, dict(product=pr, api_key=api_key, merchant_id=merchant_id, locale=locale), session)

@@ -53,7 +53,7 @@ def main():
     # щоб можна було перехопити його PID і коректно зупинити при обриві зв'язку (Ctrl+C)
     remote_command = (
         f"cat > {REMOTE_FILE_PATH} && "
-        f"mockrun.py {REMOTE_FILE_PATH} | tee {REMOTE_OUTPUT_PATH}"# | awk '{{print \"\"; print NR \": \" $0; print \"\"; fflush()}}'"
+        f"mockrun.py {REMOTE_FILE_PATH} | tee {REMOTE_OUTPUT_PATH}"
     )
 
     print(f"2. Передача файлу на {REMOTE_HOST} та запуск (для зупинки натисніть Ctrl+C)...")
@@ -114,18 +114,6 @@ def main():
             pass
 
     finally:
-        # print("3. Копіювання віддаленого файлу локально...")
-        # try:
-        #     subprocess.run(
-        #         ["scp", f"{REMOTE_HOST}:{REMOTE_OUTPUT_PATH}", LOCAL_OUTPUT_PATH],
-        #         stdout=subprocess.DEVNULL,
-        #         stderr=subprocess.DEVNULL,
-        #         timeout=5
-        #     )
-        #     print(f"   - Файл успішно збережено: '{LOCAL_OUTPUT_PATH}'")
-        # except Exception as e:
-        #     print(f"   - Помилка при копіюванні через scp: {e}")
-
         print("-" * 50)
         print(f"Лог успішно збережено локально: '{LOCAL_OUTPUT_PATH}' (без використання scp).")
         print("Роботу завершено.")
