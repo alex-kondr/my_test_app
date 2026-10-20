@@ -1,0 +1,102 @@
+INFO 1: Starting run
+INFO 1: Run process_frontpage https://www.skinstore.com using proxy 54.217.162.175:80
+Skin Care||Cleansers
+Skin Care||Exfoliants, Peels & Scrubs
+Skin Care||Face Toners & Mists
+Skin Care||Serums, Masks and Treatments
+Skin Care||Moisturizers
+Skin Care||Eye Care
+Skin Care||Eyelash Serums
+Skin Care||Face Sunscreen
+Skin Care||Lip Care
+Skin Care||Neck & Decolletage Care
+Skin Care||Skin Care Tools & Devices
+Skin Care||Skin Care Kits & Value Sets
+Skin Care||Build Your Routine by Skin Type
+Skin Care||Travel Skin Care
+Skin Care||Vitamin C Skin Care
+Skin Care||Retinol
+Skin Care||Hyaluronic Acid
+Skin Care||Niacinamide
+Skin Care||Glycolic Acid
+Skin Care||Azelaic Acid
+Skin Care||Peptides
+Skin Care||Ceramides
+Skin Care||Lactic Acid
+Skin Care||Salicylic Acid
+Skin Care||Growth Factors
+Skin Care||Dry Skin
+Skin Care||Sensitive Skin
+Skin Care||Oily Skin
+Skin Care||Combination Skin
+Skin Care||Normal Skin
+Skin Care||Acne & Blemishes
+Skin Care||Anti Aging
+Skin Care||Dark Circles & Puffiness
+Skin Care||Large & Visible Pores
+Skin Care||Blackheads
+Skin Care||Damaged Skin Barrier
+Skin Care||Hyperpigmentation & Dark Spots
+Skin Care||Redness
+Skin Care|Shop Body Care|Body Wash & Cleansers
+Skin Care|Shop Body Care|Body Scrubs & Exfoliators
+Skin Care|Shop Body Care|Lotions & Oils
+Skin Care|Shop Body Care|Self Tanners
+Skin Care|Shop Body Care|Hands & Feet
+Skin Care|Shop Body Care|Wellness & Supplements
+Skin Care|Shop Body Care|Body Kits & Value Sets
+Skin Care||Dermatologist-Approved
+Skin Care||Pre & Post Procedure
+Skin Care||Women Owned or Founded Brands
+Skin Care||Conscious Beauty
+Skin Care||Allure Award Winners
+Skin Care||Luxury Beauty
+Skin Care||Makeup with Skin Care Benefits
+Skin Care|Shop Sunscreen|Face Sunscreen
+Skin Care|Shop Sunscreen|Tinted Sunscreen
+Skin Care|Shop Sunscreen|Body Sunscreen
+Skin Care|Shop Sunscreen|SPF 15 to 29
+Skin Care|Shop Sunscreen|SPF 30 to 39
+Skin Care|Shop Sunscreen|SPF 40 & above
+Beauty|Hair Care|Shampoo
+Beauty|Hair Care|Conditioner
+Beauty|Hair Care|Dry Shampoo
+Beauty|Hair Care|Hair Masks & Treatments
+Beauty|Hair Care|Styling Products
+Beauty|Hair Care|Color Treated Hair
+Beauty|Hair Care|Hair Brushes & Combs
+Beauty|Hair Care|Curl Care
+Beauty|Hair Care|Hair Loss & Thinning
+Beauty|Hair Care|Scalp Care
+Beauty|Hair Care|Kits & Sets
+Beauty|Hair Care|Travel Hair Care
+Beauty||Hair Loss & Thinning
+Beauty||Scalp Care
+Beauty||Dry & Damaged Hair
+Beauty||Frizzy Hair
+Beauty||Color Treated Hair
+Beauty||Oily Hair
+Beauty|Makeup|Face & Cheeks
+Beauty|Makeup|Lips
+Beauty|Makeup|Eyes
+Beauty|Makeup|Eyebrows
+Beauty|Makeup|EyeLash and Eyebrow Serums
+Beauty|Makeup|Face & Eye Palettes
+Beauty|Makeup|Makeup Remover
+Beauty|Makeup|Makeup Brushes & Tools
+Beauty|Makeup|Kits & Sets
+Beauty|Makeup|Travel Makeup
+Beauty|Tools & Devices|Skin Tools & Devices
+Beauty|Tools & Devices|Hair Tools & Accessories
+Beauty|Tools & Devices|Red Light Devices & Lasers
+Beauty|Tools & Devices|Gua Sha Tools
+Beauty|Fragrance|Perfumes & Cologne
+Beauty|Fragrance|Home Fragrance & Candles
+Beauty|Fragrance|Kits & Sets
+Beauty|Fragrance|Travel Size
+Beauty|Wellness|Sleep Recovery & Relaxation
+Beauty|Wellness|Women's Health
+Beauty|Wellness|Hygiene & Oral Health
+Beauty|Wellness|Cellular Performance & Supplements
+Exclusives|BeautyFIX Subscription Box|BeautyFIX Sale
+Exclusives||Value Bundles
