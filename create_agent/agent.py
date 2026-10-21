@@ -368,17 +368,26 @@ class AgentForm:
     def create_test_file(self):
         name_agent_for_test = self.name_agent_for_test.upper().replace(" [", "_").replace("[", "_").replace("]", "").replace(".", "_").replace("-", "_").replace(" ", "_").replace("'", "").replace(",", "")
 
-        with open("create_agent/test_template.txt", "r", encoding="utf-8") as file:
-            test_template = file.read()
+        with (
+            open("create_agent/test_template.txt", "r", encoding="utf-8") as file_input,
+            open(self.agent_dir / Path("test.py"), "w", encoding="utf-8") as file_output
+        ):
+            test_template = file_input.read()
+            file_output.write(test_template.format(name_agent_for_test=name_agent_for_test))
 
-        with open(self.agent_dir / Path("test.py"), "w", encoding="utf-8") as file:
-            file.write(test_template.format(name_agent_for_test=name_agent_for_test))
+        with (
+            open("create_agent/upload_code.txt", "r", encoding="utf-8") as file_input,
+            open(self.agent_dir / Path("upload_code.py"), "w", encoding="utf-8") as file_output
+        ):
+            upload_code = file_input.read()
+            file_output.write(upload_code.format(agent_name="new_" + self.name + ".py", agent_path=self.agent_dir, name_agent_for_test=name_agent_for_test))
 
-        with open("create_agent/upload_code.txt", "r", encoding="utf-8") as file:
-            upload_code = file.read()
-
-        with open(self.agent_dir / Path("upload_code.py"), "w", encoding="utf-8") as file:
-            file.write(upload_code.format(agent_name="new_" + self.name + ".py", agent_path=self.agent_dir, name_agent_for_test=name_agent_for_test))
+        with (
+            open("create_agent/upload_code_bb.txt", "r", encoding="utf-8") as file_input,
+            open(self.agent_dir / Path("upload_code_bb.py"), "w", encoding="utf-8") as file_output
+        ):
+            upload_code = file_input.read()
+            file_output.write(upload_code.replace("{FILE_NAME_INPUT}", self.name))
 
         with open("product_test/list_of_agents.py", "a", encoding="utf-8") as file:
             file.write(f'{name_agent_for_test} = "{self.agent_id}"\n')

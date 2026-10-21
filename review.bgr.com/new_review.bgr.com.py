@@ -16,7 +16,6 @@ def strip_namespace(data):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request("https://bgr.com/reviews/", use='curl', force_charset='utf-8', max_age=0), process_revlist, dict())
 
 
@@ -41,7 +40,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
     product = Product()
-    product.name = context['title'].split(' Review:')[0].split(' review:')[0].split(' Review')[0].split(' review')[0].split(' review: ')[0].replace('Tested: ', '').replace('Review: ', '').strip()
+    product.name = context['title'].split(' Review:')[0].split(' review:')[0].split(' Review')[0].split(' review')[0].split(' review: ')[0].split(' review: ')[0].replace('Tested: ', '').replace('Review: ', '').replace(' To The Test', '').strip()
     product.ssid = data.xpath('//h1/@data-post-id').string()
     product.manufacturer = data.xpath('//tr[th[regexp:test(., "Brand", "i")]]/td/text()').string()
 

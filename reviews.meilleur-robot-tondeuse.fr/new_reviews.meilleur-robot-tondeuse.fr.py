@@ -11,7 +11,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
     for brand in brands:
         name = brand.xpath('text()').string()
 
-        prods = data.xpath('(following-sibling::ul)[1]/li/a/@href')
+        prods = brand.xpath('(following-sibling::ul)[1]/li/a/@href')
         for prod in prods:
             url = prod.string()
             session.queue(Request(url, force_charset='utf-8'), process_review, dict(brand=name, url=url))
@@ -24,7 +24,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     product.category = 'Tondeuses à gazon robotisées'
     product.manufacturer = context['brand']
 
-    url = data.xpath('//a[contains(., "sur Amazon.fr")]/@href').string()
+    url = data.xpath('//a[contains(., "sur Amazon.fr")]/@href[contains(., "/dp/")]').string()
     if url:
         product.url = url
 
@@ -39,14 +39,9 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.title = data.xpath('//h1/text()').string()
     review.url = context['url']
     review.ssid = product.ssid
+    review.date = data.xpath('//p[@class="meta"]/time/@datetime').string()
 
-    date = data.xpath('//meta[@property="article:published_time"]/@content').string()
-    if date:
-        review.date = date.split('T')[0]
-
-    author = data.xpath('//p[@class="meta"]/a[not(regexp:test(., "la rédaction", "i"))]/text()').string()
-    if author:
-        review.authors.append(Person(name=author, ssid=author))
+    # all author 'la rédaction'
 
     grade_overall = data.xpath('//div[@class="pcard-body"]//span[@class="score"]/b/text()').string()
     if grade_overall:
@@ -74,7 +69,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('///div[article[@class="main"]]/p[@class="lead"]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[article[@class="main"]]/p[@class="lead"]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

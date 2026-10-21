@@ -1,0 +1,108 @@
+Elektroverktøy|Drill og skrumaskin
+Elektroverktøy|Boring og meisling
+Elektroverktøy|Sag
+Elektroverktøy|Slipemaskin
+Elektroverktøy|Poleringsmaskin
+Elektroverktøy|Fres og høvling
+Elektroverktøy|Kappeverktøy
+Elektroverktøy|Vinkelsliper
+Elektroverktøy|Støvsuger og rengjøring
+Elektroverktøy|Spiker- og stiftepistoler
+Elektroverktøy|Lim, fug og fettpistol
+Elektroverktøy|Arbeidslys
+Elektroverktøy|Batteri og lader
+Elektroverktøy|Verktøyoppbevaring
+Elektroverktøy|Luftpumpe og og kompressor
+Elektroverktøy|Pakketilbud
+Elektroverktøy|Tilbehør til elektroverktøy
+Elektroverktøy|Øvrig elektroverktøy
+Måleteknikk|Laserverktøy
+Måleteknikk|Kamera
+Måleteknikk|Detektorer
+Måleteknikk|Vinkel- og helningsmålere
+Måleteknikk|Tilbehør måleteknikk
+Håndverktøy|Nøkkelverktøy
+Håndverktøy|Pipeverktøy
+Håndverktøy|Skrutrekker
+Håndverktøy|Slag og bryteverktøy
+Håndverktøy|Sag og kappvektøy
+Håndverktøy|Måleverktøy
+Håndverktøy|Markeringsverktøy
+Håndverktøy|Verktøyvogn
+Håndverktøy|Tang
+Håndverktøy|Saks
+Håndverktøy|Kniv
+Håndverktøy|Serviceverktøy
+Håndverktøy|Spennverktøy
+Håndverktøy|Murerverktøy
+Håndverktøy|Elektrikerverktøy
+Håndverktøy|Stift og klammerverktøy
+Håndverktøy|File, slipe og børste
+Håndverktøy|Momentverktøy
+Håndverktøy|Håndverktøy tilbehør
+Håndverktøy|Øvrig håndverktøy
+Arbeidsklær og verneutstyr|Arbeidsklær
+Arbeidsklær og verneutstyr|Hansker
+Arbeidsklær og verneutstyr|Sko
+Arbeidsklær og verneutstyr|Hodevern
+Arbeidsklær og verneutstyr|Hørselvern
+Arbeidsklær og verneutstyr|Øye- og ansiktsvern
+Arbeidsklær og verneutstyr|Ånderettsvern
+Arbeidsklær og verneutstyr|Personlig belysning
+Arbeidsklær og verneutstyr|Fallsikring
+Arbeidsklær og verneutstyr|Verktøysikring
+Arbeidsklær og verneutstyr|Brann og redning
+Arbeidsklær og verneutstyr|Arbeidsklær og verneutstyr tilbehør
+Hageverktøy og utstyr|Gressklipper
+Hageverktøy og utstyr|Gresstrimmer og ryddesag
+Hageverktøy og utstyr|Hekksaks
+Hageverktøy og utstyr|Multimaskin
+Hageverktøy og utstyr|Løvblåser
+Hageverktøy og utstyr|Kjedesag
+Hageverktøy og utstyr|Spyling og sprøyting
+Hageverktøy og utstyr|Hageredskap og utstyr
+Hageverktøy og utstyr|Hage tilbehør
+Hageverktøy og utstyr|Øvrig Hageverktøy
+Arbeidsplass og verktsted|Belysning
+Arbeidsplass og verktsted|El-artikler
+Arbeidsplass og verktsted|Stige og trapp
+Arbeidsplass og verktsted|Oppbevaring og transport
+Arbeidsplass og verktsted|Arbeidsbord
+Arbeidsplass og verktsted|Avsug og vifter
+Arbeidsplass og verktsted|Hygiene og hud
+Arbeidsplass og verktsted|Trearbeidmaskiner
+Arbeidsplass og verktsted|Metallarbeidmaskiner
+Arbeidsplass og verktsted|Trykkluft
+Arbeidsplass og verktsted|Oppvarming og ventilasjon
+Arbeidsplass og verktsted|Sveising
+Arbeidsplass og verktsted|Øvrige maskiner og produkter
+Arbeidsplass og verktsted|Løft og sikring
+Arbeidsplass og verktsted|Rengjøring
+Forbruksmateriell|Festemateriell
+Forbruksmateriell|Kulelager
+Forbruksmateriell|Maskinspiker og skruer
+Forbruksmateriell|Sagblad
+Forbruksmateriell|Bore og meisle
+Forbruksmateriell|Frese, skjære og høvle
+Forbruksmateriell|Kappe og slipe
+Forbruksmateriell|Sveising og lodding
+Forbruksmateriell|Lim, tetning- og fugemasse
+Forbruksmateriell|Tape
+Forbruksmateriell|Bits
+Forbruksmateriell|Dremel tilbehør
+Forbruksmateriell|Bilpleie
+Forbruksmateriell|Maling og spraylakk
+Forbruksmateriell|Smøring, olje og fett
+Forbruksmateriell|Tetninger og pakninger
+Forbruksmateriell|Øvrig forbruksmateriell
+Festemateriell|Tre- og byggskrue
+Festemateriell|Plateskrue
+Festemateriell|Blindnagle
+Festemateriell|Bolt
+Festemateriell|Mutter
+Festemateriell|Skive
+Festemateriell|Stud bolt og gjengestang
+Festemateriell|Forankring og plugg
+Festemateriell|Beslag
+Festemateriell|Wire og kjetting
+Festemateriell|Øvrig festemateriell
