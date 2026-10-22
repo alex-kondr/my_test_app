@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <style>
+
+        /* Center the spinner perfectly on the screen */
+
+        body { 
+
+            display: flex; 
+
+            justify-content: center; 
+
+            align-items: center; 
+
+            height: 100vh; 
+
+            margin: 0; 
+
+            background-color: #ffffff; 
+
+        }
+
+        /* Create the spinning circle */
+
+        .spinner {
+
+            width: 40px;
+
+            height: 40px;
+
+            border: 4px solid #f3f3f3;
+
+            border-top: 4px solid #005eb8; /* A nice neutral blue */
+
+            border-radius: 50%;
+
+            animation: spin 1s linear infinite;
+
+        }
+
+        /* Define the animation rotation */
+
+        @keyframes spin { 
+
+            0% { transform: rotate(0deg); } 
+
+            100% { transform: rotate(360deg); } 
+
+        }
+
+    </style>
+
+    <script>
+
+        // 100ms delay guarantees the browser engine paints the spinner to the screen
+
+        setTimeout(function() {
+
+            document.cookie = "nav_js_passed=1; path=/; max-age=86400; SameSite=Lax";
+
+            window.location.replace(window.location.href);
+
+        }, 100);
+
+    </script>
+
+</head>
+
+<body>
+
+    <div class="spinner"></div>
+
+</body>
+
+</html>
+
