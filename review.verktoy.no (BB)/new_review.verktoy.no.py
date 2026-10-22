@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from agent import *
 from models.products import *
+from lib.trustpilot_reviews import *
 
 
 def strip_namespace(data):
@@ -19,7 +20,7 @@ def strip_namespace(data):
 def Request(url):
     url = url.replace("www.verkt%C3%B8y.no", "www.xn--verkty-fya.no")
     url = url.replace("www.verktøy.no", "www.xn--verkty-fya.no")
-    r = agent.Request(url, force_charset='utf-8')
+    r = agent.Request(url, force_charset='utf-8', proxies=['rotating-us', 'rotating-eu'])
     return r
 
 
@@ -44,7 +45,7 @@ def RequestProds(cat, subcat, offset):
         -H 'Content-Type: application/json' \
         -H 'X-HTTP-KEY: fe2f6c75e24b464f4184c4885990eb6360def6b3'"""
     options += " --data '" + payload + "'"
-    r = agent.Request(url, use='curl', force_charset='utf-8', options='-s -L --insecure '+options)
+    r = agent.Request(url, use='curl', force_charset='utf-8', options='-s -L --insecure '+options, proxies=['rotating-us', 'rotating-eu'])
     return r
 
 
@@ -71,13 +72,12 @@ def RequestCats():
 
     options += " --data '" + payload + "'"
     url = "https://www.xn--verkty-fya.no/graphql"
-    r = agent.Request(url, force_charset='utf-8', options='-s -L --insecure '+options, use='curl')
+    r = agent.Request(url, force_charset='utf-8', options='-s -L --insecure '+options, use='curl', proxies=['rotating-us', 'rotating-eu'])
     return r
 
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    'https://www.verktøy.no/dewalt-18v-muttertrekker-dcf922n'
     session.queue(RequestCats(), process_catlist, dict())
 
 
@@ -107,8 +107,6 @@ def process_catlist(data: Response, context: dict[str, str], session: Session):
         for subcat in subcats:
             subcat_name = subcat['title']
             session.queue(RequestProds(name, subcat_name, 0), process_prodlist, dict(cat=name, subcat=subcat_name))
-            
-            return
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
@@ -122,11 +120,11 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
         pr = dict()
         pr['name'] = prod.get('product', {}).get('title')
         pr['url'] = prod.get('product', {}).get('uri')
-        pr['ssid'] = prod.get('id')
+        pr['sku'] = prod.get('id')
         pr['category'] = context['cat'] + '|' + context['subcat']
         pr['manufacturer'] = prod.get('product', {}).get('brands', [''])[0]
 
-        if not session.seen(pr['ssid']):
+        if not session.seen(pr['sku']):
             session.queue(Request(pr['url']), process_product, dict(product=pr))
 
     prods_cnt = context.get('prods_cnt', prods_json.get('totalSize', 0))
@@ -138,80 +136,14 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
 def process_product(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    context['product']['sku'] = data.xpath('//td[@data-th="UNSPSC"]//text()').string()
+    context['product']['ssid'] = data.xpath('//td[@data-th="UNSPSC"]//text()').string()
     context['product']['mpn'] = data.xpath('//div[contains(span, "Supplier number")]/span[contains(@class, "product-detail-value")]/text()').string()
     context['product']['ean'] = data.xpath('//td[@data-th="EAN/GTIN"]//text()').string()
 
     trustpilot = data.xpath("//div[@class='trustpilot-widget'][@data-no-reviews='show']").first()
     if trustpilot:
-        template_id = trustpilot.xpath("@data-template-id").string()
-        business = trustpilot.xpath("@data-businessunit-id").string()
+        app_key = trustpilot.xpath("@data-template-id").string()
+        businessunit = trustpilot.xpath("@data-businessunit-id").string()
         locale = trustpilot.xpath("@data-locale").string()
 
-        pid = trustpilot.xpath('@data-sku').string()
-
-        if pid and not session.seen(pid):
-            revs_url = "https://widget.trustpilot.com/trustbox-data/" + template_id + "?businessUnitId=" + business + "&locale=" + locale + "&sku=" + str(product['sku']) + "&reviewsPerPage=10"
-            session.queue(Request(revs_url), process_reviews, dict(product=product, pid=pid, template_id=template_id, business=business, locale=locale, page=1))
-
-
-def process_reviews(data: Response, context: dict[str, str], session: Session):
-    product = Product()
-    product.name = context['product']['name']
-    product.ssid = context['product']['ssid']
-    product.category = context['product']['cat']
-    product.url = context['product']['url']
-    product.manufacturer = context['product'].get('brand')
-    product.sku = context['product'].get('sku')
-
-    mpn = context['product'].get('mpn')
-    if mpn:
-        product.add_property(type='id.manufacturer', value=mpn)
-
-    ean = context['product'].get('ean')
-    if ean:
-        product.add_property(type='id.ean', value=ean)
-
-
-    resp = simplejson.loads(data.content)
-    revs = resp.get('productReviews', {}).get('reviews', [])
-    revs_count = 0
-    for rev in revs:
-        review = Review()
-        review.title = rev.get('title')
-        review.type = 'user'
-        review.url = product.url
-        review.ssid = rev['id']
-
-        date = rev.get('createdAt')
-        if date:
-            review.date = date.split('T')[0]
-
-        author = rev.get('consumer', {}).get('displayName')
-        if author:
-            review.authors.append(Person(name=author, ssid=author))
-
-        grade_overall = rev.get('stars')
-        if grade_overall:
-            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
-
-        grades = rev.get('attributeRatings', [])
-        for grade in grades:
-            name = grade.get('name')
-            value = grade.get('rating')
-            if name and value:
-                review.grades.append(Grade(name=name, value=float(value), best=5.0))
-
-        excerpt = rev.get('content')
-        if excerpt:
-            review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
-
-            product.reviews.append(review)
-
-    if product.reviews:
-        session.emit(product)
-
-    if revs_count >= 10:
-        page = context['page'] + 1
-        revs_url = "https://widget.trustpilot.com/trustbox-data/" + context['template_id'] + "?businessUnitId=" + context['business'] + "&locale=" + context['locale'] + "&sku=" + context['pid'] + "&reviewsPerPage=10&page=" + str(page)
-        session.queue(Request(revs_url), process_reviews, dict(context, page=page))
+        process_reviews_json_request_TP(data, dict(context, app_key=app_key, businessunit=businessunit, locale=locale), session)
