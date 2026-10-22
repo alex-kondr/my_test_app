@@ -23,16 +23,32 @@ def Request(url):
     return r
 
 
-def RequestProds(cat_id, offset):
-    url = "https://eucs33v2.ksearchnet.com/cs/v2/search"
-    options = """--compressed -X POST -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0' -H 'Accept: */*' -H 'Accept-Language: en-US;q=0.5,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br, zstd' -H 'Content-Type: application/json' -H 'Priority: u=1' --data-raw '{"context":{"apiKeys":["klevu-1714119055102414"]},"recordQueries":[{"id":"category-list","typeOfRequest":"CATNAV","settings":{"query":{"categoryPath":\"""" + cat_id + """"},"offset":\"""" + str(offset) + """","limit":24,"typeOfRecords":["KLEVU_PRODUCT"]}}],"suggestions":[]}'"""
-    r = agent.Request(url, use='curl', force_charset='utf-8', options='-s -L --insecure '+options, max_age=0)
+def RequestProds(cat, subcat, offset):
+    url = 'https://prod-retail-proxy-857687180900.europe-north2.run.app/?action=search&config=default_search'
+    payload = {
+        "pageSize": 24,
+        "offset": offset,
+        "visitorId": "90511362.701503470",
+        "filter": "attributes.category_level1: ANY(\"{cat}\") AND attributes.category_level2: ANY(\"{subcat}\")".format(cat=cat.upper(), subcat=subcat),
+        "languageCode": "no-NO",
+        "entity": "verktoy",
+        "queryExpansionSpec": {
+            "condition": "AUTO"
+        }
+    }
+    payload = simplejson.dumps(payload, separators=(",", ":"))
+    options = """--compressed \
+        -X POST \
+        -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:158.0) Gecko/20100101 Firefox/158.0' \
+        -H 'Accept-Encoding: deflate' \
+        -H 'Content-Type: application/json' \
+        -H 'X-HTTP-KEY: fe2f6c75e24b464f4184c4885990eb6360def6b3'"""
+    options += " --data '" + payload + "'"
+    r = agent.Request(url, use='curl', force_charset='utf-8', options='-s -L --insecure '+options)
     return r
 
 
 def RequestCats():
-    url = "https://www.xn--verkty-fya.no/graphql"
-
     graphql_query = """query($id: String!, $parentId: Int) {
         navigationMenu(identifier: $id, parentId: $parentId) {
             items {
@@ -47,33 +63,21 @@ def RequestCats():
     }
 
     payload = simplejson.dumps(payload_dict, separators=(",", ":"))
-
     options = (
         "--compressed -X POST "
         "-H 'User-Agent: Mozilla/5.0 (Android 15; Mobile; rv:145.0.2) Gecko/145.0.2 Firefox/145.0.2' "
-        "-H 'Accept: */*' "
-        "-H 'Accept-Language: uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7' "
-        "-H 'Accept-Encoding: gzip, deflate' "
-        "-H 'Referer: https://www.xn--verkty-fya.no/' "
         "-H 'Content-Type: application/json' "
-        "-H 'Origin: https://www.xn--verkty-fya.no' "
-        "-H 'Connection: keep-alive' "
-        "-H 'Cookie: visitorId=19869430.466426013; last_visited_store=default; form_key=PoJc57zNRxOPzY7K; PHPSESSID=d97ml7mq6te1rtbo8fj3b8muon; private_content_version=94a50f074e2ebe88806fa3d3db54cf65; amga4_customer=%7B%22customerGroup%22%3A%22NOT%20LOGGED%20IN%22%2C%22customerId%22%3Anull%7D; section_data_ids=%7B%22messages%22%3A1792589299%2C%22customer%22%3A1792589299%2C%22compare-products%22%3A1792589299%2C%22last-ordered-items%22%3A1792589299%2C%22cart%22%3A1792589299%2C%22directory-data%22%3A1792589299%2C%22captcha%22%3A1792589299%2C%22instant-purchase%22%3A1792589299%2C%22loggedAsCustomer%22%3A1792589299%2C%22persistent%22%3A1792589299%2C%22review%22%3A1792589299%2C%22payments%22%3A1792589299%2C%22wishlist%22%3A1792589299%2C%22amga4_event_pool%22%3A1792589299%2C%22mwishlist%22%3A1792589299%2C%22quickorder_category%22%3A1792589299%2C%22quotecart%22%3A1792589299%2C%22amga4_hyva_event_pool%22%3A1792589299%2C%22punchout-session%22%3A1792589299%2C%22recently_viewed_product%22%3A1792589299%2C%22recently_compared_product%22%3A1792589299%2C%22product_data_storage%22%3A1792589299%2C%22paypal-billing-agreement%22%3A1792589299%2C%22paypal-buyer-country%22%3A1792589299%7D' "
-        "-H 'Sec-Fetch-Dest: empty' "
-        "-H 'Sec-Fetch-Mode: cors' "
-        "-H 'Sec-Fetch-Site: same-origin' "
-        "-H 'Priority: u=0' "
-        "-H 'Pragma: no-cache' "
-        "-H 'Cache-Control: no-cache'"
     )
 
     options += " --data '" + payload + "'"
-    r = agent.Request(url, force_charset='utf-8', options='-s -L --insecure '+options, use='curl', max_age=0)
+    url = "https://www.xn--verkty-fya.no/graphql"
+    r = agent.Request(url, force_charset='utf-8', options='-s -L --insecure '+options, use='curl')
     return r
 
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
+    'https://www.verktøy.no/dewalt-18v-muttertrekker-dcf922n'
     session.queue(RequestCats(), process_catlist, dict())
 
 
@@ -90,11 +94,11 @@ def process_catlist(data: Response, context: dict[str, str], session: Session):
                 sorted_cats[cat['node_id']]['title'] = cat['title']
             else:
                 sorted_cats[cat['node_id']] = dict(title=cat['title'], subcats=[])
-        if cat.get('level') == 2:
+        elif cat.get('level') == 2:
             if sorted_cats.get(cat['parent_id']):
-                sorted_cats[cat['parent_id']]['subcats'].append(dict(title=cat['title'], url=cat['url']))
+                sorted_cats[cat['parent_id']]['subcats'].append(dict(title=cat['title']))
             else:
-                sorted_cats[cat['parent_id']] = dict(subcats=[dict(title=cat['title'], url=cat['url'])])
+                sorted_cats[cat['parent_id']] = dict(subcats=[dict(title=cat['title'])])
 
     for cat in sorted_cats.values():
         name = cat['title']
@@ -102,82 +106,41 @@ def process_catlist(data: Response, context: dict[str, str], session: Session):
         subcats = cat['subcats']
         for subcat in subcats:
             subcat_name = subcat['title']
-            url = subcat['url']
+            session.queue(RequestProds(name, subcat_name, 0), process_prodlist, dict(cat=name, subcat=subcat_name))
             
-            print name+'|'+subcat_name
-
-
-def process_frontpage(data: Response, context: dict[str, str], session: Session):
-    strip_namespace(data)
-    
-    print data.content
-
-    # cats = data.xpath('//div[@data-content-type="row"]')
-    # cats.pretty()
-    return
-    
-    for cat in cats:
-        name = cat.xpath('div[contains(@class, "group")]//span//text()').string()
-
-        cats1 = cat.xpath('.//li[@data-level="level-2"]')
-        for cat1 in cats1:
-            url = cat1.xpath('div[contains(@class, "group")]//a/@href').string()
-            cat1_name = cat1.xpath('div[contains(@class, "group")]//a//text()').string(multiple=True)
-
-            subcats = cat1.xpath('.//li[@data-level="level-3"]/div[contains(@class, "group")]/a')
-            if subcats:
-                for subcat in subcats:
-                    url = subcat.xpath('@href').string()
-                    subcat_name = subcat.xpath('text()').string()
-                    session.queue(Request(url), process_cat_id, dict(cat=name + '|' + cat1_name + '|' + subcat_name))
-
-            else:
-                session.queue(Request(url), process_cat_id, dict(cat=name + '|' + cat1_name))
-
-
-def process_cat_id(data: Response, context: dict[str, str], session: Session):
-    strip_namespace(data)
-
-    cat_id = data.xpath('''//script[contains(., 'categoryPath: "')]//text()''').string()
-    if cat_id:
-        cat_id = cat_id.split('categoryPath: "')[-1].split('"')[0]
-        session.queue(RequestProds(cat_id, 0), process_prodlist, dict(context, cat_id=cat_id))
+            return
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
-    prods_json = simplejson.loads(data.content)
+    try:
+        prods_json = simplejson.loads(data.content)
+    except:
+        prods_json = {}
 
-    prods = prods_json.get('queryResults', [{}])[0].get('records', [])
+    prods = prods_json.get('results', [])
     for prod in prods:
-        name = prod.get('name')
-        url = prod.get('url')
-        ssid = prod.get('id')
-        sku = prod.get('sku')
-        brand = prod.get('manufacturer')
+        pr = dict()
+        pr['name'] = prod.get('product', {}).get('title')
+        pr['url'] = prod.get('product', {}).get('uri')
+        pr['ssid'] = prod.get('id')
+        pr['category'] = context['cat'] + '|' + context['subcat']
+        pr['manufacturer'] = prod.get('product', {}).get('brands', [''])[0]
 
-        revs_cnt = prod.get('ratingCount')
-        if revs_cnt and int(revs_cnt) > 0:
-            session.queue(Request(url), process_product, dict(context, name=name, url=url, ssid=ssid, sku=sku, brand=brand))
+        if not session.seen(pr['ssid']):
+            session.queue(Request(pr['url']), process_product, dict(product=pr))
 
-    prods_cnt = context.get('prods_cnt', prods_json.get('queryResults',[{}])[0].get('meta', {}).get('totalResultsFound'))
+    prods_cnt = context.get('prods_cnt', prods_json.get('totalSize', 0))
     offset = context.get('offset', 0) + 24
     if prods_cnt and int(prods_cnt) > offset:
-        session.queue(RequestProds(context['cat_id'], offset), process_prodlist, dict(context, offset=offset))
+        session.queue(RequestProds(context['cat'], context['subcat'], offset), process_prodlist, dict(context, offset=offset, prods_cnt=prods_cnt))
 
 
 def process_product(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    product = dict()
-    product['name'] = context['name']
-    product['cat'] = context['cat']
-    product['url'] = context['url']
-    product['brand'] = context.get('brand')
-    product['ssid'] = context['ssid']
-    product['sku'] = context.get('sku')
-
-    product['mpn'] = data.xpath('//td[contains(@data-th, "produktnummer")]//text()').string()
-    product['ean'] = data.xpath('//td[@data-th="EAN/GTIN"]//text()').string()
+    context['product']['sku'] = data.xpath('//td[@data-th="UNSPSC"]//text()').string()
+    context['product']['mpn'] = data.xpath('//div[contains(span, "Supplier number")]/span[contains(@class, "product-detail-value")]/text()').string()
+    context['product']['ean'] = data.xpath('//td[@data-th="EAN/GTIN"]//text()').string()
 
     trustpilot = data.xpath("//div[@class='trustpilot-widget'][@data-no-reviews='show']").first()
     if trustpilot:

@@ -1,108 +1,2243 @@
-Elektroverktøy|Drill og skrumaskin
-Elektroverktøy|Boring og meisling
-Elektroverktøy|Sag
-Elektroverktøy|Slipemaskin
-Elektroverktøy|Poleringsmaskin
-Elektroverktøy|Fres og høvling
-Elektroverktøy|Kappeverktøy
-Elektroverktøy|Vinkelsliper
-Elektroverktøy|Støvsuger og rengjøring
-Elektroverktøy|Spiker- og stiftepistoler
-Elektroverktøy|Lim, fug og fettpistol
-Elektroverktøy|Arbeidslys
-Elektroverktøy|Batteri og lader
-Elektroverktøy|Verktøyoppbevaring
-Elektroverktøy|Luftpumpe og og kompressor
-Elektroverktøy|Pakketilbud
-Elektroverktøy|Tilbehør til elektroverktøy
-Elektroverktøy|Øvrig elektroverktøy
-Måleteknikk|Laserverktøy
-Måleteknikk|Kamera
-Måleteknikk|Detektorer
-Måleteknikk|Vinkel- og helningsmålere
-Måleteknikk|Tilbehør måleteknikk
-Håndverktøy|Nøkkelverktøy
-Håndverktøy|Pipeverktøy
-Håndverktøy|Skrutrekker
-Håndverktøy|Slag og bryteverktøy
-Håndverktøy|Sag og kappvektøy
-Håndverktøy|Måleverktøy
-Håndverktøy|Markeringsverktøy
-Håndverktøy|Verktøyvogn
-Håndverktøy|Tang
-Håndverktøy|Saks
-Håndverktøy|Kniv
-Håndverktøy|Serviceverktøy
-Håndverktøy|Spennverktøy
-Håndverktøy|Murerverktøy
-Håndverktøy|Elektrikerverktøy
-Håndverktøy|Stift og klammerverktøy
-Håndverktøy|File, slipe og børste
-Håndverktøy|Momentverktøy
-Håndverktøy|Håndverktøy tilbehør
-Håndverktøy|Øvrig håndverktøy
-Arbeidsklær og verneutstyr|Arbeidsklær
-Arbeidsklær og verneutstyr|Hansker
-Arbeidsklær og verneutstyr|Sko
-Arbeidsklær og verneutstyr|Hodevern
-Arbeidsklær og verneutstyr|Hørselvern
-Arbeidsklær og verneutstyr|Øye- og ansiktsvern
-Arbeidsklær og verneutstyr|Ånderettsvern
-Arbeidsklær og verneutstyr|Personlig belysning
-Arbeidsklær og verneutstyr|Fallsikring
-Arbeidsklær og verneutstyr|Verktøysikring
-Arbeidsklær og verneutstyr|Brann og redning
-Arbeidsklær og verneutstyr|Arbeidsklær og verneutstyr tilbehør
-Hageverktøy og utstyr|Gressklipper
-Hageverktøy og utstyr|Gresstrimmer og ryddesag
-Hageverktøy og utstyr|Hekksaks
-Hageverktøy og utstyr|Multimaskin
-Hageverktøy og utstyr|Løvblåser
-Hageverktøy og utstyr|Kjedesag
-Hageverktøy og utstyr|Spyling og sprøyting
-Hageverktøy og utstyr|Hageredskap og utstyr
-Hageverktøy og utstyr|Hage tilbehør
-Hageverktøy og utstyr|Øvrig Hageverktøy
-Arbeidsplass og verktsted|Belysning
-Arbeidsplass og verktsted|El-artikler
-Arbeidsplass og verktsted|Stige og trapp
-Arbeidsplass og verktsted|Oppbevaring og transport
-Arbeidsplass og verktsted|Arbeidsbord
-Arbeidsplass og verktsted|Avsug og vifter
-Arbeidsplass og verktsted|Hygiene og hud
-Arbeidsplass og verktsted|Trearbeidmaskiner
-Arbeidsplass og verktsted|Metallarbeidmaskiner
-Arbeidsplass og verktsted|Trykkluft
-Arbeidsplass og verktsted|Oppvarming og ventilasjon
-Arbeidsplass og verktsted|Sveising
-Arbeidsplass og verktsted|Øvrige maskiner og produkter
-Arbeidsplass og verktsted|Løft og sikring
-Arbeidsplass og verktsted|Rengjøring
-Forbruksmateriell|Festemateriell
-Forbruksmateriell|Kulelager
-Forbruksmateriell|Maskinspiker og skruer
-Forbruksmateriell|Sagblad
-Forbruksmateriell|Bore og meisle
-Forbruksmateriell|Frese, skjære og høvle
-Forbruksmateriell|Kappe og slipe
-Forbruksmateriell|Sveising og lodding
-Forbruksmateriell|Lim, tetning- og fugemasse
-Forbruksmateriell|Tape
-Forbruksmateriell|Bits
-Forbruksmateriell|Dremel tilbehør
-Forbruksmateriell|Bilpleie
-Forbruksmateriell|Maling og spraylakk
-Forbruksmateriell|Smøring, olje og fett
-Forbruksmateriell|Tetninger og pakninger
-Forbruksmateriell|Øvrig forbruksmateriell
-Festemateriell|Tre- og byggskrue
-Festemateriell|Plateskrue
-Festemateriell|Blindnagle
-Festemateriell|Bolt
-Festemateriell|Mutter
-Festemateriell|Skive
-Festemateriell|Stud bolt og gjengestang
-Festemateriell|Forankring og plugg
-Festemateriell|Beslag
-Festemateriell|Wire og kjetting
-Festemateriell|Øvrig festemateriell
+{
+  "results": [
+    {
+      "id": "1673748",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1673748",
+        "categories": [
+          "KAMPANJER \u003e DeWalt kampanje",
+          "KAMPANJER \u003e Garasje og hjulskift \u003e Muttertrekker",
+          "KAMPANJER \u003e Romjuls- og nyttårssalg \u003e Dewalt",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Muttertrekker"
+        ],
+        "title": "Muttertrekker DeWalt 18V XR Muttertrekker ½″ DCF922 Uten batteri & lader",
+        "brands": [
+          "DeWalt"
+        ],
+        "description": "DCF922 18V XR Muttertrekker med stoppring er utviklet for enkel håndtering av ulike festeoppgaver. Få opptil 406 Nm festemoment og 610 Nm maks løsrivningsmoment i et 125 mm langt hus med dette kompakte, brukervennlige og kraftige elektroverktøyet. Velg mellom 4 innstillinger for pålitelig ytelse, brukervennlighet og allsidighet. Mørke arbeidsområder er ikke noe problem med denne oppladbare muttertrekkeren, som leveres med LED-lys for bedre synlighet i dårlig opplyste områder. Nominell spenning: 18V XR | Avgitt effekt: 415 | Hastighet ubelastet: 0-2500 1/min | Slaghastighet: 0-3500 slag/min | Maks stramme moment: 406 Nm | Maks løsne moment: 609 Nm | Høyde: 208mm | Lengde: 126mm | Vekt uten batteripakke: 1,1 kg | Lydtrykk: 96 db(A) | Usikkerhet K1 (vibrasjon): 13,0 m/s² | Usikkerhet K2 (Lyd): 1,5 dB(A)",
+        "attributes": {
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-22"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "43282"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Muttertrekker",
+              "Dewalt"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "DeWalt kampanje",
+              "Garasje og hjulskift",
+              "Romjuls- og nyttårssalg",
+              "Drill og skrumaskin"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/dewalt-18v-muttertrekker-dcf922n"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 1994,
+          "originalPrice": 2711
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/dewalt-18v-muttertrekker-dcf922n",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/a/7/a77e013c89823e82c7b99c1fc6b1103e3ea5a7ab_1673748_1_1.jpg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "2168499",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/2168499",
+        "categories": [
+          "BRAND \u003e MILWAUKEE \u003e Milwaukee M12 verktøy \u003e Milwaukee M12 muttertrekker",
+          "KAMPANJER \u003e Sommer \u003e Skru- og bormaskin",
+          "KAMPANJER \u003e Garasje og hjulskift \u003e Muttertrekker",
+          "KAMPANJER \u003e Milwaukee kampanje \u003e Milwaukee M12 verktøy",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Muttertrekker"
+        ],
+        "title": "Muttertrekker M12 FCIWF12G3-0",
+        "brands": [
+          "Milwaukee"
+        ],
+        "description": "MILWAUKEE® M12 FUEL™ 1/2˝ Kompakt muttertrekkker med friksjonsring. Sterkest i klassen. 542 Nm for tiltrekk og 746 Nm løsrivningskraft. 3,000 omdreininger for eksepsjonell hastighet på applikasjoner. 4-modus DRIVE CONTROL™ - gir brukeren presis kontroll. Total lengde på bare 122 mm. Tre LED-lys for oppllysning av arbeidsoppgave uten skyggefelt. Vekt med batteri 1 kg. Leveres uten batteri og lader. Batteritype: Li-ion | Inkludert: Leveres uten batteri, Leveres uten lader, Leveres uten koffert/bag | Leveres i: Leveres uten koffert/bag | Maks dreiemoment (Nm): 745 | Maks. boltdiameter: M16 | Modellvariant: M12 FCIWF12G3-0 | Perfect Match - Article Number: 4932480456 | Perfect Match Relations: 1/2\" impact socket set STD-13pc | Slagtall (slag/min): 0-1500 / 0-3000 / 0-3300 / - | Territory: XXX | Ubelastet hastighet (o/min): 0-930/ 0-2100/ 0-3000/ 0-1300",
+        "attributes": {
+          "category_level1": {
+            "text": [
+              "BRAND",
+              "KAMPANJER",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "145484"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Milwaukee M12 verktøy",
+              "Skru- og bormaskin",
+              "Muttertrekker"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "MILWAUKEE",
+              "Sommer",
+              "Garasje og hjulskift",
+              "Milwaukee kampanje",
+              "Drill og skrumaskin"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-23"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/milwaukee-muttertrekker-m12-fciwf12g3-0-2168499"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3190,
+          "originalPrice": 3190
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/milwaukee-muttertrekker-m12-fciwf12g3-0-2168499",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/c/a/ca3b4fc812c5e395c63446514b117d451510415c_4933493454_image_1_1.jpeg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1631700",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1631700",
+        "categories": [
+          "KAMPANJER \u003e Milwaukee Roadshow \u003e Elektroverktøy",
+          "KAMPANJER \u003e Sommer \u003e Skru- og bormaskin",
+          "KAMPANJER \u003e Garasje og hjulskift \u003e Muttertrekker",
+          "KAMPANJER \u003e Milwaukee kampanje \u003e Milwaukee M18 verktøy",
+          "Spesial \u003e 43041",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin",
+          "KAMPANJER \u003e Vinterkampanje \u003e Elektroverktøy",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Muttertrekker"
+        ],
+        "title": "Muttertrekker M18 FMTIW2F12-0X",
+        "brands": [
+          "Milwaukee"
+        ],
+        "description": "M18 FUEL™ ½\" mellomstor muttertrekker med friksjonsring. Markedsledende ytelse 881 Nm I løsrivningsmoment og 745 Nm i tilspenningsmoment. Lengde på kun 152 mm. 4-trinns DRIVE CONTROL inkl. Autostop med maks. 34 Nm så du ikke risikerer overstramming av bolter, fjerning av bolter gir full moment-effekt, mens hastigheten nedsettes så snart bolten er løs, så den ikke går tapt. 3 x LED gir optimal arbeidsbelysning. Vekt med batteri 2,3kg. Leveres i HD Box (uten batterier og lader). ",
+        "attributes": {
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/milwaukee-18v-muttertrekker-4933478449"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-12"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "Spesial",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "42820"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Milwaukee Roadshow",
+              "Sommer",
+              "Garasje og hjulskift",
+              "Milwaukee kampanje",
+              "43041",
+              "Drill og skrumaskin",
+              "Vinterkampanje"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Elektroverktøy",
+              "Skru- og bormaskin",
+              "Muttertrekker",
+              "Milwaukee M18 verktøy",
+              "Drill og slagbormaskin"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3744,
+          "originalPrice": 3744
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/milwaukee-18v-muttertrekker-4933478449",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/1/4/14f39c692448848c473e9b5c0a14d5596931fe01_4933478449_image_1_1.jpeg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1798294",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1798294",
+        "categories": [
+          "KAMPANJER \u003e Milwaukee Roadshow \u003e Elektroverktøy",
+          "KAMPANJER \u003e Vinterkampanje \u003e Elektroverktøy",
+          "Spesial \u003e 41022",
+          "BRAND \u003e MILWAUKEE \u003e Milwaukee M18 verktøy \u003e Milwaukee M18 drill og slagbormaskin",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin"
+        ],
+        "title": "Slagbormaskin M18 FPD3-0X",
+        "brands": [
+          "Milwaukee"
+        ],
+        "description": "MILWAUKEE® kompakt M18 FUEL™ slagbormaskin med børsteløs POWERSTATE™-motor. Dreiemoment på 158 Nm. Lengde kun 175 mm. 0-550/0-2100 rpm og 0-33.000 bpm. REDLINK PLUS™ elektronikk beskytter verktøyet og AUTOSTOP™ beskytter brukeren. Strømindikator og LED-lys. Belteklips. Maks. borkapasitet i tre/stål/mur: 89/16/16mm. Vekt med batteri 2,2 kg. Leveres med sidehåndtak i HD Box (uten batteri og lader). Batteritype: Li-ion | Chuckkapasitet (mm): 13 | Inkludert: Leveres uten batteri, Leveres uten lader, HD Box | Kapasitet (Ah): Leveres uten batteri | Leveres i: HD Box | Lydstyrke feilmargin (dB(A)): 3 | Lydstyrke nivå (Lwa)(dB(A)): 106.78 | Lydtrykk feilmargin (dB(A)): 3 | Lydtrykk (Lpa)(dB(A)): 95.78 | Maks. borkapasitet i murverk (mm): 16 | Maks. borkapasitet i stål (mm): 16 | Maks. borkapasitet i tre (mm): 89 | Maks. dreiemoment (Nm): 158 | Maks. slagtall (slag/min): 0 - 33,000 | Modellvariant: M18 FPD3-0X | Omdreininger ubelastet i 1. gir (o/min): 0 - 500 | Omdreininger ubelastet i 2. gir (o/min): 0 - 2100 | Perfect Match - Article Number: 4932352836 | Perfect Match Relations: MPD 7 pc set 2 | Spenning (V): 18 | Standardutstyr: Belteklips, sidehåndtak | Territory: XXX | Vibrasjonsnivå skruoppgaver feilmargin (m/s²): 1.5 | Vibrasjonsnivå skruoppgaver (m/s²): 1.48 | Vibrasjonsnivå ved boring i betong feilmargin (m/s²): 1.5 | Vibrasjonsnivå ved boring i betong (m/s²): 11.3 | Vibrasjonsnivå ved boring i metall feilmargin (m/s²): 1.5 | Vibrasjonsnivå ved boring i metall (m/s²): 1.85",
+        "attributes": {
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/milwaukee-slagbormaskin-m18-fpd3-0x-4933479859"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Milwaukee Roadshow",
+              "Vinterkampanje",
+              "41022",
+              "MILWAUKEE",
+              "Drill og skrumaskin"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-09-27"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Elektroverktøy",
+              "Milwaukee M18 verktøy",
+              "Drill og slagbormaskin"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "30914"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "Spesial",
+              "BRAND",
+              "ELEKTROVERKTØY"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3269,
+          "originalPrice": 3269
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/milwaukee-slagbormaskin-m18-fpd3-0x-4933479859",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/1/3/135ed71e93ce6f5186a7bf20b76ea4a9a4ce9a2a_4933479859_image_1_1.jpeg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "2366771",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/2366771",
+        "categories": [
+          "KAMPANJER \u003e Bosch håndverkeravis \u003e Drill",
+          "KAMPANJER \u003e Bosch håndverkeravis \u003e Nyheter",
+          "KAMPANJER \u003e Sommer \u003e Skru- og bormaskin",
+          "KAMPANJER \u003e Bosch Pro Tour",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin"
+        ],
+        "title": "DRILL EXSR18V-90 SOLO L-BOXX",
+        "brands": [
+          "Bosch"
+        ],
+        "description": "Kraftig og allsidig: Sterk børsteløs motor som leverer høy effekt med 36/65 Nm mykt/hardt dreiemoment og 2100 o/min Kompakt kraftpakke: Hodelengde på 163 mm med 13 mm metallchuck for økt robusthet og overlegen overføring av dreiemoment Avansert brukerbeskyttelse: KickBack Control (på/av) minimerer faren for skader ved å stoppe motoren når boret kjører seg fast Uslåelig verktøykontroll: Presisjonsclutch (på/av) som stopper overkjøring ved behov og gir deg friheten til å justere verktøyet etter behov. Kun tilgjengelig hos utvalgte forhandlere. ",
+        "attributes": {
+          "category_level2": {
+            "text": [
+              "Bosch håndverkeravis",
+              "Sommer",
+              "Bosch Pro Tour",
+              "Drill og skrumaskin"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-15"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Drill",
+              "Nyheter",
+              "Skru- og bormaskin",
+              "Drill og slagbormaskin"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/bosch-drill-exsr18v-90-solo-l-boxx-2366771"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "274304"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3298,
+          "originalPrice": 3298
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/bosch-drill-exsr18v-90-solo-l-boxx-2366771",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/5/0/50034c4d717fcfdb7a9e9c557e6bf8c0c68556b4_2366771_image_1_1.jpg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "2232993",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/2232993",
+        "categories": [
+          "KAMPANJER \u003e Bosch håndverkeravis \u003e Drill",
+          "KAMPANJER \u003e Bosch håndverkeravis \u003e Nyheter",
+          "KAMPANJER \u003e Månedens kupp \u003e Elektroverktøy",
+          "KAMPANJER \u003e Sommer \u003e Skru- og bormaskin",
+          "KAMPANJER \u003e Bosch Pro Tour",
+          "KAMPANJER \u003e Vinterkampanje \u003e Elektroverktøy",
+          "KAMPANJER \u003e Gavetips \u003e Elektroverktøy pakkepris",
+          "KAMPANJER \u003e Gavetips \u003e Gavetips - 2000+",
+          "Spesial \u003e CoveredPro \u003e Elektroverktøy",
+          "Spesial \u003e Akademikerne Pluss \u003e Elektroverktøy",
+          "KAMPANJER \u003e Sommermesse",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin"
+        ],
+        "title": "Bor-/skrumaskin GSR 18V-65 med 2x5.0Ah batterier, lader og L-Boxx",
+        "brands": [
+          "Bosch"
+        ],
+        "description": "Hvis du er ute etter en batteridrevet bor-/skrumaskin med nok kraft også for krevende skruing, er Bosch GSR 18V-65 Professional riktig valg for deg. Den borer enkelt gjennom metall, tre eller plast, takket være det forbedre dreiemomentet på 31/63 Nm og turtallet på 0-550/0-2100 o/min. Trange, vanskelige steder er ikke noe problem med hodelengden til dette kompakte verktøyet på bare 166 mm. Vi har dessuten tenkt på sikkerheten din også, med KickBack Control som kan slås på og hindrer uventede tilbakeslag på verktøyet. I tillegg får du bedre lys under arbeidet med de to arbeidslysene.Uansett om du er kjøkkenmontør, tømrer, elektriker eller metallarbeider er bor-/skrumaskinen Bosch GSR 18V-65 Professional et pålitelig verktøy for krevende skruing. Den takler boring inntil 35 mm i tre, skruing i tre inntil 10 mm og boring i metall inntil 13 mm. Antall batterier: 2 | Antall batterier pakket: 1 | Antall innebygde batterier: 1 | Battericelleformat 1: 18650 | Batterispenning: 18,0 V | Batteriteknologitype, kode, beskrivelse 1: LiIon=Lithium-Ion | Batteritype: Litium-ion | Batteritype kode 1: not_relevant | Chuckspennvidde, min. / maks.: 1,5 / 13 mm | Dreiemoment (mykt/hardt/maks.): 31/63/76 Nm | Dreiemomenttrinn: 13 | Er batterier inkludert: JA | Er batterier innebygd: NEI | Er batterier nødvendig: JA | Er batteriet oppladbart 1: TRUE | Maks. slagtall: 0 slag/min | Produktbredde: 77,0 | Produktdatablad: https://www.bosch-professional.com/no/no/pdf/productdata/pro-gsr-18v-65-sheet.pdf?productSku=06019N3203 | Produktenhetens nettovekt: KG | Produktenhets bredde: mm | Produktenhets lengde: mm | Produktenhets tøyde: mm | Produktets nettovekt: 1,624 | Produkthøyde: 209,0 | Produktlengde: 166,0 | Strømkilde: 02 | Tomgangsturtall i (1. gir/2. gir): 0 – 550 / 0 – 2.100 o/min | Vekt ekskl. batteri: 1.06 kg | Vekt på batteri 1: 650,00 g | Verdi for wattimer (mWh): 90000",
+        "attributes": {
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/bosch-drill-gsr-18v-65-med-2x5-0ah-batteri-og-hurtiglader-i-l-boxx-2232993"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "Spesial",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "145869"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Bosch håndverkeravis",
+              "Månedens kupp",
+              "Sommer",
+              "Bosch Pro Tour",
+              "Vinterkampanje",
+              "Gavetips",
+              "CoveredPro",
+              "Akademikerne Pluss",
+              "Sommermesse",
+              "Drill og skrumaskin"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-20"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Drill",
+              "Nyheter",
+              "Elektroverktøy",
+              "Skru- og bormaskin",
+              "Elektroverktøy pakkepris",
+              "Gavetips - 2000+",
+              "Drill og slagbormaskin"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 4198,
+          "originalPrice": 4198
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/bosch-drill-gsr-18v-65-med-2x5-0ah-batteri-og-hurtiglader-i-l-boxx-2232993",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/2/3/2333ee3cff0842182b2a7f8742e83e1ec8b25261_gsr18v_65_pakke_1.jpg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1251464",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1251464",
+        "categories": [
+          "KAMPANJER \u003e Månedens kupp \u003e Elektroverktøy",
+          "BRAND \u003e MILWAUKEE \u003e Milwaukee M12 verktøy \u003e Milwaukee M12 skralle",
+          "KAMPANJER \u003e Vårkupp \u003e Håndverktøy",
+          "KAMPANJER \u003e Vinterkampanje \u003e Håndverktøy",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Skralle"
+        ],
+        "title": "Milwaukee 12V skralle ¼″ IR i bag med 1 x 12V 2,0Ah batteri & lader",
+        "brands": [
+          "Milwaukee"
+        ],
+        "description": "Milwaukee 12V skralle &frac14;&Prime; IR        &nbsp;     Best i sin klasse innen kraft og hastighet, 40 Nm og 250 o/min   REDLINK&trade; elektronikk med overbelastningsvern i bade batteri og verkt&oslash;y leverer klassens beste driftssikkerhet   Forsterket kropp - tilbyr h&oslash;y driftssikkerhet   Perfekt p&aring; steder med begrenset plass   Stor bryter med variabel hastighet for maksimal kontroll   Kraftig LED lys som lyser opp arbeidsomr&aring;det   Str&oslash;mindikator som viser hvor mye str&oslash;m som er igjen p&aring; batteriet   REDLITHIUM&trade; batteriene tilbyr solid konstruksjon, avansert elektronikk og h&oslash;y ytelse uten minneeffekt som sammen leverer mer driftstid og mer produktivitet gjennom hele batteriets levetid   Fleksibelt batterisystem: fungerer med alle MILWAUKEE&reg; M12&trade; batterier                   Leveringsomfang          1 x 12V 2,0Ah batteri    &#10003;        C12&nbsp;C Lader    &#10003;        Bag    &#10003;         Produktspesifikasjon         Antall medf&oslash;lgende batterier   1       Artikkelnummer   4933441720       Batterikapasitet (Ah)   2.0       Batteritype   Li-ion       Grepets omkreds (mm)   45       Hodeprofil (mm)   20       Inkludert   1 x M12 B2 Batteri, C12&nbsp;C Lader, Bag       Lengde (mm)   274       Leveres i   Bag       Maks.&nbsp;dreiemoment (Nm)   40       Spenning (V)   12       Ubelastet hastighet (o/min)   0 - 250       Vekt med batteri (kg)   0.9       Verkt&oslash;yopptak   &frac14;&Prime; firkant       Lydtrykk (Lpa)(dB(A))   72       Lydtrykk feilmargin (dB(A))   3       Vibrasjonsniv&aring; skruoppgaver (m/s&sup2;)   &lt;&gt;       Vibrasjonsniv&aring; skruoppgaver feilmargin (m/s&sup2;)   1.5 ",
+        "attributes": {
+          "category_level2": {
+            "text": [
+              "Månedens kupp",
+              "MILWAUKEE",
+              "Vårkupp",
+              "Vinterkampanje",
+              "Drill og skrumaskin"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Elektroverktøy",
+              "Milwaukee M12 verktøy",
+              "Håndverktøy",
+              "Drill og slagbormaskin",
+              "Skralle"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-15"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "41491"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/milwaukee-12-skralle-4933441725"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "BRAND",
+              "ELEKTROVERKTØY"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3382,
+          "originalPrice": 3382
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/milwaukee-12-skralle-4933441725",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/e/a/eae7f68086a703aec33053c672eb13aa7879be73_4933441725_image_1_1.jpeg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "2366264",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/2366264",
+        "categories": [
+          "KAMPANJER \u003e Bosch håndverkeravis \u003e Sag",
+          "KAMPANJER \u003e Bosch håndverkeravis \u003e Nyheter",
+          "KAMPANJER \u003e Bosch Pro Tour",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Multiverktøy"
+        ],
+        "title": "Multiverktøy GOP18V-30 SOLO",
+        "brands": [
+          "Bosch"
+        ],
+        "description": "Dette oscillerende multiverktøyet er utviklet for fagfolk som ønsker effektiv ytelse kombinert med høy komfort. Den smarte, innklikkbare bladholderen gjør det mulig å bytte tilbehør raskt og trygt uten å berøre varme blader, og er kompatibel med både Starlock- og StarlockPlus-systemer.\n  \nVerktøyet er utstyrt med en innovativ dobbel husutforming som reduserer vibrasjoner til kun 3 m/s². Dette gir bedre kontroll, jevnere drift og mindre belastning på hender og armer, selv ved lengre arbeidsøkter. Med en nettovekt på under 1 kg er det lett å håndtere og gir maksimal fleksibilitet i ulike arbeidsposisjoner.\n  \n\nDen børsteløse motoren leverer effektiv kraft og driver en oscillasjonsvinkel på 3,0 grader, noe som sikrer gode kutteresultater i en rekke materialer. Verktøyet egner seg til både kutting, sliping og fjerning av materialer, og kan brukes til alt fra presisjonsarbeid i tre og gips til kutting av rør og overflatebehandling.\n  \n  EGENSKAPER  \n \n Innklikkbar bladholder for raskt og verktøyløst bytte\n Kompatibel med Starlock- og StarlockPlus-blader\n Dobbel husutforming for redusert vibrasjon (3 m/s²)\n Børsteløs motor for lengre levetid og effektiv ytelse\n Oscillasjonsvinkel på 3,0 grader\n Lett design med nettovekt under 1 kg\n Egnet for kutting, sliping og materialfjerning\n Kompatibel med Bosch Professional 18V System og AMPShare Batterispenning: 18 V | Tomgangsturtall: 10.000 – 18.000 o/min | Oscilleringsvinkel venstre og høyre: 1,5 ° | Vekt ekskl. batteri: 1 kg | Vekt inkl. batteri: 1,4 kg | Emballasjemål (bredde x lengde x høyde): 130 x 310 x 98 mm | STARLOCK-systemkompatibilitet: Starlock, Starlock Plus, Smekk- | BITURBO: Nei | Svingningsemisjonsverdi ah: 3 m/s² | Usikkerhet K: 1,5 m/s² | Svingningsemisjonsverdi ah: 8,6 m/s² | Usikkerhet K: 2,9 m/s² | Lydtrykknivå: 82 dB(A) | Lydeffektnivå: 90 dB(A) | Usikkerhet K: 3 dB",
+        "attributes": {
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Bosch håndverkeravis",
+              "Bosch Pro Tour",
+              "Drill og skrumaskin"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/multiverktoy-gop18v-30-solo-2366264"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Sag",
+              "Nyheter",
+              "Multiverktøy"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "279247"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-20"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 1988,
+          "originalPrice": 1988
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/multiverktoy-gop18v-30-solo-2366264",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/3/5/35be125ac49779e57d560d36511815fa8a60b6bf_Skjermbilde_2026_04_30_075231_1.jpg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1247017",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1247017",
+        "categories": [
+          "BRAND \u003e MILWAUKEE \u003e Milwaukee M12 verktøy \u003e Milwaukee M12 skrumaskin",
+          "KAMPANJER \u003e Sommer \u003e Skru- og bormaskin",
+          "KAMPANJER \u003e Vårkupp \u003e Elektroverktøy",
+          "KAMPANJER \u003e Romjuls- og nyttårssalg \u003e Milwaukee",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin"
+        ],
+        "title": "Bor/skrutrekker M12 BDDXKIT-202C",
+        "brands": [
+          "Milwaukee"
+        ],
+        "description": "Kompakt 2-girs 12V bor/skrutrekker med avtagbar chuck. Lengde med chuck / uten chuck 192/153mm. 23-trinns momentkontroll + bormodus. 2-gir 0-400 / 0-1500 o/min. Max. dreiemoment 32 Nm. Borkapasitet i stål / tre 10 mm/20 mm. Treskruekapasitet 6 mm. Metallgir. FIXTEC-spindellås med 10 mm selvspennende chuck. Elektronisk variabel hastighet. REDLINK ™ elektronikk gir total systemkommunikasjon. Innebygd LED-lys lyser opp arbeidsområdet. Vekt 1,2 kg. Leveres med 2 x 2,0 Ah REDLITHIUM™ batterier, 40 min lader, vinkelchuck, forsats til skroppgaver tett på kanter og koffert. Antall medfølgende batterier: 2 | Article number 240v: 4933447773 | Batteritype: Li-ion | Chuckkapasitet (mm): 10 | Inkludert: 2 x M12 B2 Batterier, C12 C Lader, Koffert | Leveres i: Koffert | Lydstyrke feilmargin (dB(A)): 3 | Lydstyrke nivå (Lwa)(dB(A)): 96 | Lydtrykk feilmargin (dB(A)): 3 | Lydtrykk (Lpa)(dB(A)): 85 | Maks. borkapasitet i stål (mm): 10 | Maks. borkapasitet i tre (mm): 25 | Maks. dreiemoment (Nm): 32 | Modellvariant: M12 BDDXKIT-202C | Omdreininger ubelastet i 1. gir (o/min): 0 - 400 | Omdreininger ubelastet i 2. gir (o/min): 0 -1500 | Perfect Match - Article Number: 4932352335 | Perfect Match Relations: MPD 7 pc set 1 | Spenning (V): 12 | Standardutstyr: Avtagbar FIXTEC™ chuck, sidestilt chuck, vinkelchuck, belteklips, 25 mm PZ2 bits | Territory: IN2 | treskruer opp til (mm): 6 | Vibrasjonsnivå skruoppgaver feilmargin (m/s²): 1.5 | Vibrasjonsnivå skruoppgaver (m/s²): 0.4 | Vibrasjonsnivå ved boring i metall feilmargin (m/s²): 1.5 | Vibrasjonsnivå ved boring i metall (m/s²): 1.5",
+        "attributes": {
+          "category_level1": {
+            "text": [
+              "BRAND",
+              "KAMPANJER",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/milwaukee-bor-skrutrekker-m12bddxkit202c"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "41450"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Milwaukee M12 verktøy",
+              "Skru- og bormaskin",
+              "Elektroverktøy",
+              "Milwaukee",
+              "Drill og slagbormaskin"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-20"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "MILWAUKEE",
+              "Sommer",
+              "Vårkupp",
+              "Romjuls- og nyttårssalg",
+              "Drill og skrumaskin"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3608,
+          "originalPrice": 3608
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/milwaukee-bor-skrutrekker-m12bddxkit202c",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/e/2/e2ea8dd6fa7028771c49de2bd2ed762774f2a5ff_4933447836_image_1_1.jpeg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1965054",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1965054",
+        "categories": [
+          "KAMPANJER \u003e Månedens kupp \u003e Elektroverktøy",
+          "KAMPANJER \u003e Garasje og hjulskift \u003e Muttertrekker",
+          "KAMPANJER \u003e Romjuls- og nyttårssalg \u003e Hikoki",
+          "Spesial \u003e Hikoki Construction City",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Muttertrekker",
+          "KAMPANJER \u003e Hikoki kampanje"
+        ],
+        "title": "HIKOKI WR18DH MUTTERTREKKER",
+        "brands": [
+          "HIKOKI"
+        ],
+        "description": "Børsteløs motor som gir lengre driftstid per ladning, lengre levetid og minimalt vedlikehold for motoren. IP56-klassifisering beskytter mot støvpartikler og vanninntrengning. Verktøystift med friksjonsring og hull. Verktøyet kan brukes med både 18V- og MULTI VOLT-batterier. ",
+        "attributes": {
+          "product_id": {
+            "text": [
+              "31131"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Elektroverktøy",
+              "Muttertrekker",
+              "Hikoki"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Månedens kupp",
+              "Garasje og hjulskift",
+              "Romjuls- og nyttårssalg",
+              "Hikoki Construction City",
+              "Drill og skrumaskin",
+              "Hikoki kampanje"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/hikoki-wr18dh-muttertrekker"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "Spesial",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-28"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 2650,
+          "originalPrice": 2650
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/hikoki-wr18dh-muttertrekker",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/7/0/70df0be2f04b9188c9970065200bc8204170d336_WR18DH_side_l_1.jpg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "2343662",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/2343662",
+        "categories": [
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin",
+          "ELEKTROVERKTØY \u003e Øvrig elektroverktøy",
+          "BRAND \u003e MILWAUKEE \u003e Nyheter 2025",
+          "BRAND \u003e MILWAUKEE \u003e Milwaukee hageverktøy \u003e Milwaukee M18 hageverktøy"
+        ],
+        "title": "LØVBLÅSER M18 BLBLO-0",
+        "brands": [
+          "Milwaukee"
+        ],
+        "description": "MILWAUKEE® M18™ børsteløs blåser. Leverer opptil 12,74 m³/min luftmengde ved 193 km/t for effektiv fjerning av løv, grus og annet rusk. Lettvektsløsning for økt brukerkomfort. Ergonomisk, rettlinjet design gjør det enkelt å rydde i trange områder. Variabel avtrekker og hastighetslås gir full kontroll over effekten. Vekt uten batteri: 3,7 kg. Leveres uten batterier og lader, i pappeske. ",
+        "attributes": {
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "232167"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Drill og skrumaskin",
+              "Øvrig elektroverktøy",
+              "MILWAUKEE"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Drill og slagbormaskin",
+              "Nyheter 2025",
+              "Milwaukee hageverktøy"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/milwaukee-lovblaser-blblo-0-4933500239"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "ELEKTROVERKTØY",
+              "BRAND"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-18"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 2488,
+          "originalPrice": 2488
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/milwaukee-lovblaser-blblo-0-4933500239",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/2/1/21f49d17563d622c0178d2bea6ac710f1547f2c4_M18_BLBLO_0__Hero_1_1.jpg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1698935",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1698935",
+        "categories": [
+          "BRAND \u003e MILWAUKEE \u003e Milwaukee M12 verktøy \u003e Milwaukee M12 skrumaskin",
+          "KAMPANJER \u003e Sommer \u003e Skru- og bormaskin",
+          "KAMPANJER \u003e Milwaukee kampanje \u003e Milwaukee M12 verktøy",
+          "KAMPANJER \u003e Vinterkampanje \u003e Elektroverktøy",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin",
+          "Spesial \u003e CoveredPro \u003e Elektroverktøy",
+          "Spesial \u003e Akademikerne Pluss \u003e Elektroverktøy",
+          "KAMPANJER \u003e Milwaukee Big Red \u003e M12 Verktøy",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Slagskrutrekker"
+        ],
+        "title": "Slagskrutrekker M12 FID2-0",
+        "brands": [
+          "Milwaukee"
+        ],
+        "description": "Kompakt M12 FUEL™ 1/4˝ slagskrutrekker med POWERSTATE™-motor. Kun 127 mm lang. Maks. dreiemoment 170 Nm – overlegen kombinasjon av høy effekt og kompakt design. Hastighet opp til 3600 rpm og 4000 rpm. Hexchuck for raskt og enkelt bytte. Batteriindikator og LED-lys. DRIVE CONTROL™ lar brukeren velge mellon 4 hastigheter og dreiemoment. Vekt med batteri 0,9 kg. Leveres uten batteri og lader Antall medfølgende batterier: 0 | Batteritype: Li-ion | Inkludert: Leveres uten batteri, Leveres uten lader, Leveres uten koffert/bag | Leveres i: Leveres uten koffert/bag | Lydstyrke feilmargin (dB(A)): 3 | Lydstyrke nivå (Lwa)(dB(A)): 110.25 | Lydtrykk feilmargin (dB(A)): 3 | Lydtrykk (Lpa)(dB(A)): 99.25 | Maks. boltdiameter: 14 | Maks. dreiemoment (Nm): 170 | Modellvariant: M12 FID2-0 | Omdreininger ubelastet i 1. gir (o/min): 0 - 1700 | Omdreininger ubelastet i 2. gir (o/min): 0 - 2900 | Omdreininger ubelastet i 3. gir (o/min): 0 - 3600 | Omdreininger ubelastet i 4. gir (o/min): 0 - 3600 | Perfect Match - Article Number: 4932430908 | Perfect Match Relations: ShW CD Set (40 pc) | Slagtall (slag/min): 1300/3500/4000/0-4000 | Spenning (V): 12 | Territory: XXX | Tool Specific Relations: ShW CD Set (32pc),ShW PUCK Set (15pc),ShW CD Right Angle Attachment - 11pc | Ubelastet hastighet (o/min): 1700/2900/3600/0-3600 | Vibrasjonsnivå feilmargin (m/s²): 1.5 | Vibrasjonsnivå (m/s²): 14.35",
+        "attributes": {
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "BRAND",
+              "KAMPANJER",
+              "ELEKTROVERKTØY",
+              "Spesial"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-20"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "MILWAUKEE",
+              "Sommer",
+              "Milwaukee kampanje",
+              "Vinterkampanje",
+              "Drill og skrumaskin",
+              "CoveredPro",
+              "Akademikerne Pluss",
+              "Milwaukee Big Red"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/milwaukee-slagskrutrekker-m12-fid2-4933479876"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "30775"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Milwaukee M12 verktøy",
+              "Skru- og bormaskin",
+              "Elektroverktøy",
+              "Drill og slagbormaskin",
+              "M12 Verktøy",
+              "Slagskrutrekker"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 2251,
+          "originalPrice": 2251
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/milwaukee-slagskrutrekker-m12-fid2-4933479876",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/4/f/4fb510844d448b61b2bfb18b578195f7fdfb2f02_4933479876_image_1_1.jpeg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "2366280",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/2366280",
+        "categories": [
+          "KAMPANJER \u003e Bosch håndverkeravis \u003e Kampanjesett",
+          "ELEKTROVERKTØY \u003e Pakketilbud",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin"
+        ],
+        "title": "VERKTØYSETT 18V 8 DELER 4X5AH VESKE",
+        "brands": [
+          "Bosch"
+        ],
+        "description": "18V verktøysett bestående av slagdrill, slagtrekker, borhammer, vinkelsliper sirkelsag, bajonettsag multikutter og lykt. Leveres i bag med 4 stk 5,0Ah batterier og lader GAL 18V-80. ",
+        "attributes": {
+          "product_id": {
+            "text": [
+              "274780"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Bosch håndverkeravis",
+              "Pakketilbud",
+              "Drill og skrumaskin"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Kampanjesett",
+              "Drill og slagbormaskin"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/bosch-verktoysett-18v-8-deler-4x5ah-veske-2366280"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-09"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 19698,
+          "originalPrice": 19698
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/bosch-verktoysett-18v-8-deler-4x5ah-veske-2366280",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/3/8/38b0c0a561a7fe46a6427510022195c8fd02fa44_2366280_image_1_1.jpg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1668201",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1668201",
+        "categories": [
+          "KAMPANJER \u003e Månedens kupp \u003e Elektroverktøy",
+          "KAMPANJER \u003e Vårkupp \u003e Elektroverktøy",
+          "Spesial \u003e Hikoki Construction City",
+          "KAMPANJER \u003e Sommermesse",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin",
+          "KAMPANJER \u003e Hikoki kampanje"
+        ],
+        "title": "HIKOKI 18V Verktøypakke DS18DD + WH18DD i HSC Med 2 x 18V 5Ah batterier & lader",
+        "brands": [
+          "HIKOKI"
+        ],
+        "description": "HIKOKI 18V&nbsp; Verkt&oslash;ypakke DS18DD + WH18DD   Smart verkt&oslash;ypakke med 2 stk meget kompakte og sterke 18V batteriverkt&oslash;y.     Begge verkt&oslash;y har b&oslash;rstel&oslash;s motor som gir mer kraft, lengre levetid og lengre driftstid mellom hver lading.   Borskrutrekker DS18DD; maks moment 55 Nm, kapasitet i tre/st&aring;l 36/13 mm. Vekt inkl. batteri 1,37 kg.   Slagskrutrekker WH18DD; maks moment 140 Nm. Vekt inkl. batteri 1,4 kg.     Leveringsomfang          18V Borskrutrekker DS18DD    &#10003;        18V Slagskrutrekker WH18DD    &#10003;        18V 5Ah batterier BSL1850C 2 stk    &#10003;        14,4-18V batteri lader UC18YFSL    &#10003;        HSC-stablekoffert (HiKOKI Stackable Case)    &#10003; ",
+        "attributes": {
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/hikoki-18v-verktopakke-68000608"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "Spesial",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-09"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "67477"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Elektroverktøy",
+              "Drill og slagbormaskin"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Månedens kupp",
+              "Vårkupp",
+              "Hikoki Construction City",
+              "Sommermesse",
+              "Drill og skrumaskin",
+              "Hikoki kampanje"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3499,
+          "originalPrice": 3499
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/hikoki-18v-verktopakke-68000608",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/e/4/e43e6d21343e9ed07253b5d0d06f68bab8d5ce7d_1668201_2_1.jpg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1967020",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1967020",
+        "categories": [
+          "KAMPANJER \u003e Sommer \u003e Skru- og bormaskin",
+          "KAMPANJER \u003e Vinterkampanje \u003e Elektroverktøy",
+          "KAMPANJER \u003e Gavetips \u003e Elektroverktøy pakkepris",
+          "Spesial \u003e Hikoki Construction City",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin",
+          "KAMPANJER \u003e Hikoki kampanje"
+        ],
+        "title": "HIKOKI VERKTØYPAKKE KC18DE (DS/WH) 5,0Ah (MULTI VOLT) med 2x5.0Ah. batteri",
+        "brands": [
+          "HIKOKI"
+        ],
+        "description": "VERKTØYPAKKE KC18DE (DS/WH) 5,0Ah (MULTI VOLT) med 2x5.0Ah. batteri   VERKTØYPAKKE KC18DE (DS/WH) 5,0Ah (MULTI VOLT) med 2x5.0Ah. batteri   &nbsp;   Beskrivelse   Verktøypakke som inneholder to kompakte og effektive 18V-verktøy, to MULTIVOLT-batterier og en hurtiglader. Borskrutrekker DS18DE: Meget kompakt borskrutrekker med enestående balanse. Vekt ca. 1,9 kg inkl. batteri. Høy hastighet og dreiemoment (maks. 70 Nm), for effektivt arbeid. Kick-back system (RFC) som reduserer vridning av underarmen og hånden ved fastkjøring. Slagskrutrekker WH18DE: Kompakt lett og effektiv slagskrutrekker med høy rotasjonshastighet og maksimalt dreiemoment på 175 Nm. Vekt på 1,6 kg gir enestående balanse og manøvrerbarhet. Bryter med forbedret respons og lavere minimum rotasjonshastighet. TILLEGGSINFORMASJONBegge verktøyene er utstyrt med en børsteløs motor som gir lengre driftstid per ladning, lengre levetid og minimalt med vedlikehold av motoren. HiKOKIs velkjente ergonomiske og gummierte grep. Integrert LED-lys og batteri med batterinivåindikator. Kompatibel med HiKOKI MULTI VOLT og 18V slide-batterier. For mer informasjon, se DS18DE (Art nr. 68010395) og WH18DE (Art nr. 68010881).   &nbsp;   Bruksområde   Stramming og løsning av treskruer, maskinskruer etc. i forskjellige materialer. Boring i tre, stål, aluminium etc. Perfekt for installasjoner og montering på trange og utilgjengelige steder. Tiltrekking og fjerning av skruer, bolter mv. i forskjellige materialer. ",
+        "attributes": {
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "31135"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "Spesial",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/hikoki-verktoypakke-kc18de-ds-wh-5-0ah-multi-volt-med-2x5-0ah-batteri"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Skru- og bormaskin",
+              "Elektroverktøy",
+              "Elektroverktøy pakkepris",
+              "Drill og slagbormaskin"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-30"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Sommer",
+              "Vinterkampanje",
+              "Gavetips",
+              "Hikoki Construction City",
+              "Drill og skrumaskin",
+              "Hikoki kampanje"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3999,
+          "originalPrice": 3999
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/hikoki-verktoypakke-kc18de-ds-wh-5-0ah-multi-volt-med-2x5-0ah-batteri",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/5/f/5f835818b3bc19cba16906227b32d7a12792dc96_1967020_1_1.jpg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "2232994",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/2232994",
+        "categories": [
+          "KAMPANJER \u003e Sommer \u003e Skru- og bormaskin",
+          "KAMPANJER \u003e Bosch Pro Tour",
+          "KAMPANJER \u003e Garasje og hjulskift \u003e Muttertrekker",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Muttertrekker"
+        ],
+        "title": "Muttertrekker GDS 18V-750 C",
+        "brands": [
+          "Bosch"
+        ],
+        "description": "Den kompakte slagtrekkeren GDS 18V-750 C Professional er et perfekt verktøy for et stort spekter av oppgaver. Den har et tiltrekkingsmoment på opptil 750 Nm og et løsrivingsmoment på opptil 1000 Nm, og hodelengden er bare 156 mm. De tre turtalls-/momentinnstillingene sørger for full kontroll og stor allsidighet. Brukergrensesnittet gir direkte tilgang til to standardmoduser: metallbolt/-skrue (A) og treskrue (B). Begge sikrer kontrollert arbeid og hindrer at skruehoder brekker i retning forover og unngår med funksjonen ABR (Auto Bolt Release) at bolter/muttere faller ut i retning bakover. Hver modus kan justeres og tilpasses individuelt for repetitive arbeidsoperasjoner via Bosch PRO360-appen. Secure Socket Release hindrer at skrunøkkelen setter seg fast på bolten/mutteren. Denne funksjonen kan bare aktiveres via appen.Slagtrekkeren er perfekt for mekaniske verksteder og låsesmeder, industriell montering og bilvedlikehold med metallbolter/-muttere fra M12 til M22. Den er egnet for et stort spekter av betongskruer opptil 16 mm for generelt bygge- og anleggsarbeid og passer også til treskruer. Kompatibel med Bosch Professional 18V System og batterialliansen AMPShare. Antall batterier: 0 | Antall batterier pakket: 0 | Batterispenning: 18,0 V | Dreiemoment, maks.: 750 Nm | Dreiemomenttrinn: 3 | Er batterier inkludert: NEI | Er batterier innebygd: NEI | Er batterier nødvendig: JA | Momentinnstillingsområde, min./maks., 1. trinn: 270 Nm | Momentinnstillingsområde, min./maks., 2. trinn: 380 Nm | Momentinnstillingsområde, min./maks., 3. trinn: 750 Nm | Produktbredde: 77,0 | Produktdatablad: https://www.bosch-professional.com/no/no/pdf/productdata/pro-gds-18v-750-c-sheet.pdf?productSku=06019L9001 | Produktenhetens nettovekt: KG | Produktenhets bredde: mm | Produktenhets lengde: mm | Produktenhets tøyde: mm | Produktets nettovekt: 2,900 | Produkthøyde: 223,0 | Produktlengde: 156,0 | Slagtall: 1.500-3.000 slag/min | Slagtall (1. trinn): 0-1.500 slag/min | Slagtall (2. trinn): 0-2.300 slag/min | Slagtall (3. trinn): 0-3.000 slag/min | Startmoment, maks.: 1000 Nm | Strømkilde: 02 | Tomgangsturtall: 0-800 o/min | Tomgangsturtall (1. trinn): 0-800 o/min | Tomgangsturtall (2. trinn): 0-1.500 o/min | Tomgangsturtall (3. trinn): 0-2.400 o/min | Vekt ekskl. batteri: 1.7 kg | Verdi for wattimer (mWh): 0 | Verktøyholder: 1/2'' firkant",
+        "attributes": {
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-20"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "149054"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Sommer",
+              "Bosch Pro Tour",
+              "Garasje og hjulskift",
+              "Drill og skrumaskin"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/bosch-muttertrekker-gds-18v-750-l-boxx-2232994"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Skru- og bormaskin",
+              "Muttertrekker"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "ELEKTROVERKTØY"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 4981,
+          "originalPrice": 4981
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/bosch-muttertrekker-gds-18v-750-l-boxx-2232994",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/f/b/fbf7e786ac563da20a2b5f01b00aec2ba650384b_06019L9001_image_1_1.png"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1139424",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1139424",
+        "categories": [
+          "BRAND \u003e MILWAUKEE \u003e Milwaukee M12 verktøy \u003e Milwaukee M12 skrumaskin",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Multiverktøy",
+          "ELEKTROVERKTØY \u003e Slipemaskin \u003e Andre slipemaskiner",
+          "HÅNDVERKTØY \u003e File, slipe og børste",
+          "ELEKTROVERKTØY \u003e Slipemaskin \u003e Rettsliper"
+        ],
+        "title": "MILWAUKEE MULTISLIPER C12 RT-0",
+        "brands": [
+          "Milwaukee"
+        ],
+        "description": "MILWAUKEE MULTISLIPER C12 RT-0     Allsidig batterimaskin til l&oslash;sning av diverse skj&aelig;reoppgaver og fjerning av materiale   REDLINK&trade; elektronikk med overbelastningsvern i bade batteri og verkt&oslash;y leverer klassens beste driftssikkerhet   Justerbar hastighet (5,000-32,000 rpm)   3,2 mm spennhylse som er kompatibel med det med vanlige tilbeh&oslash;ret p&aring; markedet   Spindell&aring;s for raskt og enkelt skifte av tilbeh&oslash;r   Ergonomisk og lett   Individuell celleoverv&aring;kning optimerer driftstiden og sikrer beste levetid og driftssikkerhet   Batteriindikator   Fleksibelt batterisystem: fungerer med alle MILWAUKEE&reg; M12&trade; batterier     &nbsp;                    PRODUKTSPESIFIKASJON         Antall medf&oslash;lgende batterier   0       Artikkelnummer   4933427183       Batterikapasitet (Ah)   Leveres uten batteri       Batteritype   Li-ion       Leveres i   Leveres uten koffert/bag       Spennhylse (mm)   3.2       Spenning (V)   12       Standardudstyr   ekskl. batteri og lader       Ubelastet hastighet (o/min)   5000 - 32,000       Vekt (kg)   0.44       Vekt med batteri (kg)   0.6       Vibrasjonsniv&aring; kutteoppgaver (m/s&sup2;)   3.4       Vibrasjonsniv&aring; kutteoppgaver feilmargin (m/s&sup2;)   1.5         &nbsp; ",
+        "attributes": {
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Milwaukee M12 verktøy",
+              "Multiverktøy",
+              "Andre slipemaskiner",
+              "Rettsliper"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "41244"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/milwaukee-multisliper-c12-rt-0"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "MILWAUKEE",
+              "Drill og skrumaskin",
+              "Slipemaskin",
+              "File, slipe og børste"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "BRAND",
+              "ELEKTROVERKTØY",
+              "HÅNDVERKTØY"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-15"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 1714,
+          "originalPrice": 1714
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/milwaukee-multisliper-c12-rt-0",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/9/f/9fd52030e3633b4d6348f54c9782e4f5649fe3b2_4933427183_image_1_1.jpeg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1798293",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1798293",
+        "categories": [
+          "KAMPANJER \u003e Sommer \u003e Skru- og bormaskin",
+          "KAMPANJER \u003e Milwaukee kampanje \u003e Milwaukee M18 verktøy",
+          "KAMPANJER \u003e Vinterkampanje \u003e Elektroverktøy",
+          "Spesial \u003e CoveredPro \u003e Elektroverktøy",
+          "Spesial \u003e Akademikerne Pluss \u003e Elektroverktøy",
+          "KAMPANJER \u003e Milwaukee Big Red \u003e M18 Verktøy",
+          "BRAND \u003e MILWAUKEE \u003e Milwaukee M18 verktøy \u003e Milwaukee M18 slagtrekker",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Slagskrutrekker"
+        ],
+        "title": "Slagskrutrekker M18 FID3-0X",
+        "brands": [
+          "Milwaukee"
+        ],
+        "description": "MILWAUKEE® kompakt M18 FUEL™ 1/4˝ HEX slagskrutrekker med børsteløs POWERSTATE™ motor for mer kraft og lang levetid. Kun 113 mm lang. DRIVE CONTROL™ lar brukeren velge mellom 4 forskjellige hastighets- og dreiemomentinnstillinger - opp til 3.900 rpm, 4.400 ipm og 226 Nm. REDLINK PLUS™ elektronikk leverer den mest avanserte digitale overbelastningsbeskyttelsen for verktøy og batteri, og forbedrer verktøyets ytelse under belastning. REDLITHIUM™ batteri gir lengre driftstid og optimal holdbarhet. LED lys. Vekt med batteri 1,7 kg. Leveres i HD Box uten batterier og lader. Antall medfølgende batterier: 0 | Batteritype: Li-ion | Inkludert: Leveres uten batteri, Leveres uten lader, HD Box | Leveres i: HD Box | Maks. boltdiameter: M16 | Maks. dreiemoment (Nm): 226 | Modellvariant: M18 FID3-0X | Perfect Match - Article Number: 4932464240 | Perfect Match Relations: ShW CD Set (32pc) | Slagtall (slag/min): 1400/3600/4400/0-4400 | Spenning (V): 18 | Standardutstyr: Belteklips og bitsholder | Strammekapasitet (Nm): 226 | Territory: XXX | Tool Specific Relations: ShW CD Right Angle Attachment - 11pc | Ubelastet hastighet (o/min): 1750/3000/3900/0-3900",
+        "attributes": {
+          "product_id": {
+            "text": [
+              "30913"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Skru- og bormaskin",
+              "Milwaukee M18 verktøy",
+              "Elektroverktøy",
+              "M18 Verktøy",
+              "Slagskrutrekker"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-20"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/milwaukee-slagskrutrekker-m18-fid3-0x-4933479864"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Sommer",
+              "Milwaukee kampanje",
+              "Vinterkampanje",
+              "CoveredPro",
+              "Akademikerne Pluss",
+              "Milwaukee Big Red",
+              "MILWAUKEE",
+              "Drill og skrumaskin"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "Spesial",
+              "BRAND",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3721,
+          "originalPrice": 3721
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/milwaukee-slagskrutrekker-m18-fid3-0x-4933479864",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/c/9/c99b6acfc587da67e0cf41e9a50b6a35c8fd6542_4933479864_image_1_1.jpeg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "2233352",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/2233352",
+        "categories": [
+          "KAMPANJER \u003e Sommer \u003e Skru- og bormaskin",
+          "KAMPANJER \u003e Vinterkampanje \u003e Elektroverktøy",
+          "Spesial \u003e CoveredPro \u003e Elektroverktøy",
+          "Spesial \u003e Akademikerne Pluss \u003e Elektroverktøy",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin"
+        ],
+        "title": "Batteridrevne skrumaskiner Bosch GO",
+        "brands": [
+          "Bosch"
+        ],
+        "description": "Den nyeste batteridrevne skrutrekkeren Bosch Go Professional leveres med helt nye funksjoner som hjelper deg med å jobbe mer effektivt. Den universelle bitsholderen vil holde og låse alle typer universelle 1/4\" sekskantskrutrekkerbits slik at de ikke faller av etter bruk. Den integrerte LED-ringen lyser opp et stort område, noe som gjør det lettere å jobbe i mørke hjørner. Den fungerer også som en batteristatusindikator, så du vet når du bør lade. Den neste generasjons mekaniske clutch gir ekstra presisjon med 7 dreiemomentinnstillinger og en maks. effektmodus – fra en finpresisjonsinnstilling for delikate bruksområder opp til kraftige 5 NmDette kompakte presisjonsverktøyet holder sikkert de fleste typer bits for skruing i tre, metall eller plast Antall batterier: 1 | Antall batterier pakket: 0 | Antall innebygde batterier: 1 | Battericelleformat 1: 18650 | Batterispenning: 3,6 V | Batteriteknologitype, kode, beskrivelse 1: LiIon=Lithium-Ion | Batteritype kode 1: not_relevant | Dreiemoment, maks. (hardt/mykt): 5 / 2,5 Nm | Er batterier inkludert: JA | Er batterier innebygd: JA | Er batterier nødvendig: JA | Er batteriet oppladbart 1: TRUE | Produktbredde: 41,0 | Produktdatablad: https://www.bosch-professional.com/no/no/pdf/productdata/pro-bosch-go-sheet.pdf?productSku=06019H2201 | Produktenhetens nettovekt: KG | Produktenhets bredde: mm | Produktenhets lengde: mm | Produktenhets tøyde: mm | Produktets nettovekt: 0,874 | Produkthøyde: 41,0 | Produktlengde: 192,0 | Strømkilde: 02 | Tomgangsturtall: 306 – 396 o/min | Tunnelbegrensningskode: 511 | Vekt ekskl. batteri: .32 kg | Vekt på batteri 1: 43,00 g | Verdi for wattimer (mWh): 7200 | Verktøyholder: 1/4\" innvendig sekskant",
+        "attributes": {
+          "category_level2": {
+            "text": [
+              "Sommer",
+              "Vinterkampanje",
+              "CoveredPro",
+              "Akademikerne Pluss",
+              "Drill og skrumaskin"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/bosch-batteridrevne-skrumaskiner-bosch-go-2233352"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "159689"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Skru- og bormaskin",
+              "Elektroverktøy",
+              "Drill og slagbormaskin"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-17"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "Spesial",
+              "ELEKTROVERKTØY"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 1274,
+          "originalPrice": 1274
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/bosch-batteridrevne-skrumaskiner-bosch-go-2233352",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/1/0/10efa4ddf03bd76280fe9072353069be80c82a11_06019H2201_image_1_1.png"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1659604",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1659604",
+        "categories": [
+          "KAMPANJER \u003e Garasje og hjulskift \u003e Muttertrekker",
+          "KAMPANJER \u003e Romjuls- og nyttårssalg \u003e Hikoki",
+          "Spesial \u003e Hikoki Construction City",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Muttertrekker"
+        ],
+        "title": "Muttertrekker ½″ WR36DE KM HSC UTEN BATTERI OG LADER",
+        "brands": [
+          "HIKOKI"
+        ],
+        "description": "Denne kompakte og kraftfulle muttertrekkeren kombinerer høyt moment med et ergonomisk design for optimal komfort og kontroll. Med fire innstillbare hastighetsnivåer, Auto Stop-funksjon og børsteløs motor får du både effektiv stramming og løsning av bolter og muttere i ulike materialer, samt lang levetid på maskinen. Den støv- og vannresistente konstruksjonen (IP56) og HiKOKI Protection System sørger for sikker og pålitelig bruk, selv under tøffe forhold. Perfekt for service og vedlikehold av større kjøretøy og maskiner.\n    \n EGENSKAPER \n    \nHøyt moment på 770 Nm\n  \nVelbalansert og lett design\n  \nKompakt og ergonomisk\n  \nFire innstillbare nivåer på hastighet/slagtall\n  \nAuto Stop-funksjon\n  \nKraftig børsteløs motor\n  \nStøv- og vannresistent (IP56)\n  \nHPS – HiKOKI Protection System Kapasitet standardbolt: M24 | Kapasitet spesialbolt: M20 | Hastighet ubelastet: 0-2400/min | Slagtall ubelastet: 0-3400/min | Maks moment : 770 Nm | Vibrasjonsnivå m/s² (3D): 13,5 | Lydtrykksnivå dB (A): 96 | Lydeffektnivå dB(A): 107 | Dimensjon (L x H): L169 mm | Vekt uten batteri : 1,9 kg",
+        "attributes": {
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "Spesial",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-16"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Muttertrekker",
+              "Hikoki"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "82123"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/hikoki-36v-muttertrekker-wr36de-68010548"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Garasje og hjulskift",
+              "Romjuls- og nyttårssalg",
+              "Hikoki Construction City",
+              "Drill og skrumaskin"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3599,
+          "originalPrice": 3599
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/hikoki-36v-muttertrekker-wr36de-68010548",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/3/3/33a6a28d089e354ea74ca3860088cd5fc1dd5f94_1659604_3_1.jpeg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "2333114",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/2333114",
+        "categories": [
+          "BRAND \u003e MILWAUKEE \u003e Milwaukee M12 verktøy \u003e Milwaukee M12 slip og polering",
+          "KAMPANJER \u003e Sommer \u003e Sag og slipemaskin",
+          "KAMPANJER \u003e Milwaukee kampanje \u003e Milwaukee M12 verktøy",
+          "KAMPANJER \u003e Vinterkampanje \u003e Elektroverktøy",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Multiverktøy",
+          "BRAND \u003e MILWAUKEE \u003e Nyheter 2025"
+        ],
+        "title": "SLIPEMASKIN M12 FDGA2-0",
+        "brands": [
+          "Milwaukee"
+        ],
+        "description": "MILWAUKEE® M12 FUEL™ vinklet slipemaskin. Leverer 50 % mer kraft sammenlignet med forrige modell – den kraftigste 12V vinklede slipemaskinen på markedet og overgår den pneumatiske konkurransen. Maksimal kontroll for alle bruksområder, 4-modus trykknapp ideell for arbeid med forskjellige tilbehør opptil 76 mm. Kun 119 mm lang for å passe i trange områder, og gir god mobilitet og tilgang. Spindellås – økt produktivitet ved å redusere behovet for to nøkler. Universalfeste som passer både 6 og 8 mm tilbehør. Dobbel sikkerhetsutløser for å forhindre automatisk oppstart. LED-lys lyser opp arbeidsområdet for bedre synlighet. Vekt uten batteri 0,7 kg. Leveres uten batterier og lader i en pappeske. ",
+        "attributes": {
+          "category_level3": {
+            "text": [
+              "Milwaukee M12 verktøy",
+              "Sag og slipemaskin",
+              "Elektroverktøy",
+              "Multiverktøy",
+              "Nyheter 2025"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "MILWAUKEE",
+              "Sommer",
+              "Milwaukee kampanje",
+              "Vinterkampanje",
+              "Drill og skrumaskin"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-20"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/milwaukee-slipemaskin-m12-fdga2-4933498979"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "BRAND",
+              "KAMPANJER",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "232130"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3681,
+          "originalPrice": 3681
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/milwaukee-slipemaskin-m12-fdga2-4933498979",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/d/f/dfce1ab2eaab750eb085ff1b85caf0066654aefe_M12_FDGA2_0__Hero_1_1.jpg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "1698928",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/1698928",
+        "categories": [
+          "BRAND \u003e MILWAUKEE \u003e Milwaukee M12 verktøy \u003e Milwaukee M12 skrumaskin",
+          "KAMPANJER \u003e Vårkupp \u003e Elektroverktøy",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Slagskrutrekker"
+        ],
+        "title": "Slagtrekker-/Nøkkel MILWAUKEE SLAGSKRUTREKKER M12 FID2-202X",
+        "brands": [
+          "Milwaukee"
+        ],
+        "description": "SLAGSKRUTREKKER M12 FID2-202X             EGENSKAPER       Kompakt design med kun 127 mm lengde, er perfekt til arbeid i trange steder   Enestående forhold mellom kraft og størrelse med 170 Nm dreiemoment   Rask borhastighet med opptil 3600 rpm og 4000 ipm   Tri-LED leverer høydefinisjonsbelysning for å øke arbeidsområdets synlighet   4-Modus DRIVE CONTROL lar brukeren skifte til tre forskjellige hastighets- og momentinnstillinger, samt selvjustering-/stopp som gir allsidighet.   ¼″ Hex chuck for raskt og enkelt bitskifte   Vår FUEL™ plattform redefinerer verden innen batteridrevne teknologier.   Den børsteløse POWERSTATE™ motoren, REDLITHIUM™ batteriet og REDLINK PLUS™ elektronikken fra MILWAUKEE® leverer overlegen kraft, batteritid og levetid.   Fleksibelt batterisystem: fungerer med alle MILWAUKEE®&nbsp;M12™&nbsp;batterier       Spesifikasjoner            Artikkel nr.:     4933479877         No load speed [rpm]:     0 - 1700/ 0 - 2900/ 0 - 3600/ 0 - 3600         Maks.&nbsp;dreiemoment [Nm]:     170         Spenning (V):     12         Batteritype:     Li-ion         Påvirkningsrate [ipm]:     0 - 4000         Leveres i:     HD-boks         Navn: Modellvariant:     M12 FID2-202X         Vekt med batteripakke (kg):     0,9 (M12 B2)         Teknologi:     Brensel         Lader inkludert:     C12 C         Batteri inkludert:     2 x M12 B2         System:     M12 ",
+        "attributes": {
+          "product_id": {
+            "text": [
+              "30771"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "MILWAUKEE",
+              "Vårkupp",
+              "Drill og skrumaskin"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-15"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Milwaukee M12 verktøy",
+              "Elektroverktøy",
+              "Drill og slagbormaskin",
+              "Slagskrutrekker"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/milwaukee-slagskrutrekker-1698928"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "BRAND",
+              "KAMPANJER",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 3382,
+          "originalPrice": 3382
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/milwaukee-slagskrutrekker-1698928",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/7/c/7c8a966cabbd96f6095c17ed2363324745877dc9_4933479877_image_1_1.jpeg"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "2330918",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/2330918",
+        "categories": [
+          "KAMPANJER \u003e Bosch håndverkeravis \u003e Drill",
+          "KAMPANJER \u003e Sommer \u003e Skru- og bormaskin",
+          "KAMPANJER \u003e Vinterkampanje \u003e Elektroverktøy",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Drill og slagbormaskin",
+          "Spesial \u003e CoveredPro \u003e Elektroverktøy",
+          "Spesial \u003e Akademikerne Pluss \u003e Elektroverktøy"
+        ],
+        "title": "Bor-/skrumaskin GSR 12V-32",
+        "brands": [
+          "Bosch"
+        ],
+        "description": "Batteridrevne GSR 12V-32 Professional gir den beste verktøykontrollen med Advanced KickBack Control. Denne teknologien minimerer risikoen for skade hvis borkronen setter seg brått fast, eller selv om verktøyet roterer sakte rundt boreaksen og holdkraften øker sakte. Med en hodelengde på 142 mm og en verktøyhøyde på 160 mm er verktøyet ekstremt kompakt og gjør boring eller skruing enkelt, selv på steder der det er trangt eller vanskelig å komme til. I tillegg er rutinearbeid gjennom dagen mindre utmattende med denne lette boremaskinen, som veier kun 0,7 kg.GSR 12V-32 Professional kan brukes til all slags skruing og boring i tre og metall. Antall batterier: 2 | Antall batterier pakket: 1 | Antall innebygde batterier: 1 | Battericelleformat 1: 18650 | Batterispenning: 12,0 V | Batteriteknologitype, kode, beskrivelse 1: LiIon=Lithium-Ion | Batteritype: Litium-ion | Batteritype kode 1: not_relevant | Chuckspennvidde, min. / maks.: 0,8 / 10 mm | Dreiemoment (mykt/hardt/maks.): 21/32/- Nm | Dreiemomenttrinn: 21 | Er batterier inkludert: JA | Er batterier innebygd: NEI | Er batterier nødvendig: JA | Er batteriet oppladbart 1: TRUE | Kort versjon tilleggsinformasjon: GSR 12V-32 Professional leveres med Advanced KickBack Control, børsteløs motor, robust metallchuck, et sterkt arbeidslys og belteklips. | Produktbredde: 54,0 | Produktdatablad: https://www.bosch-professional.com/no/no/pdf/productdata/pro-gsr-12v-32-sheet.pdf?productSku=06019N7003 | Produktenhetens nettovekt: KG | Produktenhets bredde: mm | Produktenhets lengde: mm | Produktenhets tøyde: mm | Produktets nettovekt: 0,650 | Produkthøyde: 160,0 | Produktlengde: 142,0 | Strømkilde: 02 | Tomgangsturtall i (1. gir/2. gir): 0 – 475 / 0 – 1.800 o/min | Vekt ekskl. batteri: .7 kg | Vekt på batteri 1: 200,00 g | Verdi for wattimer (mWh): 21600",
+        "attributes": {
+          "product_id": {
+            "text": [
+              "226211"
+            ]
+          },
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "ELEKTROVERKTØY",
+              "Spesial"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/drill-gsr-12v-32-2x2ah-gal-veske-2330918"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-20"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Drill",
+              "Skru- og bormaskin",
+              "Elektroverktøy",
+              "Drill og slagbormaskin"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Bosch håndverkeravis",
+              "Sommer",
+              "Vinterkampanje",
+              "Drill og skrumaskin",
+              "CoveredPro",
+              "Akademikerne Pluss"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 2298,
+          "originalPrice": 2298
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/drill-gsr-12v-32-2x2ah-gal-veske-2330918",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/a/c/ac793fdb1c7fd143c854f8fd5e9d366cdb39097e_06019N7003_image_1_1.png"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    },
+    {
+      "id": "2233383",
+      "product": {
+        "name": "projects/399088535643/locations/global/catalogs/default_catalog/branches/0/products/2233383",
+        "categories": [
+          "KAMPANJER \u003e Garasje og hjulskift \u003e Muttertrekker",
+          "ELEKTROVERKTØY \u003e Drill og skrumaskin \u003e Muttertrekker"
+        ],
+        "title": "Muttertrekker GDS 18V-350",
+        "brands": [
+          "Bosch"
+        ],
+        "description": "Små verktøy er praktiske å ha med seg overalt, men ettersom de har begrenset kraft, bruker du lengre tid på jobben. Bosch GDS 18V-350 er kompakt og svært effektiv intuitiv slagtrekker med børsteløs motor. Den har en hodestørrelse på bare 131 mm og et smalt softgrip-håndtak, og den er dermed enkel å bruke også på trange steder. Velg mellom tre forskjellige dreiemomentnivåer på 85 Nm, 200 Nm og 350 Nm, som sørger for at du takler forskjellige skruestørrelser eller rustne skruer samtidig som du unngår skade.Dette er et praktisk verktøy for metallproduksjon, VVS, stillasbygging eller bilreparasjoner. Med dette skruer du enkelt inn skruer i gjenger. Denne slagtrekkeren takler også utfordrende oppgaver, som feste av maskinelt bearbeidede skruer. Antall batterier: 0 | Antall batterier pakket: 0 | Batterispenning: 18,0 V | Dreiemoment, maks.: 350 Nm | Dreiemomenttrinn: 3 | Er batterier inkludert: NEI | Er batterier innebygd: NEI | Er batterier nødvendig: JA | Momentinnstillingsområde, min./maks., 1. trinn: 0/85 Nm | Momentinnstillingsområde, min./maks., 2. trinn: 0/200 Nm | Momentinnstillingsområde, min./maks., 3. trinn: 0/350 Nm | Produktbredde: 73,0 | Produktdatablad: https://www.bosch-professional.com/no/no/pdf/productdata/pro-gds-18v-350-sheet.pdf?productSku=06019M5020 | Produktenhetens nettovekt: KG | Produktenhets bredde: mm | Produktenhets lengde: mm | Produktenhets tøyde: mm | Produktets nettovekt: 1,100 | Produkthøyde: 210,0 | Produktlengde: 141,0 | Slagtall: 0-3.400 slag/min | Slagtall (1. trinn): 0-1.800 slag/min | Slagtall (2. trinn): 0-2.600 slag/min | Slagtall (3. trinn): 0-3.400 slag/min | Startmoment, maks.: 560 Nm | Strømkilde: 02 | Tomgangsturtall: 0-1.200 o/min | Tomgangsturtall (1. trinn): 0-1.200 o/min | Tomgangsturtall (2. trinn): 0-1.700 o/min | Tomgangsturtall (3. trinn): 0-2.300 o/min | Vekt ekskl. batteri: 1.1 kg | Verdi for wattimer (mWh): 0 | Verktøyholder: 1/2 firkant friksjonsring + gjennomgående hull",
+        "attributes": {
+          "category_level1": {
+            "text": [
+              "KAMPANJER",
+              "ELEKTROVERKTØY"
+            ]
+          },
+          "delivery_expected_date": {
+            "text": [
+              "2026-10-20"
+            ]
+          },
+          "type": {
+            "text": [
+              "simple"
+            ]
+          },
+          "url_coward": {
+            "text": [
+              "https://www.coward.no/bosch-batteridrevne-muttertrekkere-gds-18v-350-uten-batteri-2233383"
+            ]
+          },
+          "category_level3": {
+            "text": [
+              "Muttertrekker"
+            ]
+          },
+          "category_level2": {
+            "text": [
+              "Garasje og hjulskift",
+              "Drill og skrumaskin"
+            ]
+          },
+          "status": {
+            "text": [
+              "1"
+            ]
+          },
+          "product_id": {
+            "text": [
+              "174091"
+            ]
+          },
+          "min_sale_qty": {
+            "text": [
+              "1"
+            ]
+          },
+          "custom_stock_status": {
+            "text": [
+              "1"
+            ]
+          }
+        },
+        "priceInfo": {
+          "price": 2803,
+          "originalPrice": 2803
+        },
+        "availability": "IN_STOCK",
+        "uri": "https://www.xn--verkty-fya.no/bosch-batteridrevne-muttertrekkere-gds-18v-350-uten-batteri-2233383",
+        "images": [
+          {
+            "uri": "https://www.xn--verkty-fya.no/media/catalog/product/7/d/7d13123766ee539b83384645f1f1569b0726756a_451747GDS_18V_350_Ghost_Dyn__12__1.png"
+          }
+        ],
+        "conditions": [
+          "new"
+        ]
+      }
+    }
+  ],
+  "totalSize": 1589,
+  "attributionToken": "igHwiQoMCMiV5tYGENGk2skBEAEaJDZiMWRkNTVkLTAwMDAtMjRkYS05ODY0LTU4MjQyOWI1ZTMwYyoSOTA1MTEzNjIuNzAxNTAzNDcwMijsz504n9a3LY6-nRXUsp0VwvCeFZzWty2Q97IwqOWqLdLu7TiI36k4Og5kZWZhdWx0X3NlYXJjaGgBegJ3YQ",
+  "nextPageToken": "IsMtmLoK3DM6JU71Xn4Acbb4g22jMbpBibJo9zAs4b7oIorvuvaA72-u8WA47KuDar-2JOgmvD5oJUOpkrqFfPKyEYb23j6PjHuAne_tn6g2XP6qIh4nGzwu_v8hEsIhvupBeX_n06A03nIqIUul_baciMGMzUWNiljM0IDO10CN2gTOtEGZ0ITLwADMw0yY1UDZkFjY2QiGBU-pQXNEGYd9-jMCMIBNyIgC",
+  "appliedControls": [
+    "projects/399088535643/locations/global/catalogs/default_catalog/controls/boost-in-stock-browse"
+  ]
+}
+
