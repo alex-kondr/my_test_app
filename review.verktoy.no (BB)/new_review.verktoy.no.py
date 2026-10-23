@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 from agent import *
 from models.products import *
-from lib.trustpilot_reviews import *
 
 
 def strip_namespace(data):
@@ -142,8 +141,73 @@ def process_product(data: Response, context: dict[str, str], session: Session):
 
     trustpilot = data.xpath('//div[@id="trustpilot-reviews"]/div[@class="trustpilot-widget"]').first()
     if trustpilot:
-        app_key = trustpilot.xpath("@data-template-id").string()
-        businessunit = trustpilot.xpath("@data-businessunit-id").string()
+        template_id = trustpilot.xpath("@data-template-id").string()
+        business = trustpilot.xpath("@data-businessunit-id").string()
         locale = trustpilot.xpath("@data-locale").string()
 
-        process_reviews_json_request_TP(data, dict(context, app_key=app_key, businessunit=businessunit, locale=locale), session)
+        revs_url = "https://widget.trustpilot.com/trustbox-data/" + template_id + "?businessUnitId=" + business + "&locale=" + locale + "&sku=" + str(context['product']['sku']) + "&reviewsPerPage=10"
+        session.queue(Request(revs_url), process_reviews, dict(context, template_id=template_id, business=business, locale=locale, page=1))
+
+
+def process_reviews(data: Response, context: dict[str, str], session: Session):
+    product = Product()
+    product.name = context['product']['name']
+    product.ssid = context['product']['ssid']
+    product.url = context['product']['url']
+    product.sku = context['product']['sku']
+    product.category = context['product']['category']
+    product.manufacturer = context['product']['manufacturer']
+
+    mpn = context['product']['mpn']
+    if mpn:
+        product.add_property(type='id.manufacturer', value=mpn)
+
+    ean = context['product']['ean']
+    if ean:
+        product.add_property(type='id.ean', value=ean)
+
+    try:
+        revs_json = simplejson.loads(data.content)
+    except:
+        revs_json = {}
+
+    revs = revs_json.get('productReviews', {}).get('reviews', [])
+    for rev in revs:
+        review = Review()
+        review.title = rev.get('title')
+        review.type = 'user'
+        review.url = product.url
+        review.ssid = rev['id']
+
+        date = rev.get('createdAt')
+        if date:
+            review.date = date.split('T')[0]
+
+        author = rev.get('consumer', {}).get('displayName')
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
+
+        grade_overall = rev.get('stars')
+        if grade_overall:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
+
+        grades = rev.get('attributeRatings', [])
+        for grade in grades:
+            name = grade.get('name')
+            value = grade.get('rating')
+            if name and value:
+                review.grades.append(Grade(name=name, value=float(value), best=5.0))
+
+        excerpt = rev.get('content')
+        if excerpt:
+            review.add_property(type='excerpt', value=excerpt)
+
+            product.reviews.append(review)
+
+    if product.reviews:
+        session.emit(product)
+
+    next_url = revs_json.get('productReviews', {}).get('links', {}).get('nextPage')
+    if next_url:
+        next_url = data.resolve_url(next_url)
+        session.queue(Request(next_url), process_reviews, dict(context))

@@ -20,6 +20,13 @@ def strip_namespace(data):
 
 
 def Request(url):
+    r = agent.Request(url, force_charset='utf-8', proxies=['rotating-us', 'rotating-eu'])
+    return r
+
+
+def RequestRevs(sku):
+    sku = sku.encode("hex")
+    url = 'https://integrations.etrusted.com/feeds/product-reviews/v1/channels/chl-5af0c86e-20c2-43bb-94ca-474aad10ca7a/sku/{}/default/all/feed.json?widgetId=wdg-7b9027f8-1f25-48cd-9c63-2189fdfff1c8&channelId=chl-5af0c86e-20c2-43bb-94ca-474aad10ca7a&showUGC=true'.format(sku)
     r = agent.Request(url, force_charset='utf-8', proxies=['rotating-us'])
     return r
 
@@ -45,37 +52,29 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
                     subcats = cat1.xpath('ul/li/a')
                     if subcats:
                         for subcat in subcats:
-                            subcat_name = subcat.xpath('.//text()').string()
+                            subcat_name = subcat.xpath('.//text()').string(multiple=True)
                             url = subcat.xpath('@href').string()
-                            
-                            print name + '|' + cat1_name + '|' + subcat_name
-                            # session.queue(Request(url), process_prodlist, dict(cat=name + '|' + cat1_name + '|' + subcat_name))
-
+                            session.queue(Request(url), process_prodlist, dict(cat=name + '|' + cat1_name + '|' + subcat_name))
                     else:
                         url = cat1.xpath('a/@href').string()
-                        
-                        print name + '|' + cat1_name
-                        # session.queue(Request(url), process_prodlist, dict(cat=name + '|' + cat1_name))
+                        session.queue(Request(url), process_prodlist, dict(cat=name + '|' + cat1_name))
             else:
                 url = cat.xpath('a/@href').string()
-                
-                print name
-                # session.queue(Request(url), process_prodlist, dict(cat=name))
+                session.queue(Request(url), process_prodlist, dict(cat=name))
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    prods = data.xpath('//div[contains(@class, "product--box")]')
+    prods = data.xpath('//h3[contains(@class, "product-card__title")]/a')
     for prod in prods:
-        url = prod.xpath('.//a[@class="product--title"]/@href').string()
-        mpn = prod.xpath('@data-ordernumber').string()
+        name = prod.xpath('.//text()').string(multiple=True)
+        url = prod.xpath('@href').string()
 
-        rating = prod.xpath('.//span[@class="product--rating"]')
-        if rating and url and not session.seen(url):
-            session.queue(Request(url), process_product, dict(context, url=url, mpn=mpn))
+        if not session.seen(url):
+            session.queue(Request(url), process_product, dict(context, name=name, url=url))
 
-    next_url = data.xpath('//a[@title="Nächste Seite"]/@href').string()
+    next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
         session.queue(Request(next_url), process_prodlist, dict(context))
 
@@ -83,49 +82,99 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
 def process_product(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    product = Product()
-    product.name = data.xpath('//h1[@class="product--title"]//text()').string()
-    product.category = context['cat']
-    product.url = context['url']
-    product.manufacturer = data.xpath('//meta[@property="product:brand"]/@content').string()
-    product.ssid = data.xpath('//meta[@itemprop="productID"]/@content').string()
+    pr = dict()
+    pr['name'] = context['name']
+    pr['url'] = context['url']
+    pr['ssid'] = data.xpath('//product-info/@data-product-id').string()
+    pr['category'] = context['cat'].replace(' / ', '/')
+    pr['manufacturer'] = data.xpath('//p[contains(@class, "product__vendor")]/a/text()').string()
+    pr['mpn'] = data.xpath('//p[contains(@class, "product__sku")]/span[not(contains(., "Artikelnummer"))]/text()').string()
 
-    mpn = context.get('mpn')
+    try:
+        prod_json = data.xpath('''//script[contains(., '"barcode":"')]/text()''').string()
+        prod_json = simplejson.loads(prod_json)
+        pr['ean'] = prod_json.get('barcode')
+    except:
+        pass
+
+    try:
+        prod_json = data.xpath('''//script[contains(., '"reviewCount": "')]/text()''').string()
+        prod_json = simplejson.loads(prod_json)
+
+        revs_cnt = prod_json.get('aggregateRating', {}).get('reviewCount', 0)
+    except:
+        return
+
+    skus = data.xpath('//etrusted-widget/@data-sku').string()
+    if skus:
+        skus = skus.split(',')
+        for sku in skus:
+            if not session.seen(sku) and revs_cnt and int(revs_cnt) > 0:
+                session.queue(RequestRevs(sku), process_reviews, dict(product=pr))
+
+
+def process_reviews(data: Response, context: dict[str, str], session: Session):
+    product = Product()
+    product.name = context['product']['name']
+    product.url = context['product']['url']
+    product.ssid = context['product']['ssid']
+    product.sku = product.ssid
+    product.category = context['product']['category']
+    product.manufacturer = context['product']['manufacturer']
+
+    mpn = context['product']['mpn']
     if mpn:
         product.add_property(type='id.manufacturer', value=mpn)
 
-    ean = data.xpath('//meta[@itemprop="gtin13"]/@content').string()
-    if ean:
-        product.add_property(type='id.ean', value=ean)
+    ean = context['product'].get('ean')
+    if ean and str(ean).isdigit() and len(str(ean)) > 10:
+        product.add_property(type='id.ean', value=str(ean))
 
+    try:
+        revs = simplejson.loads(data.content)
+    except:
+        return
 
-    revs = data.xpath('//div[@itemprop="review"]')
     for rev in revs:
+        if rev.get('language') != 'de' or rev.get('syndicated') is True:
+            continue
+
         review = Review()
         review.type = 'user'
         review.url = product.url
-        review.date = rev.xpath('.//meta[@itemprop="datePublished"]/@content').string()
 
-        title = rev.xpath('.//h4[@class="content--title"]//text()').string()
-        if title and title.lower() != "bewertung eines golfshop.de kunden":
-            review.title = title
+        date = rev.get('submittedAt')
+        if date:
+            review.date = date.split('T')[0]
 
-        author = rev.xpath('.//span[@itemprop="author"]//text()').string()
-        if author:
-            review.authors.append(Person(name=author, ssid=author))
+        # no author
 
-        grade_overall = rev.xpath('.//meta[@itemprop="ratingValue"]/@content').string()
-        if grade_overall:
+        grade_overall = rev.get('rating')
+        if grade_overall and float(grade_overall) > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        excerpt = rev.xpath('.//p[@itemprop="reviewBody"]//text()').string(multiple=True)
+        is_verified_buyer = rev.get('isVerified')
+        if is_verified_buyer is True:
+            review.add_property(type='is_verified_buyer', value=True)
+
+        title = rev.get('title')
+        excerpt = rev.get('comment')
+        if excerpt:
+            if title and title.strip() != excerpt.strip():
+                review.title = title
+        else:
+            excerpt = title
+
         if excerpt and excerpt.strip():
-            review.add_property(type='excerpt', value=excerpt)
+            review.add_property(type='excerpt', value=excerpt.strip())
 
-            review.ssid = review.digest() if author else review.digest(excerpt)
+            ssid = rev.get('id')
+            if ssid:
+                review.ssid = ssid.replace('rev-', '')
+            else:
+                review.ssid = review.digest(excerpt)
 
-            if not session.seen(review.ssid):
-                product.reviews.append(review)
+            product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
