@@ -140,7 +140,7 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     context['product']['mpn'] = data.xpath('//div[contains(span, "Supplier number")]/span[contains(@class, "product-detail-value")]/text()').string()
     context['product']['ean'] = data.xpath('//td[@data-th="EAN/GTIN"]//text()').string()
 
-    trustpilot = data.xpath("//div[@class='trustpilot-widget'][@data-no-reviews='show']").first()
+    trustpilot = data.xpath('//div[@id="trustpilot-reviews"]/div[@class="trustpilot-widget"]').first()
     if trustpilot:
         app_key = trustpilot.xpath("@data-template-id").string()
         businessunit = trustpilot.xpath("@data-businessunit-id").string()
