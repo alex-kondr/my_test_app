@@ -12,7 +12,7 @@ from models import AgentModel, Status, AgentType, DBSession
 
 
 AGENT_NAME = "review.daraz.com.np"
-RUN = False
+RUN = True
 
 
 REMOTE_HOST = "trknvsky@agentdev1.eu.testfreaks.com"
@@ -50,7 +50,7 @@ def main(run: bool = RUN):
                 agent.status = Status.running
                 agent.new_code = content
                 agent.agent_type = AgentType.BIG
-                agent.extra_time = False
+                agent.extra_time = True
                 agent.paused = False
                 session.commit()
 
