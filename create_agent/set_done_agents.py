@@ -65,30 +65,41 @@ def move_remote_file_to_done(file_name_input: str):
 
     """
     Підключається по SSH, створює папку test/done (якщо її немає)
-    та переміщує туди вказаний файл із папки test.
+    та переміщує туди файли .py, .txt та .pyc із папки test.
     """
-    # Дописуємо .py до назви (або можете передавати вже повну назву з розширенням)
-    remote_file_name = f"{file_name_input}.py" if not file_name_input.endswith(".py") else file_name_input
+    py_file_name = f"{file_name_input}.py"
+    txt_file_name = f"{file_name_input}.txt"
+    pyc_file_name = f"{file_name_input}.pyc"
 
-    source_path = f"{REMOTE_DIR}/{remote_file_name}"
     done_dir = f"{REMOTE_DIR}/done"
-    destination_path = f"{done_dir}/{remote_file_name}"
 
-    # Формуємо bash-команду для виконання на сервері:
-    # 1. mkdir -p створює папку test/done (і батьківську test, якщо треба), не видаляючи помилку, якщо вона вже є
-    # 2. mv переміщує файл у папку done
+    # Формуємо bash-команду для перевірки та переміщення кожного файлу
     remote_command = (
         f"mkdir -p {done_dir} && "
-        f"if [ -f {source_path} ]; then "
-        f"  mv {source_path} {destination_path} && "
-        f"  echo 'Успішно переміщено: {source_path} -> {destination_path}'; "
+        # 1. Переміщення .py файлу
+        f"if [ -f {REMOTE_DIR}/{py_file_name} ]; then "
+        f"  mv {REMOTE_DIR}/{py_file_name} {done_dir}/{py_file_name} && "
+        f"  echo 'Успішно переміщено: {REMOTE_DIR}/{py_file_name} -> {done_dir}/{py_file_name}'; "
         f"else "
-        f"  echo 'Помилка: файл {source_path} не знайдено у папці {REMOTE_DIR}!'; "
-        f"  exit 1; "
+        f"  echo 'Попередження: файл {REMOTE_DIR}/{py_file_name} не знайдено.'; "
+        f"fi; "
+        # 2. Переміщення .txt файлу
+        f"if [ -f {REMOTE_DIR}/{txt_file_name} ]; then "
+        f"  mv {REMOTE_DIR}/{txt_file_name} {done_dir}/{txt_file_name} && "
+        f"  echo 'Успішно переміщено: {REMOTE_DIR}/{txt_file_name} -> {done_dir}/{txt_file_name}'; "
+        f"else "
+        f"  echo 'Попередження: файл {REMOTE_DIR}/{txt_file_name} не знайдено.'; "
+        f"fi; "
+        # 3. Переміщення .pyс файлу
+        f"if [ -f {REMOTE_DIR}/{pyc_file_name} ]; then "
+        f"  mv {REMOTE_DIR}/{pyc_file_name} {done_dir}/{pyc_file_name} && "
+        f"  echo 'Успішно переміщено: {REMOTE_DIR}/{pyc_file_name} -> {done_dir}/{pyc_file_name}'; "
+        f"else "
+        f"  echo 'Попередження: файл {REMOTE_DIR}/{pyc_file_name} не знайдено.'; "
         f"fi"
     )
 
-    print(f"Підключення до {REMOTE_HOST} для переміщення файлу '{remote_file_name}' у паку done...")
+    print(f"Підключення до {REMOTE_HOST} для переміщення файлів для '{file_name_input}' у папку done...")
 
     try:
         process = subprocess.run(

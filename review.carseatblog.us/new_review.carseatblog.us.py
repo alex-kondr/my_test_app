@@ -51,6 +51,10 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
+    summary = data.xpath('//p[@class="article-deck"]//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
     conclusion = data.xpath('//h4[regexp:test(., "THE BOTTOM LINE|Conclusion", "i")]/following-sibling::p//text()').string(multiple=True)
     if not conclusion:
         data.xpath('//p[strong[contains(., "Summary")]]/following-sibling::p[not(regexp:test(., "Pros:|Cons:"))]//text()').string(multiple=True)
