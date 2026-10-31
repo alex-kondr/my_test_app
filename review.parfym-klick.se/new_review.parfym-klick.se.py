@@ -79,7 +79,7 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     product = Product()
     product.name = data.xpath('//div[@itemprop="name"]/div[@class="prodName"]/text()').string()
     product.url = context['url']
-    product.ssid = data.xpath('//input[@id="skuIDInput"]/@value').string()
+    product.ssid = data.xpath('//meta[@itemprop="sku"]/@content').string()
     product.sku = product.ssid
     product.category = context['cat']
     product.manufacturer = data.xpath('//div[@id="prodDetails"]/a/text()').string()

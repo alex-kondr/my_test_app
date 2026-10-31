@@ -83,6 +83,7 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     revs_url = 'https://api.trustpilot.com/v1/product-reviews/business-units/5487e55500006400057c0ed1/reviews?apikey=7qfADKhmajegupAzebRovRVAjxdpou0s&sku={}&perPage=100'.format(mpn)
     session.do(Request(revs_url, force_charset='utf-8', use='curl', max_age=0), process_reviews, dict(product=product))
 
+
 def process_reviews(data: Response, context: dict[str, str], session: Session):
     product = context['product']
 

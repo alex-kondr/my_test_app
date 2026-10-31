@@ -5,6 +5,10 @@ import random
 import re
 
 
+# gets stuck on these reviews
+XREV = ['https://gsmonline.pl/artykuly/samsung-sgh-c100-test-recenzja']
+
+
 def remove_emoji(string):
     emoji_pattern = re.compile("["
                                u"\U0001F600-\U0001F64F"  # emoticons
@@ -57,7 +61,9 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
         ssid = rev.xpath('@id').string().split('_')[-1]
         title = rev.xpath('.//h3/text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, ssid=ssid, url=url))
+
+        if url not in XREV:
+            session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, ssid=ssid, url=url))
 
     next_url = data.xpath('//a[contains(text(), "→")]/@href').string()
     if next_url:
