@@ -105,8 +105,10 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
         author = rev.get('consumer', {}).get('displayName', '').strip(' +-')
         author_ssid = rev.get('consumer', {}).get('id')
         if author and author_ssid:
+            author = remove_emoji(author).strip()
             review.authors.append(Person(name=author, ssid=author_ssid))
         elif author:
+            author = remove_emoji(author).strip()
             review.authors.append(Person(name=author, ssid=author))
 
         grade_overall = rev.get('stars')
