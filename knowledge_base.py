@@ -70,6 +70,7 @@ def strip_namespace(data):
         line = line.replace('<ns0', '<')
         line = line.replace('ns0:', '')
         line = line.replace(' xmlns', ' abcde=')
+        # line = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', line) # ascii null characters
         out.write(line + "\n")
     out.close()
     os.rename(tmp, data.content_file)
