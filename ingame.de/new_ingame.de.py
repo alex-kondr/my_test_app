@@ -1,0 +1,140 @@
+from agent import *
+from models.products import *
+
+
+def run(context: dict[str, str], session: Session):
+    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.queue(Request('https://www.ingame.de/', force_charset='utf-8'), process_frontpage, dict())
+
+
+def process_frontpage(data: Response, context: dict[str, str], session: Session):
+    cats = data.xpath('//body/ul[contains(@class, "featured")]/li/a')
+    for cat in cats:
+        name = cat.xpath('text()').string()
+        url = cat.xpath('@href').string()
+        session.queue(Request(url, force_charset='utf-8'), process_revlist, dict(cat=name))
+
+
+def process_revlist(data: Response, context: dict[str, str], session: Session):
+    revs = data.xpath('//h2/a')
+    for rev in revs:
+        title = rev.xpath('text()').string()
+        url = rev.xpath('@href').string()
+
+        if 'im Test' in title:
+            session.queue(Request(url, force_charset='utf-8'), process_review, dict(title=title, url=url))
+
+    next_url = data.xpath('//a[contains(@class, "next")]/@href').string()
+    if next_url:
+        session.queue(Request(next_url, force_charset='utf-8'), process_revlist, dict(context))
+
+
+def process_review(data: Response, context: dict[str, str], session: Session):
+    product = Product()
+    product.name = context['title'].split('im Test')[0].strip()
+    product.ssid = context['url'].split('-')[-1].replace('.html', '')
+    product.category = 'Spiele'
+
+    product.url = data.xpath('//a[contains(@class, "import-Link--action")]/@href').string()
+    if not product.url:
+        product.url = context['url']
+
+    product.manufacturer = data.xpath('//tr[contains(td/text(), "Verlag")]/td[not(contains(., "Verlag"))]/text()').string()
+    if not product.manufacturer:
+        product.manufacturer = data.xpath('//tr[contains(., "Entwickler")]/td[not(contains(., "Entwickler"))]/text()').string()
+    if not product.manufacturer:
+        product.manufacturer = data.xpath('//strong[contains(., "Entwickler:")]/following-sibling::text()[normalize-space(.)]').string()
+
+    platforms = data.xpath('//tr[contains(td, "Plattformen")]/td[not(contains(., "Plattformen"))]/text()').string()
+    if platforms:
+        product.category += '|' + platforms.replace('|', '\\').replace(', ', '/').replace(' \\ ', '\\').replace(u'(später 2026)', '').replace(' (PlayStation 4)', '').strip()
+
+    genres = data.xpath('//tr[contains(., "Genre")]/td[not(contains(., "Genre"))]/text()').string()
+    if genres:
+        product.category += '|' + genres.replace(', ', '/')
+
+    if not platforms and not genres:
+        product.category = 'Technik'
+
+    review = Review()
+    review.type = 'pro'
+    review.title = context['title']
+    review.url = context['url']
+    review.ssid = product.ssid
+
+    date = data.xpath('//time/@datetime').string()
+    if date:
+        review.date = date.split()[0]
+
+    author = data.xpath('//a[contains(@class, "authors")]/text()').string()
+    author_url = data.xpath('//a[contains(@class, "authors")]/@href').string()
+    if author and author_url:
+        author_ssid = author_url.split('-')[-1].replace('.html', '')
+        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+
+    grade_overall = data.xpath('//img[contains(@class, "RatioPlaceholder")]/@alt[contains(., "Test-Wertungsgrafik")]').string()
+    if grade_overall:
+        grade_overall = grade_overall.split('-')[-1]
+        if grade_overall and grade_overall[0].isdigit() and float(grade_overall) > 0:
+            review.grades.append(Grade(type='overall', value=float(grade_overall), best=10.0))
+
+    pros = data.xpath('//td[starts-with(normalize-space(.), "+")][1]')
+    if not pros:
+        pros = data.xpath('//tbody[tr[contains(., "Pro")]]/tr[not(contains(., "Pro"))]/td[1]')
+
+    for pro in pros:
+        pro = pro.xpath('.//text()').string(multiple=True)
+        if pro:
+            pro = pro.strip(' +-*.:;•–\\t')
+            if len(pro) > 1:
+                review.add_property(type='pros', value=pro)
+
+    cons = data.xpath('//td[starts-with(normalize-space(.), "-")][2]')
+    if not cons:
+        cons = data.xpath('//tbody[tr[contains(., "Contra")]]/tr[not(contains(., "Contra"))]/td[2]')
+    if not cons:
+        cons = data.xpath('//tbody[tr[contains(., "Con")]]/tr[not(contains(., "Con"))]/td[2]')
+
+    for con in cons:
+        con = con.xpath('.//text()').string(multiple=True)
+        if con:
+            con = con.strip(' +-*.:;•–\\t')
+            if len(con) > 1:
+                review.add_property(type='cons', value=con)
+
+    summary = data.xpath('//p[@class="id-StoryElement-leadText" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+    if summary:
+        review.add_property(type='summary', value=summary)
+
+    conclusion = data.xpath('(//h2[regexp:test(., "Fazit", "i")]/following-sibling::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))])[last()]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//p[strong[contains(., "Fazit")]]/following-sibling::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+    if not conclusion:
+        conclusion = data.xpath('//h2[contains(., "Für wen lohnt sich der")]/following-sibling::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    excerpt = data.xpath('//h2[regexp:test(., "Fazit", "i")]/preceding::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[strong[contains(., "Fazit")]]/preceding::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//h2[contains(., "Für wen lohnt sich der")]/preceding::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+    if not excerpt:
+        excerpt = data.xpath('//p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+
+    if excerpt:
+        if 'Mein Fazit: ' in excerpt:
+            excerpt, conclusion = excerpt.split('Mein Fazit: ')
+            review.add_property(type='conclusion', value=conclusion.strip())
+        elif 'Fazit: ' in excerpt:
+            excerpt, conclusion = excerpt.split('Fazit: ')
+            review.add_property(type='conclusion', value=conclusion.strip())
+
+        review.add_property(type='excerpt', value=excerpt.strip())
+
+        product.reviews.append(review)
+
+        session.emit(product)

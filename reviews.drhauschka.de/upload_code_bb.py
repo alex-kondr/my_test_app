@@ -11,7 +11,7 @@ sys.path.append(parent)
 from models import AgentModel, Status, AgentType, DBSession
 
 
-AGENT_NAME = "review.eleven.se"
+AGENT_NAME = "reviews.drhauschka.de"
 RUN = True
 
 
