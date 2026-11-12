@@ -3,7 +3,6 @@ from models.products import *
 
 
 def run(context: dict[str, str], session: Session):
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
     session.queue(Request('https://www.ingame.de/', force_charset='utf-8'), process_frontpage, dict())
 
 
@@ -64,10 +63,10 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     date = data.xpath('//time/@datetime').string()
     if date:
-        review.date = date.split()[0]
+        review.date = date.split('T')[0]
 
-    author = data.xpath('//a[contains(@class, "authors")]/text()').string()
-    author_url = data.xpath('//a[contains(@class, "authors")]/@href').string()
+    author = data.xpath('//a[contains(@class, "Authors")]/text()').string()
+    author_url = data.xpath('//a[contains(@class, "Authors")]/@href').string()
     if author and author_url:
         author_ssid = author_url.split('-')[-1].replace('.html', '')
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
@@ -104,26 +103,26 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    summary = data.xpath('//p[@class="id-StoryElement-leadText" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+    summary = data.xpath('//p[contains(@class, "id-StoryElement-leadText") and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
     if summary:
         review.add_property(type='summary', value=summary)
 
-    conclusion = data.xpath('(//h2[regexp:test(., "Fazit", "i")]/following-sibling::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))])[last()]//text()').string(multiple=True)
+    conclusion = data.xpath('(//h2[regexp:test(., "Fazit", "i")]/following-sibling::p[contains(@class, "id-StoryElement id-BodyText") and not(contains(., "✅") or contains(., "✔️"))])[last()]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//p[strong[contains(., "Fazit")]]/following-sibling::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//p[strong[contains(., "Fazit")]]/following-sibling::p[contains(@class, "id-StoryElement id-BodyText") and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
     if not conclusion:
-        conclusion = data.xpath('//h2[contains(., "Für wen lohnt sich der")]/following-sibling::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+        conclusion = data.xpath('//h2[contains(., "Für wen lohnt sich der")]/following-sibling::p[contains(@class, "id-StoryElement id-BodyText") and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
 
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath('//h2[regexp:test(., "Fazit", "i")]/preceding::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+    excerpt = data.xpath('//h2[regexp:test(., "Fazit", "i")]/preceding::p[contains(@class, "id-StoryElement id-BodyText") and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[strong[contains(., "Fazit")]]/preceding::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//p[strong[contains(., "Fazit")]]/preceding::p[contains(@class, "id-StoryElement id-BodyText") and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//h2[contains(., "Für wen lohnt sich der")]/preceding::p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//h2[contains(., "Für wen lohnt sich der")]/preceding::p[contains(@class, "id-StoryElement id-BodyText") and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath('//p[@class="id-StoryElement-paragraph" and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
+        excerpt = data.xpath('//p[contains(@class, "id-StoryElement id-BodyText") and not(contains(., "✅") or contains(., "✔️"))]//text()').string(multiple=True)
 
     if excerpt:
         if 'Mein Fazit: ' in excerpt:
