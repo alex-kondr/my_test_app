@@ -31,13 +31,15 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if not product.name:
         product.name = title.replace('Chassistest:', '').replace('Vergleichstest:', '').replace('Filmrezension:', '').replace('Einzeltest:', '').replace(' im Dreiertest', '').replace(' im Doppeltest', '').replace('(Prokino)', '').replace('im Vergleich', '').replace('Serientest:', '').replace('Systemtest:', '').replace(' im Test', '').replace('Test: ', '').replace('Testbericht: ', '').replace('Musikrezension: ', '').replace('Test ', '').strip()
 
+    product.name = product.name.replace(u'Â', '').strip()
+
     cat = data.xpath('//span[@class="h3category"]/text()').string()
     if cat:
         product.category = cat.replace('Kategorie:', '').strip()
 
     review = Review()
     review.type = 'pro'
-    review.title = title
+    review.title = title.replace(u'Â', '').strip()
     review.url = product.url
     review.ssid = product.ssid
 
@@ -71,6 +73,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         summary = data.xpath('//h2[@class="deviceHeadline"]//text()').string(multiple=True)
 
     if summary:
+        summary = summary.replace(u'Â', '').strip()
         review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h3[contains(., "Fazit")]/following-sibling::text()').string(multiple=True)
