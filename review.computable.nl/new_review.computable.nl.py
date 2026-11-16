@@ -52,10 +52,10 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if date:
         review.date = date.split('T')[0]
 
-    author_url = data.xpath('//a[contains(@class, "entry-author-name")]/@href').string()
-    author = data.xpath('//a[contains(@class, "entry-author-name")]/text()').string()
+    author_url = data.xpath('//a[contains(@class, "entry-author-name") or contains(@class, "author-info")]/@href').string()
+    author = data.xpath('//a[contains(@class, "entry-author-name") or contains(@class, "author-info")]/text()').string()
     if not author:
-        author = data.xpath('//span[contains(@class, "author-name")]//text()').string()
+        author = data.xpath('//span[contains(@class, "author-name") or contains(@class, "author-info")]//text()').string()
 
     if author and author_url:
         author_ssid = author_url.split('/')[-2]
