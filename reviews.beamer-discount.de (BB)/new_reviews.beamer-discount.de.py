@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 from agent import *
 from models.products import *
 import time
@@ -19,6 +21,11 @@ def strip_namespace(data):
     os.rename(tmp, data.content_file)
 
 
+def Request(url):
+    r = agent.Request(url, proxies=['rotating-eu', 'rotating-us'], use='curl', force_charset='utf-8')
+    return r
+
+
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
     session.queue(Request('https://www.beamer-discount.de/'), process_frontpage, dict())
@@ -27,7 +34,7 @@ def run(context: dict[str, str], session: Session):
 def process_frontpage(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    time.sleep(random.uniform(1, 3))
+    time.sleep(random.uniform(2, 5))
 
     cats = data.xpath('//nav[@aria-label="Primär"]/ul/li')
     for cat in cats:
@@ -49,7 +56,7 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    time.sleep(random.uniform(1, 3))
+    time.sleep(random.uniform(2, 5))
 
     prods = data.xpath('//product-card')
     for prod in prods:
@@ -69,7 +76,7 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
 def process_product(data: Response, context: dict[str, str], session: Session):
     strip_namespace(data)
 
-    time.sleep(random.uniform(1, 3))
+    time.sleep(random.uniform(2, 5))
 
     product = Product()
     product.name = context['name']
@@ -88,11 +95,6 @@ def process_product(data: Response, context: dict[str, str], session: Session):
         product.add_property(type='id.ean', value=ean)
 
     revs = data.xpath('//div[@data-review-id]')
-    revs.pretty()
-
-    if len(revs) != int(context['revs_cnt'].strip('( )')):
-        raise ValueError("!!!")
-
     for rev in revs:
         review = Review()
         review.type = 'user'

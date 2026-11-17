@@ -11,7 +11,7 @@ sys.path.append(parent)
 from models import AgentModel, Status, AgentType, DBSession
 
 
-AGENT_NAME = "reviews.beamer-discount.de"
+AGENT_NAME = "review.morrisons.com"
 RUN = True
 
 

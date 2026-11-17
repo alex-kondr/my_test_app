@@ -27,11 +27,11 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
     if page != int(active_page):
         return
 
-    revs = data.xpath('//a[@class="article-link" and .//div[@class="article-name"]]')
+    revs = data.xpath('//a[@class="article-link" and .//div[@class="article-name"]]/parent::div')
     for rev in revs:
         title = rev.xpath('.//div[@class="article-name"]/text()').string()
         cat = rev.xpath('.//a[contains(@class, "category-link")]/text()').string()
-        url = rev.xpath('@href').string()
+        url = rev.xpath('a/@href').string()
         session.queue(Request(url), process_review, dict(title=title, cat=cat, url=url))
 
     next_url = 'https://www.coachweb.com/reviews/page/' + str(page+1)
