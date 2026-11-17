@@ -25,7 +25,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         return # Empty article, sometimes happens
 
     product = Product()
-    product.name = title.replace('Review', '')
+    product.name = title.replace('Review', '').replace(' re-review', '').replace(' review', '').replace(' group test', '').replace(' Group Test', '').replace(' on test', '').replace(' Test', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-3].replace('-review', '')
     product.category = 'Tech'
@@ -108,7 +108,8 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
                 context['excerpt'] += ' ' + excerpt
 
     if context['excerpt']:
-        review.add_property(type='excerpt', value=context['excerpt'])
+        excerpt = context['excerpt'].replace('<i>', '').replace('</i>', '').replace('<laughs>', '').replace('<pause>', '').replace('<Laughs>', '').replace('<cough>', '').replace('<coughs>', '').replace('<sputters>', '').replace('<ESSID>', '').replace('&#730;', '˚').replace('<ol>', '').replace('</ol>', '').replace('<li>', '').replace('&#65533;', '-').replace('&#8211;', '-').replace('&#8217;', "'").replace('<p>', '').replace('</b>', '').replace('<br>', '').replace('<center>', '').replace('<ul>', '').replace('</li>', '').replace('</ul>', '').replace('<u>', '').replace('</u>', '').strip()
+        review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
         product.reviews.append(review)
