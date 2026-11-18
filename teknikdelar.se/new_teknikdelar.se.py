@@ -47,10 +47,7 @@ def remove_emoji(string):
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
     session.sessionbreakers = [SessionBreak(max_requests=10000)]
-    
-    url = 'https://www.teknikdelar.se/produkt/samsung-galaxy-s22-batteri'
-    session.queue(Request(url), process_product, dict(cat='cat', name='name', url=url, revs_cnt=20))
-    # session.queue(Request('https://www.teknikdelar.se/'), process_frontpage, dict())
+    session.queue(Request('https://www.teknikdelar.se/'), process_frontpage, dict())
 
 
 def process_frontpage(data: Response, context: dict[str, str], session: Session):
