@@ -1,6 +1,10 @@
 from agent import *
 from models.products import *
 import re
+import HTMLParser
+
+
+h = HTMLParser.HTMLParser()
 
 
 def remove_emoji(string):
@@ -28,8 +32,9 @@ def remove_emoji(string):
 
 
 def serialize_text(text):
-    text = re.sub(r'&([a-zA-Z]+);', lambda match: '&' + match.group(1).lower() + ';', text).replace('<br />', ' ').replace('<br/>', ' ').replace('<br/', ' ').replace("\r", "").replace("\n", "").replace('\t', '').replace('&', '&').replace('°', '°').replace('œ', 'œ').replace('í', 'í').replace('ú', 'ú').replace('“', '"').replace('£', '£').replace('"', '"').replace('à', 'à').replace('é', 'é').replace('á', 'á').replace('´', '́').replace('ã', 'ã').replace('ç', 'ç').replace('ó', 'ó').replace('€', '€').replace('ê', 'ê').replace('è', 'è').replace('’', '’').replace('”', '”').replace(' ', ' ').replace('<', '<').replace('>', '>').replace('‘', '‘').replace('–', '–').replace('ä', 'ä').replace('ß', 'ß').replace('ö', 'ö').replace('ü', 'ü').replace('â', 'â').replace('õ', 'õ').replace('ø', 'ø').replace('…', '…').replace('„', '„').replace('—', '—')
+    text = re.sub(r'&([a-zA-Z]+);', lambda match: '&' + match.group(1).lower() + ';', text).replace('<br />', ' ').replace('<br/>', ' ').replace('<br/', ' ').replace("\r", "").replace("\n", "").replace('\t', '').replace('&', '&').replace('°', '°').replace('œ', 'œ').replace('í', 'í').replace('ú', 'ú').replace('“', '"').replace('£', '£').replace('"', '"').replace('à', 'à').replace('é', 'é').replace('á', 'á').replace('´', '́').replace('ã', 'ã').replace('ç', 'ç').replace('ó', 'ó').replace('€', '€').replace('ê', 'ê').replace('è', 'è').replace('’', '’').replace('”', '”').replace(' ', ' ').replace('<', '<').replace('>', '>').replace('‘', '‘').replace('–', '–').replace('ä', 'ä').replace('ß', 'ß').replace('ö', 'ö').replace('ü', 'ü').replace('â', 'â').replace('õ', 'õ').replace('ø', 'ø').replace('…', '…').replace('„', '„').replace('—', '—').replace(u'by Ã', 'by')
     text = re.sub(r'&#[0-9]+;|&#[xX][0-9a-fA-F]+;', '', text)
+    text = h.unescape(text).replace('&quot;', '"').replace('&nbsp;', ' ').replace('&quot;', '"').replace('</span>', '').replace('<p class="MsoNormal">', '').replace('</span>', '')
     return text
 
 
@@ -191,11 +196,19 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if date:
         review.date = date.split('T')[0]
 
-    author = data.xpath('//span[@class="article-author"]/span/text()').string()
+    author_url = data.xpath('//span[@class="article-author"]/a/@href').string()
+    author = data.xpath('//span[@class="article-author"]/a/text()').string()
+    if not author:
+        author = data.xpath('//span[@class="article-author"]/span/text()').string()
+
     if author:
         author = remove_emoji(serialize_text(author)).strip()
         if len(author) > 1:
-            review.authors.append(Person(name=author, ssid=author))
+            if author_url:
+                author_ssid = author_url.split('/')[-2]
+                review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+            else:
+                review.authors.append(Person(name=author, ssid=author))
 
     grade_overall = data.xpath('//span[@class="mark"]/text()').string()
     if grade_overall:

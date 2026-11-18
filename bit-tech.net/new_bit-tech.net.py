@@ -108,7 +108,7 @@ def process_review_last(data: Response, context: dict[str, str], session: Sessio
                 context['excerpt'] += ' ' + excerpt
 
     if context['excerpt']:
-        excerpt = context['excerpt'].replace('<i>', '').replace('</i>', '').replace('<laughs>', '').replace('<pause>', '').replace('<Laughs>', '').replace('<cough>', '').replace('<coughs>', '').replace('<sputters>', '').replace('<ESSID>', '').replace('&#730;', '˚').replace('<ol>', '').replace('</ol>', '').replace('<li>', '').replace('&#65533;', '-').replace('&#8211;', '-').replace('&#8217;', "'").replace('<p>', '').replace('</b>', '').replace('<br>', '').replace('<center>', '').replace('<ul>', '').replace('</li>', '').replace('</ul>', '').replace('<u>', '').replace('</u>', '').strip()
+        excerpt = context['excerpt'].replace('<i>', '').replace('</i>', '').replace('<laughs>', '').replace('<pause>', '').replace('<Laughs>', '').replace('<cough>', '').replace('<coughs>', '').replace('<sputters>', '').replace('<ESSID>', '').replace('&#730;', '˚').replace('<ol>', '').replace('</ol>', '').replace('<li>', '').replace('&#65533;', '-').replace('&#8211;', '-').replace('&#8217;', "'").replace('<p>', '').replace('</b>', '').replace('<br>', '').replace('<center>', '').replace('<ul>', '').replace('</li>', '').replace('</ul>', '').replace('<u>', '').replace('</u>', '').replace(u'\uFEFF', '').strip()
         review.add_property(type='excerpt', value=excerpt)
 
         product = context['product']
