@@ -103,9 +103,6 @@ def process_prodlist(data: Response, context: dict[str, str], session: Session):
         ssid = re.search(r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', url)
 
         revs_cnt = prod.xpath('div/div/span[regexp:test(text(), "\(\d+\)")]/text()').string()
-        
-        print 'revs_cnt=', revs_cnt
-        
         if revs_cnt and int(revs_cnt.strip('( )')) > 0:
             session.queue(Request(url, use='curl', force_charset='utf-8', options=OPTIONS, max_age=0), process_product, dict(context, name=name, url=url, ssid=ssid))
         else:

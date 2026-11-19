@@ -31,7 +31,7 @@ def remove_emoji(string):
     return emoji_pattern.sub(r'', string)
 
 
-def serialize_text(text: str) -> str:
+def serialize_text(text):
     text = re.sub(
         r"&([a-zA-Z]+);",
         lambda m: "&" + m.group(1).lower() + ";",
@@ -226,7 +226,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         author = data.xpath('//span[@class="article-author"]/span/text()').string()
 
     if author:
-        author = serialize_text(author))
+        author = serialize_text(author)
         if author and author_url:
             author_ssid = author_url.split('/')[-2]
             review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))

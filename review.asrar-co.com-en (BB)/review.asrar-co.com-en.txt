@@ -1,0 +1,2697 @@
+<header class="store-header  centered_logo  "></header>
+<!DOCTYPE html>
+<html
+	lang="en" dir="ltr" 
+		class="selia-theme ">
+	<!-- بسم الله الرحمن الرحيم -->
+	<!-- Selia Tech تم تطوير هذا القالب بواسطة شركة  -->
+	<!-- https://selia-tech.com -->
+		
+														
+										
+																
+
+																													<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+
+				<script type="module" async fetchpriority="low" src="https://asrar-co.com/.webmcp/bridge.js" data-packs="c2pa,mcp-server-client" data-mcp-url="/mcp"></script><style>
+			.loading-overlay {
+				position: fixed;
+				width: 100%;
+				height: 100%;
+				z-index: 99999;
+				left: 0;
+				top: 0;
+								backdrop-filter: blur(20px);
+				-webkit-backdrop-filter: blur(20px);
+				-moz-backdrop-filter: blur(20px);
+				background-color: rgb(255 255 255 / 0.5%);
+							}
+			.loading-overlay .spinner {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+			}
+						@keyframes bounce {
+				0%, 100% { transform: scale(0.7); }
+				50% { transform: scale(1.2); }
+			}
+			.loading-overlay .spinner img {
+				animation: bounce 2s infinite ease-in-out;
+			}
+								</style>
+				<link rel="preload" href="https://cdn.assets.salla.network/themes/581928698/1.234.0/product-card.js" as="script" crossorigin="anonymous">
+
+						<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><link rel="preload" href="https://cdn.assets.salla.network/themes/581928698/1.234.0/vendor-styles.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+		<noscript><link rel="stylesheet" href="https://cdn.assets.salla.network/themes/581928698/1.234.0/vendor-styles.css"></noscript>
+
+				<link rel="stylesheet" href="https://cdn.assets.salla.network/themes/581928698/1.234.0/app.css">
+
+								<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><link rel="preload" href="https://fonts.googleapis.com/css2?family=Cairo&amp;display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+			<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo&amp;display=swap"></noscript>
+		
+				<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><link rel="preload" href="https://cdn.salla.network/fonts/sallaicons.css?v=2.0.5" as="style" onload="this.onload=null;this.rel='stylesheet'">
+		<noscript><link rel="stylesheet" href="https://cdn.salla.network/fonts/sallaicons.css?v=2.0.5"></noscript>
+
+				<script data-cfasync="false">
+			(function(){
+				function activate(l){l.onload=function(){this.media='all'};if(l.sheet)l.media='all';}
+				document.querySelectorAll('.s-deferred-css').forEach(activate);
+				new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(function(n){
+					if(n.nodeType===1&&n.classList&&n.classList.contains('s-deferred-css'))activate(n);
+				});});}).observe(document.head,{childList:true});
+			})();
+			if(localStorage.getItem('promotionBanner')==='hidden'){
+				document.documentElement.classList.add('promotion-hidden');
+			}
+		</script>
+													
+
+		<style>
+		:root{
+			--font-main: 'Cairo';
+			--color-primary: #954053;
+			--bg-primary: #ffffff;
+			--bg-secondary: #ffffff;
+			--header-bg: #ffffff;
+			--header-text-color: #111827;
+			--store-text-primary: #111827;
+			--store-text-secondary: #4b5563;
+			--product-bg: #ffffff;
+			--color-primary-dark: #6f1a2d;
+			--color-primary-light: #bb6679;
+			--color-primary-reverse: #ffffff;
+			/* Theme specific variables */
+			--s-radius: .75rem;
+			--product-image-height: 15rem;
+			--product-border-color: #e6e6e6;
+			--product-enhanced-btn-bg: #954053;
+			--product-enhanced-btn-color: #ffffff;
+			--products-per-row: 6;
+			--footer-bg: #f3f4f6;
+			--footer-text-color: #374151;
+			--bottom-footer-bg: #F9FAFB;
+			--countdown-bg: #f3f4f6;
+			--countdown-color: #111827;
+			--countdown-border-color: #f3f4f6;
+			--bottom-nav-bg: #ffffff;
+			--bottom-nav-text-color: #111827;
+			--wa-btn-bg: #22c55e;
+			--wa-btn-text-color: #ffffff;
+		}
+		.dark{
+				--bg-primary: #1d1f1f;
+				--bg-secondary: #0e0f0f;
+				--header-bg: #0e0f0f;
+				--header-text-color: #ffffff;
+				--store-text-primary: #ffffff;
+				--store-text-secondary: #cccccc;
+				--product-bg: #1d1f1f;
+				--footer-bg: #0e0f0f;
+				--footer-text-color: #ffffff;
+				--bottom-footer-bg: #0e0f0f;
+				--bottom-nav-bg: #1d1f1f;
+				--bottom-nav-text-color: #ffffff;
+			}
+	</style>
+				<script data-cfasync="false">
+			if(localStorage.getItem('selia-theme-mode')){
+				localStorage.removeItem('selia-theme-mode');
+			}
+		</script>
+			<script data-cfasync="false">
+			document.addEventListener('DOMContentLoaded', function () {
+				var spinner = document.querySelector('.loading-overlay .spinner');
+				var loadingOverlay = spinner ? spinner.parentElement : null;
+				if (!loadingOverlay) return;
+				loadingOverlay.style.transition = 'opacity 0.5s ease';
+				loadingOverlay.style.opacity = 0;
+				setTimeout(function () { loadingOverlay.remove(); }, 500);
+			});
+		</script>
+		<script data-cfasync="false">
+			window.__pcQueue = [];
+			if (!customElements.get('custom-salla-product-card')) {
+				customElements.define('custom-salla-product-card', class extends HTMLElement {
+					connectedCallback() {
+						if (window.__pcReady) {
+							window.__pcReady.call(this);
+						} else {
+							window.__pcQueue.push(this);
+						}
+					}
+				});
+			}
+		</script>
+		<script defer type="text/javascript" data-cfasync="false" crossorigin="anonymous" src="https://cdn.assets.salla.network/themes/581928698/1.234.0/product-card.js"></script>
+					<script defer type="text/javascript" data-cfasync="false" src="https://cdn.assets.salla.network/themes/581928698/1.234.0/main-menu.js"></script>
+							<script defer src="https://cdn.assets.salla.network/themes/581928698/1.234.0/add-product-toast.js" type="f46d447a9183142d4327ba63-text/javascript"></script>
+				<script data-cfasync="false">
+			window.activate_zoom = "1"
+			window.header_is_sticky = "1"
+			window.animate_blocks = ""
+			window.dark_mode_switcher = ""
+			window.activate_second_image = "1"
+			window.can_access_wallet = false
+			window.show_singleSelection = "1"
+			window.show_multipleOption = ""
+			window.productcard_options = ""
+			window.notify_when_available_in_card = ""
+			window.products_skeleton_enabled = "1"
+			window.activate_default_menu = "1"
+			window.square_menu_images = ""
+			window.show_rating_count = ""
+			window.enable_desktop_sidemenu = "1"
+			window.enable_more_menu = ""
+			window.more_menu_max_items = "8"
+			window.update_both_prices = "1"
+			window.hide_top_price = ""
+			window.enable_add_product_toast = "1"
+			window.open_drawer_on_add = ""
+			window.footer_collapse_menus = ""
+		</script>
+		<script type="importmap">
+    {
+        "imports": {
+            "lit": "https://cdn.assets.salla.network/static/lit/3.3.3/lit.js",
+            "lit/": "https://cdn.assets.salla.network/static/lit/3.3.3/",
+            "lit-html": "https://cdn.assets.salla.network/static/lit/3.3.3/lit-html/lit-html.js",
+            "lit-html/": "https://cdn.assets.salla.network/static/lit/3.3.3/lit-html/",
+            "lit-element": "https://cdn.assets.salla.network/static/lit/3.3.3/lit-element/lit-element.js",
+            "lit-element/": "https://cdn.assets.salla.network/static/lit/3.3.3/lit-element/",
+            "@lit/reactive-element": "https://cdn.assets.salla.network/static/lit/3.3.3/reactive-element/reactive-element.js",
+            "@lit/reactive-element/": "https://cdn.assets.salla.network/static/lit/3.3.3/reactive-element/"
+        }
+    }
+</script>
+<link rel="modulepreload" href="https://cdn.salla.network/js/twilight/3.0.66/twilight.esm.js" crossorigin>
+
+<link rel="preconnect" href="https://cdn.assets.salla.network" />
+<link rel="preconnect" href="https://cdn.salla.network" />
+<!-- theme color -->
+<meta name="msapplication-navbutton-color" content="#954053">
+<meta name="apple-mobile-web-app-status-bar-style" content="#954053">
+
+<!-- fav icon -->
+<link rel="icon" type="image/png" href="https://cdn.salla.sa/DGdDlG/WkzWfOX1gHgrQcSFCoaDEh2bOdDIPgQNBoJF3Bsd.png" />
+<link rel="apple-touch-icon-precomposed" href="https://cdn.salla.sa/DGdDlG/WkzWfOX1gHgrQcSFCoaDEh2bOdDIPgQNBoJF3Bsd.png">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="https://cdn.salla.sa/DGdDlG/WkzWfOX1gHgrQcSFCoaDEh2bOdDIPgQNBoJF3Bsd.png">
+
+<meta name="_token" content="RWs3vAI9U1X7OTyomy16sBoEBauRge5aRMxYLaEN">
+
+<script data-cfasync="false">
+    
+    window.salla = window.Salla = window.Salla || {};
+    Salla.onReady = Salla.onReady || function (callback) {
+        return new Promise(function (resolve) {
+            return Salla.status == 'ready'
+                ? resolve(callback ? callback(salla.config.all()) : salla.config.all())
+                : window.addEventListener('twilight::initiated', function (config) { resolve(callback ? callback(config.detail) : config.detail) }, { once: true });
+        });
+    };
+</script>
+<style>
+    salla-hook {
+        all: unset;
+        display: none;
+    }
+</style>
+
+
+
+<script async src="https://cdn.salla.network/js/twilight/3.0.66/twilight.esm.js" type="f46d447a9183142d4327ba63-module" crossorigin></script>
+
+		<title>Luxury Perfumes Authentic Care Products  Shop Now at Asrarco</title>
+<meta name="description" content="We offer you a collection of luxurious perfumes skincare and hair care tools and personal care products Shop now and enjoy discounts and competitive prices from the best brands.">
+<meta property="store:published_time" content="2024-08-21T15:41:14+03:00">
+<link rel="canonical" href="https://asrar-co.com/en">
+<meta property="og:description" content="We offer you a collection of luxurious perfumes skincare and hair care tools and personal care products Shop now and enjoy discounts and competitive prices from the best brands.">
+<meta property="og:title" content="Luxury Perfumes Authentic Care Products  Shop Now at Asrarco">
+<meta property="og:type" content="store">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://asrar-co.com/en">
+<meta property="og:image" content="https://cdn.salla.sa/DGdDlG/KJ1mZX10VAoPDgX7fHUvtzfqhKPXi1lL7cKlL4xl.png">
+<meta property="og:image:width" content="600">
+<meta property="og:image:height" content="300">
+
+<meta name="twitter:description" content="We offer you a collection of luxurious perfumes skincare and hair care tools and personal care products Shop now and enjoy discounts and competitive prices from the best brands.">
+<meta name="twitter:image" content="https://cdn.salla.sa/DGdDlG/KJ1mZX10VAoPDgX7fHUvtzfqhKPXi1lL7cKlL4xl.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Luxury Perfumes Authentic Care Products  Shop Now at Asrarco">
+<meta name="twitter:url" content="https://asrar-co.com/en">
+<meta name="twitter:site" content="@">
+<meta name="twitter:creator" content="@">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Luxury Perfumes Authentic Care Products  Shop Now at Asrarco","description":"We offer you a collection of luxurious perfumes skincare and hair care tools and personal care products Shop now and enjoy discounts and competitive prices from the best brands.","url":"https://asrar-co.com/en","logo":"https://cdn.salla.sa/DGdDlG/WkzWfOX1gHgrQcSFCoaDEh2bOdDIPgQNBoJF3Bsd.png"}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","description":"We offer you a collection of luxurious perfumes skincare and hair care tools and personal care products Shop now and enjoy discounts and competitive prices from the best brands.","url":"https://asrar-co.com/en"}</script><link rel="alternate" hreflang="ar" href="https://asrar-co.com/ar" /><link rel="alternate" hreflang="en" href="https://asrar-co.com/en" /><link rel="alternate" hreflang="x-default" href="https://asrar-co.com/ar" /><meta property="og:locale:alternate" content="ar_AR">		<style>
+.advanced-slider salla-slider,
+.home-slider salla-slider,
+.banners-slider salla-slider{visibility:visible}
+.advanced-slider salla-slider [slot="items"]>:not(:first-child),
+.home-slider salla-slider [slot="items"]>:not(:first-child),
+.banners-slider salla-slider [slot="items"]>:not(:first-child){opacity:0}
+/* opacity:0 leaves the extra slides in flow; stack them so the un-hydrated
+   slider is as tall as the hydrated one */
+.advanced-slider salla-slider:not(.hydrated) [slot="items"],
+.home-slider salla-slider:not(.hydrated) [slot="items"],
+.banners-slider salla-slider:not(.hydrated) [slot="items"]{display:grid}
+.advanced-slider salla-slider:not(.hydrated) [slot="items"]>*,
+.home-slider salla-slider:not(.hydrated) [slot="items"]>*,
+.banners-slider salla-slider:not(.hydrated) [slot="items"]>*{grid-area:1/1}
+.advanced-slider salla-slider:not(.hydrated) [slot="items"]>:not(:first-child),
+.home-slider salla-slider:not(.hydrated) [slot="items"]>:not(:first-child),
+.banners-slider salla-slider:not(.hydrated) [slot="items"]>:not(:first-child){pointer-events:none}
+/* products sliders are fetched client-side and sit at 0px until they resolve */
+salla-products-slider:not(:has(custom-salla-product-card)):not([data-products-empty]){min-height:440px}
+/* A best-offers block with no .s-products-slider-card is empty once either the
+   slider has rendered (.s-products-slider-slider) or app.js gave up on it
+   ([data-products-empty]). The latter covers an invalid source-value, where the
+   slider never renders and the first signal can never arrive. */
+.s-block--best-offers:not(:has(.s-products-slider-card)):has(.s-products-slider-slider, salla-products-slider[data-products-empty]){display:none}
+</style>
+								<script type="f46d447a9183142d4327ba63-text/javascript">
+window.dataLayer = window.dataLayer || [];
+window.dataLayer.push({"page":{"fingerprint":"14959ac32857493437f5a2e774fe6a6caef1eae7","pageName":"home","mobileApp":0,"referrer":"https:\/\/asrar-co.com","theme":632105401},"store":{"store":"asrarco","facebook_pixel_id":null,"google_analytics_id":null,"snapchat_pixel_id":null},"customer":{"isGuest":true}});
+</script>
+    <script type="f46d447a9183142d4327ba63-text/javascript">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-TGFC6FV');
+
+            // Create a Proxy to watch for changes in the array
+            window.dataLayer = new Proxy(window.dataLayer, {
+                set(target, property, value) {
+                    // Perform the default array behavior (setting the value)
+                    target[property] = value;
+
+                    // Check if the added value is the target value
+                    if (typeof value === 'object') {
+                        ['form_data', 'data', 'gateway', 'config', 'request', 'headers']
+                            .forEach(data=>{value.hasOwnProperty(data) && delete value[data]})
+                    }
+
+                    // Return true to indicate that the value was successfully set
+                    return true;
+                }
+            });
+</script>
+<script type="f46d447a9183142d4327ba63-text/javascript">(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-KFFMXM7W');</script></head>
+
+
+<body id="app" class="index salla-632105401 color-mode-light ltr font-'cairo' overflow-x-hidden  footer-is-custom    custom_colors      with-shine-animation  with-zoom-animation  show-original-logo-on-scroll  is-sticky-product-bar    enable_desktop_sidemenu   fixed_promotion  has_promotion  trans_header  slider_has_overlay  one-line-products-names    mobile_small_blocks_titles     mini_top_promotion  htv htv--side-lines  ">
+							
+		
+
+				<script data-cfasync="false">
+			(function () {
+				var value = JSON.stringify(["images"]),
+					selector = 'salla-products-slider,salla-products-list';
+
+								function atRisk() {
+					return !!document.querySelector('salla-products-slider[includes],salla-products-list[includes]');
+				}
+
+				function stamp(element) {
+					if (!element.hasAttribute('includes') && atRisk()) {
+						element.setAttribute('includes', value);
+					}
+				}
+
+				function scan(node) {
+					if (node.nodeType !== 1) {
+						return;
+					}
+					if (node.matches(selector)) {
+						stamp(node);
+					}
+					if (node.firstElementChild) {
+						node.querySelectorAll(selector).forEach(stamp);
+					}
+				}
+
+				new MutationObserver(function (records) {
+					records.forEach(function (record) {
+						record.addedNodes.forEach(scan);
+					});
+				}).observe(document.documentElement, { childList: true, subtree: true });
+			})();
+		</script>
+	
+
+																																
+		<div id="productCardPropsElem" data-hide-countdown="" data-hide-ratings="" data-hover-style="hover_style_4" data-rounded-cards="1" data-quickview-label="Quick View" data-instock-label="In Stock" data-slider-bg-size="contain" data-mini-cards="1" data-primary-buttons="" data-product-promo-bg="#d82246" data-box-icon="https://cdn.selia-tech.com/images/box.gif" data-box-icon-white="https://cdn.selia-tech.com/images/box-white.gif" data-is-dark="" data-show-discount="" data-show-rating="" data-show-subtitle="" data-show-tags="" data-mobile-enhanced-add-btn="" data-filled-normal-cart="" data-filled-mini-cart="" data-show-normal-countdown="" data-hide-countdown-labels=""></div>
+	<noscript>
+
+		To get full functionality of this site you need to enable JavaScript. Here is how
+		<a href="https://www.enable-javascript.com/" rel="noreferrer" target="_blank">To enable JavaScript on webpage</a>.
+	</noscript>
+	<div class="app-inner flex flex-col min-h-full bg-storeBG " >
+		<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TGFC6FV"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<salla-advertisement></salla-advertisement><salla-hook name="body:start"></salla-hook>																<div class="promotion-banner" style="background-color: #954053">
+				<div class="promotion-banner__inner">
+					<ul>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+													<li>
+								<a href="" style="color: #ffffff" aria-label="Promotion Text">
+									Free delivery on orders over 189 <i class=sicon-sar></i> 🚚 Special offer for all customers: 5% cashback 🔥
+								</a>
+							</li>
+											</ul>
+				</div>
+									<div class="promotion-banner__close"></div>
+							</div>
+			<script data-cfasync="false">
+				if(localStorage.getItem('promotionBanner')==='hidden'){
+					document.body.classList.add('promotion-banner-hidden');
+				}
+			</script>
+								<div>		
+<header
+	class="store-header  centered_logo  ">
+		<div class="lg:hidden">
+		<salla-bullet-delivery-tag></salla-bullet-delivery-tag>
+	</div>
+						<div id="mainnav" class="main-nav-container">
+			<div class="inner bg-inherit w-full">
+				<div class="header__main-container container  ">
+					<div class="header__main-row flex items-stretch justify-between relative">
+						<div class="header__main-start flex items-center justify-start w-1/3 ">
+							<a class=" mburger mburger--collapse leading-none flex items-start rtl:ml-2.5 ltr:mr-2.5" aria-label="Open-menu" href="#mobile-menu">
+								<i class="sicon-menu text-2xl"></i>
+								<p class=" hidden text-xl md:block ms-1 menu-label">Menu</p>
+							</a>
+															<button onclick="if (!window.__cfRLUnblockHandlers) return false; salla.event.dispatch('search::open')" class="header__search-btn hidden lg:block" data-selia="header-search-button" aria-label="Search" data-cf-modified-f46d447a9183142d4327ba63-="">
+									<span class="header-btn__icon icon sicon-search"></span>
+								</button>
+																						<salla-user-menu avatar-only class="header__user-menu block lg:hidden" show-header show-trigger>
+								<button slot="login-btn" class="header-btn" onclick="if (!window.__cfRLUnblockHandlers) return false; salla.event.dispatch('login::open')" aria-label="Login" data-cf-modified-f46d447a9183142d4327ba63-="">
+									<i class="header-btn__icon sicon-user"></i>
+								</button>
+							</salla-user-menu>
+													</div>
+						<div class="header__brand flex items-center flex-col justify-center">
+							<a class="navbar-brand" href="https://asrar-co.com/en">
+																								<img
+									class="logo-normal"
+										src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/DGdDlG/KJ1mZX10VAoPDgX7fHUvtzfqhKPXi1lL7cKlL4xl.png"
+										alt="Asrarco Store Logo"
+										 height="48" style="width:auto; height:48px;">
+																									<h1 class="sr-only">Asrarco Store</h1>
+															</a>
+						</div>
+						<div class="header__main-end flex items-center justify-end w-1/3">
+														<button onclick="if (!window.__cfRLUnblockHandlers) return false; salla.event.dispatch('search::open')" aria-label="Search" data-selia="header-search-button" class="header__search-btn block lg:hidden ml-3 md:ml-4 rtl:ml-[unset] rtl:mr-3 rtl:md:mr-4" data-cf-modified-f46d447a9183142d4327ba63-="">
+								<span class="header-btn__icon icon sicon-search"></span>
+							</button>
+
+							<salla-user-menu avatar-only class="header__user-menu hidden lg:block" show-header show-trigger>
+								<button slot="login-btn" class="header-btn" onclick="if (!window.__cfRLUnblockHandlers) return false; salla.event.dispatch('login::open')" aria-label="Login" data-cf-modified-f46d447a9183142d4327ba63-="">
+									<i class="header-btn__icon sicon-user"></i>
+								</button>
+							</salla-user-menu>
+							<salla-cart-summary  class="header__cart-summary ml-4 rtl:ml-[unset] rtl:mr-4">
+								<i slot="icon" class="header-btn__icon icon sicon-cart"></i>
+							</salla-cart-summary>
+						</div>
+					</div>
+				</div>
+							</div>
+							<div class="main-menu-row">
+											<custom-main-menu class="as-row"><template class="main-menu__tabs"></template></custom-main-menu>
+									</div>
+					</div>
+	</header>
+
+		</div>				<main><salla-hook name="index:start"></salla-hook>    <section component-id="218562777" class="advanced-slider  advanced-slider--0 auto-height   " style="--sliderHeight: auto;--mobileSliderHeight: auto;--sliderSpeed: 2000ms;">
+		
+	<salla-slider id="advanced-slider-0"  show-controls="false"  auto-height slider-config='{"effect": "fade","slidesPerView":1,"speed": 2000,"autoplay": false,"allowTouchMove": false}'  static-when-single>
+		<div slot="items">
+																				
+																	
+				<div class="advanced-slider__slide relative">
+																																																																						<picture class="contents">
+								<source media="(max-width: 639.98px)" width="800" height="1200" srcset="https://cdn.files.salla.network/homepage/417733722/0df03fbc-85cd-4fd8-a1f9-6108481b1dfd-standard.gif" data-selia="home-advanced-slider-ar-mobile-image"/>
+								<img width="1920" height="1080" class="advanced-slider__image w-full h-full object-cover object-center" src="https://cdn.files.salla.network/homepage/417733722/0e599e6a-c964-430f-ae07-b913d1145979-standard.gif" alt="Asrarco Store" fetchpriority="high" data-selia="home-advanced-slider-ar-desktop-image"/>
+							</picture>
+																<div class="advanced-slider__caption">
+													<a class="advanced-slider__slide-link absolute w-full h-full inset-0" href="https://asrar-co.com/en/-/c1401956105" aria-label="Slider link"></a>
+						
+						<div class="container">
+																													
+							<div class="advanced-slider__caption__inner advanced-slider__caption__inner--left">
+								<div class="advanced-slider__caption__inner__content">
+																																			</div>
+							</div>
+						</div>
+					</div>
+				</div>
+					</div>
+	</salla-slider>
+</section>
+<section component-id="824349486" class="s-block s-block--square-links square-links-1    ">
+	<div>
+											<div class="container">
+					<salla-slider id="square-links-slider-1" class="s-scrollbar-slider" type="carousel" controls-outer show-controls="true" slider-config='{"autoplay":true}'>
+						<div slot="items">
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c1084147234" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/69fec6e2-557e-4112-8ec7-58c3a66113f2-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c1611016398" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/d52af5dd-bb8c-42af-82aa-feb628d03dbb-standard.gif" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c131628666" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/c566f148-6e41-4c6a-b853-6ebe2f420ea4-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c639211472" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/10339112-d4a9-4579-b9ea-1c937a0ca6b1-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c1769280476" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/9adf77a0-1228-44dd-82aa-fbad145e0798-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c356471262" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/b30d89a7-4b15-4bf2-b671-de739780102e-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c1315547198" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/5de78910-71b3-4a0c-96ed-5643e1b7a066-standard.gif" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+													</div>
+					</salla-slider>
+				</div>
+						</div>
+</section>
+<section component-id="51360303" class="s-block s-block--square-links square-links-2    ">
+	<div>
+											<div class="container">
+					<salla-slider id="square-links-slider-2" class="s-scrollbar-slider" type="carousel" controls-outer show-controls="true" slider-config='{"autoplay":true}'>
+						<div slot="items">
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c191109280" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/ea5137b7-2ed7-477a-bb69-50bff0749238-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c1401956105" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/bc0b0018-7347-45e3-829d-4c6bb2ac7f85-standard.gif" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c869084372" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/70481e16-4add-4d54-8594-b79bafb8ed6e-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c617912352" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/519a25e9-faa5-4ae2-a216-65e2592f20f2-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c1991354145" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/f5eea13a-1c42-4680-a1f1-9c1c6bb373f3-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c310109475" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/fb6ee9d8-a0ed-4b6e-9897-97401541f651-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/en/-/c134890030" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/75aa44df-9a77-42d8-96db-3d22737e186e-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-sixth text-center group">
+										<a href="https://asrar-co.com/ar/%D8%A3%D8%AF%D9%88%D8%A7%D8%AA-%D8%A7%D9%84%D9%85%D8%B3%D8%A7%D8%AC/tag-649382296" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/8be842ca-5c86-4a4c-b901-7c0ea3f0e93a-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+													</div>
+					</salla-slider>
+				</div>
+						</div>
+</section>
+
+<section component-id="1773475618" class="s-block s-block--fixed-banner wide-placeholder  fixed-banner--3">
+    <div class="container ">
+                <a href="https://asrar-co.com/en/-/c1084147234" aria-label="Banner fixed banner" class="banner banner--fixed overflow-hidden">
+            <picture>
+                                    <source
+                        media="(max-width: 767px)"
+                        data-srcset="https://cdn.files.salla.network/homepage/417733722/3e108fd0-651f-4b10-8ab7-7b0866af69aa-standard.webp"                    />
+                                <img
+                    width="1200"
+                    height="300"
+                    class="fixed-banner__image lazy"
+                    src="https://cdn.selia-tech.com/images/s-empty-wide.png"
+                    data-src="https://cdn.files.salla.network/homepage/417733722/0afc53f1-bc21-49b1-b93a-39ad92abc45f-standard.webp"                    alt="fixed banner"
+                    style="height:auto;max-width:100%;object-fit: contain;"
+                    
+                />
+            </picture>
+        </a>
+    </div>
+</section>
+
+<section component-id="756313812" class="s-block s-block--fixed-banner wide-placeholder  fixed-banner--4">
+    <div class="container ">
+                <a href="https://asrar-co.com/en/-/p902823905" aria-label="Banner fixed banner" class="banner banner--fixed overflow-hidden">
+            <picture>
+                                    <source
+                        media="(max-width: 767px)"
+                        data-srcset="https://cdn.files.salla.network/homepage/417733722/3720b1bd-ea22-41cb-b70e-e89f4b7d545a-standard.webp"                    />
+                                <img
+                    width="1200"
+                    height="300"
+                    class="fixed-banner__image lazy"
+                    src="https://cdn.selia-tech.com/images/s-empty-wide.png"
+                    data-src="https://cdn.files.salla.network/homepage/417733722/d6618863-8bf6-4f58-935b-4d8384be69c0-standard.webp"                    alt="fixed banner"
+                    style="height:auto;max-width:100%;object-fit: contain;"
+                    
+                />
+            </picture>
+        </a>
+    </div>
+</section>
+<section component-id="393257950" class="s-block s-block--square-links square-links-5    ">
+	<div>
+											<div class="container">
+					<salla-slider id="square-links-slider-5" class="s-scrollbar-slider" type="carousel" controls-outer show-controls="false" slider-config='{"autoplay":true}'>
+						<div slot="items">
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-fourth text-center group">
+										<a href="https://asrar-co.com/en/-/brand-1229131260" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/16d3b69c-b709-45d8-abba-a4fea12defc7-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-fourth text-center group">
+										<a href="https://asrar-co.com/en/-/brand-565304626" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/49b0f0e4-9a74-465c-893d-0901e9e13a6c-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-fourth text-center group">
+										<a href="https://asrar-co.com/en/-/brand-504328747" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/6fca6486-1946-4689-9696-6187801fb59c-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-fourth text-center group">
+										<a href="https://asrar-co.com/en/-/p1084506014" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/a72ad246-ffe6-442c-9505-9bc155c363fe-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-fourth text-center group">
+										<a href="https://asrar-co.com/en/-/brand-554938356" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/82ce4f5b-9874-4b2d-b590-7c965c873c07-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+															<div data-selia="home-square-links-item" class="swiper-slide  slide--one-fourth text-center group">
+										<a href="https://asrar-co.com/en/-/brand-1965259505" aria-label="Link">
+
+										<div class="square-links__image-wrap overflow-hidden rounded-2xl">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img width="280" height="260" class="aspect-[14/13]  w-full rounded-2xl lazy object-cover group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/b6b5ba6c-5a01-4a3c-aea2-c4a36d08528d-standard.webp" alt="Link Image" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+										<h3 class="square-links__item-title mt-1 md:mt-2 text-base font-semibold leading-7 tracking-tight text-store-text-primary"></h3>
+										<p class="square-links__item-subtitle text-sm leading-6 text-store-text-secondary"></p>
+									</a>
+								</div>
+													</div>
+					</salla-slider>
+				</div>
+						</div>
+</section>
+<section component-id="1417448485" id="best-offers-6-slider" class="s-block s-block--best-offers  container overflow-hidden">
+  
+			<div class="lg:mx-0 text-center mb-8 home-block-title">
+			<h2 class="text-3xl font-bold tracking-tight text-store-text-primary sm:text-4xl">Medicines &amp; Vitamins</h2>
+			<p class="mt-2 text-lg leading-8 text-store-text-secondary"></p>
+                            <span class="enhanced-title-border"></span>
+            		</div>
+	
+		
+		<div class="products-reserve">
+						<div class="products-skeleton-holder" data-server-skeleton="1" aria-hidden="true">
+									<div class="products-skeleton products-skeleton--slider products-skeleton--mini products-skeleton--fit">
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+							</div>
+		</div>
+	
+	<salla-products-slider slider-config=''
+        source="categories"
+        
+        class=" simplified-products  fit-slider-products  enhanced-products-slider 
+		" 
+        limit="8" autoplay 
+        source-value="[1087759213]"
+        display-all-url="" 
+        block-title="" 
+        block-subtitle="" 
+		includes='[&quot;images&quot;]'
+        slider-id="slider-with-bg-6">
+    </salla-products-slider>
+	</div>
+
+
+			<div class="flex items-center gap-8 mt-5">
+			<span class="h-px bg-gray-200 flex-1 block"></span>
+			<a class="btn btn--outline-primary h-10 grow-0 gap-1.5 group !px-2 !rounded-none" href="https://asrar-co.com/en/category/WPqrPW">
+				<span>View all products</span>
+				<i class="sicon-keyboard_arrow_left text-xl rtl:group-hover:-translate-x-2 ltr:group-hover:translate-x-2 transition-transform duration-300"></i>
+			</a>
+			<span class="h-px bg-gray-200 flex-1 block"></span>
+		</div>
+	</section>
+<section component-id="1107552544" class="s-block s-block--fixed-banner wide-placeholder  fixed-banner--7">
+    <div class="container ">
+                <a href="https://asrar-co.com/en/-/c500546469" aria-label="Banner fixed banner" class="banner banner--fixed overflow-hidden">
+            <picture>
+                                    <source
+                        media="(max-width: 767px)"
+                        data-srcset="https://cdn.files.salla.network/homepage/417733722/de8a35eb-c9c3-46b5-9b06-1795f6835914-standard.webp"                    />
+                                <img
+                    width="1200"
+                    height="300"
+                    class="fixed-banner__image lazy"
+                    src="https://cdn.selia-tech.com/images/s-empty-wide.png"
+                    data-src="https://cdn.files.salla.network/homepage/417733722/4d5435ab-5cdc-4313-a7a9-06954328c65e-standard.webp"                    alt="fixed banner"
+                    style="height:auto;max-width:100%;object-fit: contain;"
+                    
+                />
+            </picture>
+        </a>
+    </div>
+</section>
+<section component-id="542243280" class="s-block s-block--fixed-banner s-block--double-banner wide-placeholder  double-banner double-banner--8 ">
+	<div class="container">
+		<div class="double-banner__row flex flex-col sm:flex-row gap-2 md:gap-4 ">
+			<a href="https://asrar-co.com/en/-/c1315547198" aria-label="Banner" data-selia="home-double-banner-first" class="banner banner--fixed overflow-hidden basis-3/6  h-full">
+														<img width="1200" height="300" style="height:auto;width:100%" class="double-banner__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/0912b6be-00a0-42f0-a17f-155052ed31e5-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+			<a href="https://asrar-co.com/en/-/brand-35337672" aria-label="Banner" data-selia="home-double-banner-second" class=" banner banner--fixed overflow-hidden basis-3/6 h-full">
+														<img width="1200" height="300" style="height:auto;width:100%" class="double-banner__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/84f653a5-780c-4209-8dc4-c9f8efe2617f-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+		</div>
+	</div>
+</section>
+<section component-id="1450498775" class="s-block s-block--fixed-banner s-block--double-banner wide-placeholder  double-banner double-banner--9 ">
+	<div class="container">
+		<div class="double-banner__row flex  gap-2 md:gap-4 ">
+			<a href="https://asrar-co.com/en/-/brand-2077533515" aria-label="Banner" data-selia="home-double-banner-first" class="banner banner--fixed overflow-hidden basis-3/6  h-full">
+														<img width="1200" height="300" style="height:auto;width:100%" class="double-banner__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/e1240c11-4044-4f78-b2c0-c06b267a957e-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+			<a href="https://asrar-co.com/en/-/brand-273504174" aria-label="Banner" data-selia="home-double-banner-second" class=" banner banner--fixed overflow-hidden basis-3/6 h-full">
+														<img width="1200" height="300" style="height:auto;width:100%" class="double-banner__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/0ab2979e-beaf-48f7-8be5-2d4bbaf82e47-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+		</div>
+	</div>
+</section>
+
+<section component-id="2023628586" class="s-block s-block--fixed-banner wide-placeholder  fixed-banner--10">
+    <div class="container ">
+                <a href="https://asrar-co.com/en/-/c869084372" aria-label="Banner fixed banner" class="banner banner--fixed overflow-hidden">
+            <picture>
+                                    <source
+                        media="(max-width: 767px)"
+                        data-srcset="https://cdn.files.salla.network/homepage/417733722/2d373dfc-7481-4a8f-98f9-819e82359364-standard.webp"                    />
+                                <img
+                    width="1200"
+                    height="300"
+                    class="fixed-banner__image lazy"
+                    src="https://cdn.selia-tech.com/images/s-empty-wide.png"
+                    data-src="https://cdn.files.salla.network/homepage/417733722/1b011b5a-019e-4f15-993f-9dd053e13bed-standard.webp"                    alt="fixed banner"
+                    style="height:auto;max-width:100%;object-fit: contain;"
+                    
+                />
+            </picture>
+        </a>
+    </div>
+</section>
+
+
+
+
+<section component-id="1982692405" class="s-block s-block--rectangular-links   free_aspect_ratio rectangular-links-11" style="--mobile-row-items:3; --desktop-row-items:6;">
+	<div class="container">
+											<ul role="list" class="rectangular-list mx-auto flex gap-1 sm:gap-2">
+											<li class="group rectangular-list-item ">
+							<a href="https://asrar-co.com/en/-/brand-1068732468" aria-label="Quick link">
+								<div class="rectangular-links__image-wrap overflow-hidden w-fit rounded-md mx-auto">
+									<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 transition-all duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/965b5c87-d9e6-4b84-b0e5-211410bcba59-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+								</div>
+																							</a>
+						</li>
+											<li class="group rectangular-list-item ">
+							<a href="https://asrar-co.com/en/-/brand-485244368" aria-label="Quick link">
+								<div class="rectangular-links__image-wrap overflow-hidden w-fit rounded-md mx-auto">
+									<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 transition-all duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/407db439-e68e-48ae-9a69-f3c00bbe2681-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+								</div>
+																							</a>
+						</li>
+											<li class="group rectangular-list-item ">
+							<a href="https://asrar-co.com/en/-/brand-926950426" aria-label="Quick link">
+								<div class="rectangular-links__image-wrap overflow-hidden w-fit rounded-md mx-auto">
+									<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 transition-all duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/2601d7b9-2412-4fd1-a891-93915fd353a3-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+								</div>
+																							</a>
+						</li>
+											<li class="group rectangular-list-item ">
+							<a href="https://asrar-co.com/en/-/brand-922955494" aria-label="Quick link">
+								<div class="rectangular-links__image-wrap overflow-hidden w-fit rounded-md mx-auto">
+									<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 transition-all duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/ff349c61-4a25-4b3d-9399-ac4eb5743f6e-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+								</div>
+																							</a>
+						</li>
+											<li class="group rectangular-list-item ">
+							<a href="https://asrar-co.com/en/-/brand-2140861999" aria-label="Quick link">
+								<div class="rectangular-links__image-wrap overflow-hidden w-fit rounded-md mx-auto">
+									<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 transition-all duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/2f1eaf12-f0eb-4e05-aba1-f050f4a5a58c-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+								</div>
+																							</a>
+						</li>
+											<li class="group rectangular-list-item ">
+							<a href="https://asrar-co.com/en/-/brand-1091551269" aria-label="Quick link">
+								<div class="rectangular-links__image-wrap overflow-hidden w-fit rounded-md mx-auto">
+									<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 transition-all duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/86a48ded-97d6-4b25-81b7-8316bcc918e4-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+								</div>
+																							</a>
+						</li>
+									</ul>
+						</div>
+</section>
+
+
+
+<section component-id="1276848082" class="s-block  s-block--product-tabs s-block--product-tabs--buttons s-block celia-tabs-custom">
+
+                <div class="container">
+            <div class="text-center home-block-title">
+                                    <h2 data-selia="home-product-tabs-title" class="product-tabs__title text-3xl font-bold tracking-tight text-store-text-primary sm:text-4xl">All personal care needs</h2>
+                                                                                            <span class="enhanced-title-border"></span>
+                                                </div>
+        </div>
+    
+                <div class="container">
+            <div class="product-tabs-container">
+                <div class="btn-tabs-container">
+                                                                <button class="btn-tab-primary product-tab active"
+                                data-tab-id="product-tab-12-0">
+                            <span>Face Care</span>
+                        </button>
+                                                                    <button class="btn-tab-primary product-tab "
+                                data-tab-id="product-tab-12-1">
+                            <span>Hair Care</span>
+                        </button>
+                                                                    <button class="btn-tab-primary product-tab "
+                                data-tab-id="product-tab-12-2">
+                            <span>Body Care</span>
+                        </button>
+                                                                    <button class="btn-tab-primary product-tab "
+                                data-tab-id="product-tab-12-3">
+                            <span>Baby Care</span>
+                        </button>
+                                                                    <button class="btn-tab-primary product-tab "
+                                data-tab-id="product-tab-12-4">
+                            <span>Oral Care</span>
+                        </button>
+                                                            </div>
+            </div>
+        </div>
+
+                                                                                        
+                                                    
+                                                    
+                                    
+                                                                                                                                                                                                            
+                                    <div data-limit="8" class="product-tab-content active" data-tab-id="product-tab-12-0">
+                <div class="container">
+                                            <salla-products-slider slider-config=''
+                            source="categories"
+                                                        source-value="[&quot;617912352&quot;]"
+                                                        limit="8"
+                            autoplay
+                            class=" simplified-products  fit-slider-products  enhanced-products-slider "
+                            includes='[&quot;images&quot;]'
+                                                        slider-id="product-tabs-slider-12-1">
+                        </salla-products-slider>
+                    
+                                            <div class="product-tabs__view-all-wrap flex justify-center mt-5">
+                            <a data-selia="home-product-tabs-view-all" class="product-tabs__view-all group inline-flex items-center gap-2 text-primary font-medium relative pb-1" href="https://asrar-co.com/en/-/c617912352">
+                                <span>View All</span>
+                                <i class="sicon-keyboard_arrow_left text-lg rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1 transition-transform duration-300"></i>
+                                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                            </a>
+                        </div>
+                                    </div>
+            </div>
+                                                                                                
+                                                    
+                                                    
+                                    
+                                                                                                                                                                                                            
+                                    <div data-limit="8" class="product-tab-content hidden" data-tab-id="product-tab-12-1">
+                <template data-lazy-tab>
+                    <div class="container">
+                                                    <salla-products-slider slider-config=''
+                                source="categories"
+                                                                source-value="[&quot;869084372&quot;]"
+                                                                limit="8"
+                                autoplay
+                                class=" simplified-products  fit-slider-products  enhanced-products-slider "
+                                includes='[&quot;images&quot;]'
+                                                                slider-id="product-tabs-slider-12-2">
+                            </salla-products-slider>
+                        
+                                                    <div class="product-tabs__view-all-wrap flex justify-center mt-5">
+                                <a data-selia="home-product-tabs-view-all" class="product-tabs__view-all group inline-flex items-center gap-2 text-primary font-medium relative pb-1" href="https://asrar-co.com/en/-/c869084372">
+                                    <span>View All</span>
+                                    <i class="sicon-keyboard_arrow_left text-lg rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1 transition-transform duration-300"></i>
+                                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                                </a>
+                            </div>
+                                            </div>
+                </template>
+            </div>
+                                                                                                
+                                                    
+                                                    
+                                    
+                                                                                                                                                                                                            
+                                    <div data-limit="8" class="product-tab-content hidden" data-tab-id="product-tab-12-2">
+                <template data-lazy-tab>
+                    <div class="container">
+                                                    <salla-products-slider slider-config=''
+                                source="categories"
+                                                                source-value="[&quot;191109280&quot;]"
+                                                                limit="8"
+                                autoplay
+                                class=" simplified-products  fit-slider-products  enhanced-products-slider "
+                                includes='[&quot;images&quot;]'
+                                                                slider-id="product-tabs-slider-12-3">
+                            </salla-products-slider>
+                        
+                                                    <div class="product-tabs__view-all-wrap flex justify-center mt-5">
+                                <a data-selia="home-product-tabs-view-all" class="product-tabs__view-all group inline-flex items-center gap-2 text-primary font-medium relative pb-1" href="https://asrar-co.com/en/-/c191109280">
+                                    <span>View All</span>
+                                    <i class="sicon-keyboard_arrow_left text-lg rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1 transition-transform duration-300"></i>
+                                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                                </a>
+                            </div>
+                                            </div>
+                </template>
+            </div>
+                                                                                                
+                                                    
+                                                    
+                                    
+                                                                                                                                                                                                            
+                                    <div data-limit="8" class="product-tab-content hidden" data-tab-id="product-tab-12-3">
+                <template data-lazy-tab>
+                    <div class="container">
+                                                    <salla-products-slider slider-config=''
+                                source="categories"
+                                                                source-value="[&quot;1991354145&quot;]"
+                                                                limit="8"
+                                autoplay
+                                class=" simplified-products  fit-slider-products  enhanced-products-slider "
+                                includes='[&quot;images&quot;]'
+                                                                slider-id="product-tabs-slider-12-4">
+                            </salla-products-slider>
+                        
+                                                    <div class="product-tabs__view-all-wrap flex justify-center mt-5">
+                                <a data-selia="home-product-tabs-view-all" class="product-tabs__view-all group inline-flex items-center gap-2 text-primary font-medium relative pb-1" href="https://asrar-co.com/en/-/c1991354145">
+                                    <span>View All</span>
+                                    <i class="sicon-keyboard_arrow_left text-lg rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1 transition-transform duration-300"></i>
+                                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                                </a>
+                            </div>
+                                            </div>
+                </template>
+            </div>
+                                                                                                
+                                                    
+                                                    
+                                    
+                                                                                                                                                                                                            
+                                    <div data-limit="8" class="product-tab-content hidden" data-tab-id="product-tab-12-4">
+                <template data-lazy-tab>
+                    <div class="container">
+                                                    <salla-products-slider slider-config=''
+                                source="categories"
+                                                                source-value="[&quot;310109475&quot;]"
+                                                                limit="8"
+                                autoplay
+                                class=" simplified-products  fit-slider-products  enhanced-products-slider "
+                                includes='[&quot;images&quot;]'
+                                                                slider-id="product-tabs-slider-12-5">
+                            </salla-products-slider>
+                        
+                                                    <div class="product-tabs__view-all-wrap flex justify-center mt-5">
+                                <a data-selia="home-product-tabs-view-all" class="product-tabs__view-all group inline-flex items-center gap-2 text-primary font-medium relative pb-1" href="https://asrar-co.com/en/-/c310109475">
+                                    <span>View All</span>
+                                    <i class="sicon-keyboard_arrow_left text-lg rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1 transition-transform duration-300"></i>
+                                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                                </a>
+                            </div>
+                                            </div>
+                </template>
+            </div>
+                                    </section>
+
+<section component-id="608197940" class="s-block  s-block--fixed-banner s-block--dynamic-banner wide-placeholder dynamic-banner--13  ">
+	<div class="dynamic-banner__inner container ">
+		            <a href="https://asrar-co.com/ar/%D8%B9%D8%B1%D9%88%D8%B6-%D9%85%D9%86%D8%AA%D8%AC%D8%A7%D8%AA-%D8%A7%D9%84%D8%B9%D9%86%D8%A7%D9%8A%D8%A9/tag-2082084112" aria-label="Banner" data-selia="home-dynamic-banner-link" class="banner banner--fixed  overflow-hidden">
+
+								<img width="1200" height="300"   class="dynamic-banner__image lazy !hidden sm:!block " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/4b4f886d-5b39-496b-bf78-f50a0dfcd40f-original.webp" alt="Banner" loading="lazy"/>
+
+
+								
+													<img width="600" height="300"   class="dynamic-banner__image lazy block sm:!hidden " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/0c2f0ede-dc4f-46b1-ad3c-2491d28ed163-original.webp" alt="Banner" loading="lazy"/>
+															</a>
+			</div>
+</section>
+
+<section component-id="1249590827" class="s-block s-block--fixed-banner wide-placeholder  fixed-banner--14">
+    <div class="container ">
+                <a href="https://asrar-co.com/en/-/brand-1504187435" aria-label="Banner fixed banner" class="banner banner--fixed overflow-hidden">
+            <picture>
+                                    <source
+                        media="(max-width: 767px)"
+                        data-srcset="https://cdn.files.salla.network/homepage/417733722/8f2764f0-f163-4750-bdec-63bd8145c12b-standard.webp"                    />
+                                <img
+                    width="1200"
+                    height="300"
+                    class="fixed-banner__image lazy"
+                    src="https://cdn.selia-tech.com/images/s-empty-wide.png"
+                    data-src="https://cdn.files.salla.network/homepage/417733722/123bbfc3-bbca-469e-bde5-91d26e42dc5d-standard.webp"                    alt="fixed banner"
+                    style="height:auto;max-width:100%;object-fit: contain;"
+                    
+                />
+            </picture>
+        </a>
+    </div>
+</section>
+
+
+
+
+<section component-id="360666412" class="s-block s-block--rectangular-links   free_aspect_ratio rectangular-links-15" style="--mobile-row-items:; --desktop-row-items:;">
+	<div class="">
+											<div class="">
+					<salla-slider id="rectangular-links-slider-15" class="s-scrollbar-slider" type="carousel" controls-outer show-controls="false" slider-config='{"autoplay":true}'>
+						<div slot="items">
+															<div data-selia="home-rectangular-links-item" class="swiper-slide text-center group ">
+									<a href="https://asrar-co.com/ar/%D8%A3%D8%B3%D8%B1%D8%A7%D8%B1-%D8%A7%D9%84%D8%AC%D9%85%D8%A7%D9%84/tag-413113778" aria-label="Quick link">
+										<div class="rectangular-links__image-wrap overflow-hidden rounded-md w-fit mx-auto">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/975c4acf-29db-4d43-9b00-0904545534fa-standard.gif" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+																													</a>
+								</div>
+															<div data-selia="home-rectangular-links-item" class="swiper-slide text-center group ">
+									<a href="https://asrar-co.com/en/-/brand-281996585" aria-label="Quick link">
+										<div class="rectangular-links__image-wrap overflow-hidden rounded-md w-fit mx-auto">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/4b7514a9-3f67-4508-b808-2acc00e9109a-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+																													</a>
+								</div>
+															<div data-selia="home-rectangular-links-item" class="swiper-slide text-center group ">
+									<a href="https://asrar-co.com/en/-/brand-984048594" aria-label="Quick link">
+										<div class="rectangular-links__image-wrap overflow-hidden rounded-md w-fit mx-auto">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/eb89eee5-a412-4525-a9d2-9f27c0a95b8e-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+																													</a>
+								</div>
+															<div data-selia="home-rectangular-links-item" class="swiper-slide text-center group ">
+									<a href="https://asrar-co.com/en/-/brand-1121391603" aria-label="Quick link">
+										<div class="rectangular-links__image-wrap overflow-hidden rounded-md w-fit mx-auto">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/d5e1d537-3b2b-4790-bb0a-1e27dccc3edd-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+																													</a>
+								</div>
+															<div data-selia="home-rectangular-links-item" class="swiper-slide text-center group ">
+									<a href="https://asrar-co.com/en/-/brand-460010362" aria-label="Quick link">
+										<div class="rectangular-links__image-wrap overflow-hidden rounded-md w-fit mx-auto">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/0912e873-e087-4c1c-b9fd-69622938c16f-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+																													</a>
+								</div>
+															<div data-selia="home-rectangular-links-item" class="swiper-slide text-center group ">
+									<a href="https://asrar-co.com/en/-/brand-1425558635" aria-label="Quick link">
+										<div class="rectangular-links__image-wrap overflow-hidden rounded-md w-fit mx-auto">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/9ddda5ce-f30c-4a03-ac97-02ab50fa62c9-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+																													</a>
+								</div>
+															<div data-selia="home-rectangular-links-item" class="swiper-slide text-center group ">
+									<a href="https://asrar-co.com/en/-/brand-1913321248" aria-label="Quick link">
+										<div class="rectangular-links__image-wrap overflow-hidden rounded-md w-fit mx-auto">
+											<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49"></script><img class="lazy mx-auto object-cover rounded-md group-hover:scale-110 duration-400" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" data-src="https://cdn.files.salla.network/homepage/417733722/8866d740-f083-4a4c-836d-5333f7dcd7bd-standard.webp" alt="Quick link" onerror="this.onerror=null;this.src='https://cdn.selia-tech.com/images/placeholder.png'">
+										</div>
+																													</a>
+								</div>
+													</div>
+					</salla-slider>
+				</div>
+						</div>
+</section>
+<section component-id="1808623068" class="s-block s-block--animated-brands    " transparent-bg >
+		<div class="container">
+					<div class="text-center home-block-title">
+				<h2 data-selia="home-animated-brands-title" class="animated-brands__title text-3xl font-bold tracking-tight text-store-text-primary sm:text-4xl  ">Best Brands Care</h2>
+									<span class="enhanced-title-border home-block-line"></span>
+							</div>
+				<article class="s-block--animated-brands--wrapper">
+			<div class="s-block--animated-brands--marquee ">
+				<div class="marquee__group">
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-800400856" aria-label="Brand">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/e6b098e9-9aa7-4eec-b797-d84bac567a97_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-1538970538" aria-label="Brand">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/992bc88e-f3ea-40eb-8ffd-d267bc904ed7_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-2077533515" aria-label="Brand">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/149d8102-03c8-4533-becd-5482df70203c_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-1367367152" aria-label="Brand">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/faaec9d0-ead9-49d8-8ceb-184bb92ddfe7_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-1190556203" aria-label="Brand">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/c9bdd646-8372-4757-8dd8-ce96434765f4_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-1420454659" aria-label="Brand">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/72ff033b-307d-4001-99e1-2a417accfdae_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-1033911155" aria-label="Brand">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/f2593fb2-8afd-49ca-8935-ad92b6810c66_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-842425593" aria-label="Brand">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/56c7e541-b7f0-473f-b052-759de10b5661_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-2140861999" aria-label="Brand">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/e31aa67a-a208-457c-bcf6-f0d054107712_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-381762675" aria-label="Brand">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/a0480c94-65f4-4ff1-ba59-a8ad85e3233d_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+									</div>
+
+				<div aria-hidden="true" class="marquee__group">
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-800400856" aria-label="Brand" tabindex="-1">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/e6b098e9-9aa7-4eec-b797-d84bac567a97_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-1538970538" aria-label="Brand" tabindex="-1">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/992bc88e-f3ea-40eb-8ffd-d267bc904ed7_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-2077533515" aria-label="Brand" tabindex="-1">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/149d8102-03c8-4533-becd-5482df70203c_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-1367367152" aria-label="Brand" tabindex="-1">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/faaec9d0-ead9-49d8-8ceb-184bb92ddfe7_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-1190556203" aria-label="Brand" tabindex="-1">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/c9bdd646-8372-4757-8dd8-ce96434765f4_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-1420454659" aria-label="Brand" tabindex="-1">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/72ff033b-307d-4001-99e1-2a417accfdae_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-1033911155" aria-label="Brand" tabindex="-1">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/f2593fb2-8afd-49ca-8935-ad92b6810c66_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-842425593" aria-label="Brand" tabindex="-1">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/56c7e541-b7f0-473f-b052-759de10b5661_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-2140861999" aria-label="Brand" tabindex="-1">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/e31aa67a-a208-457c-bcf6-f0d054107712_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+											<div class="s-block--animated-brands--brand  ">
+							<a href="https://asrar-co.com/en/-/brand-381762675" aria-label="Brand" tabindex="-1">
+								<img class="lazy" data-src="https://cdn.files.salla.network/homepage/417733722/a0480c94-65f4-4ff1-ba59-a8ad85e3233d_400x400.webp" alt="Brand"/>
+							</a>
+						</div>
+									</div>
+			</div>
+					</article>
+	</div>
+</section>
+
+<section component-id="535300129" class="s-block s-block--fixed-banner wide-placeholder  fixed-banner--17">
+    <div class="container ">
+                <a href="https://asrar-co.com/en/-/c131628666" aria-label="Banner fixed banner" class="banner banner--fixed overflow-hidden">
+            <picture>
+                                    <source
+                        media="(max-width: 767px)"
+                        data-srcset="https://cdn.files.salla.network/homepage/417733722/1baa1eb0-2f28-4aa1-bceb-7eff838b7a42-standard.webp"                    />
+                                <img
+                    width="1200"
+                    height="300"
+                    class="fixed-banner__image lazy"
+                    src="https://cdn.selia-tech.com/images/s-empty-wide.png"
+                    data-src="https://cdn.files.salla.network/homepage/417733722/b0ff9be2-a65b-4d8b-933d-1893ba3171f0-standard.webp"                    alt="fixed banner"
+                    style="height:auto;max-width:100%;object-fit: contain;"
+                    
+                />
+            </picture>
+        </a>
+    </div>
+</section>
+<section component-id="684281563" class="s-block s-block--fixed-banner s-block--three-banners wide-placeholder  three-banners three-banners--18 ">
+	<div class="container">
+				<div class="three-banners__row flex  gap-2 md:gap-4 items-stretch">
+			<a href="https://asrar-co.com/en/-/c1516677813" aria-label="Banner" class="banner banner--fixed overflow-hidden basis-3/6  flex h-auto">
+														<img data-selia="home-three-banners-image-1" width="1200" height="300" style="height:auto;width:100%" class="three-banners__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/f629fbcf-d485-455f-8ac7-abbcb8972ae9-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+			<a href="https://asrar-co.com/en/-/c713201863" aria-label="Banner" class=" banner banner--fixed overflow-hidden basis-3/6 flex h-auto">
+														<img data-selia="home-three-banners-image-2" width="1200" height="300" style="height:auto;width:100%" class="three-banners__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/331e5411-b6f8-4eca-94ec-86dc40ef8d54-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+            <a href="https://asrar-co.com/en/-/c74426304" aria-label="Banner" class=" banner banner--fixed overflow-hidden basis-3/6 flex h-auto">
+														<img data-selia="home-three-banners-image-3" width="1200" height="300" style="height:auto;width:100%" class="three-banners__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/9179d48e-14d8-4884-afc9-60f0d6f2989b-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+		</div>
+	</div>
+</section>
+
+
+
+                                                
+
+
+
+<section component-id="434128595" class=" s-block--custom-products container  s-block ">
+
+                    <div class="text-center home-block-title">
+                            <h2 data-selia="home-custom-products-title" class="custom-products__title text-3xl font-bold tracking-tight text-store-text-primary sm:text-4xl">The Best International Perfume</h2>
+                                                                        <span class="enhanced-title-border"></span>
+                                    </div>
+    
+            
+                                <div class="products-reserve">
+                                                                <div class="products-skeleton-holder" data-server-skeleton="1" aria-hidden="true">
+                                                <div class="products-skeleton products-skeleton--slider products-skeleton--mini products-skeleton--fit">
+                                            <div class="products-skeleton__card">
+                            <div class="products-skeleton__inner">
+                                <div class="products-skeleton__image"></div>
+                                <div class="products-skeleton__body">
+                                    <span class="products-skeleton__line" style="width:70%"></span>
+                                    <span class="products-skeleton__line" style="width:45%"></span>
+                                    <span class="products-skeleton__btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                                            <div class="products-skeleton__card">
+                            <div class="products-skeleton__inner">
+                                <div class="products-skeleton__image"></div>
+                                <div class="products-skeleton__body">
+                                    <span class="products-skeleton__line" style="width:70%"></span>
+                                    <span class="products-skeleton__line" style="width:45%"></span>
+                                    <span class="products-skeleton__btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                                            <div class="products-skeleton__card">
+                            <div class="products-skeleton__inner">
+                                <div class="products-skeleton__image"></div>
+                                <div class="products-skeleton__body">
+                                    <span class="products-skeleton__line" style="width:70%"></span>
+                                    <span class="products-skeleton__line" style="width:45%"></span>
+                                    <span class="products-skeleton__btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                                            <div class="products-skeleton__card">
+                            <div class="products-skeleton__inner">
+                                <div class="products-skeleton__image"></div>
+                                <div class="products-skeleton__body">
+                                    <span class="products-skeleton__line" style="width:70%"></span>
+                                    <span class="products-skeleton__line" style="width:45%"></span>
+                                    <span class="products-skeleton__btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                                            <div class="products-skeleton__card">
+                            <div class="products-skeleton__inner">
+                                <div class="products-skeleton__image"></div>
+                                <div class="products-skeleton__body">
+                                    <span class="products-skeleton__line" style="width:70%"></span>
+                                    <span class="products-skeleton__line" style="width:45%"></span>
+                                    <span class="products-skeleton__btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                                            <div class="products-skeleton__card">
+                            <div class="products-skeleton__inner">
+                                <div class="products-skeleton__image"></div>
+                                <div class="products-skeleton__body">
+                                    <span class="products-skeleton__line" style="width:70%"></span>
+                                    <span class="products-skeleton__line" style="width:45%"></span>
+                                    <span class="products-skeleton__btn"></span>
+                                </div>
+                            </div>
+                        </div>
+                                    </div>
+            </div>
+                <salla-products-slider slider-config=''
+            source="categories"
+            
+                        source-value="[&quot;131628666&quot;]"
+                        limit="8"
+            autoplay
+            class=" simplified-products  fit-slider-products  enhanced-products-slider "
+            includes='[&quot;images&quot;]'
+                                    slider-id="custom-products-slider-0">
+        </salla-products-slider>
+        </div>
+    
+                    <div class="custom-products__view-all-wrap flex items-center gap-8 mt-5">
+            <span class="h-px bg-gray-200 flex-1 block"></span>
+            <a data-selia="home-custom-products-view-all" class="btn btn--outline-primary h-10 grow-0 gap-1.5 group !px-2 !rounded-none" href="https://asrar-co.com/en/-/c131628666">
+                <span>View All</span>
+                <i class="sicon-keyboard_arrow_left text-xl rtl:group-hover:-translate-x-2 ltr:group-hover:translate-x-2 transition-transform duration-300"></i>
+            </a>
+            <span class="h-px bg-gray-200 flex-1 block"></span>
+        </div>
+    
+</section>
+
+<section component-id="680109259" class="s-block s-block--fixed-banner wide-placeholder  fixed-banner--20">
+    <div class="container ">
+                <a href="https://asrar-co.com/en/-/c1036628066" aria-label="Banner fixed banner" class="banner banner--fixed overflow-hidden">
+            <picture>
+                                    <source
+                        media="(max-width: 767px)"
+                        data-srcset="https://cdn.files.salla.network/homepage/417733722/3a574d09-3741-406c-9b94-7d2d31fa8387-standard.webp"                    />
+                                <img
+                    width="1200"
+                    height="300"
+                    class="fixed-banner__image lazy"
+                    src="https://cdn.selia-tech.com/images/s-empty-wide.png"
+                    data-src="https://cdn.files.salla.network/homepage/417733722/81725e33-a792-43a3-a5d2-9e14fe44c02b-standard.webp"                    alt="fixed banner"
+                    style="height:auto;max-width:100%;object-fit: contain;"
+                    
+                />
+            </picture>
+        </a>
+    </div>
+</section>
+<section component-id="771418257" id="best-offers-21-slider" class="s-block s-block--best-offers  container overflow-hidden">
+  
+			<div class="lg:mx-0 text-center mb-8 home-block-title">
+			<h2 class="text-3xl font-bold tracking-tight text-store-text-primary sm:text-4xl">Perfume Offers</h2>
+			<p class="mt-2 text-lg leading-8 text-store-text-secondary"></p>
+                            <span class="enhanced-title-border"></span>
+            		</div>
+	
+		
+		<div class="products-reserve">
+						<div class="products-skeleton-holder" data-server-skeleton="1" aria-hidden="true">
+									<div class="products-skeleton products-skeleton--slider products-skeleton--mini products-skeleton--fit">
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+									<div class="products-skeleton__card">
+						<div class="products-skeleton__inner">
+							<div class="products-skeleton__image"></div>
+							<div class="products-skeleton__body">
+								<span class="products-skeleton__line" style="width:70%"></span>
+								<span class="products-skeleton__line" style="width:45%"></span>
+								<span class="products-skeleton__btn"></span>
+							</div>
+						</div>
+					</div>
+							</div>
+		</div>
+	
+	<salla-products-slider slider-config=''
+        source="categories"
+        
+        class=" simplified-products  fit-slider-products  enhanced-products-slider 
+		" 
+        limit="8" autoplay 
+        source-value="[1036628066]"
+        display-all-url="" 
+        block-title="" 
+        block-subtitle="" 
+		includes='[&quot;images&quot;]'
+        slider-id="slider-with-bg-21">
+    </salla-products-slider>
+	</div>
+
+
+			<div class="flex items-center gap-8 mt-5">
+			<span class="h-px bg-gray-200 flex-1 block"></span>
+			<a class="btn btn--outline-primary h-10 grow-0 gap-1.5 group !px-2 !rounded-none" href="https://asrar-co.com/en/category/nqGOVN">
+				<span>View all products</span>
+				<i class="sicon-keyboard_arrow_left text-xl rtl:group-hover:-translate-x-2 ltr:group-hover:translate-x-2 transition-transform duration-300"></i>
+			</a>
+			<span class="h-px bg-gray-200 flex-1 block"></span>
+		</div>
+	</section>
+<section component-id="999437859" class="s-block s-block--fixed-banner wide-placeholder  fixed-banner--22">
+    <div class="container ">
+                <a href="https://asrar-co.com/en/-/c639211472" aria-label="Banner fixed banner" class="banner banner--fixed overflow-hidden">
+            <picture>
+                                    <source
+                        media="(max-width: 767px)"
+                        data-srcset="https://cdn.files.salla.network/homepage/417733722/484f8429-fba3-4050-bbfe-558217e25df7-standard.webp"                    />
+                                <img
+                    width="1200"
+                    height="300"
+                    class="fixed-banner__image lazy"
+                    src="https://cdn.selia-tech.com/images/s-empty-wide.png"
+                    data-src="https://cdn.files.salla.network/homepage/417733722/1a8b7f52-b7fe-4ade-af7c-15e95a1a9a2c-standard.webp"                    alt="fixed banner"
+                    style="height:auto;max-width:100%;object-fit: contain;"
+                    
+                />
+            </picture>
+        </a>
+    </div>
+</section>
+<section component-id="78625750" class="s-block s-block--fixed-banner s-block--double-banner wide-placeholder  double-banner double-banner--23 ">
+	<div class="container">
+		<div class="double-banner__row flex  gap-2 md:gap-4 ">
+			<a href="https://asrar-co.com/en/-/brand-1462887099" aria-label="Banner" data-selia="home-double-banner-first" class="banner banner--fixed overflow-hidden basis-3/6  h-full">
+														<img width="1200" height="300" style="height:auto;width:100%" class="double-banner__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/4b7e110a-ccc5-4e7e-b1ae-7ec858a92b41-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+			<a href="https://asrar-co.com/en/-/brand-124139891" aria-label="Banner" data-selia="home-double-banner-second" class=" banner banner--fixed overflow-hidden basis-3/6 h-full">
+														<img width="1200" height="300" style="height:auto;width:100%" class="double-banner__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/d03bc1ff-4a72-4d2d-87af-d95f27fc910e-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+		</div>
+	</div>
+</section>
+<section component-id="2056678692" class="s-block s-block--fixed-banner s-block--three-banners wide-placeholder  three-banners three-banners--24 ">
+	<div class="container">
+				<div class="three-banners__row flex  gap-2 md:gap-4 ">
+			<a href="https://asrar-co.com/en/-/brand-630634029" aria-label="Banner" class="banner banner--fixed overflow-hidden basis-3/6  h-full">
+														<img data-selia="home-three-banners-image-1" width="1200" height="300" style="height:auto;width:100%" class="three-banners__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/704d6515-e826-4110-95ea-48e5594dc600-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+			<a href="https://asrar-co.com/en/-/brand-1569847708" aria-label="Banner" class=" banner banner--fixed overflow-hidden basis-3/6 h-full">
+														<img data-selia="home-three-banners-image-2" width="1200" height="300" style="height:auto;width:100%" class="three-banners__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/0331c3cb-b29f-44f3-8df7-14936ba1fb0c-standard.gif" alt="Banner" loading="lazy"/>
+							</a>
+            <a href="https://asrar-co.com/en/-/brand-222228231" aria-label="Banner" class=" banner banner--fixed overflow-hidden basis-3/6 h-full">
+														<img data-selia="home-three-banners-image-3" width="1200" height="300" style="height:auto;width:100%" class="three-banners__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/68321ba4-308d-42cd-a5bf-09d1499e8683-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+		</div>
+	</div>
+</section>
+
+
+
+<section component-id="1732539437" class="s-block  s-block--product-tabs s-block--product-tabs--toggle s-block celia-tabs-custom">
+
+                <div class="container">
+            <div class="text-center home-block-title">
+                                    <h2 data-selia="home-product-tabs-title" class="product-tabs__title text-3xl font-bold tracking-tight text-store-text-primary sm:text-4xl">Makeup</h2>
+                                                                                            <span class="enhanced-title-border"></span>
+                                                </div>
+        </div>
+    
+                <div class="container">
+            <div class="product-tabs-container">
+                <div class="btn-tabs-container">
+                                                                <button class="btn-tab-primary product-tab active"
+                                data-tab-id="product-tab-25-0">
+                            <span>Face</span>
+                        </button>
+                                                                    <button class="btn-tab-primary product-tab "
+                                data-tab-id="product-tab-25-1">
+                            <span>Eyes</span>
+                        </button>
+                                                                    <button class="btn-tab-primary product-tab "
+                                data-tab-id="product-tab-25-2">
+                            <span>Lips</span>
+                        </button>
+                                                                    <button class="btn-tab-primary product-tab "
+                                data-tab-id="product-tab-25-3">
+                            <span>Eyebrows</span>
+                        </button>
+                                                                    <button class="btn-tab-primary product-tab "
+                                data-tab-id="product-tab-25-4">
+                            <span>Brushes</span>
+                        </button>
+                                                            </div>
+            </div>
+        </div>
+
+                                                                                        
+                                                    
+                                                    
+                                    
+                                                                                                                                                                                                            
+                                    <div data-limit="8" class="product-tab-content active" data-tab-id="product-tab-25-0">
+                <div class="container">
+                                            <salla-products-slider slider-config=''
+                            source="categories"
+                                                        source-value="[&quot;779222235&quot;]"
+                                                        limit="8"
+                            autoplay
+                            class=" simplified-products  fit-slider-products  enhanced-products-slider "
+                            includes='[&quot;images&quot;]'
+                                                        slider-id="product-tabs-slider-25-1">
+                        </salla-products-slider>
+                    
+                                            <div class="product-tabs__view-all-wrap flex justify-center mt-5">
+                            <a data-selia="home-product-tabs-view-all" class="product-tabs__view-all group inline-flex items-center gap-2 text-primary font-medium relative pb-1" href="https://asrar-co.com/en/-/c779222235">
+                                <span>View All</span>
+                                <i class="sicon-keyboard_arrow_left text-lg rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1 transition-transform duration-300"></i>
+                                <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                            </a>
+                        </div>
+                                    </div>
+            </div>
+                                                                                                
+                                                    
+                                                    
+                                    
+                                                                                                                                                                                                            
+                                    <div data-limit="8" class="product-tab-content hidden" data-tab-id="product-tab-25-1">
+                <template data-lazy-tab>
+                    <div class="container">
+                                                    <salla-products-slider slider-config=''
+                                source="categories"
+                                                                source-value="[&quot;1245395493&quot;]"
+                                                                limit="8"
+                                autoplay
+                                class=" simplified-products  fit-slider-products  enhanced-products-slider "
+                                includes='[&quot;images&quot;]'
+                                                                slider-id="product-tabs-slider-25-2">
+                            </salla-products-slider>
+                        
+                                                    <div class="product-tabs__view-all-wrap flex justify-center mt-5">
+                                <a data-selia="home-product-tabs-view-all" class="product-tabs__view-all group inline-flex items-center gap-2 text-primary font-medium relative pb-1" href="https://asrar-co.com/en/-/c1245395493">
+                                    <span>View All</span>
+                                    <i class="sicon-keyboard_arrow_left text-lg rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1 transition-transform duration-300"></i>
+                                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                                </a>
+                            </div>
+                                            </div>
+                </template>
+            </div>
+                                                                                                
+                                                    
+                                                    
+                                    
+                                                                                                                                                                                                            
+                                    <div data-limit="8" class="product-tab-content hidden" data-tab-id="product-tab-25-2">
+                <template data-lazy-tab>
+                    <div class="container">
+                                                    <salla-products-slider slider-config=''
+                                source="categories"
+                                                                source-value="[&quot;1137411872&quot;]"
+                                                                limit="8"
+                                autoplay
+                                class=" simplified-products  fit-slider-products  enhanced-products-slider "
+                                includes='[&quot;images&quot;]'
+                                                                slider-id="product-tabs-slider-25-3">
+                            </salla-products-slider>
+                        
+                                                    <div class="product-tabs__view-all-wrap flex justify-center mt-5">
+                                <a data-selia="home-product-tabs-view-all" class="product-tabs__view-all group inline-flex items-center gap-2 text-primary font-medium relative pb-1" href="https://asrar-co.com/en/-/c1137411872">
+                                    <span>View All</span>
+                                    <i class="sicon-keyboard_arrow_left text-lg rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1 transition-transform duration-300"></i>
+                                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                                </a>
+                            </div>
+                                            </div>
+                </template>
+            </div>
+                                                                                                
+                                                    
+                                                    
+                                    
+                                                                                                                                                                                                            
+                                    <div data-limit="8" class="product-tab-content hidden" data-tab-id="product-tab-25-3">
+                <template data-lazy-tab>
+                    <div class="container">
+                                                    <salla-products-slider slider-config=''
+                                source="categories"
+                                                                source-value="[&quot;604002598&quot;]"
+                                                                limit="8"
+                                autoplay
+                                class=" simplified-products  fit-slider-products  enhanced-products-slider "
+                                includes='[&quot;images&quot;]'
+                                                                slider-id="product-tabs-slider-25-4">
+                            </salla-products-slider>
+                        
+                                                    <div class="product-tabs__view-all-wrap flex justify-center mt-5">
+                                <a data-selia="home-product-tabs-view-all" class="product-tabs__view-all group inline-flex items-center gap-2 text-primary font-medium relative pb-1" href="https://asrar-co.com/en/-/c604002598">
+                                    <span>View All</span>
+                                    <i class="sicon-keyboard_arrow_left text-lg rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1 transition-transform duration-300"></i>
+                                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                                </a>
+                            </div>
+                                            </div>
+                </template>
+            </div>
+                                                                                                
+                                                    
+                                                    
+                                    
+                                                                                                                                                                                                            
+                                    <div data-limit="8" class="product-tab-content hidden" data-tab-id="product-tab-25-4">
+                <template data-lazy-tab>
+                    <div class="container">
+                                                    <salla-products-slider slider-config=''
+                                source="categories"
+                                                                source-value="[&quot;1870513442&quot;]"
+                                                                limit="8"
+                                autoplay
+                                class=" simplified-products  fit-slider-products  enhanced-products-slider "
+                                includes='[&quot;images&quot;]'
+                                                                slider-id="product-tabs-slider-25-5">
+                            </salla-products-slider>
+                        
+                                                    <div class="product-tabs__view-all-wrap flex justify-center mt-5">
+                                <a data-selia="home-product-tabs-view-all" class="product-tabs__view-all group inline-flex items-center gap-2 text-primary font-medium relative pb-1" href="https://asrar-co.com/en/-/c1870513442">
+                                    <span>View All</span>
+                                    <i class="sicon-keyboard_arrow_left text-lg rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1 transition-transform duration-300"></i>
+                                    <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300"></span>
+                                </a>
+                            </div>
+                                            </div>
+                </template>
+            </div>
+                                    </section>
+
+<section component-id="643410726" class="s-block s-block--fixed-banner wide-placeholder  fixed-banner--26">
+    <div class="container ">
+                <a href="https://asrar-co.com/en/-/c1769280476" aria-label="Banner fixed banner" class="banner banner--fixed overflow-hidden">
+            <picture>
+                                    <source
+                        media="(max-width: 767px)"
+                        data-srcset="https://cdn.files.salla.network/homepage/417733722/ca3f8e2c-d94f-4336-8342-1dc353116d61-standard.webp"                    />
+                                <img
+                    width="1200"
+                    height="300"
+                    class="fixed-banner__image lazy"
+                    src="https://cdn.selia-tech.com/images/s-empty-wide.png"
+                    data-src="https://cdn.files.salla.network/homepage/417733722/3af81c5d-c5e1-483e-9878-e1cfd5007e5c-standard.webp"                    alt="fixed banner"
+                    style="height:auto;max-width:100%;object-fit: contain;"
+                    
+                />
+            </picture>
+        </a>
+    </div>
+</section>
+<section component-id="1592537050" class="s-block s-block--fixed-banner s-block--three-banners wide-placeholder  three-banners three-banners--27 ">
+	<div class="container">
+				<div class="three-banners__row flex  gap-2 md:gap-4 ">
+			<a href="https://asrar-co.com/en/-/c1184016006" aria-label="Banner" class="banner banner--fixed overflow-hidden basis-3/6  h-full">
+														<img data-selia="home-three-banners-image-1" width="1200" height="300" style="height:auto;width:100%" class="three-banners__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/0df3a530-7d30-4b55-b1bc-41b983eaa199-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+			<a href="https://asrar-co.com/en/-/c1648682112" aria-label="Banner" class=" banner banner--fixed overflow-hidden basis-3/6 h-full">
+														<img data-selia="home-three-banners-image-2" width="1200" height="300" style="height:auto;width:100%" class="three-banners__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/cdb464c0-cf67-4495-b288-fdefcb9cda7f-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+            <a href="https://asrar-co.com/en/-/c1224890811" aria-label="Banner" class=" banner banner--fixed overflow-hidden basis-3/6 h-full">
+														<img data-selia="home-three-banners-image-3" width="1200" height="300" style="height:auto;width:100%" class="three-banners__image lazy object-cover " src="https://cdn.selia-tech.com/images/s-empty-wide.png" data-src="https://cdn.files.salla.network/homepage/417733722/05d0c0cb-658c-49fe-b5ab-29cfcf1c4ef6-standard.webp" alt="Banner" loading="lazy"/>
+							</a>
+		</div>
+	</div>
+</section>
+
+<section component-id="1881590311" class="s-block s-block--fixed-banner wide-placeholder  fixed-banner--28">
+    <div class="container ">
+                <a href="https://asrar-co.com/en/-/c276809095" aria-label="Banner fixed banner" class="banner banner--fixed overflow-hidden">
+            <picture>
+                                    <source
+                        media="(max-width: 767px)"
+                        data-srcset="https://cdn.files.salla.network/homepage/417733722/dd37adbd-21e7-46b9-91a4-397344b6ecd5-standard.webp"                    />
+                                <img
+                    width="1200"
+                    height="300"
+                    class="fixed-banner__image lazy"
+                    src="https://cdn.selia-tech.com/images/s-empty-wide.png"
+                    data-src="https://cdn.files.salla.network/homepage/417733722/580c8af0-e6e9-49f5-b202-119d280d4493-standard.webp"                    alt="fixed banner"
+                    style="height:auto;max-width:100%;object-fit: contain;"
+                    
+                />
+            </picture>
+        </a>
+    </div>
+</section>
+<section component-id="1633534687" class="s-block container fixed-products fixed-products--29">
+	<div class="home-block-title">
+					<div>
+				<h2 data-selia="home-fixed-products-title" class="fixed-products__title text-center text-store-text-primary text-2xl lg:text-3xl font-bold leading-tight ">Devices</h2>
+									<span class="enhanced-title-border home-block-line "></span>
+							</div>
+			</div>
+
+	<salla-products-list 
+		source="categories"
+		limit="12" 
+		includes='[&quot;images&quot;]' 
+		data-length="6" 
+		source-value="[1769280476,1224890811,1184016006,276809095,1648682112]"
+		class="vertical-products
+			    simplified-products
+   			   " 
+		>
+		</salla-products-list>
+			<div class="fixed-products__view-all-wrap flex items-center gap-8 mt-5">
+			<span class="h-px bg-gray-200 flex-1 block"></span>
+			<a class="btn btn--outline-primary h-10 grow-0 gap-1.5 group !px-2 !rounded-none" href="https://asrar-co.com/en/category/ZArdWb">
+				<span>View all products</span>
+				<i class="sicon-keyboard_arrow_left text-xl rtl:group-hover:-translate-x-2 ltr:group-hover:translate-x-2 transition-transform duration-300"></i>
+			</a>
+			<span class="h-px bg-gray-200 flex-1 block"></span>
+		</div>
+
+	</section>
+<salla-hook name="index:end"></salla-hook></main>
+		<footer class="store-footer     ">
+			
+			<svg class="absolute top-0 w-full h-6 -mt-5 sm:-mt-10 sm:h-16 store-footer__curve z-[0]" preserveaspectratio="none" viewbox="0 0 1440 54">
+				<path fill="currentColor" d="M0 22L120 16.7C240 11 480 1.00001 720 0.700012C960 1.00001 1200 11 1320 16.7L1440 22V54H1320C1200 54 960 54 720 54C480 54 240 54 120 54H0V22Z"></path>
+			</svg>
+						<div>
+			<div class="store-footer__inner">
+				<div class="store-footer__grid container grid grid-col-1 lg:grid-cols-3 gap-4 lg:gap-6">
+
+
+								<div data-selia="footer-links-column" class="store-footer__menu text-center order-1 lg:order-[unset]  ">
+			<h3 data-selia="footer-column-title" class="store-footer__menu-title  ">Useful links</h3>
+						<ul class="footer-list   store-links-items">
+									<li><a  href="https://asrar-co.com/en/blog" target="_self" data-selia="footer-link" class="store-footer__menu-link block mb-5 last:mb-0 text-sm leading-none ">Blog</a></li>
+									<li><a  href="https://asrar-co.com/en/asrar-co/Return-policy/page-341568987" target="_self" data-selia="footer-link" class="store-footer__menu-link block mb-5 last:mb-0 text-sm leading-none ">Return policy</a></li>
+									<li><a  href="https://asrar-co.com/en/Asrar-co/Shipping-and-Delivery/page-1699488062" target="_self" data-selia="footer-link" class="store-footer__menu-link block mb-5 last:mb-0 text-sm leading-none ">Shipping and Delivery</a></li>
+									<li><a  href="https://asrar-co.com/en/الدعم-الفني/page-1975959241" target="_self" data-selia="footer-link" class="store-footer__menu-link block mb-5 last:mb-0 text-sm leading-none ">الدعم الفني</a></li>
+									<li><a  href="https://asrar-co.com/en/سياسة-الخصوصية/page-1666522068" target="_self" data-selia="footer-link" class="store-footer__menu-link block mb-5 last:mb-0 text-sm leading-none ">سياسة الخصوصية</a></li>
+									<li><a  href="https://salla.partners/affiliate" target="_self" data-selia="footer-link" class="store-footer__menu-link block mb-5 last:mb-0 text-sm leading-none ">برنامج التسويق بالعمولة</a></li>
+							</ul>
+					</div>
+	
+					<div data-selia="footer-brand-column" class="store-footer__brand lg:-mt-[45px] relative z-[1] lg:col-[2]">
+						<a href="https://asrar-co.com/en/" data-selia="footer-logo-link" class="store-footer__logo-link flex items-center justify-center m-0 ">
+																					<img src="https://cdn.salla.sa/cdn-cgi/image/fit=scale-down,width=400,height=400,onerror=redirect,format=auto/DGdDlG/KJ1mZX10VAoPDgX7fHUvtzfqhKPXi1lL7cKlL4xl.png"  height="64" style=" height:64px;" alt="Asrarco Store" class="img-fluid">
+													</a>
+													<p class="leading-6 footer-description mb-8 mt-3 text-center ">
+								Specialists in the field of care, beauty and perfumes 💫
+Original products at the lowest price 💯
+Shipping to all regions of Saudi Arabia 🇸🇦
+							</p>
+												<div class="footer-badges flex justify-center items-center  ">
+							<salla-trust-badges class="rtl:ml-4 ltr:mr-4 rtl:mr-[unset] ltr:ml-[unset]" ></salla-trust-badges>
+															<div class="footer-tax flex rtl:space-x-reverse space-x-2 items-end justify-center ">
+																			<a class="footer-tax__certificate load-img-onclick" data-modal-id="modal-value-tax" href="#/" alt="314131645500003">
+											<img width="200" height="255" src="https://cdn.salla.network/images/s-empty.png?v=2.0.5" data-src="https://cdn.salla.network/images/tax.png?v=2.0.5" class="lazy w-10 rounded-sm hover:opacity-80 transition-opacity" alt="value added tax">
+										</a>
+																		<div class="footer-tax__number">
+										<p class="text-sm text-text-grey mb-1">Tax ID number</p>
+										<b class="text-sm">314131645500003</b>
+									</div>
+								</div>
+
+																	<salla-modal sub-title-first sub-title="Tax ID number" modal-title="314131645500003" id="modal-value-tax">
+										<div class="flex justify-center max-w-full">
+											<img class="w-full" loading="lazy" src="https://cdn.salla.network/images/s-empty.png?v=2.0.5" data-src="https://cdn.salla.sa/DGdDlG/eLkZB62g86zWQUIMAWLmzflZO7zshU6K9KAFPvnw.png" alt="314131645500003"/>
+										</div>
+									</salla-modal>
+																					</div>
+						
+													<div class="store-footer__locale-row flex items-center justify-center mt-5 ">
+																	<button type="button" onclick="if (!window.__cfRLUnblockHandlers) return false; salla.event.dispatch('localization::open')" data-selia="footer-language-switcher" class="store-footer__language-btn flex items-center justify-center" aria-label="Change Language" data-cf-modified-f46d447a9183142d4327ba63-="">
+										<i class="sicon-earth rtl:ml-1 ltr:mr-1"></i>
+										<span class="shrink-0">English</span>
+										<span class="sicon-keyboard_arrow_down"></span>
+									</button>
+																																									<salla-localization-modal></salla-localization-modal>
+								
+															</div>
+																	</div>
+
+					<div data-selia="footer-apps-section" class="store-footer__apps ">
+
+			<div class="store-footer__apps-inner text-center">
+			<h3 data-selia="footer-apps-title">Download the app</h3>
+			<div class="store-footer__apps-list flex justify-center my-3">
+									<a href="https://apps.apple.com/us/app/asrar-co-%D8%A3%D8%B3%D8%B1%D8%A7%D8%B1%D9%83%D9%88/id1484747121?ls=1" aria-label="appstore" rel="noreferrer" target="_blank" data-selia="footer-app-badge" class="store-footer__app-badge rtl:ml-4 ltr:mr-4 leading-none hover:text-primary">
+						<img width="135" height="40" alt="appstore" src="https://cdn.salla.network/images/appstore.png?v=2.0.5"/>
+					</a>
+									<a href="https://play.google.com/store/apps/details?id=com.marvel.asrarco&amp;hl=ar&amp;pli=1" aria-label="googleplay" rel="noreferrer" target="_blank" data-selia="footer-app-badge" class="store-footer__app-badge rtl:ml-4 ltr:mr-4 leading-none hover:text-primary">
+						<img width="135" height="40" alt="googleplay" src="https://cdn.salla.network/images/googleplay.png?v=2.0.5"/>
+					</a>
+							</div>
+		</div>
+				<div class="store-footer__sbc mt-2 md:mt-5">
+							<a data-selia="footer-sbc-link" class="store-footer__sbc-link flex items-center justify-center flex-col h-full" aria-label="Saudi Business Center" target="_blank" href="https://eauthenticate.saudibusiness.gov.sa/certificate-details/0000013798">
+					<img class="lazy w-18 object-contain mb-1.5" width="192" height="146" src="https://cdn.salla.network/images/s-empty.png?v=2.0.5" data-src="https://cdn.salla.network/images/sbc.png?v=2.0.5" alt="Saudi Business Center">
+					Verified on SBC
+				</a>
+					</div>
+		</div>
+
+				</div>
+			</div>
+
+			<div class="store-footer__contacts-row">
+				<selia-contacts 
+					hide-title="true" 
+					horizontal="true" 
+					enhanced="false" 
+					rounded="true" 
+					animate="false">
+				</selia-contacts>
+
+				<salla-social class="store-footer__social flex items-center justify-center  mt-4  rounded_contacts"></salla-social>
+			</div>
+			<div class="footer-bottom">
+				<div class="store-footer__bottom-inner container md:flex items-center justify-between py-4 text-center">
+					<span class="text-sm footer-rights"><p class="text-gray-400 mb-2.5 md:mb-0">All rights reserved | 2026
+    <a href="https://asrar-co.com/en" class="hover:text-primary" target="_blank" rel="noreferrer" class="underline">Asrarco Store</a>
+</p>
+</span>
+					<salla-payments></salla-payments>				</div>
+			</div>
+		</div>
+	
+	<span class="hidden w-1/2 mt-4 md:mt-12 sm:w-auto bottom-2 rtl:pl-24 ltr:pr-24 text-storeBG pointer-events-none bg-storeBG from-storeBG h-16 w-16 aspect-[3/4] lg:!w-[60%] lg:!w-[40%] object-fill object-bottom object-left object-right object-none object-top opacity-40 left-2 right-2"></span>
+		<span class="hidden flex flex-1 flex-none items-start items-center justify-between shrink-0 space-y-1 space-y-0.5 space-x-4 rtl:space-x-reverse gap-1.5 gap-2 pt-1 mt-1 mb-2.5 p-2.5 md:p-4 w-20 h-20 rounded object-center object-cover leading-6 text-base text-sm font-bold line-through relative absolute -top-[0.625rem] rtl:-left-[0.625rem] ltr:-right-[0.625rem] border border-gray-100 bg-store-bg-secondary text-store-text-primary text-store-text-secondary text-primary text-red-600"></span>
+</footer>
+
+	</div>
+	
+		<script type="f46d447a9183142d4327ba63-text/javascript">window.baseUrl='https://asrar-co.com/en/'; window.is_rtl=false; window.locale='en';</script><script type="f46d447a9183142d4327ba63-text/javascript">
+    function injectTwilightBundlesAssets() {
+        window.twilightBundlesObserver.disconnect();
+        if (document.querySelector('#twilight-bundles-assets')) {
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = "https://cdn.assets.salla.network/prod/@salla.sa/twilight-bundles/latest/twilight-bundles.js";
+        script.defer = true;
+        script.id = 'twilight-bundles-assets';
+        document.head.appendChild(script);
+    }
+    window.twilightBundlesObserver = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType === 1 && node.tagName.toLowerCase() === 'salla-custom-component') {
+                    injectTwilightBundlesAssets();
+                    return;
+                }
+            }
+        }
+    });
+
+    window.twilightBundlesObserver.observe(document.body, { childList: true, subtree: true });
+
+    Salla.onReady(() => document.querySelector('salla-custom-component') && injectTwilightBundlesAssets());
+</script>
+<script type="f46d447a9183142d4327ba63-text/javascript">
+    (function() {
+        // Safe threshold: 14KB (browser limit ~16KB, leave buffer)
+        var COOKIE_SIZE_THRESHOLD = 14000;
+
+        // Essential cookies preserved by NAME only
+        var essentialCookies = {
+            // Session & Security
+            exact: [
+                "__said",
+                "__said",
+                "__ssid",
+                "XSRF-TOKEN"
+            ],
+            // Marketing & Analytics (SEO-critical)
+            marketing: [
+                "_fbp", "_fbc",                                   // Meta/Facebook
+                "_ga", "_gid",                                    // Google Analytics
+                "_ttp",                                           // TikTok
+                "_scid", "_scid_r",                               // Snapchat
+                "twclid", "_twitter_sess", "personalization_id",  // Twitter/X
+                "_hjid", "_hjSessionUser"                         // Hotjar
+            ],
+            // Prefix patterns
+            prefixes: [
+                "_ga_",      // GA4 property-specific
+                "_gcl_",     // Google Ads click IDs
+                "_gac_",     // Google Ads conversion
+                "cf_",       // Cloudflare
+                "_hj",       // Hotjar
+                "intercom-"  // Intercom
+            ]
+        };
+
+        function shouldPreserve(name) {
+            name = name.trim();
+            if (essentialCookies.exact.indexOf(name) !== -1) return true;
+            if (essentialCookies.marketing.indexOf(name) !== -1) return true;
+            for (var i = 0; i < essentialCookies.prefixes.length; i++) {
+                if (name.indexOf(essentialCookies.prefixes[i]) === 0) return true;
+            }
+            return false;
+        }
+
+        function deleteCookie(name) {
+            var hostname = window.location.hostname;
+
+            if (/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(hostname)) {
+                document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+                return;
+            }
+            
+            var domains = [
+                '',                    // Browser default
+                hostname,              // Current domain
+                '.' + hostname         // With dot prefix
+            ];
+
+            var parts = hostname.split('.');
+            for (var i = 1; i < parts.length - 1; i++) {
+                domains.push('.' + parts.slice(i).join('.'));
+            }
+
+            var paths = ['/', ''];
+            var expiry = '=; expires=Thu, 01 Jan 1970 00:00:00 UTC';
+
+            for (var i = 0; i < domains.length; i++) {
+                for (var j = 0; j < paths.length; j++) {
+                    var str = name + expiry;
+                    if (paths[j]) str += '; path=' + paths[j];
+                    if (domains[i]) str += '; domain=' + domains[i];
+                    document.cookie = str;
+                }
+            }
+        }
+
+        // Get cookie size with fallback for older browsers (IE11, Safari < 10.1)
+        function getCookieSize() {
+            var cookie = document.cookie;
+            if (typeof TextEncoder !== 'undefined') {
+                return new TextEncoder().encode(cookie).length;
+            }
+
+            // Fallback: count UTF-8 bytes manually (handles surrogate pairs)
+            var bytes = 0;
+            for (var i = 0; i < cookie.length; i++) {
+                var c = cookie.charCodeAt(i);
+                if (c < 128) {
+                    bytes += 1;
+                } else if (c < 2048) {
+                    bytes += 2;
+                } else if (c >= 0xD800 && c <= 0xDBFF) {
+                    var next = i + 1 < cookie.length ? cookie.charCodeAt(i + 1) : 0;
+                    if (next >= 0xDC00 && next <= 0xDFFF) {
+                        bytes += 4;
+                        i++; 
+                    } else {
+                        bytes += 3;
+                    }
+                } else if (c >= 0xDC00 && c <= 0xDFFF) {
+                    bytes += 3;
+                } else {
+                    bytes += 3;
+                }
+            }
+            return bytes;
+        }
+
+        function parseCookies(cookieStr) {
+            if (!cookieStr) return [];
+            var cookies = [];
+            var pairs = cookieStr.split('; ');
+            for (var i = 0; i < pairs.length; i++) {
+                var idx = pairs[i].indexOf('=');
+                var name;
+                if (idx === -1) {
+                    name = pairs[i].trim();
+                } else {
+                    name = pairs[i].substring(0, idx).trim();
+                }
+                if (name) {
+                    cookies.push({ name: name });
+                }
+            }
+            return cookies;
+        }
+
+        function cleanCookies() {
+            try {
+                if (getCookieSize() < COOKIE_SIZE_THRESHOLD) return;
+
+                var cookies = parseCookies(document.cookie);
+                for (var i = 0; i < cookies.length; i++) {
+                    if (!shouldPreserve(cookies[i].name)) {
+                        deleteCookie(cookies[i].name);
+                    }
+                }
+            } catch (e) {
+                // Silent fail - don't break page for cookie cleanup errors
+            }
+        }
+
+        // Initial cleanup on load && Periodic cleanup for SPAs and long sessions
+        cleanCookies();
+        setInterval(cleanCookies, 10000);
+    })();
+</script>
+    
+    <script type="f46d447a9183142d4327ba63-text/javascript">
+      function dispatchSallaEvents() {
+        salla.event.dispatchEvents({"twilight::init":{"store":{"id":417733722,"ray":100,"logo":"https:\/\/cdn.salla.sa\/cdn-cgi\/image\/fit=scale-down,width=400,height=400,onerror=redirect,format=auto\/DGdDlG\/KJ1mZX10VAoPDgX7fHUvtzfqhKPXi1lL7cKlL4xl.png","icon":"https:\/\/cdn.salla.sa\/DGdDlG\/WkzWfOX1gHgrQcSFCoaDEh2bOdDIPgQNBoJF3Bsd.png","name":"Asrarco Store","username":"asrarco","store_country":"SA","country":"SA","url":"https:\/\/asrar-co.com\/en\/","settings":{"auth":{"email_allowed":true,"mobile_allowed":true,"is_email_required":false,"countries":["all"],"force_login":false,"social_attempt_enabled":false,"whatsapp_allowed":false,"whatsapp_countries":[],"whatsapp_merchant_allowed":false,"login_tab":false,"user_country":"IE","config":null},"cart":{"apply_coupon_enabled":true,"basket_gap":true,"multi_coupon":false,"has_checkout_coupons":false,"has_thankyou_coupons":false},"product":{"total_sold_enabled":1,"manual_quantity":true,"fit_type":"cover","related_products_enabled":true,"product-recommendation-type":"category","filters":{"category_id":true,"brand_id":true,"price":true,"variants":false,"rating":true,"tag_name":false},"show_comments":false,"user_can_comment":true,"show_price_as_dash":true,"notify_options_availability":true,"show_special_offers":true,"show_more":true,"availability_notify":{"email":true,"sms":false,"mobile":true,"whatsapp":false},"bought_together":true,"hide_out_of_stock":false,"sort_options":["ourSuggest","bestSell","topRated","priceFromTopToLow","priceFromLowToTop"]},"category":{"testimonial_enabled":true},"payments":["mada","credit_card","stc_pay","apple_pay","tabby_installment","tamara_installment","mispay_installment","customer_wallet","cod"],"arabic_numbers_enabled":false,"content_copyright":false,"display_copyright":false,"use_sar_symbol":true,"is_multilingual":true,"currencies_enabled":false,"rating_enabled":true,"rating":{"is_enabled":true,"show_on_category":false,"show_on_product":false,"can_rate_store":true,"can_rate_product":true,"can_rate_shipping":true,"show_rating_summary":true,"show_recommendation":true,"allow_likes":true,"allow_attach_images":true,"required_attach_images":false,"allow_attach_videos":false,"required_attach_videos":false,"allow_contact_support":true,"allow_update":true,"update_period":1,"can_customer_hide_name":false,"visitor_can_comment":true,"page_feedback_enabled":false,"allow_reviews_from_product_page":true,"rating_store_points":null,"rating_product_points":null,"rating_shipping_company_points":null,"rating_product_with_image_points":null},"blog":{"is_enabled":true,"allow_likes_and_comments":true},"is_loyalty_enabled":false,"keys":{"maps":"AIzaSyAZpoNuLbXR-VvGYEP4ZbMD9FqZiwjkIkU","gtm":[]},"is_salla_gateway":true,"upload_size":2000,"tax":{"number":"314131645500003","certificate":"https:\/\/cdn.salla.sa\/DGdDlG\/eLkZB62g86zWQUIMAWLmzflZO7zshU6K9KAFPvnw.png","taxable_prices_enabled":true},"certificate":{"id":"0000013798"},"made_in_ksa":false,"commercial_number":"1010577699","freelance_number":null,"buy_now":null,"installments":{"tabby":{"merchantCode":"default","publicKey":"pk_019285ab-6c0b-78fd-4b2f-1c9b783d32a2","installments":"4","has_details":true},"mispay":{"merchantCode":"default","publicKey":"","installments":"4","has_details":false},"tamara":{"merchantCode":"default","publicKey":"","installments":"4","has_details":true}},"quick_order":null,"bullet_delivery":null,"order_options":{"mandatory":false}},"meta":{"title":"\u0623\u0641\u0636\u0644 \u0645\u0646\u062a\u062c\u0627\u062a \u0627\u0644\u0645\u0643\u064a\u0627\u062c \u0648\u0627\u0644\u0639\u0646\u0627\u064a\u0629 \u0628\u0627\u0644\u0628\u0634\u0631\u0629 \u062a\u0633\u0648\u0642 \u0627\u0644\u0622\u0646 \u0645\u0646 \u0623\u0633\u0631\u0627\u0631\u0643\u0648","description":"\u0627\u0643\u062a\u0634\u0641 \u0645\u062c\u0645\u0648\u0639\u0629 \u0645\u0645\u064a\u0632\u0629 \u0645\u0646 \u0645\u0646\u062a\u062c\u0627\u062a \u0627\u0644\u0645\u0643\u064a\u0627\u062c \u0648\u0627\u0644\u0639\u0646\u0627\u064a\u0629 \u0628\u0627\u0644\u0628\u0634\u0631\u0629 \u0645\u0646 \u0623\u0633\u0631\u0627\u0631\u0643\u0648 \u0648\u0627\u062d\u0635\u0644 \u0639\u0644\u0649 \u0623\u0641\u0636\u0644 \u0627\u0644\u0639\u0631\u0648\u0636 \u0628\u0623\u0633\u0639\u0627\u0631 \u062a\u0646\u0627\u0641\u0633\u064a\u0629 \u062a\u0633\u0648\u0642 \u0627\u0644\u0622\u0646 \u0644\u062a\u062c\u062f\u064a\u062f \u0631\u0648\u062a\u064a\u0646\u0643 \u0627\u0644\u062c\u0645\u0627\u0644\u064a \u0628\u0623\u0641\u0636\u0644 \u0627\u0644\u062e\u064a\u0627\u0631\u0627\u062a","keywords":""},"scope":null,"template":null,"contacts":{"whatsapp":"+966579616164","mobile":"+966534468036","email":"web@asrar-co.com"},"social":{"instagram":"https:\/\/www.instagram.com\/Asrarcostore\/","twitter":"https:\/\/x.com\/Asrarcostore","snapchat":"https:\/\/www.snapchat.com\/add\/asrar-costore","tiktok":"https:\/\/www.tiktok.com\/@asrarcostore","youtube":"https:\/\/www.youtube.com\/channel\/UC8ko1PhUfjQDVx2R3p-4Raw","facebook":"https:\/\/www.facebook.com\/asrarcoksa"},"description":"Specialists in the field of care, beauty and perfumes \ud83d\udcab\r\nOriginal products at the lowest price \ud83d\udcaf\r\nShipping to all regions of Saudi Arabia \ud83c\uddf8\ud83c\udde6","apps":{"appstore":"https:\/\/apps.apple.com\/us\/app\/asrar-co-%D8%A3%D8%B3%D8%B1%D8%A7%D8%B1%D9%83%D9%88\/id1484747121?ls=1","googleplay":"https:\/\/play.google.com\/store\/apps\/details?id=com.marvel.asrarco&hl=ar&pli=1"},"features":["loyalty-system-v2","conditional-offer","custom-fields","legacy-login-flow","customer-wallet","guest-checkout","embedded-login-checkout","salla-account","tiered-offer","utm-client-ids","bullet-delivery-v2","order-options","feedback-video-attachments","customer-data-export","customer-account-deletion","customer-global-sign-out","allow-reviews-from-product-page","ai-driven-personalized-product","wallet-gift-card","account-handoff","custom-urls","new_popup_rating","use-translations-cdn"],"is_merchant":false,"support_pickup":false,"order_instruction":{"thank_title":"\u0634\u0643\u0631\u0627 \u0644\u0632\u064a\u0627\u0631\u062a\u0643\u0645 \u0648\u0646\u0623\u0645\u0644 \u0628\u0631\u0624\u064a\u062a\u0643\u0645 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649","order_instructions_payment_waiting":"<p>\u0637\u0644\u0628\u0643 \u062d\u0627\u0644\u064a\u0627\u064b \u063a\u064a\u0631 \u0645\u0624\u0643\u062f !<\/p><p>\u0646\u0623\u0645\u0644 \u062a\u0623\u0643\u064a\u062f \u0627\u0644\u062f\u0641\u0639 \u0639\u0628\u0631 \u0627\u0644\u0631\u0627\u0628\u0637 \u0627\u0644\u0645\u0631\u0633\u0644 \u0644\u062c\u0648\u0627\u0644\u0643<\/p>","order_instructions_under_review":"<p>\u062a\u0645 \u0627\u0633\u062a\u0642\u0628\u0627\u0644 \u0637\u0644\u0628\u0643 \u0628\u0646\u062c\u0627\u062d<\/p><p>\u0633\u062a\u062a\u0645 \u0645\u0631\u0627\u062c\u0639\u0629 \u0627\u0644\u0637\u0644\u0628 \u0648\u062a\u0623\u0643\u064a\u062f\u0647 \u0641\u064a \u0623\u0642\u0631\u0628 \u0648\u0642\u062a<\/p>","order_instructions_completed":"<p>\u062a\u0645 \u0627\u0633\u062a\u0642\u0628\u0627\u0644 \u0637\u0644\u0628\u0643 \u0628\u0646\u062c\u0627\u062d<\/p><p>\u0633\u064a\u062a\u0645 \u062a\u062c\u0647\u064a\u0632 \u0627\u0644\u0637\u0644\u0628 \u0641\u064a \u0623\u0642\u0631\u0628 \u0648\u0642\u062a<\/p>"},"shipping":{"delivery_location":null,"express_delivery_promise":null,"support_pickup":false,"has_bullet_delivery_tag":false}},"debug":false,"theme":{"name":"632105401","profile":{"id":450279791,"name":null},"mode":"live","framework":"twig","translations_hash":"179483468544","is_rtl":false,"color":{"primary":"#954053","text":"#ffffff","is_dark":true,"reverse_primary":"#160000","reverse_text":"#ffffff"},"settings":{"is_breadcrumbs_enabled":true,"placeholder":"https:\/\/cdn.selia-tech.com\/images\/placeholder.png"},"assets":"https:\/\/cdn.assets.salla.network\/themes\/581928698\/1.234.0\/:path","bundle_assets":"https:\/\/cdn.assets.salla.network\/themes\/:bundle\/latest\/:component.js","twilight":{"version":"3.0.66"}},"trace_console":false,"user":{"id":"M5zcn44xNoFEPDkGz7KVxrNfy78RHcyfS0obKAGb","type":"guest","email":null,"mobile":null,"language_code":"en","currency_code":"SAR","country_code":"IE","can_comment":true,"avatar":"https:\/\/cdn.assets.salla.network\/prod\/stores\/themes\/default\/assets\/images\/avatar_male.png","is_hidden_name":null,"default_geo_location":{"lat":53.33306,"lng":-6.24889},"first_name":null,"last_name":null,"is_notifiable":false,"fetched_at":"2026-11-19","gender":"","birthday":null},"currencies":{"SAR":{"code":"SAR","name":"Saudi Riyal","symbol":"SAR","amount":1,"country_code":"sa"}},"languages":{"AR":{"name":"\u0627\u0644\u0639\u0631\u0628\u064a\u0629","code":"ar","url":"https:\/\/assets.salla.sa\/images\/flags\/ar.svg","is_rtl":true,"country_code":"sa","has_custom_translations":false},"EN":{"name":"English","code":"en","url":"https:\/\/assets.salla.sa\/images\/flags\/en.svg","is_rtl":false,"country_code":"gb","has_custom_translations":false}},"page":{"title":"Home","slug":"index","id":null},"events":{"twilight::error":["Trying to access (twilight_base.title), but it's not exist!","Trying to access (twilight_base.description), but it's not exist!","Trying to access (twilight_base.title), but it's not exist!","Trying to access (twilight_base.description), but it's not exist!","Trying to access (twilight_base.title), but it's not exist!","Trying to access (twilight_base.description), but it's not exist!","Trying to access (twilight_base.mobile_row_items), but it's not exist!","Trying to access (twilight_base.desktop_row_items), but it's not exist!","Trying to access (twilight_base.title), but it's not exist!","Trying to access (twilight_base.description), but it's not exist!","Trying to access (twilight_base.show_spinner), but it's not exist!","Trying to access (twilight_base.value), but it's not exist!","Trying to access (twilight_base.subtitle), but it's not exist!","Trying to access (twilight_base.position), but it's not exist!"]},"headers":{"S-Ray":100,"s-version-id":450279791},"login":{"url":"https:\/\/accounts.salla.com","turnstile_site_key":"0x4AAAAAAAw2tbDBgPI9NUvr","turnstile":{"key":"0x4AAAAAAAw2tbDBgPI9NUvr","enabled":false,"displayed":false,"mismatched":true,"level":"off"},"social":{"google":true,"facebook":true,"apple":true,"x":false}},"account":{"url":"https:\/\/accounts.salla.com"},"jitsu":{"host":"https:\/\/st.salla.dev","key":"yAKBxDDlIeg8c0qsNtlkjo4up1iTv68J:XSd8tVk8rqijFlxTacQv5QlAGcVuYPzy","debug_key":"bbLD6Xqr1OKsDJfxZBCy7SJN1RIsrkBp:WEa99iY220v9qX7KiuAlML9ldSFJKW2p","events":["Order Completed","Product Added","Product Removed","Product Viewed","Product Added to Wishlist","Product Removed from Wishlist","Cart Viewed","Products Searched","Product List Viewed","Signed Up","Signed In","Signed Out","Product Reviewed","Product Shared","Checkout Started","Payment Info Entered","Coupon Applied","Coupon Denied","Coupon Entered","Coupon Removed","Checkout Step Completed","Promotion Viewed","Promotion Clicked","User Profile Updated","Product List Filtered","Cart Updated","Payment Failed","Checkout Step Viewed","Market Selected","Address Added","Address Updated","Map Clicked","Product Reordered","Recommendation List Viewed","Product Clicked","Payment Submitted","Payment Succeeded","Payment Pending","Guest Registered","Promotion Applied","Promotion Removed","Thank You Cashback Viewed","Account Data Requested","Account Deactivated","Address Deleted"],"track_url":"https:\/\/asrar-co.com\/_app\/e\/api\/s\/event","context":{"extra":{"version":"1.1851.1","headers":{"s-server-version":"one"}}}},"affiliate":{"utm_url":"https:\/\/api.salla.dev\/marketing\/v1\/tracking\/visits","cta_enabled":true},"policy_url":"","experiment_running":true},"services::firebase.init":{"services":{"firebase":[]}},"services::addon-microsoft-clarity.init":{"services":{"addon-microsoft-clarity":{"project_id":"qed4b2x76c"}}},"services::google_analytics.init":{"services":{"google_analytics":{"tracking_id":"G-J924TBV5Z9"}}},"services::snapchat_pixel.init":{"services":{"snapchat_pixel":{"pixel_id":"8d27fa58-e481-4320-a420-82fec59f3c58","version":"salla-v2"}}},"services::tiktok_pixel.init":{"services":{"tiktok_pixel":{"pixel_id":"C9A8N3BC77UB71TGOF0G","version":"salla-v2"}}},"services::adwords.init":{"services":{"adwords":{"conversion_id":"10871670349","conversion_label":"Wo2MCMbqt-wZEM2MgsAo","add_to_cart_label":"b-EVCLahkZ0ZEM2MgsAo","begin_checkout_label":"1YM8CLmkkZ0ZEM2MgsAo","view_item_label":""}}},"services::facebook_pixel.init":{"services":{"facebook_pixel":{"pixel_id":"1038359274097015","version":"salla-v2"}}},"page.view":{"route":"store.home","link":"https:\/\/asrar-co.com","fingerprint":"b9ce973ac314d3aba817313603a4923411665dd7"}})
+      }
+
+      if (window.Salla && Salla.status)
+        dispatchSallaEvents();
+      else window.addEventListener('salla::created', dispatchSallaEvents, {once: true});
+    </script>
+<script type="f46d447a9183142d4327ba63-text/javascript">
+    var _user_id = ''; // Set to the user's ID, username, or email address, or '' if not yet known.
+    var _session_id = 'M5zcn44xNoFEPDkGz7KVxrNfy78RHcyfS0obKAGb'; // Set to a unique session ID for the visitor's current browsing session.
+
+    var _sift = window._sift = window._sift || [];
+    _sift.push(['_setAccount', '42e2369b33']);
+    _sift.push(['_setUserId', _user_id]);
+    _sift.push(['_setSessionId', _session_id]);
+    _sift.push(['_trackPageview']);
+
+   (function() {
+     function ls() {
+       var e = document.createElement('script');
+       e.src = 'https://cdn.sift.com/s.js';
+       document.body.appendChild(e);
+     }
+     if (window.attachEvent) {
+       window.attachEvent('onload', ls);
+     } else {
+       window.addEventListener('load', ls, false);
+     }
+   })();
+  </script><script type="f46d447a9183142d4327ba63-text/javascript">
+  Salla.onReady(() => {
+const latestProduct = {
+name: 'latest-product', 
+track: function(event, payload) {
+  if (event !== 'Product Viewed') return;
+
+  const pageId = salla.config.get('page').id;
+      console.log('pageId:', pageId, 'is product.single?', salla.url.is_page('product.single'));
+  
+      if (!pageId || !salla.url.is_page('product.single')) return;
+  
+      const storageKey = 's-viewed-products-' + salla.config.get('store')?.id;
+  
+      let existingIds = salla.storage.get(storageKey);
+      console.log('before get:', existingIds, 'type:', typeof existingIds);
+  
+      if (typeof existingIds === 'string') {
+        try { existingIds = JSON.parse(existingIds); } catch { existingIds = []; }
+      }
+      if (!Array.isArray(existingIds)) existingIds = [];
+  
+      const pid = String(pageId);
+      const filteredIds = existingIds.filter(id => String(id) !== pid);
+      filteredIds.unshift(pid);
+  
+      salla.storage.set(storageKey, filteredIds);
+  
+      console.log('after set:', salla.storage.get(storageKey));
+}, 
+page:()=>{}};
+Salla.analytics.registerTracker(latestProduct);
+  });
+</script>
+<script type="f46d447a9183142d4327ba63-text/javascript">
+  Salla.onReady(() => {
+    (() => {
+      
+      const allowed_pages = ["product.single"]; 
+      const title = {"ar":"شاهدتها مؤخرا","en":""};
+      const limit = "8";
+      const lang = salla.config.get('user')?.language_code || 'ar';
+
+      const injectSection = () => {
+        console.log("allowed_pages:", allowed_pages);
+        console.log("title:", title[lang]);
+        console.log("limit:", limit);
+
+        const slug = salla.config.get("page")?.slug;
+        if (!allowed_pages.includes(slug)) return null;
+
+        let section = document.getElementById("viewed-section");
+        if (section) return section;
+
+        const footer = document.querySelector(".store-footer");
+        if (!footer) return null;
+
+        const html = `
+          <section id="viewed-section" class="s-block container mt-6 sm:mt-8">
+            <div class="s-block__title">
+              <div class="right-side">
+                <h2>${title[lang]}</h2>
+              </div>
+            </div>
+
+            <salla-products-slider autoplay id="viewed-products-list" source="selected" limit="${limit}"></salla-products-slider>
+          </section>
+        `;
+
+        footer.insertAdjacentHTML("beforebegin", html);
+        return document.getElementById("viewed-section");
+      };
+
+      const initViewedProducts = () => {
+        const section = document.getElementById("viewed-section");
+        const list = document.getElementById("viewed-products-list");
+
+        if (!section || !list) return;
+
+        if (!window.salla?.storage || !window.salla?.config) {
+          section.style.display = "none";
+          return;
+        }
+
+        const storeId = salla.config.get("store")?.id;
+        const key = "s-viewed-products-" + storeId;
+
+        const products = salla.storage.get(key) || [];
+        const currentProductId = salla.config.get("page")?.id;
+
+        if (!Array.isArray(products) || products.length === 0) {
+          section.style.display = "none";
+          return;
+        }
+
+        const filteredProducts = currentProductId
+          ? products.filter((product) => {
+              const productId = (product && product.id) ? product.id : product;
+              return String(productId) !== String(currentProductId);
+            })
+          : products;
+
+        if (filteredProducts.length === 0) {
+          section.style.display = "none";
+          return;
+        }
+        
+        const limitedProducts = filteredProducts.slice(0, 8);
+
+        list.setAttribute("source-value", JSON.stringify(limitedProducts));
+        section.style.display = "";
+      };
+
+      const run = () => {
+        const section = injectSection();
+        if (!section) return;
+        initViewedProducts();
+      };
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", run);
+      } else {
+        run();
+      }
+    })();
+  });
+</script>
+<script type="f46d447a9183142d4327ba63-text/javascript">
+(function () {
+    var Salla = window.Salla = window.Salla || {};
+    if (Salla.appScope) { return; }
+
+    
+    var appCtx = {};
+
+    function isAppKey(key) { return typeof key === 'string' && key.indexOf('app.') === 0; }
+
+    
+    var contexts = {"apps":{"55e6c8dcd7fc26318429dafa68db637d":[],"b20271a6345bbc5c4f405ec4ecf10dd5":[]}};
+    var appsCtx  = contexts.apps || {};
+    var base     = {};   
+    Object.keys(appsCtx).forEach(function (scopeId) {
+        appCtx[scopeId] = appsCtx[scopeId] || {};
+        base[scopeId]   = Object.assign({}, appCtx[scopeId]);
+    });
+
+    
+    Salla.appScope = function (scopeId) {
+        
+        function realSalla()  { return window.salla || window.Salla || {}; }
+        function realConfig() { return realSalla().config || {}; }
+
+        
+        function bucket() {
+            appCtx[scopeId] = appCtx[scopeId] || {};
+            return appCtx[scopeId];
+        }
+
+        
+        function passthrough(obj, prop) {
+            var member = obj[prop];
+            return typeof member === 'function' ? member.bind(obj) : member;
+        }
+
+        
+        function getConfig(key, fallback) {
+            if (isAppKey(key)) {
+                var sub = key.slice(4), b = bucket();
+                return sub in b ? b[sub] : fallback;
+            }
+            var cfg = realConfig();
+            return typeof cfg.get === 'function' ? cfg.get(key, fallback) : fallback;
+        }
+
+        function setConfig(key, value) {
+            if (isAppKey(key)) { bucket()[key.slice(4)] = value; return value; }
+            var cfg = realConfig();
+            return typeof cfg.set === 'function' ? cfg.set(key, value) : value;
+        }
+
+        function hasConfig(key) {
+            if (isAppKey(key)) { return key.slice(4) in bucket(); }
+            return key in realConfig();
+        }
+
+        
+        var configProxy = new Proxy({}, {
+            get: function (target, prop) {
+                if (prop === 'get') { return getConfig; }
+                if (prop === 'set') { return setConfig; }
+                if (prop === 'has') { return hasConfig; }
+                
+                if (isAppKey(prop)) { return getConfig(prop); }
+                return passthrough(realConfig(), prop);
+            },
+            set: function (target, prop, value) { setConfig(prop, value); return true; },
+            has: function (target, prop) { return hasConfig(prop); }
+        });
+
+        
+        return new Proxy({}, {
+            get: function (target, prop) {
+                return prop === 'config' ? configProxy : passthrough(realSalla(), prop);
+            },
+            set: function (target, prop, value) {
+                if (prop === 'config') { return true; }
+                realSalla()[prop] = value;
+                return true;
+            }
+        });
+    };
+
+})();
+</script>
+<script async src="https://cdn.portal.files.salla.network/snippets/prod/691365818/634884746.js" data-snippet-id="13609" data-scope-id="55e6c8dcd7fc26318429dafa68db637d" type="f46d447a9183142d4327ba63-text/javascript"></script>
+<script type="f46d447a9183142d4327ba63-text/javascript">
+window.sAdsCAPIEvents = [
+    "rate", "register", "login", "purchase", 
+    "impressions", "checkout", "detail", 
+    "add", "remove", "view"
+];
+
+Salla.onReady(() => {
+    if (window.sAdsCAPIEvents.length > 1 || window.sAdsCAPIEvents[0] !== "purchase") {
+        window.observer = {
+            id: "417733722",
+            events: window.sAdsCAPIEvents
+        };
+
+        const script = document.createElement("script");
+        script.src = "https://cdn.salla.network/js/apps/salla-cap.js";
+        script.defer = true;
+        document.body.appendChild(script);
+    }
+});
+</script>
+<script type="f46d447a9183142d4327ba63-text/javascript">
+function sanitizeHTML(text) {
+  var element = document.createElement('div');
+  element.innerText = text;
+  return element.innerHTML;
+}
+var now = new Date();
+var time = now.toLocaleTimeString('en-US', { timeZone: 'Asia/Riyadh' });
+
+// Set the phone numbers based on the time of day
+var dayPhoneNumber = "579616164"; 
+var nightPhoneNumber = "";
+var phoneNumber = time >= "08:00:00" && time < "18:00:00" ? dayPhoneNumber : nightPhoneNumber;
+if (!phoneNumber) {
+  phoneNumber = dayPhoneNumber;
+}
+    var url = 'https://karzoun.app/assets/uploads/karzoun/Widget.js';
+    var s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = true;
+    s.src = url;
+    var options = {
+  "enabled":true,
+  "chatButtonSetting":{
+      "backgroundColor":"#218365",
+      "ctaText":"تواصل معنا",
+      "borderRadius":"25",
+      "marginLeft":"40",
+      "marginBottom":"50",
+      "marginRight":"40",
+      "position":"right"
+  },
+  "brandSetting":{
+      "brandName":"تواصل معنا",
+      "brandSubTitle":"نقوم بالرد في اقرب وقت",
+      "brandImg":"https://karzoun.app/assets/uploads/karzoun_logo.png",
+      "welcomeText":"مرحبا فيك عزيز وغالي علينا,@للطلب ارسل 1@لتتبع الطلب ارسل 2@للشكاوي ارسل 3",
+      "messageText": "مرحبا اريد الإستفسار عن   {page_link}",
+      "backgroundColor":"#218365",
+      "ctaText":sanitizeHTML("تواصل معنا"),
+      "borderRadius":"25",
+      "autoShow":false,
+      "phoneNumber":phoneNumber
+  }
+};
+    s.onload = function() {
+        CreateWhatsappChatWidget(options);
+    };
+    var x = document.getElementsByTagName('script')[0];
+    x.parentNode.insertBefore(s, x);
+</script>
+<script async src="https://cdn.portal.files.salla.network/snippets/prod/542868434/898237711.js" data-snippet-id="13571" data-scope-id="b20271a6345bbc5c4f405ec4ecf10dd5" type="f46d447a9183142d4327ba63-text/javascript"></script>
+<salla-hook name="body:end"></salla-hook>	    	<salla-add-product-toast></salla-add-product-toast>
+		<script data-cfasync="false">
+		// Retrieve the data attributes from the HTML element
+		var productCardPropsElem = document.getElementById('productCardPropsElem');
+		var hoverStyle = productCardPropsElem.dataset.hoverStyle;
+		var roundedCards = productCardPropsElem.dataset.roundedCards;
+		var quickViewLabel = productCardPropsElem.dataset.quickviewLabel;
+		var bgSize = productCardPropsElem.dataset.sliderBgSize;
+		var inStockLabel = productCardPropsElem.dataset.instockLabel;
+		var boxIcon = productCardPropsElem.dataset.boxIcon;
+		var boxIconWhite = productCardPropsElem.dataset.boxIconWhite;
+		var miniCards = productCardPropsElem.dataset.miniCards;
+		var primaryButtons = !!productCardPropsElem.dataset.primaryButtons || false;
+		var productPromoBg = productCardPropsElem.dataset.productPromoBg;
+		var isDark = !!productCardPropsElem.dataset.isDark || false;
+		var hideCountdown = !!productCardPropsElem.dataset.hideCountdown || false;
+		var hideRatings = !!productCardPropsElem.dataset.hideRatings || false;
+		var showDiscount = !!productCardPropsElem.dataset.showDiscount || false;
+		var showSubtitle = !!productCardPropsElem.dataset.showSubtitle || false;
+		var showTags = !!productCardPropsElem.dataset.showTags || false;
+		var mobileEnhancedAddBtn = !!productCardPropsElem.dataset.mobileEnhancedAddBtn || false;
+		var filledNormalCart = !!productCardPropsElem.dataset.filledNormalCart || false;
+		var filledMiniCart = !!productCardPropsElem.dataset.filledMiniCart || false;
+		var showRating = !!productCardPropsElem.dataset.showRating || false;
+		var showNormalCountdown = !!productCardPropsElem.dataset.showNormalCountdown || false;
+		var hideCountdownLabels = !!productCardPropsElem.dataset.hideCountdownLabels || false;
+		// Define the productCardProps object
+			window.productCardProps = {
+				hover_style: hoverStyle,
+				rounded_cards: roundedCards,
+				quick_view_label: quickViewLabel,
+				mini_cards: miniCards,
+				primaryButtons: primaryButtons,
+				product_promo_bg: productPromoBg,
+				hideCountdown: hideCountdown,
+				hideRatings: hideRatings,
+				showDiscount: showDiscount,
+				showSubtitle: showSubtitle,
+				mobileEnhancedAddBtn: mobileEnhancedAddBtn,
+				filledNormalCart: filledNormalCart,
+				filledMiniCart: filledMiniCart,
+				showTags: showTags,
+				showRating: showRating,
+				showNormalCountdown: showNormalCountdown,
+				hideCountdownLabels: hideCountdownLabels
+			};
+			window.quickViewProps = {
+				bgSize: bgSize,
+				boxIcon: boxIcon,
+				boxIconWhite: boxIconWhite,
+				inStockLabel: inStockLabel,
+				product_promo_bg: productPromoBg,
+				isDark: isDark,
+				hideCountdown: hideCountdown,
+				hideRatings: hideRatings
+			};
+	</script>
+	<script defer type="f46d447a9183142d4327ba63-text/javascript" src="https://cdn.assets.salla.network/themes/581928698/1.234.0/selia-contacts.js"></script>
+	<script defer crossorigin="anonymous" src="https://cdn.assets.salla.network/themes/581928698/1.234.0/app.js" type="f46d447a9183142d4327ba63-text/javascript"></script>
+
+		<salla-offer-modal></salla-offer-modal>
+	<salla-search></salla-search>
+	<salla-login-modal></salla-login-modal>
+
+		<div id="quickview" class="quickview"></div>
+
+		<div id="video-popup" class="video-popup"></div>
+
+
+	
+			<div class="scroll-to-top animated right" style="">
+			<svg class="progress-circle svg-content" width="100%" height="100%" viewbox="-1 -1 102 102">
+				<path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98" style="transition: stroke-dashoffset 10ms linear 0s; stroke-dasharray: 307.919, 307.919; stroke-dashoffset: 25.9963;"></path>
+			</svg>
+		</div>
+		
+
+    
+   	
+	
+	<div id="wa-selia" class="wa-selia flex-center left rounded-full " style="background-color: #22c55e;">
+		<a class="flex-center "
+		aria-label="Selia Whatsapp"
+		rel="noopener"
+		target="_blank"
+		href="https://wa.me/966502232444">
+			<i class="sicon-whatsapp2 text-3xl text-white" style="color: #ffffff;"></i>
+					</a>
+	</div>
+
+		
+	
+	    <script defer src="https://cdn.assets.salla.network/themes/581928698/1.234.0/home.js" type="f46d447a9183142d4327ba63-text/javascript"></script>
+
+	<!-- Discount Popup -->
+	
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="f46d447a9183142d4327ba63-|49" defer></script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"0ba4cd7067784c07aa8f5f733dd0f1a2","spa":2}' crossorigin="anonymous"></script>
+<script>window.__CF$cv$params={r:'a5d018bb1adb8c74',t:'MTc5NTEwMDU1Mw==',u:'01a1f454b40075f38f0c13eb246de037',ut:'6hDNRFmf9gJCDSAUFzvkVIlluzdNht6pRjsy2ddLdIs-1795100554-1.2.1.1-DN5VPxNeDd7FZldk8VshkWtBHXtkLpQ0Dss2oqtgnnmQ2EYYXS0K7tJALs5lTni7Cp8V1YbJEMZ8SyDqa7uzLzcUDJjJucstOEDC.CDzziE',i:60};(function(){if(!document.body)return;var l=window.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/precursor/main.js?ray=a5d018bb1adb8c74',s=document.createElement('script');s.src=o?new URL(u,o).href:u;document.head.appendChild(s);})();</script></body></html>
+

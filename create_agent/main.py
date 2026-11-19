@@ -9,21 +9,21 @@ sys.path.append(parent)
 from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 from create_agent.bb import main as start_bb
 
-AGENT_ID_NAME = "19719"
+AGENT_ID_NAME = "review.asrar-co.com-en"
 
 
 def start_prune(agent_id: str):
     agent = AgentForm(
         # name="reviews.fotokoch.de",
         agent_id=agent_id,
-        new_agent=False,
+        new_agent=True,
     )
     agent.create_run(
         # name_agent_for_test="Fotokoch [DE]",
         # agent_id="20182",
-        url="http://gamechronicles.com/category/game-reviews/",
+        url="https://alt-til-windows.dk/nyheder/",
         next_func=ProcessRun.revlist.name,
-        new_parser=True,
+        new_parser=False,
         breakers=3000,
         # curl=False
     )
@@ -33,7 +33,7 @@ def start_prune(agent_id: str):
     #     url_xpath='a/@href'
     # )
     agent.create_revlist(
-        revs_xpath='//h3[contains(@class, "title")]/a',
+        revs_xpath='//h3[contains(@class, "entry-title")]/a',
         name_title=TypeAgent.review.value,
         name_title_xpath="text()",
         url_xpath="@href",
