@@ -37,7 +37,7 @@ with DBSession() as db:
     if agent:
         agent.status = Status.running
         agent.new_code = agent_code
-        agent.agent_type = AgentType.MEDIUM
+        agent.agent_type = AgentType.BIG
         agent.extra_time = False
         agent.session_end_date = None
         agent.last_error = None

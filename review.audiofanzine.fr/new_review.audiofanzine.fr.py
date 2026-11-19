@@ -31,10 +31,21 @@ def remove_emoji(string):
     return emoji_pattern.sub(r'', string)
 
 
-def serialize_text(text):
-    text = re.sub(r'&([a-zA-Z]+);', lambda match: '&' + match.group(1).lower() + ';', text).replace('<br />', ' ').replace('<br/>', ' ').replace('<br/', ' ').replace("\r", "").replace("\n", "").replace('\t', '').replace('&', '&').replace('°', '°').replace('œ', 'œ').replace('í', 'í').replace('ú', 'ú').replace('“', '"').replace('£', '£').replace('"', '"').replace('à', 'à').replace('é', 'é').replace('á', 'á').replace('´', '́').replace('ã', 'ã').replace('ç', 'ç').replace('ó', 'ó').replace('€', '€').replace('ê', 'ê').replace('è', 'è').replace('’', '’').replace('”', '”').replace(' ', ' ').replace('<', '<').replace('>', '>').replace('‘', '‘').replace('–', '–').replace('ä', 'ä').replace('ß', 'ß').replace('ö', 'ö').replace('ü', 'ü').replace('â', 'â').replace('õ', 'õ').replace('ø', 'ø').replace('…', '…').replace('„', '„').replace('—', '—').replace(u'by Ã', 'by')
-    text = re.sub(r'&#[0-9]+;|&#[xX][0-9a-fA-F]+;', '', text)
-    text = h.unescape(text).replace('&quot;', '"').replace('&nbsp;', ' ').replace('&quot;', '"').replace('</span>', '').replace('<p class="MsoNormal">', '').replace('</span>', '')
+def serialize_text(text: str) -> str:
+    text = re.sub(
+        r"&([a-zA-Z]+);",
+        lambda m: "&" + m.group(1).lower() + ";",
+        text,
+    )
+    text = h.unescape(text)
+    text = re.sub(r"<br\s*/?>|</?(?:p|div|li|tr|td|th|h[1-6])\b[^>]*>", " ", text, flags=re.IGNORECASE)
+    text = re.sub(r"[\r\n\t]+", " ", text)
+    text = text.replace("“", '"').replace("”", '"').replace("„", '"')
+    text = text.replace("’", "'").replace("‘", "'")
+    text = text.replace("\u00a0", " ")
+    text = re.sub(r"<[^>]+>", " ", text)
+    text = remove_emoji(text).strip()
+
     return text
 
 
@@ -143,7 +154,7 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
 
         author = rev.xpath('.//div/span[contains(@title, "profile")]/text()').string() or rev.xpath('.//div[@class="reviewHeader-left"]/span[contains(@title, "membre de ")]/text()').string()
         if author:
-            author = remove_emoji(serialize_text(author)).strip()
+            author = serialize_text(author)
             if author:
                 review.authors.append(Person(name=author, ssid=author))
 
@@ -165,14 +176,14 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
         if not excerpt:
             excerpt = rev.xpath('.//div[contains(@class, "main-text")]//text()').string(multiple=True)
 
-        if excerpt and len(remove_emoji(serialize_text(excerpt)).strip()) > 2:
+        if excerpt and len(serialize_text(excerpt)) > 2:
             if title:
-                review.title = remove_emoji(serialize_text(title)).strip()
+                review.title = serialize_text(title)
         else:
             excerpt = title
 
         if excerpt:
-            excerpt = remove_emoji(serialize_text(excerpt)).strip()
+            excerpt = serialize_text(excerpt)
             if len(excerpt) > 2:
                 review.add_property(type='excerpt', value=excerpt)
 
@@ -203,7 +214,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     title = data.xpath('//span[@class="articleTitle" or @class="articleEditorialTitle"]/text()').string()
     if title:
-        review.title = remove_emoji(serialize_text(title)).strip()
+        review.title = serialize_text(title)
 
     date = data.xpath('//meta[@property="article:published_time"]/@content').string()
     if date:
@@ -215,7 +226,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         author = data.xpath('//span[@class="article-author"]/span/text()').string()
 
     if author:
-        author = remove_emoji(serialize_text(author)).strip()
+        author = serialize_text(author))
         if author and author_url:
             author_ssid = author_url.split('/')[-2]
             review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
@@ -233,7 +244,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
-            pro = remove_emoji(serialize_text(pro)).strip(' ….+-–:')
+            pro = serialize_text(pro).strip(' ….+-–:')
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
@@ -244,25 +255,25 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
-            con = remove_emoji(serialize_text(con)).strip(' ….+-–:')
+            con = serialize_text(con).strip(' ….+-–:')
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
     summary = data.xpath('//p[@class="content-header"]//text()').string(multiple=True)
     if summary:
-        summary = re.sub(r'<.*?>', '', (remove_emoji(serialize_text(summary)).strip()))
+        summary = serialize_text(summary)
         if summary:
             review.add_property(type='summary', value=summary)
 
     conclusion = data.xpath('//h2[contains(@id, "conclusion")]/following-sibling::p[not(regexp:test(., "Les Plus|Les moins") or starts-with(normalize-space(.), "+") or starts-with(normalize-space(.), "-") or starts-with(normalize-space(.), "–"))]//text()').string(multiple=True)
     if conclusion:
-        conclusion = re.sub(r'<.*?>', '', (remove_emoji(serialize_text(conclusion)).strip()))
+        conclusion = serialize_text(conclusion)
         if conclusion:
             review.add_property(type='conclusion', value=conclusion)
 
     excerpt = data.xpath('//div[@class="t-content"]/p[not(preceding-sibling::h2[contains(@id, "conclusion")])]//text()').string(multiple=True)
     if excerpt:
-        excerpt = re.sub(r'<.*?>', '', (remove_emoji(serialize_text(excerpt)).strip()))
+        excerpt = serialize_text(excerpt)
         if len(excerpt) > 2:
             review.add_property(type='excerpt', value=excerpt)
 

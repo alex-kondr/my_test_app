@@ -45,7 +45,7 @@ def remove_emoji(string):
 
 def run(context: dict[str, str], session: Session):
     session.browser.use_new_parser = True
-    session.sessionbreakers = [SessionBreak(max_requests=3000)]
+    session.sessionbreakers = [SessionBreak(max_requests=4000)]
     session.queue(Request('http://gamechronicles.com/category/game-reviews/', use='curl', options=OPTIONS, max_age=0), process_revlist, dict())
 
 
@@ -71,7 +71,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     time.sleep(random.uniform(1, 3))
 
     product = Product()
-    product.name = context['title'].split('Review –')[0].split('Review -')[0].split(' Tech Review')[0].strip('  ')
+    product.name = context['title'].split('Review –')[0].split('Review -')[0].split(' Tech Review')[0].replace(' – Game Chronicles Video Review', '').replace(' Video Review', '').replace(' Review-a-Reno – PC', '').replace(' Review for Xbox One', '').replace(' Review– PC/Steam', '').replace(' Review for PC', '').replace(' Review', '').strip('  ')
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('-review', '')
     product.category = 'Games'
@@ -97,9 +97,10 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     excerpt = data.xpath('//div[contains(@class, "entry-content")]/p//text()').string(multiple=True)
     if excerpt:
-        excerpt = remove_emoji(excerpt)
-        review.add_property(type='excerpt', value=excerpt)
+        excerpt = remove_emoji(excerpt).replace('<insert grumpy face here>', '').strip()
+        if len(excerpt) > 2:
+            review.add_property(type='excerpt', value=excerpt)
 
-        product.reviews.append(review)
+            product.reviews.append(review)
 
-        session.emit(product)
+            session.emit(product)

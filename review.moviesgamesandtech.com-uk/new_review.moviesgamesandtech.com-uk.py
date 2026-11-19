@@ -6,7 +6,7 @@ import random
 
 def run(context: dict[str, str], session: Session):
     session.sessionbreakers = [SessionBreak(max_requests=8000)]
-    session.queue(Request('https://moviesgamesandtech.com/category/reviews/', use='curl'), process_revlist, dict())
+    session.queue(Request('https://moviesgamesandtech.com/category/reviews/', use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_revlist(data: Response, context: dict[str, str], session: Session):
@@ -16,11 +16,11 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
     for rev in revs:
         title = rev.xpath('text()').string()
         url = rev.xpath('@href').string()
-        session.queue(Request(url, use='curl'), process_review, dict(title=title, url=url))
+        session.queue(Request(url, use='curl', force_charset='utf-8'), process_review, dict(title=title, url=url))
 
     next_url = data.xpath('//a[@aria-label="next-page"]/@href').string()
     if next_url:
-        session.queue(Request(next_url, use='curl'), process_revlist, dict())
+        session.queue(Request(next_url, use='curl', force_charset='utf-8'), process_revlist, dict())
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):
@@ -30,7 +30,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     product.url = context['url']
     product.ssid = product.url.split('/')[-2].replace('review-', '')
 
-    product.name = context['title'].split('Review:')[-1].split('REVIEW:')[-1].split('Review :')[-1].split('Reviews:')[-1].split('Preview:')[-1].split('Review –')[-1].split(' Review')[0].split('Review of the')[-1].split('Review of')[-1].split('Review ')[-1].replace('Test ', '').replace(' gameplay video preview', '').replace('Hands-on Preview', '').replace('Hands-on review of the ', '').replace('Two minute review of the ', '').replace(' two minute review', '').replace('Hands-on review of the', '').replace('Preview –', '').split(' Preview ')[0].split(' preview, ')[0].replace('Testing an ', '').replace('Preview of ', '').replace(' hands-on Preview', '').replace(' Preview', '').replace('(Global Version)', '').replace('(Spoiler Free)', '').replace('Hands-on preview of ', '').replace('A preview of ', '').replace('Two minute review of ', '').replace('Two-minute review of ', '').strip(' :.')
+    product.name = context['title'].split('Review:')[-1].split('REVIEW:')[-1].split('Review :')[-1].split('Reviews:')[-1].split('Preview:')[-1].split('Review –')[-1].split(' Review')[0].split('Review of the')[-1].split('Review of')[-1].split('Review ')[-1].replace('Test ', '').replace(' gameplay video preview', '').replace('Hands-on Preview', '').replace('Hands-on review of the ', '').replace('Two minute review of the ', '').replace(' two minute review', '').replace('Hands-on review of the', '').replace('Preview –', '').split(' Preview ')[0].split(' preview, ')[0].replace('Testing an ', '').replace('Preview of ', '').replace(' hands-on Preview', '').replace(' Preview', '').replace('(Global Version)', '').replace('(Spoiler Free)', '').replace('Hands-on preview of ', '').replace('A preview of ', '').replace('Two minute review of ', '').replace('Two-minute review of ', '').replace(u'â€“', '-').strip(' :.')
     if product.name.endswith(' review'):
         product.name = product.name.replace(' review', '').strip()
 
@@ -48,7 +48,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     review = Review()
     review.type = 'pro'
-    review.title = context['title']
+    review.title = context['title'].replace(u'â€“', '-')
     review.url = product.url
     review.ssid = product.ssid
 
@@ -98,7 +98,6 @@ def process_review(data: Response, context: dict[str, str], session: Session):
                         con = pro_con.strip(' +-.*')
                         if len(pro) > 1:
                             review.add_property(type='cons', value=con)
-
                 continue
 
             pro = pro.strip(' +-.*')
@@ -166,6 +165,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
         excerpt = data.xpath('//div[contains(@class, "post-content")]/div[contains(@class, "block-inner") and not(parent::div[contains(@class, "single_subtitle")])]/p[not(regexp:test(., "Pros:|Cons:|more information|Full disclosure|specification|http://|Speed:|Comments:|Conclusion:", "i") or strong[regexp:test(., "Pro|Con")])]//text()').string(multiple=True)
 
     if excerpt:
+        excerpt = excerpt.replace(u'�', '').strip()
         if conclusion:
             excerpt = excerpt.replace(conclusion, '').strip()
 

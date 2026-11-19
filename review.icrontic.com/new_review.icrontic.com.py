@@ -37,7 +37,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     data.content = h.unescape(data.content)
 
     product = Product()
-    product.name = h.unescape(context['title']).replace('///SOLD\\\\\\', '').replace(' Reviews [SPOILERS]', '').replace(' Review', '').replace(' review', '').strip()
+    product.name = h.unescape(context['title']).replace('///SOLD\\\\\\', '').replace(' Reviews [SPOILERS]', '').replace(' Review', '').replace(' review', '').replace(' [REVIEW]', '').strip()
     product.url = context['url']
     product.ssid = product.url.split('/')[-2]
     product.category = context['cat']
@@ -54,10 +54,10 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     author = data.xpath("//div[@class='Item-Header DiscussionHeader']/div[@class='AuthorWrap']/span[@class='Author']/a[@class='Username']/text()").string()
     author_url = data.xpath("//div[@class='Item-Header DiscussionHeader']/div[@class='AuthorWrap']/span[@class='Author']/a[@class='Username']/@href").string()
-    if author and author_url:
+    if author and 'unknown' not in author.lower() and author_url:
         author_ssid = author_url.split('/')[-1]
         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
-    elif author:
+    elif author and 'unknown' not in author.lower():
         review.authors.append(Person(name=author, ssid=author))
 
     conclusion = data.xpath('//p[normalize-space(strong/text())="Conclusion"]/following-sibling::p//text()').string(multiple=True)
@@ -66,7 +66,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
 
     excerpt = data.xpath("//div[@class='Discussion']/div[@class='Item-BodyWrap']/div[@class='Item-Body']/div[@class='Message userContent']//text()[not(preceding::p[normalize-space(strong/text())='Conclusion'] or normalize-space(.)='Conclusion')]").string(multiple=True)
     if excerpt:
-        excerpt = h.unescape(excerpt).strip()
+        excerpt = h.unescape(excerpt).replace(u'Ã©', u'é').replace(u'ï¿½', "'").strip()
         if len(excerpt) > 2:
             review.add_property(type='excerpt', value=excerpt)
 

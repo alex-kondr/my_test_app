@@ -113,7 +113,7 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     if ean and ean.isdigit() and len(ean) > 10:
         product.add_property(type='id.ean', value=ean)
 
-    revs_cnt = data.xpath('//div[contains(@class, "rating")]/span/text()').string()
+    revs_cnt = data.xpath('//div[contains(@class, "rating")]/span/span/text()').string()
     if revs_cnt:
         revs_cnt = int(revs_cnt.split()[0])
         if revs_cnt > 0:
