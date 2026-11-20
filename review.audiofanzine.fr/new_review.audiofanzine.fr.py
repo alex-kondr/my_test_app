@@ -112,8 +112,6 @@ def process_product(data: Response, context: dict[str, str], session: Session):
     ssid = data.xpath('//input[@id="product_id"]/@value').string()
     if not ssid:
         ssid = data.xpath('//span/@data-productid').string()
-    if not ssid:
-        ssid = context['url'].split('/')[-1]
 
     manufacturer = data.xpath('//li//span[contains(., "Fabricant :")]/following-sibling::span/text()').string()
     if not manufacturer:
@@ -134,7 +132,7 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
     product = Product()
     product.name = context['name']
     product.url = context['url'].strip('/')
-    product.ssid = context['ssid']
+    product.ssid = context['ssid'] or product.url.split('/')[-1]
     product.category = context['cat'].replace('…', '').replace('...', '')
     product.manufacturer = context['manufacturer']
 
@@ -203,7 +201,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     product = Product()
     product.name = context['name']
     product.url = context['url'].strip('/')
-    product.ssid = context['ssid']
+    product.ssid = context['ssid'] or product.url.split('/')[-1]
     product.category = context['cat'].replace('…', '').replace('...', '')
     product.manufacturer = context['manufacturer']
 

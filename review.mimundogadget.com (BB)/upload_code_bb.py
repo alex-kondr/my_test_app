@@ -11,7 +11,7 @@ sys.path.append(parent)
 from models import AgentModel, Status, AgentType, DBSession
 
 
-AGENT_NAME = "review.asrar-co.com-en"
+AGENT_NAME = "review.mimundogadget.com"
 RUN = True
 
 
@@ -50,7 +50,7 @@ def main(run: bool = RUN):
                 agent.status = Status.running
                 agent.new_code = content
                 agent.agent_type = AgentType.BIG
-                agent.extra_time = False
+                agent.extra_time = True
                 agent.paused = False
                 session.commit()
 
