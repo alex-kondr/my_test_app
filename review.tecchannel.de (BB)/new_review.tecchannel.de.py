@@ -59,6 +59,8 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.title = context['title']
     review.url = product.url
     review.ssid = product.ssid
+    
+    'https://www.computerwoche.de/article/4232647/apple-watch-series-12-im-test-mit-der-kraft-fur-zwei-herzen.html'
 
     # review.date = data.xpath('//div[@class="card"]/div[contains(@class, "card__info card__info")]/span[not(@class)]')
 
