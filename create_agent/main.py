@@ -9,7 +9,7 @@ sys.path.append(parent)
 from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 from create_agent.bb import main as start_bb
 
-AGENT_ID_NAME = "review.tecchannel.de"
+AGENT_ID_NAME = "review.1mg.com"
 
 
 def start_prune(agent_id: str):

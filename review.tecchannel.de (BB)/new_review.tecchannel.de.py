@@ -37,10 +37,11 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
     revs = data.xpath('//a[contains(@class, "article") and normalize-space(.//span[@class="card__content-type"])="Analyse"]')
     for rev in revs:
         title = rev.xpath('.//h3/text()').string()
+        date = rev.xpath('.//div[contains(@class, "card__info card__info")]/span/text()[regexp:test(normalize-space(.), "^\d.+\d$")]').string()
         url = rev.xpath('@href').string()
 
         if not session.seen(url):
-            session.queue(Request(url), process_review, dict(context, title=title, url=url))
+            session.queue(Request(url), process_review, dict(context, title=title, date=date, url=url))
 
     # no next page
 
@@ -59,14 +60,14 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.title = context['title']
     review.url = product.url
     review.ssid = product.ssid
-    
-    'https://www.computerwoche.de/article/4232647/apple-watch-series-12-im-test-mit-der-kraft-fur-zwei-herzen.html'
+    review.date = context['date']
 
-    # review.date = data.xpath('//div[@class="card"]/div[contains(@class, "card__info card__info")]/span[not(@class)]')
-
-    # author = data.xpath("//div[@class='idgArticleAuthors']/span/text()").string()
-    # if author:
-    #     review.authors.append(Person(name=author, ssid=author))
+    authors = data.xpath('//div[@class="author__name"]/a')
+    for author in authors:
+        author_name = author.xpath('text()').string()
+        author_url = author.xpath('@href').string()
+        author_ssid = author_url.split('/')[-2]
+        review.authors.append(Person(name=author_name, ssid=author_ssid, profile_url=author_url))
 
     summary = data.xpath('//h2[@class="content-subheadline"]//text()').string(multiple=True)
     if summary:
@@ -76,7 +77,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    # excerpt = data.xpath('//div[@class="abstract"]//text()').string(multiple=True)
+    excerpt = data.xpath('//div[@class="article-column__content"]/p[not(preceding::h2[contains(., "Fazit")])]//text()').string(multiple=True)
     if excerpt:
         review.add_property(type='excerpt', value=excerpt)
 

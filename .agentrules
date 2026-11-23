@@ -1,0 +1,75 @@
+# Core Architecture Rules for Scrapers (BB & Prune)
+
+## 1. Python Environment
+- Python 2.7 runtime compatibility is strictly required on both servers.
+- Use type hints only in local files (the upload scripts strip them automatically before executing on the server).
+- In Python 2.7, `re` has issues with Cyrillic characters (e.g. `\w` only matches ASCII). Prefer string methods (`split`, `strip`, `find`) and precise XPath over Cyrillic regexes.
+
+## 2. Server Specifics
+- **Server BB (`{name} (BB)` folders)**:
+  - Do NOT explicitly import `re` or `simplejson` (they are pre-loaded globally on the BB environment).
+  - Do NOT add `proxies` unless they were already present in the original/old file or explicitly requested.
+  - **Non-English Sites / Encoding**: для всіх сайтів, де мова не англійська (кирилиця, німецька, нідерландська тощо), на початку обов'язково додавати обгортку:
+    ```python
+    def Request(url):
+        r = agent.Request(url, force_charset='utf-8')
+        return r
+    ```
+- **Server Prune (plain folder names)**:
+  - Explicit imports like `import re` and `import simplejson` are required.
+
+## 3. Quoting Conventions
+- Use single quotes `'...'` for outer Python strings.
+- Use double quotes `"..."` inside XPath expressions.
+  - Example: `data.xpath('//div[h1]//span[contains(@class, "posts-date")]/a/text()')`
+
+## 4. Parser & Namespaces
+- Always set `session.browser.use_new_parser = True` in `run()`.
+- Define and call `strip_namespace(data)` at the start of every response callback (`process_revlist`, `process_review`, etc.).
+
+## 5. Development Workflow & Live Page Inspection
+- **Sample Selection**:
+  - При створенні/переписуванні парсера обов'язково завантажувати **стартову сторінку списку** та **2–3 реальні сторінки оглядів**.
+- **No Ghost Elements / Clean Code**:
+  - Якщо на сторінках оглядів **відсутні** певні елементи (наприклад, взагалі немає блоків `pros`/`cons`, `summary` чи оцінки `grade`), **НЕ додавати** порожні обробники та вигадані селектори в код. Писати код тільки для того, що реально існує на сайті.
+
+## 6. Product & Review Standards
+- **Author Extraction Pattern**:
+  - Завжди шукаємо як ім'я автора, так і посилання на його профіль (якщо воно є):
+    ```python
+    author = data.xpath('//div[contains(@class, "card-body")]//a[contains(@href, "/redactie/")]/text()').string()
+    author_url = data.xpath('//div[contains(@class, "card-body")]//a[contains(@href, "/redactie/")]/@href').string()
+    if author and author_url:
+        author_ssid = author_url.split('/')[-1]
+        review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
+    elif author:
+        review.authors.append(Person(name=author, ssid=author))
+    ```
+  - Переваги: наявність `profile_url` та семантичного `ssid` (з URL профілю) робить ідентифікацію автора максимально точною.
+- **Review Date Extraction Hierarchy**:
+  1. Пріоритет №1 (стандартний OpenGraph):
+     `data.xpath('//meta[@property="article:published_time"]/@content').string()`
+  2. Пріоритет №2 (семантичний HTML5):
+     `data.xpath('//time/@datetime').string()`
+  3. Нестандартні випадки (Fallback):
+     Якщо на сторінці самого огляду немає надійного класу чи мета-тегів для дати (ризик спарсити чужу дату), допустимо брати дату зі списку оглядів у `process_revlist` (`rev.xpath(...)`) та прокидати її через `context` (`dict(title=title, date=date, url=url)`).
+- **Pagination (Next URL)**:
+  - У 90%+ випадках для переходу на наступну сторінку ідеально підходить стандартний тег з head:
+    `next_url = data.xpath('//link[@rel="next"]/@href').string()`
+  - Завжди перевіряти його першим.
+- **Verification on Live HTML**:
+  - Ніколи не довіряти старим селекторам наосліп. Завжди завантажувати актуальний HTML або інспектувати живі сторінки перед складанням XPath.
+- **Product SSID**:
+  - Якщо в кінці URL є `.html`:
+    `product.ssid = product.url.rstrip('/').split('/')[-1].replace('.html', '')`
+  - Якщо в кінці URL **немає** `.html`:
+    `product.ssid = product.url.rstrip('/').split('/')[-1]`
+- **Review Properties (Pros & Cons)**:
+  - Always use `review.add_property(type=..., value=...)` instead of `review.properties.append(ReviewProperty(...))`.
+  - For `pros` and `cons`, always strip markers: `val.strip(' +-*.:;•,–►…')`.
+  - Only add properties if length > 1: `if len(val) > 1: review.add_property(...)`.
+  - **Single sentence / comma-separated pros/cons**: якщо плюси або мінуси подані одним суцільним реченням через кому в одному тегу (наприклад, `<li><span>Pluspunten:</span> пункт 1, пункт 2</li>`), беремо їх як єдиний суцільний рядок (не розбиваємо штучно через `split(',')`).
+    - Приклад: `pros = data.xpath('//li[contains(span/text(), "Pluspunten:")]/text()').string()`
+- **Text Extraction (Summary, Conclusion, Excerpt)**:
+  - Prefer filtering via **XPath** rather than post-processing with `excerpt.replace(summary, '')`.
+  - Example: filter out intro/conclusion paragraphs in XPath using `not(...)`, `preceding-sibling::`, `following-sibling::`, or `[not(@class="intro")]`.
