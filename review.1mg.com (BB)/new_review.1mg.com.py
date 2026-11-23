@@ -8,8 +8,21 @@ from datetime import datetime
 XCAT = ['Health Resource Center', 'Featured']
 
 
+def strip_namespace(data):
+    tmp = data.content_file + ".tmp"
+    out = file(tmp, "w")
+    for line in file(data.content_file):
+        line = line.replace('<ns0', '<')
+        line = line.replace('ns0:', '')
+        line = line.replace(' xmlns', ' abcde=')
+        out.write(line + "\n")
+    out.close()
+    os.rename(tmp, data.content_file)
+
+
 def run(context: dict[str, str], session: Session):
-    session.queue(Request('https://www.1mg.com/'), process_frontpage, dict())
+    session.browser.use_new_parser = True
+    session.queue(Request('https://www.1mg.com/pwa-dweb-api/api/v4/udp_tree'), process_frontpage, dict())
 
     # Fot testing
     # session.queue(Request('https://www.1mg.com/categories/health-conditions/stomach-care-30?filter=true&sort=rati
@@ -18,40 +31,53 @@ def run(context: dict[str, str], session: Session):
 
 
 def process_frontpage(data: Response, context: dict[str, str], session: Session):
-    cats = data.xpath('//div[@class="smallRegular"]/ul/li')
-    # for cat in cats:
-    #     name = cat.xpath("a/span//text()").string()
-    #     if name in XCAT:
-    #         continue
-    #     cats2 = cat.xpath("following-sibling::div[1]/ul/li/a")
-    #     for cat2 in cats2:
-    #         name2 = cat2.xpath(".//text()").string()
-    #         url = cat2.xpath("@href").string()
-    #         if url and name and name2:
-    #             url = url + "?filter=true&sort=rating"
-    #             if not session.seen(url):
-    #                 session.queue(Request(url), process_category, dict(context, url=url, cat="%s|%s"%(name, name2)))
+    strip_namespace(data)
 
+    try:
+        cats = simplejson.loads(data.content).get('data', {}).get('udp_tree', [])
+    except:
+        return
 
-def process_category(data: Response, context: dict[str, str], session: Session):
-    cats = data.xpath("//div[contains(@class,'product-box')]")
     for cat in cats:
-        name = cat.xpath(".//div[contains(@class,'pro-title')]//text()").string()
-        url = cat.xpath(".//a/@href").string()
-        revs = cat.xpath(".//span[contains(@class,'ratings-header')]//text()").string()
-        if not revs:
-            return
-        if name and url:
-            revs_url = url + "/reviews"
-            if not session.seen(revs_url):
-                session.queue(Request(revs_url), process_reviews, dict(context, name=name, url=url, revs_url=revs_url))
+        name = cat.get('name').strip()
 
-    next_url = data.xpath("//li[@class='active']/following-sibling::li[1]//a[@class='button-text link-page']/@href").string()
+        if name not in XCAT:
+            subcats = cat.get('children', [])
+            for subcat in subcats:
+                subcat_name = subcat.get('name').strip()
+                url = 'https://www.1mg.com' + subcat.get('slug') +'?filter=true&sort=rating'
+
+                if url and name and subcat_name and not subcat_name.startswith('All ') and not session.seen(url):
+                    session.queue(Request(url), process_prodlist, dict(cat=name+'|'+subcat_name))
+
+
+def process_prodlist(data: Response, context: dict[str, str], session: Session):
+    strip_namespace(data)
+
+    prods = data.xpath('//div[contains(@class, "cardContainer")]/a')
+    for prod in prods:
+        name = prod.xpath('.//div[contains(@class, "ProductTile")]/text()').string()
+        url = prod.xpath('@href').string()
+
+        revs_cnt = prod.xpath('.//div[contains(@class, "textSecondary RatingBadge")]/text()').string()
+        if revs_cnt and int(revs_cnt.strip('( )')) > 0 and not session.seen(url):
+            session.queue(Request(url), process_product, dict(context, name=name, url=url))
+
+    next_url = data.xpath('//link[@rel="next"]/@href').string()
     if next_url:
-        session.queue(Request(next_url), process_category, dict(context))
+        session.queue(Request(next_url+'&filter=true&sort=rating'), process_prodlist, dict(context))
+
+
+def process_product(data: Response, context: dict[str, str], session: Session):
+    product = dict()
+    product['name'] = context['name']
+    product['url'] = context['url']
+    product['ssid']
 
 
 def process_reviews(data: Response, context: dict[str, str], session: Session):
+    strip_namespace(data)
+
     info = data.xpath("//script[@type='application/ld+json']//text()").string()
     if not info:
         return
@@ -105,6 +131,8 @@ def process_reviews(data: Response, context: dict[str, str], session: Session):
 
 
 def process_reviews_json(data: Response, context: dict[str, str], session: Session):
+    strip_namespace(data)
+
     product = Product()
     product.name = context['name']
     product.category = context['cat']
