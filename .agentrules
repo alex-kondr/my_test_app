@@ -36,6 +36,11 @@
   - `process_product` — сторінка товару (де збираються властивості продукту перед переходом до відгуків або коли огляди на окремому табі).
   - `process_review` — сторінка експертного огляду (`review.type = 'pro'`), де 1 стаття = 1 огляд = 1 товар.
 - `process_reviews` — сторінка або таб відгуків користувачів (`review.type = 'user'`), де в одного товару парситься множина відгуків покупців.
+- **Category Variables Naming**:
+  - Перший рівень категорій завжди називається `cats` (`for cat in cats:` → `name`).
+  - Останній (кінцевий) рівень категорій завжди називається `subcats` (`for subcat in subcats:` → `subcat_name`).
+  - Проміжні рівні між першим і останнім називаються `cats1` (`cat1` / `cat1_name`), `cats2` (`cat2` / `cat2_name`) і т. д.
+  - Конкатенація шляху категорії: `name + '|' + cat1_name + '|' + subcat_name`.
 
 ## 5. Development Workflow & Live Page Inspection
 - **Sample Selection**:

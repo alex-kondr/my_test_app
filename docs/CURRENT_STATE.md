@@ -1,11 +1,15 @@
 # Project State & Knowledge Base Checklist
 
 **Останнє оновлення**: 24 листопада 2026 р.
-**Поточний статус**: Завершено та перевірено парсер `review.eftm.com-au (BB)\new_review.eftm.com-au.py` (`review.type = 'pro'`).
+**Поточний статус**: У роботі агент `review.emag.ro (BB)/new_review.emag.ro.py` (`review.type = 'user'`). Переписано `process_frontpage` та `process_catlist`; наступний крок — перевірка дерева категорій і переписування `process_prodlist`, `process_product` та `process_reviews` під стандарти сервера BB.
 
 ---
 
 ## 1. Останній прогрес
+- **review.emag.ro (BB)** *(у роботі)*:
+  - З головної сторінки (`process_frontpage`) збираються головні департаменти `cats` (`@data-id`) для запитів до JSON API меню `https://sapi.emag.ro/layout/menu/{cat_id}?source_id=7`.
+  - У `process_catlist` реалізовано групування колонок `quick_nav` у проміжні категорії `cats1` (`is_heading: true`) та кінцеві підкатегорії `subcats` (`is_heading: false`) з підтримкою елементів без заголовка на початку колонки та самостійних заголовків без підкатегорій, а також фільтрацією `XCAT` і промо/сервісних URI (`/label/`, `/shop/`, `/shopping-assistant/`, `/lps/`, `/resigilate/`).
+  - **Залишилося зробити**: перевірити `process_catlist`, переписати `process_prodlist`, `process_product` (передача даних через `product = dict()`, без екземпляра `Product()` у `context`) та `process_reviews` (`add_property`, `remove_emoji`, пагінація відгуків).
 - **review.eftm.com-au (BB)**:
   - Створено папку агента через `create_agent/main.py`.
   - Повністю реалізовано про-парсер: навігація по сторінках оглядів (`process_revlist`), парсинг товару та огляду (`process_product`).
@@ -18,13 +22,18 @@
 
 ---
 
-## 2. Стандарти назв функцій (Architecture Rules)
+## 2. Стандарти назв функцій та категорій (Architecture Rules)
 - `run` — точка входу (ініціалізація `session.browser.use_new_parser = True`).
 - `process_frontpage` — головна сторінка сайту.
 - `process_catlist` — список/дерево категорій (HTML чи JSON API).
 - `process_prodlist` / `process_revlist` — перелік товарів / перелік оглядів відповідно.
 - `process_product` / `process_review` — картка товару / сторінка експертного огляду (`type = 'pro'`).
 - `process_reviews` — сторінка множинних відгуків покупців (`type = 'user'`).
+- **Іменування рівнів категорій**:
+  - Перший (головний) рівень завжди називається `cats` (`for cat in cats:` → `name`).
+  - Останній (кінцевий) рівень завжди називається `subcats` (`for subcat in subcats:` → `subcat_name`).
+  - Усі проміжні рівні між ними називаються послідовно: `cats1` (`cat1` / `cat1_name`), `cats2` (`cat2` / `cat2_name`) і т. д.
+  - Формат шляху категорії: `name + '|' + cat1_name + '|' + subcat_name`.
 
 ---
 

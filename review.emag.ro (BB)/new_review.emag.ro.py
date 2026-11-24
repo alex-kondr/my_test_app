@@ -4,13 +4,16 @@ from agent import *
 from models.products import *
 
 
+XCAT = ['Branduri de TOP', 'Resigilate', 'Alege produsul potrivit:', 'Servicii Instalare - Montaj', 'Montare electrocasnice', 'Montare aer conditionat']
+
+
 def Request(url):
     r = agent.Request(url, proxies=['eu'], force_charset='utf-8')
     return r
 
 
 def run(context: dict[str, str], session: Session):
-    session.queue(Request('https://sapi.emag.ro/layout/menu/267?source_id=7'), process_catlist, dict())
+    session.queue(Request('https://sapi.emag.ro/layout/menu/267?source_id=7'), process_catlist, dict(cat='Electrocasnice & Climatizare'))
     # session.queue(Request('https://www.emag.ro'), process_frontpage, dict())
 
 
@@ -18,50 +21,51 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
     cats = data.xpath('//li[contains(@class, "megamenu-list-department") and @data-id]')
     for cat in cats:
         cat_id = cat.xpath('@data-id').string()
-        cat_name = cat.xpath('.//span[contains(@class, "department-name")]//text()').string()
-        if cat_id:
+        name = cat.xpath('.//span[contains(@class, "department-name")]//text()').string()
+        if cat_id and name and name not in XCAT:
             url = 'https://sapi.emag.ro/layout/menu/' + cat_id + '?source_id=7'
-            session.queue(Request(url), process_catlist, dict(cat=cat_name))
+            session.queue(Request(url), process_catlist, dict(cat=name))
 
 
 def process_catlist(data: Response, context: dict[str, str], session: Session):
     try:
-        cats1 = simplejson.loads(data.content).get('data', {}).get('items').get('quick_nav', [])
+        quick_nav = simplejson.loads(data.content).get('data', {}).get('items', {}).get('quick_nav', [])
     except:
         return
 
-    for cat1_list in cats1:
-        for cat1 in cat1_list:
-            cat1_name = cat1.get('title', '').strip()
-                # is_heading = item.get('is_heading', False)
-                # link_obj = item.get('link') or {}
-                # uri = link_obj.get('uri', '')
+    cats1 = []
+    for nav_col in quick_nav:
+        for item in nav_col:
+            if item.get('is_heading'):
+                cats1.append({'cat1': item, 'subcats': []})
+            else:
+                if not cats1:
+                    cats1.append({'cat1': {}, 'subcats': []})
+                cats1[-1]['subcats'].append(item)
 
-                # if is_heading:
-                #     current_heading = title
+    for item in cats1:
+        cat1 = item['cat1']
+        cat1_name = cat1.get('title', '').strip()
 
-                # if not uri:
-                #     continue
+        if cat1_name not in XCAT:
+            subcats = item['subcats']
+            if subcats:
+                for subcat in subcats:
+                    subcat_name = subcat.get('title', '').strip()
+                    uri = (subcat.get('link') or {}).get('uri', '').split('?')[0]
 
-                # # Filter out promotional, shopping assistants, brand shops, installation services
-                # if uri.startswith(('/label/', '/shop/', '/shopping-assistant/', '/lps/', '/resigilate/')):
-                #     continue
+                    if subcat_name and subcat_name not in XCAT and uri and not uri.startswith(('/label/', '/shop/', '/shopping-assistant/', '/lps/', '/resigilate/')):
+                        url = 'https://www.emag.ro' + uri if not uri.startswith('http') else uri
+                        cat = context['cat'] + '|' + cat1_name + '|' + subcat_name if cat1_name else context['cat'] + '|' + subcat_name
+                        if not session.seen(url):
+                            session.queue(Request(url), process_prodlist, dict(cat=cat))
+            else:
+                uri = (cat1.get('link') or {}).get('uri', '').split('?')[0]
 
-                # if not uri.startswith('http'):
-                #     url = 'https://www.emag.ro' + uri
-                # else:
-                #     url = uri
-
-                # if is_heading:
-                #     cat = dept_title + '|' + title if dept_title else title
-                # else:
-                #     if current_heading:
-                #         cat = dept_title + '|' + current_heading + '|' + title if dept_title else current_heading + '|' + title
-                #     else:
-                #         cat = dept_title + '|' + title if dept_title else title
-
-                # if not session.seen(url):
-                #     session.queue(Request(url), process_prodlist, dict(cat=cat))
+                if cat1_name and uri and not uri.startswith(('/label/', '/shop/', '/shopping-assistant/', '/lps/', '/resigilate/')):
+                    url = 'https://www.emag.ro' + uri if not uri.startswith('http') else uri
+                    if not session.seen(url):
+                        session.queue(Request(url), process_prodlist, dict(cat=context['cat'] + '|' + cat1_name))
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
