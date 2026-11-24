@@ -1,9 +1,10 @@
 # Core Architecture Rules for Scrapers (BB & Prune)
 
-## 1. Python Environment
+## 1. Python Environment & Security Rules
 - Python 2.7 runtime compatibility is strictly required on both servers.
 - Use type hints only in local files (the upload scripts strip them automatically before executing on the server).
 - In Python 2.7, `re` has issues with Cyrillic characters (e.g. `\w` only matches ASCII). Prefer string methods (`split`, `strip`, `find`) and precise XPath over Cyrillic regexes.
+- **SERVER ACCESS STRICT RULE**: НІКОЛИ не підключатися до віддаленого сервера (`agentdev1.eu.testfreaks.com`) по SSH самостійно без прямого дозволу користувача, і КАТЕГОРИЧНО ЗАБОРОНЕНО змінювати щось на сервері. Усі тести та завантаження виконує лише користувач через свої скрипти завантаження.
 
 ## 2. Server Specifics
 - **Server BB (`{name} (BB)` folders)**:
@@ -23,9 +24,18 @@
 - Use double quotes `"..."` inside XPath expressions.
   - Example: `data.xpath('//div[h1]//span[contains(@class, "posts-date")]/a/text()')`
 
-## 4. Parser & Namespaces
-- Always set `session.browser.use_new_parser = True` in `run()`.
-- Define and call `strip_namespace(data)` at the start of every response callback (`process_revlist`, `process_review`, etc.).
+## 4. Pipeline & Function Naming Architecture
+Суворо дотримуватися стандартної ієрархії назв функцій за їхнім призначенням:
+- `run` — точка входу (ініціалізація `session.browser.use_new_parser = True`, постановка стартового запиту в чергу).
+- `process_frontpage` — обробка головної/стартової сторінки сайту (якщо з неї збираються навігаційні блоки).
+- `process_catlist` — обробка списку/дерева категорій (HTML сторінка або JSON endpoint з категоріями, наприклад `udp_tree`).
+- `process_prodlist` або `process_revlist`:
+  - `process_prodlist` — для сторінок зі списком товарів (каталоги інтернет-магазинів, OTC ліків тощо).
+  - `process_revlist` — для сторінок зі списком оглядів/статей (блоги, техно-видання).
+- `process_product` або `process_review`:
+  - `process_product` — сторінка товару (де збираються властивості продукту перед переходом до відгуків або коли огляди на окремому табі).
+  - `process_review` — сторінка експертного огляду (`review.type = 'pro'`), де 1 стаття = 1 огляд = 1 товар.
+- `process_reviews` — сторінка або таб відгуків користувачів (`review.type = 'user'`), де в одного товару парситься множина відгуків покупців.
 
 ## 5. Development Workflow & Live Page Inspection
 - **Sample Selection**:
@@ -34,6 +44,12 @@
   - Якщо на сторінках оглядів **відсутні** певні елементи (наприклад, взагалі немає блоків `pros`/`cons`, `summary` чи оцінки `grade`), **НЕ додавати** порожні обробники та вигадані селектори в код. Писати код тільки для того, що реально існує на сайті.
 
 ## 6. Product & Review Standards
+- **HTTP Errors & 404 Handling (`ignore_errors=True`)**:
+  - Коли у списку посилань (наприклад, у `sitemap.xml`) трапляються сторінки з 404 чи іншими HTTP помилками, щоб черга не падала на етапі запиту, у `Request` додаємо прапорець:
+    ```python
+    session.queue(Request(url, ignore_errors=True), process_product, dict(context, url=url))
+    ```
+  - Додаткових перевірок статус-коду в тілі функції робити не потрібно.
 - **Author Extraction Pattern**:
   - Завжди шукаємо як ім'я автора, так і посилання на його профіль (якщо воно є):
     ```python
@@ -46,7 +62,21 @@
         review.authors.append(Person(name=author, ssid=author))
     ```
   - Переваги: наявність `profile_url` та семантичного `ssid` (з URL профілю) робить ідентифікацію автора максимально точною.
-- **Review Date Extraction Hierarchy**:
+## 7. Advanced Standards for Server BB & User Reviews (E-commerce / JSON)
+- **JSON & API-driven Pipelines**:
+  - Якщо дані майже повністю отримуються через JSON/API, виклик `strip_namespace(data)` **не потрібен**.
+- **Context Type Constraints on Server BB**:
+  - **КРИТИЧНО**: Сервер BB у параметрі `context` **НЕ дозволяє** передавати екземпляри класів платформи на зразок `Product()` чи `Review()`.
+  - У проміжних функціях (наприклад, `process_product`) дані товару збираються у звичайний словник: `product = dict()`.
+  - Передаємо у чергу: `session.queue(..., dict(product=product))`.
+  - Повноцінний екземпляр `product = Product()` ініціалізується **тільки у кінцевій функції `process_reviews`** безпосередньо перед збиранням відгуків та `session.emit(product)`.
+- **Specialized Request Helper Functions**:
+  - Для сервера BB гарною практикою є створення спеціалізованих функцій-генераторів запитів (наприклад, `RequestProds(cat_id, page, offset)`, `RequestRevs(ssid, page)`), які самі підставляють потрібні endpoint'и та передають `force_charset='utf-8'`.
+- **Emoji Sanitization (`remove_emoji`)**:
+  - Сервер BB у Python 2.7 погано працює та з помилками зберігає 4-байтні Unicode емодзі.
+  - Якщо у відгуках користувачів є емодзі, обов'язково фільтрувати текст через `remove_emoji(string)` перед `review.add_property(type='excerpt', value=excerpt)`.
+
+## 8. Summary Checklist
   1. Пріоритет №1 (стандартний OpenGraph):
      `data.xpath('//meta[@property="article:published_time"]/@content').string()`
   2. Пріоритет №2 (семантичний HTML5):
@@ -54,16 +84,60 @@
   3. Нестандартні випадки (Fallback):
      Якщо на сторінці самого огляду немає надійного класу чи мета-тегів для дати (ризик спарсити чужу дату), допустимо брати дату зі списку оглядів у `process_revlist` (`rev.xpath(...)`) та прокидати її через `context` (`dict(title=title, date=date, url=url)`).
 - **Pagination (Next URL)**:
-  - У 90%+ випадках для переходу на наступну сторінку ідеально підходить стандартний тег з head:
+  - При дослідженні сайту спочатку перевіряємо наявність `//link[@rel="next"]/@href`.
+  - Якщо він є і працює — використовуємо його:
     `next_url = data.xpath('//link[@rel="next"]/@href').string()`
-  - Завжди перевіряти його першим.
+  - Якщо в HTML тега `<link rel="next">` **НЕМАЄ**, не додаємо його в код взагалі (жодних `if not next_url:`), а одразу пишемо прямий робочий селектор з тіла сторінки:
+    `next_url = data.xpath('//a[contains(@class, "next")]/@href').string()`
 - **Verification on Live HTML**:
   - Ніколи не довіряти старим селекторам наосліп. Завжди завантажувати актуальний HTML або інспектувати живі сторінки перед складанням XPath.
+- **Loop & Block Spacing Convention**:
+  - Всередині циклів (наприклад, `for rev in revs:`) змінні беремо в порядку **`title`**, потім **`url`**.
+  - Робимо порожній рядок-відступ перед блоком черги.
+  - У `context` передаємо `dict(title=title, url=url)` (саме новий словник, без непотрібного прокидання `context`, якщо раніше в ньому нічого не було).
+  - Для наступної сторінки: `session.queue(Request(next_url), process_revlist, dict())` — чистий `dict()`, якщо попередній контекст порожній.
+- **Product & Review Mapping in `process_product` / `process_review`**:
+  - `title` не дістаємо вдруге зі сторінки — беремо напряму `context['title']`.
+  - `product.name` пишемо в один лаконічний ланцюжок відсікань напряму з `context['title']`:
+    `product.name = context['title'].split(...)...strip()`
+  - `review.title = context['title']`
+  - **Product Category Fallback**: якщо категорія береться з тегів статті за виключенням загального `"Reviews"` (наприклад, `not(contains(text(), "Reviews"))`), завжди підстраховувати дефолтною категорією, якщо інших тегів немає:
+    ```python
+    product.category = data.xpath('...').string()
+    if not product.category:
+        product.category = 'Tech'
+    ```
 - **Product SSID**:
   - Якщо в кінці URL є `.html`:
     `product.ssid = product.url.rstrip('/').split('/')[-1].replace('.html', '')`
   - Якщо в кінці URL **немає** `.html`:
     `product.ssid = product.url.rstrip('/').split('/')[-1]`
+  - **Очищення суфіксів оглядів в SSID**:
+    Якщо в кінці слага або URL присутній суфікс огляду (наприклад, `/review` або `-review`), його обов'язково відсікаємо, щоб SSID належав саме продукту:
+    `.replace('/review', '').replace('-review', '')`
+- **Sub-Grades via XPath Count (Star Ratings)**:
+  - Коли на сайті оцінки подані зірочками з можливими половинками (наприклад, іконки `fa-star` та `fa-star-half-o`), підрахунок значення робиться елегантним виразом XPath:
+    ```python
+    grades = data.xpath('//div[contains(@class, "reviewscore")]/ul/li')
+    for grade in grades:
+        grade_name = grade.xpath('strong/text()').string()
+        grade_val = grade.xpath('count(.//i[@class="fa fa-star"]) + count(.//i[@class="fa fa-star-half-o"]) div 2')
+        if grade_name and float(grade_val) > 0:
+            review.grades.append(Grade(name=grade_name, value=float(grade_val), best=5.0))
+    ```
+- **Fallback for Summary / Conclusion**:
+  - Якщо блок опису/резюме (`desc`) присутній, але повноцінного окремого розділу Conclusion немає — записуємо цей блок як `conclusion`. Якщо ж є обидва — зберігаємо `summary` та `conclusion` окремо:
+    ```python
+    conclusion = data.xpath('//h3[contains(., "Conclusion")]/following-sibling::p//text()').string(multiple=True)
+    if conclusion:
+        review.add_property(type='conclusion', value=conclusion)
+
+    summary = data.xpath('//div[@class="desc"]/p//text()').string(multiple=True)
+    if summary and conclusion:
+        review.add_property(type='summary', value=summary)
+    elif summary:
+        review.add_property(type='conclusion', value=summary)
+    ```
 - **Review Properties (Pros & Cons)**:
   - Always use `review.add_property(type=..., value=...)` instead of `review.properties.append(ReviewProperty(...))`.
   - For `pros` and `cons`, always strip markers: `val.strip(' +-*.:;•,–►…')`.

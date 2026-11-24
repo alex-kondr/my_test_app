@@ -1,59 +1,35 @@
 # Project State & Knowledge Base Checklist
 
-**Останнє оновлення**: 23 листопада 2026 р.
-**Поточний статус**: Працюємо над переходом від `pro` оглядів до `user` відгуків (на прикладі `review.1mg.com (BB)`).
+**Останнє оновлення**: 24 листопада 2026 р.
+**Поточний статус**: Завершено та перевірено парсер `review.eftm.com-au (BB)\new_review.eftm.com-au.py` (`review.type = 'pro'`).
 
 ---
 
-## 1. Де зупинилися прямо зараз
-- Користувач переписує файл `review.1mg.com (BB)\new_review.1mg.com.py` у свій правильний стиль.
-- Ціль: на прикладі цього файлу розібрати всі ключові архітектурні відмінності парсерів користувацьких відгуків (`review.type = 'user'`) від експертних статей (`review.type = 'pro'`).
-- Після завершення редагування користувачем — агент аналізує оновлений код, виділяє нові патерни для `user` рев'ю та фіксує їх у правилах.
+## 1. Останній прогрес
+- **review.eftm.com-au (BB)**:
+  - Створено папку агента через `create_agent/main.py`.
+  - Повністю реалізовано про-парсер: навігація по сторінках оглядів (`process_revlist`), парсинг товару та огляду (`process_product`).
+  - Виправлено очищення `product.name` від залишків слова "review", покращено вилучення `product.category` та `product.ssid` (з числових ID наприкінці URL).
+  - Підтверджено коректне вилучення `grade_overall`, `grades`, `summary`, `conclusion` та `excerpt`.
+- **review.bellen.nl (BB)**:
+  - Розв'язано проблему з неробочим сайтом через `sitemap.xml` з обходом XML namespaces та параметром `ignore_errors=True`.
+- **review.1mg.com (BB)**:
+  - Реалізовано логіку збору категорій та товарів з JSON API PWA.
 
 ---
 
-## 2. Зафіксовані стандарти та правила (вже в `.agentrules`)
-1. **Середовище**:
-   - Тільки сумісність з **Python 2.7**.
-   - Тайпхінти пишемо лише в локальних файлах (скрипти завантаження зрізають їх на льоту).
-   - Жодних складних регулярних виразів `re` на кирилиці (у Python 2.7 `\w` бере тільки ASCII). Використовувати `split`, `strip`, `find`.
-2. **Серверні відмінності**:
-   - **Сервер BB** (`{name} (BB)`): не імпортувати `re` та `simplejson` вручну; додавати `force_charset='utf-8'` у функцію `Request` для неанглійських сайтів; **не** додавати `proxies`, якщо їх не було в оригіналі.
-   - **Сервер Prune** (звичайні папки): явні імпорти модулів потрібні.
-3. **Лапки**:
-   - Одинарні `'...'` для Python-рядків, подвійні `"..."` всередині XPath (`data.xpath('//div[@id="timeline"]/div')`).
-4. **Очищення та парсер**:
-   - `session.browser.use_new_parser = True` у функції `run()`.
-   - `strip_namespace(data)` на початку кожного колбеку з `Response`.
-5. **SSID**:
-   - З `.html`: `product.ssid = product.url.rstrip('/').split('/')[-1].replace('.html', '')`
-   - Без `.html`: `product.ssid = product.url.rstrip('/').split('/')[-1]`
-6. **Дати**:
-   - Пріоритет №1: `//meta[@property="article:published_time"]/@content`
-   - Пріоритет №2: `//time/@datetime`
-   - Фолбек: взяття дати в `process_revlist` та передача через `context`. Якщо вказано лише день і місяць — дописування поточного року через `date += ' ' + str(datetime.now().year)`.
-7. **Пагінація**:
-   - У 90%+ випадках перевіряти першим: `next_url = data.xpath('//link[@rel="next"]/@href').string()`.
-8. **Автор (`Person`)**:
-   - Шукати ім'я та посилання на профіль:
-     ```python
-     if author and author_url:
-         author_ssid = author_url.split('/')[-1]
-         review.authors.append(Person(name=author, ssid=author_ssid, profile_url=author_url))
-     elif author:
-         review.authors.append(Person(name=author, ssid=author))
-     ```
-9. **Властивості відгуку (Pros & Cons, Text)**:
-   - Тільки `review.add_property(type=..., value=...)`.
-   - Очищення: `strip(' +-*.:;•,–►…')`.
-   - Якщо плюси/мінуси записані в одному тегу через кому суцільним реченням — залишати їх суцільним рядком (не розбивати штучно).
-   - Фільтрація тексту огляду через XPath (`preceding-sibling::`, `following-sibling::`, `not(ancestor::footer)` тощо) замість `.replace()`.
-   - Код писати тільки під елементи, які реально є на сторінці (жодних порожніх обробників-привидів).
+## 2. Стандарти назв функцій (Architecture Rules)
+- `run` — точка входу (ініціалізація `session.browser.use_new_parser = True`).
+- `process_frontpage` — головна сторінка сайту.
+- `process_catlist` — список/дерево категорій (HTML чи JSON API).
+- `process_prodlist` / `process_revlist` — перелік товарів / перелік оглядів відповідно.
+- `process_product` / `process_review` — картка товару / сторінка експертного огляду (`type = 'pro'`).
+- `process_reviews` — сторінка множинних відгуків покупців (`type = 'user'`).
 
 ---
 
-## 3. Еталонні файли в репозиторії
-- `docs/examples/prune/example_pro_review.py` — приклад для Prune (`ingame.de`).
-- `docs/examples/bb/example_newmobile_nl.py` — приклад для BB (`newmobile.nl`).
-- `hwtech.ru (BB)\new_hwtech.ru.py` — робочий приклад зі складним видобуванням оцінки без `re`.
-- `.agentrules` — центральні правила в корені проекту.
+## 3. Відмінності USER відгуків від PRO
+1. **Співвідношення**: В `pro` 1 товар = 1 огляд. В `user` 1 товар = список відгуків (`product.reviews.append(review)` у циклі, `emit(product)` лише один раз наприкінці, якщо є відгуки).
+2. **SSID відгуку**: Для кожного відгуку покупця обов'язковий свій `review.ssid` (з ID у JSON або через `review.digest()`).
+3. **Verified Buyer**: Властивість `review.add_property(type='is_verified_buyer', value=True)`.
+4. **Виробник і SKU**: В інтернет-магазинах частіше з'являються `product.sku = product.ssid` та `product.manufacturer = ...` (наприклад, з `application/ld+json`).

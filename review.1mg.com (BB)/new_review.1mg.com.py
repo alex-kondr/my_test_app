@@ -2,37 +2,52 @@
 # -*- coding: utf-8 -*-
 from agent import *
 from models.products import *
-from datetime import datetime
 
 
 XCAT = ['Health Resource Center', 'Featured']
 
 
-def strip_namespace(data):
-    tmp = data.content_file + ".tmp"
-    out = file(tmp, "w")
-    for line in file(data.content_file):
-        line = line.replace('<ns0', '<')
-        line = line.replace('ns0:', '')
-        line = line.replace(' xmlns', ' abcde=')
-        out.write(line + "\n")
-    out.close()
-    os.rename(tmp, data.content_file)
+def remove_emoji(string):
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002500-\U00002BEF"  # chinese char
+                               u"\U00002702-\U000027B0"
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u"\U00010000-\U0010ffff"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u200d"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\ufe0f"  # dingbats
+                               u"\u3030"
+                               "]+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', string)
+
+
+def RequestProds(cat_id, page, offset):
+    url = 'https://www.1mg.com/pwa-dweb-api/api/v5/category/{cat_id}?page={page}&per_page=20&component_offset={offset}'.format(cat_id=cat_id, page=page, offset=offset)
+    r = Request(url, force_charset='utf-8')
+    return r
+
+
+def RequestRevs(ssid, page):
+    url = 'https://www.1mg.com/pwa-dweb-api/api/v5/skus/{ssid}/reviews?page={page}'.format(ssid=ssid, page=page)
+    r = Request(url, force_charset='utf-8')
+    return r
 
 
 def run(context: dict[str, str], session: Session):
-    session.browser.use_new_parser = True
-    session.queue(Request('https://www.1mg.com/pwa-dweb-api/api/v4/udp_tree'), process_frontpage, dict())
-
-    # Fot testing
-    # session.queue(Request('https://www.1mg.com/categories/health-conditions/stomach-care-30?filter=true&sort=rati
-    # ng&pageNumber=80'), process_category, dict(cat='cat'))
-    # session.queue(Request('https://www.1mg.com/otc/listerine-cool-mint-mouth-wash-otc323043/reviews'), process_reviews, dict(cat='cat', name='name', url='https://www.1mg.com/otc/listerine-cool-mint-mouth-wash-otc323043', revs_url='https://www.1mg.com/otc/listerine-cool-mint-mouth-wash-otc323043/reviews'))
+    session.queue(Request('https://www.1mg.com/pwa-dweb-api/api/v4/udp_tree', force_charset='utf-8'), process_catlist, dict())
 
 
-def process_frontpage(data: Response, context: dict[str, str], session: Session):
-    strip_namespace(data)
-
+def process_catlist(data: Response, context: dict[str, str], session: Session):
     try:
         cats = simplejson.loads(data.content).get('data', {}).get('udp_tree', [])
     except:
@@ -45,136 +60,106 @@ def process_frontpage(data: Response, context: dict[str, str], session: Session)
             subcats = cat.get('children', [])
             for subcat in subcats:
                 subcat_name = subcat.get('name').strip()
-                url = 'https://www.1mg.com' + subcat.get('slug') +'?filter=true&sort=rating'
+                cat_id = subcat.get('id')
 
-                if url and name and subcat_name and not subcat_name.startswith('All ') and not session.seen(url):
-                    session.queue(Request(url), process_prodlist, dict(cat=name+'|'+subcat_name))
+                if cat_id and name and subcat_name and not subcat_name.startswith('All '):
+                    session.queue(RequestProds(cat_id, 0, 0), process_prodlist, dict(cat=name+'|'+subcat_name, cat_id=cat_id))
 
 
 def process_prodlist(data: Response, context: dict[str, str], session: Session):
-    strip_namespace(data)
+    try:
+        prods_json = simplejson.loads(data.content).get('data', {})
+    except:
+        prods_json = {}
 
-    prods = data.xpath('//div[contains(@class, "cardContainer")]/a')
+    prods = prods_json.get('widgets', [])
     for prod in prods:
-        name = prod.xpath('.//div[contains(@class, "ProductTile")]/text()').string()
-        url = prod.xpath('@href').string()
+        name = prod.get('name')
+        ssid = prod.get('id')
+        url = 'https://www.1mg.com' + prod.get('url')
 
-        revs_cnt = prod.xpath('.//div[contains(@class, "textSecondary RatingBadge")]/text()').string()
-        if revs_cnt and int(revs_cnt.strip('( )')) > 0 and not session.seen(url):
-            session.queue(Request(url), process_product, dict(context, name=name, url=url))
+        revs_cnt = prod.get('ratings') or {}
+        if revs_cnt and int(revs_cnt.get('total_ratings', 0)) > 0 and not session.seen(ssid):
+            session.queue(Request(url), process_product, dict(context, name=name, ssid=ssid, url=url))
 
-    next_url = data.xpath('//link[@rel="next"]/@href').string()
-    if next_url:
-        session.queue(Request(next_url+'&filter=true&sort=rating'), process_prodlist, dict(context))
+    prods_cnt = context.get('prods_cnt', prods_json.get('meta', {}).get('total_record_count', 0))
+    offset = context.get('offset', 0) + 20
+    if offset < prods_cnt:
+        next_page = context.get('page', 0) + 1
+        session.queue(RequestProds(context['cat_id'], next_page, offset), process_prodlist, dict(context, offset=offset, prods_cnt=prods_cnt, page=next_page))
 
 
 def process_product(data: Response, context: dict[str, str], session: Session):
     product = dict()
     product['name'] = context['name']
+    product['ssid'] = context['ssid']
     product['url'] = context['url']
-    product['ssid']
+    product['category'] = context['cat']
+
+    try:
+        prod_json = data.xpath('//script[contains(., "window.__INITIAL_STATE__")]/text()').string()
+        prod_json = simplejson.loads(prod_json.split('window.__INITIAL_STATE__ = ')[-1].split('window.__STATUS_CODE__ =')[0])
+    except:
+        return
+
+    product['manufacturer'] = prod_json.get('otcPageReducer', {}).get('staticData', {}).get('manufacturerInfo', {}).get('name')
+
+    has_reviews = prod_json.get('otcPageReducer', {}).get('staticData', {}).get('hasReviews')
+    if has_reviews is True:
+        session.queue(RequestRevs(product['ssid'], 1), process_reviews, dict(product=product))
+
 
 
 def process_reviews(data: Response, context: dict[str, str], session: Session):
-    strip_namespace(data)
-
-    info = data.xpath("//script[@type='application/ld+json']//text()").string()
-    if not info:
-        return
-    info = simplejson.loads(info)
-
     product = Product()
-    product.name = context['name']
-    product.category = context['cat']
-    product.url = context['url']
-    product.ssid = str(info['sku'])
+    product.name = context['product']['name']
+    product.url = context['product']['url']
+    product.ssid = context['product']['ssid']
     product.sku = product.ssid
-    product.manufacturer = info['brand']
+    product.category = context['product']['category']
+    product.manufacturer = context['product']['manufacturer']
 
-    revs = data.xpath("//div[contains(@class,'ReviewCards__review-card')]")
+    try:
+        revs_json = simplejson.loads(data.content).get('data', {}).get('ratings_and_reviews', {})
+    except:
+        revs_json = {}
+
+    revs = revs_json.get('reviews', {}).get('values', [])
     for rev in revs:
         review = Review()
         review.type = 'user'
-        review.url = context['revs_url']
-        review.date = rev.xpath(".//div[contains(@class,'ReviewCards__date')]//text()").string()
-
-        author_name = rev.xpath(".//div[contains(@class,'ReviewCards__name')]//text()").string()
-        review.authors.append(Person(name=author_name, ssid=author_name))
-
-        grade_overall = rev.xpath(".//div[contains(@class,'Rating__ratings-container')]/span//text()").string()
-        if grade_overall:
-            review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
-
-        is_ver = rev.xpath(".//span[text()='Verified Buyer']")
-        if is_ver:
-            review.add_property(type='is_verified_buyer', value=True)
-
-        excerpt = rev.xpath(".//div[contains(@class,'ReviewCards__review-description')]//text()").string(multiple=True)
-        if excerpt:
-            review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
-
-            review.ssid = review.digest()
-            product.reviews.append(review)
-
-    if product.reviews:
-        session.emit(product)
-
-    page = 1
-    total_pages = data.xpath("//ul[@class='list-pagination']/li[a[@class='button-text link-page']][last()]/a//text()").string()
-    if not total_pages:
-        return
-    total_pages = int(total_pages)
-    if page < total_pages:
-        page += 1
-        next_url = "https://www.1mg.com/pharmacy_api_gateway/v4/skus/%s/reviews?page=%s&sort_by=rank_score:desc"%(product.ssid, page)
-        session.queue(Request(next_url), process_reviews_json, dict(context, page=page, total_pages=total_pages, ssid=product.ssid, man=product.manufacturer))
-
-
-def process_reviews_json(data: Response, context: dict[str, str], session: Session):
-    strip_namespace(data)
-
-    product = Product()
-    product.name = context['name']
-    product.category = context['cat']
-    product.url = context['url']
-    product.ssid = context['ssid']
-    product.sku = product.ssid
-    product.manufacturer = context['man']
-
-    json = simplejson.loads(data.content)
-    revs = json['data']['reviews']
-    for rev in revs:
-        review = Review()
-        review.type = 'user'
-        review.url = context['revs_url']
+        review.url = product.url
         review.ssid = str(rev['id'])
 
-        date_stamp = rev['rating_created_at']
-        review.date = datetime.utcfromtimestamp(date_stamp).strftime('%d.%m.%Y')
+        date = rev.get('rating_created_at')
+        if date:
+            review.date = date.split('T')[0]
 
-        author_name = rev['reviewer_name']
-        review.authors.append(Person(name=author_name, ssid=author_name))
+        author = rev.get('reviewer_name')
+        if author:
+            review.authors.append(Person(name=author, ssid=author))
 
-        grade_overall = str(rev['value'])
-        if grade_overall:
+        grade_overall = rev.get('value')
+        if grade_overall and float(grade_overall) > 0:
             review.grades.append(Grade(type='overall', value=float(grade_overall), best=5.0))
 
-        is_ver = rev['is_verified']
-        if is_ver:
+        is_verified = rev['is_verified']
+        if is_verified is True:
             review.add_property(type='is_verified_buyer', value=True)
 
         excerpt = rev['review_description']
         if excerpt:
-            review.properties.append(ReviewProperty(type='excerpt', value=excerpt))
+            excerpt = remove_emoji(excerpt).strip()
+            if len(excerpt) > 2:
+                review.add_property(type='excerpt', value=excerpt)
 
-            product.reviews.append(review)
+                product.reviews.append(review)
 
     if product.reviews:
         session.emit(product)
 
-    page = context['page']
-    total_pages = context['total_pages']
-    if page < total_pages:
-        page += 1
-        next_url = "https://www.1mg.com/pharmacy_api_gateway/v4/skus/%s/reviews?page=%s&sort_by=rank_score:desc"%(product.ssid, page)
-        session.queue(Request(next_url), process_reviews_json, dict(context, page=page))
+    revs_cnt = context.get('revs_cnt', revs_json.get('total_reviews', 0))
+    offset = context.get('offset', 0) + 10
+    if offset < revs_cnt:
+        next_page = context.get('page', 1) + 1
+        session.queue(RequestRevs(product.ssid, next_page), process_reviews, dict(context, page=next_page, revs_cnt=revs_cnt, offset=offset))
