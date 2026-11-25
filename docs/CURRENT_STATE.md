@@ -1,11 +1,18 @@
 # Project State & Knowledge Base Checklist
 
-**Останнє оновлення**: 24 листопада 2026 р.
-**Поточний статус**: Агент `review.emag.ro (BB)/new_review.emag.ro.py` (`review.type = 'user'`) переписано: оновлено `process_frontpage`, рекурсивний `process_catlist`, `process_prodlist`, `process_product` та `process_reviews` (з очищенням `remove_emoji` та збором за стандартами сервера BB).
+**Останнє оновлення**: 25 листопада 2026 р.
+**Поточний статус**: Завершено та перевірено `review.21vek.by (BB)/new_review.21vek.by.py` (`review.type = 'user'`). Файл збережено як еталонний зразок для стеку BB у `docs/examples/bb/example_review_21vek_by.py`, а нові правила зафіксовано в `.agentrules`.
 
 ---
 
 ## 1. Останній прогрес
+- **review.21vek.by (BB)**:
+  - Повністю переписано та протестовано (`review.21vek.by.txt` — 19/19 чистих `EMIT: Product(...)`).
+  - Категорії: JSON API (`https://gate.21vek.by/catalog/catalog`), 3-рівневий обхід (`XCATS`, `isVirtual`, `cats`/`cats1`/`subcats`).
+  - Лістинг (`process_prodlist`): картки товарів через `data-testid="product-list"`, немодифіковані HTML-URL, ранній вихід (`return`) при `revs_cnt == 0` при сортуванні за рейтингом.
+  - Товар (`process_product`): збір `pr = dict()` з `context` + `manufacturer` з `ld+json` (`"""//script[contains(., '"@type":"Product"')]/text()"""`).
+  - Відгуки (`process_reviews`): `RequestRevs` через `curl` (`gate.21vek.by/reviews/product/{slug}/reviews`), `Product()` + `product.sku = product.ssid`, фільтр шаблонного автора `'Покупатель 21vek.by'`, `offset += 10` по `context['revs_cnt']`.
+  - Додано правила до `.agentrules`: потрійні лапки замість екранування, стиль обходу дерева категорій (`XCATS`), `ssid` vs `sku`, незмінність HTML-URL, ранній вихід із пагінації.
 - **review.emag.ro (BB)**:
   - З головної сторінки (`process_frontpage`) збираються посилання департаментів вищого рівня.
   - У `process_catlist` реалізовано рекурсивний перехід по навігаційному дереву категорій у сайдбарі з конкатенацією шляху `cat_path = context['cat'] + '|' + subcat_name`. Коли на сторінці категорій більше немає (`if not cats:`), автоматично викликається `process_prodlist`.

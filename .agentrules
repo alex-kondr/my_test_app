@@ -24,6 +24,7 @@
 - Use single quotes `'...'` for outer Python strings.
 - Use double quotes `"..."` inside XPath expressions.
   - Example: `data.xpath('//div[h1]//span[contains(@class, "posts-date")]/a/text()')`
+- Use triple single quotes `'''...'''` instead of backslash escaping when an XPath contains both single and double quotes (e.g. `data.xpath('''//script[contains(., '"@type":"Product"')]/text()''')`).
 
 ## 4. Pipeline & Function Naming Architecture
 Суворо дотримуватися стандартної ієрархії назв функцій за їхнім призначенням:
@@ -71,11 +72,40 @@
 ## 7. Advanced Standards for Server BB & User Reviews (E-commerce / JSON)
 - **JSON & API-driven Pipelines**:
   - Якщо дані майже повністю отримуються через JSON/API, виклик `strip_namespace(data)` **не потрібен**.
+- **Category Tree Traversal Style (`process_catlist` / `process_frontpage`)**:
+  - Константа винятків: `XCATS`.
+  - Іменування рівнів: 1-й рівень — `cats` / `cat` / `name`, 2-й рівень — `cats1` / `cat1` / `cat1_name`, 3-й рівень — `subcats` / `subcat` / `subcat_name`.
+  - Використовувати позитивні вкладені умови `if ...:` замість `continue`, з порожнім рядком перед `if`.
+  - Конкатенація шляху категорії: `dict(cat=name+'|'+cat1_name+'|'+subcat_name)`.
+  - Еталонна структура:
+    ```python
+    for cat in cats:
+        name = cat.get('name').strip()
+
+        if name and name not in XCATS:
+            cats1 = cat.get('children', [])
+            for cat1 in cats1:
+                cat1_name = cat1.get('name').strip()
+
+                if cat1_name and cat1_name not in XCATS:
+                    subcats = cat1.get('children', [])
+                    if subcats:
+                        for subcat in subcats:
+                            subcat_name = subcat.get('name').strip()
+                            url = subcat.get('url')
+
+                            if subcat_name and subcat_name not in XCATS and not subcat.get('isVirtual') and url and not session.seen(url):
+                                session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name+'|'+subcat_name))
+                    else:
+                        url = cat1.get('url')
+                        if url and not cat1.get('isVirtual') and not session.seen(url):
+                            session.queue(Request(url), process_prodlist, dict(cat=name+'|'+cat1_name))
+    ```
 - **Context Type Constraints on Server BB**:
   - **КРИТИЧНО**: Сервер BB у параметрі `context` **НЕ дозволяє** передавати екземпляри класів платформи на зразок `Product()` чи `Review()`.
-  - У проміжних функціях (наприклад, `process_product`) дані товару збираються у звичайний словник: `product = dict()`.
-  - Передаємо у чергу: `session.queue(..., dict(product=product))`.
-  - Повноцінний екземпляр `product = Product()` ініціалізується **тільки у кінцевій функції `process_reviews`** безпосередньо перед збиранням відгуків та `session.emit(product)`.
+  - У проміжних функціях (наприклад, `process_product`) дані товару збираються у звичайний словник `pr = dict()`: базові поля (`name`, `url`, `ssid`, `category`) заповнюємо з `context`, а опціональні поля з JSON (наприклад, `manufacturer` з `__NEXT_DATA__`) витягуємо через `try: ... except: pass`.
+  - Передаємо у чергу: `session.queue(..., dict(context, product=pr))`.
+  - Повноцінний екземпляр `product = Product()` ініціалізується **тільки у кінцевій функції `process_reviews`** (де й дублюємо `product.sku = product.ssid`, якщо окремого `sku` немає) безпосередньо перед збиранням відгуків та `session.emit(product)`.
 - **Specialized Request Helper Functions**:
   - Для сервера BB гарною практикою є створення спеціалізованих функцій-генераторів запитів (наприклад, `RequestProds(cat_id, page, offset)`, `RequestRevs(ssid, page)`), які самі підставляють потрібні endpoint'и та передають `force_charset='utf-8'`.
 - **Emoji Sanitization (`remove_emoji`)**:
@@ -113,7 +143,8 @@
     if not product.category:
         product.category = 'Tech'
     ```
-- **Product SSID**:
+- **Product SSID & SKU**:
+  - Коли знайдено основний код/ID товару — записуємо його в `ssid`. Якщо є ще один код, який не відповідає MPN або EAN — записуємо його в `sku`; інакше дублюємо `ssid` у `sku`.
   - Якщо в кінці URL є `.html`:
     `product.ssid = product.url.rstrip('/').split('/')[-1].replace('.html', '')`
   - Якщо в кінці URL **немає** `.html`:
@@ -121,6 +152,21 @@
   - **Очищення суфіксів оглядів в SSID**:
     Якщо в кінці слага або URL присутній суфікс огляду (наприклад, `/review` або `-review`), його обов'язково відсікаємо, щоб SSID належав саме продукту:
     `.replace('/review', '').replace('-review', '')`
+- **URLs from HTML vs JSON**:
+  - **Ніколи не модифікуй локальні (відносні) маршрути з HTML** (не доклеюй домен `https://...` до `url` або `next_url`, витягнутих через `data.xpath(...)`) — парсер фреймворку автоматично резолвить їх у повні URL.
+  - Дописувати хост потрібно **тільки для URL/слагів, отриманих із JSON**.
+- **Early Pagination Stop (Sorted by Reviews)**:
+  - Якщо сторінка лістингу відсортована за відгуками/рейтингом, перериваємо пагінацію (`return`), щойно натрапили на товар без відгуків:
+    ```python
+    revs_cnt = prod.xpath('.//meta[@itemprop="reviewCount"]/@content').string()
+    if revs_cnt and int(revs_cnt) > 0:
+        if ssid:
+            ssid = ssid.split('-')[-1]
+            if not session.seen(ssid):
+                session.queue(Request(url), process_product, dict(context, name=name, ssid=ssid, url=url))
+    else:
+        return
+    ```
 - **Sub-Grades via XPath Count (Star Ratings)**:
   - Коли на сайті оцінки подані зірочками з можливими половинками (наприклад, іконки `fa-star` та `fa-star-half-o`), підрахунок значення робиться елегантним виразом XPath:
     ```python
