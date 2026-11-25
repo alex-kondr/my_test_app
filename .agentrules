@@ -10,7 +10,8 @@
 - **Server BB (`{name} (BB)` folders)**:
   - Do NOT explicitly import `re` or `simplejson` (they are pre-loaded globally on the BB environment).
   - Do NOT add `proxies` unless they were already present in the original/old file or explicitly requested.
-  - **Non-English Sites / Encoding**: для всіх сайтів, де мова не англійська (кирилиця, німецька, нідерландська тощо), на початку обов'язково додавати обгортку:
+  - **НЕ змінювати існуючий `Request(...)` зі старого файлу**: якщо в `old_*.py` вже задана функція `Request(url)` або її параметри (`proxies`, `force_charset`, `use='curl'`, `options` тощо), **залишати їх без змін** — не додавати, не змінювати й не прибирати ці параметри, оскільки локально неможливо перевірити, які з них працюють на сервері (користувач підбирає їх самостійно).
+  - **Non-English Sites / Encoding**: якщо у старому файлі ще немає власної обгортки `Request(url)`, для сайтів, де мова не англійська (кирилиця, німецька, нідерландська тощо), на початку додавати обгортку:
     ```python
     def Request(url):
         r = agent.Request(url, force_charset='utf-8')
