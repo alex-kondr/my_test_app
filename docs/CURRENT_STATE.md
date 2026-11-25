@@ -1,15 +1,16 @@
 # Project State & Knowledge Base Checklist
 
 **Останнє оновлення**: 24 листопада 2026 р.
-**Поточний статус**: У роботі агент `review.emag.ro (BB)/new_review.emag.ro.py` (`review.type = 'user'`). Переписано `process_frontpage` та `process_catlist`; наступний крок — перевірка дерева категорій і переписування `process_prodlist`, `process_product` та `process_reviews` під стандарти сервера BB.
+**Поточний статус**: Агент `review.emag.ro (BB)/new_review.emag.ro.py` (`review.type = 'user'`) переписано: оновлено `process_frontpage`, рекурсивний `process_catlist`, `process_prodlist`, `process_product` та `process_reviews` (з очищенням `remove_emoji` та збором за стандартами сервера BB).
 
 ---
 
 ## 1. Останній прогрес
-- **review.emag.ro (BB)** *(у роботі)*:
-  - З головної сторінки (`process_frontpage`) збираються головні департаменти `cats` (`@data-id`) для запитів до JSON API меню `https://sapi.emag.ro/layout/menu/{cat_id}?source_id=7`.
-  - У `process_catlist` реалізовано групування колонок `quick_nav` у проміжні категорії `cats1` (`is_heading: true`) та кінцеві підкатегорії `subcats` (`is_heading: false`) з підтримкою елементів без заголовка на початку колонки та самостійних заголовків без підкатегорій, а також фільтрацією `XCAT` і промо/сервісних URI (`/label/`, `/shop/`, `/shopping-assistant/`, `/lps/`, `/resigilate/`).
-  - **Залишилося зробити**: перевірити `process_catlist`, переписати `process_prodlist`, `process_product` (передача даних через `product = dict()`, без екземпляра `Product()` у `context`) та `process_reviews` (`add_property`, `remove_emoji`, пагінація відгуків).
+- **review.emag.ro (BB)**:
+  - З головної сторінки (`process_frontpage`) збираються посилання департаментів вищого рівня.
+  - У `process_catlist` реалізовано рекурсивний перехід по навігаційному дереву категорій у сайдбарі з конкатенацією шляху `cat_path = context['cat'] + '|' + subcat_name`. Коли на сторінці категорій більше немає (`if not cats:`), автоматично викликається `process_prodlist`.
+  - У `process_product`: витягуються дані товару (`application/ld+json`), перевіряється наявність відгуків (`reviewCount > 0`), дані зберігаються у `product = dict()` (без передачі інстансу `Product()` через `context`).
+  - У `process_reviews`: ініціалізується повноцінний `Product()`, відгуки парсяться з JSON API (`product-feedback`), очищуються від емодзі через `remove_emoji`, додаються властивості `excerpt` та `is_verified_buyer`, реалізовано пагінацію відгуків пачками по 20 штук (`page[limit]=20`).
 - **review.eftm.com-au (BB)**:
   - Створено папку агента через `create_agent/main.py`.
   - Повністю реалізовано про-парсер: навігація по сторінках оглядів (`process_revlist`), парсинг товару та огляду (`process_product`).
