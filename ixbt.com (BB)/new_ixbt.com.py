@@ -49,7 +49,7 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
         url = rev.string()
 
         if url and not session.seen(url):
-            session.queue(Request(url), process_review, dict(context, title=title, url=url))
+            session.queue(Request(url), process_review, dict(context, url=url))
 
     next_url = data.xpath('//a[@rel="next"]/@href').string()
     if next_url:
@@ -73,21 +73,21 @@ def process_review(data: Response, context: dict[str, str], session: Session):
     review.url = product.url
     review.ssid = product.ssid
 
-    date = data.xpath('//meta[@itemprop="datePublished"]/@content').string()
+    date = data.xpath('//meta[@property="article:published_time"]/@content').string()
     if date:
         review.date = date.split('T')[0]
 
-    authors = data.xpath('//p[@class="author"]')
+    authors = data.xpath('//a[contains(@href, "/authors/author/")]')
     for author in authors:
         author_name = author.xpath('.//text()').string(multiple=True)
-        author_url = author.xpath('a/@href').string()
+        author_url = author.xpath('@href').string()
         if author_name and author_url:
             author_ssid = author_url.rstrip('/').split('/')[-1]
             review.authors.append(Person(name=author_name, ssid=author_ssid, profile_url=author_url))
         elif author_name:
             review.authors.append(Person(name=author_name, ssid=author_name))
 
-    pros = data.xpath(u'(//*[regexp:test(.,"Плюсы|Достоинства")]/following-sibling::*)[1]/li')
+    pros = data.xpath(u'(//*[contains(., "Плюсы") or contains(., "Достоинства")]/following-sibling::*)[1]/li')
     for pro in pros:
         pro = pro.xpath('.//text()').string(multiple=True)
         if pro:
@@ -95,7 +95,7 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if len(pro) > 1:
                 review.add_property(type='pros', value=pro)
 
-    cons = data.xpath(u'(//*[regexp:test(.,"Минусы|Недостатки")]/following-sibling::*)[1]/li')
+    cons = data.xpath(u'(//*[contains(., "Минусы") or contains(., "Недостатки")]/following-sibling::*)[1]/li')
     for con in cons:
         con = con.xpath('.//text()').string(multiple=True)
         if con:
@@ -103,13 +103,13 @@ def process_review(data: Response, context: dict[str, str], session: Session):
             if len(con) > 1:
                 review.add_property(type='cons', value=con)
 
-    conclusion = data.xpath(u'//h3[regexp:test(.,"Вывод|Итог|Заключение")]/following-sibling::p[not(@class or regexp:test(.,"Плюсы|Достоинства|Минусы|Недостатки|В заключение предлагаем посмотреть") or preceding::*[contains(., "Добавить комментарий") or @name="comments"])]//text()').string(multiple=True)
+    conclusion = data.xpath(u'//h3[contains(., "Вывод") or contains(., "Итог") or contains(., "Заключение")]/following-sibling::p[not(@class or contains(., "Плюсы") or contains(., "Достоинства") or contains(., "Минусы") or contains(., "Недостатки") or contains(., "В заключение предлагаем посмотреть") or preceding::*[contains(., "Добавить комментарий") or @name="comments"])]//text()').string(multiple=True)
     if conclusion:
         review.add_property(type='conclusion', value=conclusion)
 
-    excerpt = data.xpath(u'//h3[regexp:test(.,"Вывод|Итог|Заключение")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
+    excerpt = data.xpath(u'//h3[contains(., "Вывод") or contains(., "Итог") or contains(., "Заключение")]/preceding-sibling::p[not(@class)]//text()').string(multiple=True)
     if not excerpt:
-        excerpt = data.xpath(u'//div[contains(@class, "content")]/p[not(@class or regexp:test(.,"Плюсы|Достоинства|Минусы|Недостатки|В заключение предлагаем посмотреть") or preceding::*[contains(., "Добавить комментарий") or @name="comments"])]//text()').string(multiple=True)
+        excerpt = data.xpath(u'//div[contains(@id, "publication")]/p[not(@class or contains(., "Плюсы") or contains(., "Достоинства") or contains(., "Минусы") or contains(., "Недостатки") or contains(., "В заключение предлагаем посмотреть") or preceding::*[contains(., "Добавить комментарий") or @name="comments"])]//text()').string(multiple=True)
 
     if excerpt:
         excerpt = excerpt.strip()
