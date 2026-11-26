@@ -1,11 +1,20 @@
 # Project State & Knowledge Base Checklist
 
-**Останнє оновлення**: 25 листопада 2026 р.
-**Поточний статус**: Завершено та перевірено `review.21vek.by (BB)/new_review.21vek.by.py` (`review.type = 'user'`). Файл збережено як еталонний зразок для стеку BB у `docs/examples/bb/example_review_21vek_by.py`, а нові правила зафіксовано в `.agentrules`.
+**Останнє оновлення**: 26 листопада 2026 р.
+**Поточний статус**: Завершено та перевірено `review.goodereader.com (BB)/new_review.goodereader.com.py` (`review.type = 'pro'`), оновлено `upload_code_bb.py` / `create_agent/upload_code_bb.txt` (автостоп пагінації `MAX_PAGES` для PRO + автостоп за емітами `MAX_EMITS` для всіх агентів + автоповернення пагінації).
 
 ---
 
 ## 1. Останній прогрес
+- **review.goodereader.com (BB)**:
+  - Завершено PRO-парсер, додано фільтрацію заголовків `XTITLE` (`not any(xtitle in title ...)`), правило зафіксовано в `.agentrules`.
+  - Оновлено шаблон `create_agent/upload_code_bb.txt`:
+    - `MAX_PAGES = 4` — автостоп пагінації (`process_revlist`) на сервері в пам'яті **тільки для PRO-агентів**, з автоматичним відновленням оригінального файлу у `finally:`.
+    - `MAX_EMITS = 50` — автостоп виконання після досягнення ліміту емітів **для всіх типів агентів** із коректним `pkill` на сервері.
+  - **Дозвіл на автономний запуск `upload_code_bb.py`** (зафіксовано в Розділі 9 `.agentrules`):
+    - Усі відвантаження та запуски — виключно через `upload_code_bb.py` (ліміт: до 50 запусків за 3 хв).
+    - Поетапний підбір `Request(url)` і проксі (`'rotating-us'`, `'rotating-eu'`, `'eu'`, `'us'`): без curl → з `use='curl'` → з `options`.
+    - Обов'язковий аналіз `stderr` (контроль `Validation found 0 errors`, `ssid` як `str`, перевірка варнінгів про автора) та `{AGENT_NAME}.txt`.
 - **review.21vek.by (BB)**:
   - Повністю переписано та протестовано (`review.21vek.by.txt` — 19/19 чистих `EMIT: Product(...)`).
   - Категорії: JSON API (`https://gate.21vek.by/catalog/catalog`), 3-рівневий обхід (`XCATS`, `isVirtual`, `cats`/`cats1`/`subcats`).

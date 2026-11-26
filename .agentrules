@@ -73,7 +73,8 @@
 - **JSON & API-driven Pipelines**:
   - Якщо дані майже повністю отримуються через JSON/API, виклик `strip_namespace(data)` **не потрібен**.
 - **Category Tree Traversal Style (`process_catlist` / `process_frontpage`)**:
-  - Константа винятків: `XCATS`.
+  - Константа винятків категорій: `XCATS`.
+  - Константа винятків заголовків статей/оглядів (порівняння, підбірки тощо): `XTITLE = [' the best ', ' vs ']`, перевірка через `not any(xtitle in title.lower() for xtitle in XTITLE)` (або `xtitle in title`).
   - Іменування рівнів: 1-й рівень — `cats` / `cat` / `name`, 2-й рівень — `cats1` / `cat1` / `cat1_name`, 3-й рівень — `subcats` / `subcat` / `subcat_name`.
   - Використовувати позитивні вкладені умови `if ...:` замість `continue`, з порожнім рядком перед `if`.
   - Конкатенація шляху категорії: `dict(cat=name+'|'+cat1_name+'|'+subcat_name)`.
@@ -204,3 +205,37 @@
 - **Text Extraction (Summary, Conclusion, Excerpt)**:
   - Prefer filtering via **XPath** rather than post-processing with `excerpt.replace(summary, '')`.
   - Example: filter out intro/conclusion paragraphs in XPath using `not(...)`, `preceding-sibling::`, `following-sibling::`, or `[not(@class="intro")]`.
+
+## 9. Autonomous Execution & Proxy/Request Troubleshooting (Server BB)
+- **Strict Upload & Run Channel**:
+  - Для відвантаження файлу та його запуску на сервері BB використовувати **виключно** локальний скрипт `upload_code_bb.py` (жодних прямих `ssh` команд до сервера в обхід `upload_code_bb.py`).
+  - **Ліміт навантаження**: робити не більше **50 запусків за 3 хвилини**, щоб не перевантажувати сервер.
+- **Step-by-Step HTML/JSON Inspection & Terminal Analysis**:
+  - Оскільки `upload_code_bb.py` запускається агентом, аналізувати **обидва** джерела: живий вивід терміналу (`stderr` від `mockrun.py`, помилки/блокування/варнінги) та локальний `{AGENT_NAME}.txt`.
+  - **Контроль валідації емітів у терміналі**: `mockrun.py` друкує рядки формату `INFO 1: Validation found 0 errors and N warnings: ...`:
+    - Обов'язково перевіряти, щоб було **`found 0 errors`**. Якщо є `found 1 errors` або більше — одразу розбирати та виправляти причину.
+    - **Часта пастка з `ssid`**: якщо валідатор скаржиться, що немає `ssid`, хоча він точно передається — майже напевно туди потрапив `int` замість обов'язкового `str` (завжди приводити через `str(...)`).
+    - **Варнінги про відсутність автора** (чи оцінок): обов'язково перевіряти на живій сторінці, чи автор/оцінка справді відсутні на сайті, чи просто змінився селектор.
+  - Щоб побачити, що реально повертає сервер на кожному кроці (функції), тимчасово ставимо `print data.content` + `return` на початку потрібної функції, запускаємо `upload_code_bb.py` і аналізуємо локальний `{AGENT_NAME}.txt`.
+- **Fallback Matrix for `Request(url)` & Proxies** (якщо сторінка не відкривається або `.txt` порожній):
+  - Доступні 4 варіанти проксі (перебирати по одному): `'rotating-us'`, `'rotating-eu'`, `'eu'`, `'us'`.
+  - Якщо сайт починає блокувати після кількох запитів, технічно можна вказувати кілька проксі одночасно (`proxies=['rotating-us', 'rotating-eu', ...]`, по 2–4 штуки), але з досвіду це рідко допомагає.
+  - **Крок 1 — лише проксі (без `curl` і `options`)**: перебрати по одному з 4 проксі:
+    ```python
+    def Request(url):
+        r = agent.Request(url, proxies=['us'])
+        return r
+    ```
+  - **Крок 2 — додаємо `use='curl'`**: знову перебрати по одному з 4 проксі:
+    ```python
+    def Request(url):
+        r = agent.Request(url, proxies=['us'], use='curl')
+        return r
+    ```
+  - **Крок 3 — додаємо `options` (User-Agent, `--compressed`, `-s -L --insecure`, `force_charset`, `max_age=0`)**: знову перебрати по одному з 4 проксі:
+    ```python
+    def Request(url):
+        options = """--compressed -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:158.0) Gecko/20100101 Firefox/158.0'"""
+        r = agent.Request(url, proxies=['rotating-us'], use='curl', force_charset='utf-8', options='-s -L --insecure '+options, max_age=0)
+        return r
+    ```

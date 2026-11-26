@@ -4,7 +4,7 @@ from agent import *
 from models.products import *
 
 
-XTITLE = [' the best ', ' vs ']
+XTITLE = ['the best ', ' vs ', 'the top ']
 
 
 def strip_namespace(data):
@@ -32,12 +32,12 @@ def process_revlist(data: Response, context: dict[str, str], session: Session):
         title = rev.xpath('.//h2//text()').string(multiple=True)
         url = rev.xpath('a[@class="post-link"]/@href').string()
 
-        if title and url and not any(xtitle not in title for xtitle in XTITLE):
+        if title and url and not any(xtitle in title.lower() for xtitle in XTITLE):
             session.queue(Request(url), process_review, dict(title=title, url=url))
 
-    # next_url = data.xpath('//link[@rel="next"]/@href').string()
-    # if next_url:
-    #     session.queue(Request(next_url), process_revlist, dict())
+    next_url = data.xpath('//link[@rel="next"]/@href').string()
+    if next_url:
+        session.queue(Request(next_url), process_revlist, dict())
 
 
 def process_review(data: Response, context: dict[str, str], session: Session):
