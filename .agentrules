@@ -42,7 +42,7 @@
   - Перший рівень категорій завжди називається `cats` (`for cat in cats:` → `name`).
   - Останній (кінцевий) рівень категорій завжди називається `subcats` (`for subcat in subcats:` → `subcat_name`).
   - Проміжні рівні між першим і останнім називаються `cats1` (`cat1` / `cat1_name`), `cats2` (`cat2` / `cat2_name`) і т. д.
-  - Конкатенація шляху категорії: `name + '|' + cat1_name + '|' + subcat_name`.
+  - Конкатенація шляху категорії (без пробілів навколо `+`): `name+'|'+cat1_name+'|'+subcat_name` (або `context['cat']+'|'+subcat_name`).
 
 ## 5. Development Workflow & Live Page Inspection
 - **Sample Selection**:
@@ -133,6 +133,11 @@
   - У `context` передаємо `dict(title=title, url=url)` (саме новий словник, без непотрібного прокидання `context`, якщо раніше в ньому нічого не було).
   - Для наступної сторінки: `session.queue(Request(next_url), process_revlist, dict())` — чистий `dict()`, якщо попередній контекст порожній.
 - **Product & Review Mapping in `process_product` / `process_review`**:
+  - Якщо використовується `session.browser.use_new_parser = True` для HTML-сторінок, обов'язково додавати `strip_namespace(data)` і викликати його в усіх HTML-функціях.
+  - **Порядок полів `Product` / `pr`**: завжди дотримуватися порядку `name` → `url` → `ssid` → `sku` → `category` → `manufacturer` → `mpn` → `ean`; усі `if/else` блоки для полів `product` виносити після однорядкових присвоєнь `product.* = ...`.
+  - Для загальної оцінки завжди зберігати назву змінної `grade_overall` (не перейменовувати на `grade_val`), а для суб-оцінок використовувати `grade_name` та `grade_val`.
+  - Не обгортати поле в `str(...)`, якщо воно вже рядок; не додавати зайві тернарники `if prod.get(...) else None`.
+  - Пагінацію за кількістю (`prods_cnt` / `revs_cnt`) завжди робити через `offset` (`offset = context.get('offset', 0) + step; if offset < total:`).
   - `title` не дістаємо вдруге зі сторінки — беремо напряму `context['title']`.
   - `product.name` пишемо в один лаконічний ланцюжок відсікань напряму з `context['title']`:
     `product.name = context['title'].split(...)...strip()`
