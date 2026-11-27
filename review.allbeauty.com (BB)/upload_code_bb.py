@@ -98,7 +98,7 @@ def main(run: bool = RUN):
                 agent.status = Status.running
                 agent.new_code = content
                 agent.agent_type = AgentType.BIG
-                agent.extra_time = False
+                agent.extra_time = True
                 agent.paused = False
                 session.commit()
 

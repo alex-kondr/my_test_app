@@ -16,7 +16,7 @@ from models import AgentModel, Status, AgentType, DBSession
 AGENT_NAME = "{FILE_NAME_INPUT}"
 RUN = True
 MAX_PAGES = 4   # Автостоп пагінації process_revlist після N сторінок (0 або None — вимкнути)
-MAX_EMITS = 50  # Автостоп виконання після N емітів (0 або None — вимкнути)
+MAX_EMITS = 30  # Автостоп виконання після N емітів (0 або None — вимкнути)
 
 
 REMOTE_HOST = "trknvsky@agentdev1.eu.testfreaks.com"

@@ -255,3 +255,44 @@
         r = agent.Request(url, proxies=['rotating-us'], use='curl', force_charset='utf-8', options='-s -L --insecure '+options, max_age=0)
         return r
     ```
+
+## 9. User Reviews & BB Idioms
+- **EAN Validation**: перед `product.add_property(type='id.ean', value=ean)` перевіряти `if ean and ean.isdigit() and len(ean) > 10:` (або через `str(ean)`, якщо може прийти `int`).
+- **SKU Fallback**: якщо окремого SKU на сайті немає, дублювати `product.sku = product.ssid` **тільки якщо `ssid` взято не з URL** (це числовий/буквено-цифровий ID, а не слаг). Якщо поле `sku` в JSON фактично є MPN виробника (а `mpn` порожнє) — записувати його в `id.manufacturer`, а `product.sku` залишати порожнім.
+- **Category Cleanup (only when needed)**: нормалізацію `.replace('||', '|').replace(' / ', '/').strip(' |')` додавати **лише якщо в категоріях сайту реально трапляються зайві розділювачі/пробіли**, не додавати всюди за замовчуванням.
+- **Review SSID without native ID**: якщо у user-відгуку немає власного ID, використовувати `review.ssid = review.digest() if author else review.digest(excerpt)`.
+- **Title → Excerpt Fallback & Min Length**:
+  - Якщо `excerpt` порожній або `len(excerpt.strip()) <= 2`, переносити `title` у `excerpt` (`else: excerpt = title`); `review.title` заповнювати лише коли є повноцінний `excerpt`.
+  - Додавати відгук лише якщо після `.strip()` (і `remove_emoji` за потреби) `len(excerpt) > 2`.
+- **Standard User Review Properties**:
+  - `is_verified_buyer`: `if is_verified_buyer is True: review.add_property(type='is_verified_buyer', value=True)`
+  - `is_recommended`: `if is_recommended is True: review.add_property(type='is_recommended', value=True)`
+  - `helpful_votes` / `not_helpful_votes`: передавати як `int(hlp_yes)` / `int(hlp_no)`.
+- **Additional Naming Conventions**:
+  - `RequestCats(...)` — для окремого JSON-ендпоінту дерева категорій.
+  - `RequestRevs(ssid, ...)` — параметр ID товару називати `ssid`, а не `pid`.
+  - `process_review_last` — для останньої сторінки багатосторінкових PRO-оглядів (із збереженням сторінок через `review.add_property(type='pages', value=dict(title=..., url=...))`).
+  - У `try/except` для JSON списків товарів/відгуків ставити `{}` (а не `return`), щоб при збої однієї сторінки пагінація продовжувалась через `prods_cnt` / `revs_cnt` із `context`.
+- **Очищення процесів на сервері**: після завершення або примусової зупинки тестового запуску `upload_code_bb.py` завжди запускати `.venv\Scripts\python.exe create_agent\stop_bb.py`, щоб на сервері не лишалося завислих процесів `agent test/`.
+
+## 10. Prune vs BB Server Differences & Recent Conventions
+- **Prune (папки без `(BB)`)**:
+  - Тільки перевіряємо сайт і пишемо код — **не запускаємо** `upload_code.py`.
+  - Перші два рядки `#!/usr/bin/python` та `# -*- coding: utf-8 -*-` **не потрібні**.
+  - Потрібно явно додавати `import simplejson`.
+  - Доступний `session.do` (використовуємо, коли переходимо на той самий URL з іншими `options`, бо `session.queue` у Prune фільтрує дублі URL).
+  - Об'єкт `Product()` **можна** передавати в `context` (якщо більшість полів вже є в `process_prodlist`, формуємо `Product()` одразу там і передаємо `dict(context, product=product)`).
+- **BB (папки з `(BB)`)**:
+  - `import re` та `import simplejson` **не потрібні** (вже є у середовищі).
+  - `session.do` **немає** — використовуємо тільки `session.queue`.
+  - Об'єкт `Product()` **не можна** передавати в `context`: формуємо `pr = dict()` у `process_product`, передаємо `dict(context, product=pr)`, а в `process_reviews` збираємо `Product()` з `context['product'][...]`.
+  - У `process_reviews` на BB спочатку робимо `if product.reviews: session.emit(product)`, а вже потім пагінацію.
+  - Тимчасові `time.sleep` / `random` після успішного тесту обов'язково прибирати перед здачею.
+- **Стиль коду та XPath**:
+  - **Ієрархія категорій**: завжди тримати чітку структуру `cats` → `cats1` → `subcats`; `offset=0` із `process_frontpage` не передавати (у `process_prodlist` брати `context.get('offset', 0)`).
+  - **JSON `try/except`**: у `process_frontpage` та `process_product` ставити `except: return`, а в `process_prodlist` та `process_reviews` — `except: prods = []` / `revs = []`, щоб не обривати еміт чи пагінацію.
+  - **Автор**: для `Person` завжди використовувати `profile_url=author_url` (не `url=`). `author`, `date` та `category` брати зі сторінки огляду (`process_review`), а не з `process_revlist`.
+  - **Відступ після fallback**: якщо використовується fallback (`if not x: x = ...`), перед наступним `if x:` робити порожній рядок.
+  - **HTML у JSON-відгуках**: для полів на кшталт `body_html` (Judge.me) використовувати `data.parse_fragment(excerpt).xpath('.//text()').string(multiple=True)`.
+  - **SVG-текст у `pros`/`cons`**: якщо всередині елемента є `<svg xmlns="http://www.w3.org/2000/svg">` з `<title>`/`<desc>`, виключати його через `.//text()[not(ancestor::*[local-name()="svg"])]`.
+  - **Синдиковані відгуки**: якщо власних відгуків на сайті немає, але є Flixmedia (`media.flixcar.com`) чи інший зовнішній API — не пропускаємо, додаємо цей API.

@@ -9,14 +9,14 @@ sys.path.append(parent)
 from create_agent.agent import AgentForm, ProcessRun, TypeAgent
 from create_agent.bb import main as start_bb
 
-AGENT_ID_NAME = "review.allbeauty.com"
+AGENT_ID_NAME = "17875"
 
 
 def start_prune(agent_id: str):
     agent = AgentForm(
         # name="reviews.fotokoch.de",
         agent_id=agent_id,
-        new_agent=True,
+        new_agent=False,
     )
     agent.create_run(
         # name_agent_for_test="Fotokoch [DE]",
