@@ -1,11 +1,20 @@
 # Project State & Knowledge Base Checklist
 
-**Останнє оновлення**: 26 листопада 2026 р.
-**Поточний статус**: Завершено та перевірено `review.goodereader.com (BB)/new_review.goodereader.com.py` (`review.type = 'pro'`), оновлено `upload_code_bb.py` / `create_agent/upload_code_bb.txt` (автостоп пагінації `MAX_PAGES` для PRO + автостоп за емітами `MAX_EMITS` для всіх агентів + автоповернення пагінації).
+**Останнє оновлення**: 27 листопада 2026 р.
+**Поточний статус**: Завершено автономний прогін `review.allbeauty.com (BB)/new_review.allbeauty.com.py` (Shopify `products.json` + Judge.me `reviews_for_widget`, 50/50 чистих емітів).
 
 ---
 
 ## 1. Останній прогрес
+- **review.allbeauty.com (BB)**:
+  - Сайт переїхав на Shopify + Judge.me. Переписано на 100% JSON-пайплайн: `RequestProds(page)` (`products.json?limit=250`) → `RequestRevs(pid, page)` (`api.judge.me/reviews/reviews_for_widget`).
+  - Фінальний прогін: 50/50 емітів, 0 помилок валідації.
+  - Зафіксовано нові правила в `.agentrules`: `use_new_parser = True` залишаємо при `data.parse_fragment(...)`, стиль `title`/`excerpt` для `user`-відгуків, `except: prods = []` / `revs_json = {}`, `page_cnt`, та очікування команди користувача перед повторним запуском після правок.
+- **review.freemmogamer.com (BB)**:
+  - Оновлено XPath карток (`//h3/a[contains(@class, "card-title")]`), додано `Developer` → `manufacturer`, `Platform` + `Genre` → `category`, пагінацію через `RequestProds(1)` + `if prods:`.
+  - Додано правила до `.agentrules`: `RequestProds`/`RequestRevs`, `page = context.get('page', 1) + 1`, пріоритет умов пагінації, порожній рядок перед `product.reviews.append(review)`.
+- **review.kasa.cz (BB)**:
+  - Перевірено — магазин закрито з 2 квітня 2024 (поглинений Datart), віддає F5/TSPD заглушку.
 - **review.goodereader.com (BB)**:
   - Завершено PRO-парсер, додано фільтрацію заголовків `XTITLE` (`not any(xtitle in title ...)`), правило зафіксовано в `.agentrules`.
   - Оновлено шаблон `create_agent/upload_code_bb.txt`:

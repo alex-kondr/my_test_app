@@ -71,7 +71,15 @@
   - Переваги: наявність `profile_url` та семантичного `ssid` (з URL профілю) робить ідентифікацію автора максимально точною.
 ## 7. Advanced Standards for Server BB & User Reviews (E-commerce / JSON)
 - **JSON & API-driven Pipelines**:
-  - Якщо дані майже повністю отримуються через JSON/API, виклик `strip_namespace(data)` **не потрібен**.
+  - Якщо дані повністю отримуються через JSON/API, виклик `strip_namespace(data)` **не потрібен**. `session.browser.use_new_parser = True` залишаємо, якщо викликається `data.parse_fragment(...)` для HTML-полів усередині JSON; якщо `parse_fragment` не використовується — прибираємо і `use_new_parser`.
+  - **Стиль полів у JSON-парсерах (`process_prodlist` / `process_reviews`)**:
+    - Безпечний фолбек: `except: prods = []`.
+    - Категорія: спочатку дефолт (`pr['category'] = 'Beauty'`), далі `if cat: pr['category'] = ...`.
+    - SKU: `try: pr['sku'] = str(...) except: pr['sku'] = pr['ssid']`.
+    - `is_verified_buyer`: `if is_verified_buyer is True:`.
+    - Голоси: `if hlp_yes and int(hlp_yes):` / `if hlp_no and int(hlp_no):`.
+    - `review.ssid`: явний `if ssid: review.ssid = str(ssid)` / `else: review.ssid = review.digest() if author else review.digest(excerpt)`.
+    - **`title` vs `excerpt` для `review.type = 'user'`**: якщо є `excerpt` — записуємо `review.title = title` (за умови `title and title.strip('.') != excerpt`); якщо `excerpt` порожній — використовуємо `title` як `excerpt` (`excerpt = title`), а вже потім у блоці `if excerpt:` додаємо `excerpt`, `review.ssid` та `product.reviews.append(review)`.
 - **Category Tree Traversal Style (`process_catlist` / `process_frontpage`)**:
   - Константа винятків категорій: `XCATS`.
   - Константа винятків заголовків статей/оглядів (порівняння, підбірки тощо): `XTITLE = [' the best ', ' vs ']`, перевірка через `not any(xtitle in title.lower() for xtitle in XTITLE)` (або `xtitle in title`).
@@ -108,7 +116,14 @@
   - Передаємо у чергу: `session.queue(..., dict(context, product=pr))`.
   - Повноцінний екземпляр `product = Product()` ініціалізується **тільки у кінцевій функції `process_reviews`** (де й дублюємо `product.sku = product.ssid`, якщо окремого `sku` немає) безпосередньо перед збиранням відгуків та `session.emit(product)`.
 - **Specialized Request Helper Functions**:
-  - Для сервера BB гарною практикою є створення спеціалізованих функцій-генераторів запитів (наприклад, `RequestProds(cat_id, page, offset)`, `RequestRevs(ssid, page)`), які самі підставляють потрібні endpoint'и та передають `force_charset='utf-8'`.
+  - Для сервера BB гарною практикою є створення спеціалізованих функцій-генераторів запитів з чіткими назвами: **`RequestProds(...)`** (для лістингу товарів) або **`RequestRevs(...)`** (для відгуків), які самі підставляють потрібні endpoint'и та передають `force_charset='utf-8'`.
+- **Page-Based Pagination & Loop Conventions**:
+  - У `run()` змінну `page` не оголошуємо — передаємо `1` напряму (`RequestProds(1)`, `dict()`), а в колбеку збільшуємо через `page = context.get('page', 1) + 1`.
+  - Умова продовження пагінації (за пріоритетом):
+    1. Якщо є загальна кількість товарів/відгуків — орієнтуємось на неї (`offset < total` / `page < total_pages`).
+    2. Якщо точно відома фіксована кількість елементів на сторінці (наприклад, 20 або 36) — перевіряємо `if len(prods) == 20:`.
+    3. Якщо повертається різна кількість — `if prods:`.
+  - Між `review.ssid = ...` та `product.reviews.append(review)` завжди ставимо порожній рядок.
 - **Emoji Sanitization (`remove_emoji`)**:
   - Сервер BB у Python 2.7 погано працює та з помилками зберігає 4-байтні Unicode емодзі.
   - Якщо у відгуках користувачів є емодзі, обов'язково фільтрувати текст через `remove_emoji(string)` перед `review.add_property(type='excerpt', value=excerpt)`.
@@ -210,6 +225,7 @@
 - **Strict Upload & Run Channel**:
   - Для відвантаження файлу та його запуску на сервері BB використовувати **виключно** локальний скрипт `upload_code_bb.py` (жодних прямих `ssh` команд до сервера в обхід `upload_code_bb.py`).
   - **Ліміт навантаження**: робити не більше **50 запусків за 3 хвилини**, щоб не перевантажувати сервер.
+  - **Коли запускати**: при створенні/переписуванні агента агент робить перший прогін самостійно; коли ж починаються правки користувача — **не** запускати `upload_code_bb.py` після кожної правки, а чекати явної команди користувача на фінальний запуск.
 - **Step-by-Step HTML/JSON Inspection & Terminal Analysis**:
   - Оскільки `upload_code_bb.py` запускається агентом, аналізувати **обидва** джерела: живий вивід терміналу (`stderr` від `mockrun.py`, помилки/блокування/варнінги) та локальний `{AGENT_NAME}.txt`.
   - **Контроль валідації емітів у терміналі**: `mockrun.py` друкує рядки формату `INFO 1: Validation found 0 errors and N warnings: ...`:
